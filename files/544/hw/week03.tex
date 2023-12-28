@@ -1,0 +1,93 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\title{Math 544: Topology\\ Homework due Friday Week 3}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Topological Manifolds} are marked ITM $x$--$y$. Please review the syllabus for expectations and policies regarding homework. In addition to these problems, I recommend working out ITM 3--22 and 3--23 as well.
+
+\begin{prob}[ITM 3--13]
+Suppose $X$ and $Y$ are topological spaces and $f\colon X\to Y$ is a continuous map. Prove the following:
+\begin{enumerate}[(a)]
+  \item If $f$ admits a continuous left inverse, it is a topological embedding.
+  \item If $f$ admits a continuous right inverse, it is a quotient map.
+  \item Give examples of a topological embedding with no continuous left inverse, and a quotient map with no continuous right inverse.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ITM 3--14]
+Show that real projective space $\RR\PP^n$ is an $n$-manifold. [\emph{Hint}: Consider the subsets $U_i\subseteq \RR^{n+1}\smallsetminus \{0\}$ with $x_i = 1$.]
+\end{prob}
+
+\begin{prob}
+Let $H^n$ denote the upper $n$-hemisphere
+\[
+  H^n := \{(x_1,\ldots,x_{n+1})\in S^n\mid x_{n+1}>0\}
+\]
+and let $\bar H^n$ denote its closure.
+\begin{enumerate}[(a)]
+\item Prove that $H^n$ is homeomorphic to $\RR^n$.
+\item Prove that $\RR\PP^n$ is homeomorphic to $\bar H^n/{\sim}$ where $\sim$ is the equivalence relation identifying antipodal points on $\partial \bar H^n\cong S^{n-1}$.
+\item Conclude that $\RR\PP^n\cong \RR^n\cup \RR\PP^{n-1}$ and thus by induction
+\[
+  \RR\PP^n \cong \RR^n\cup \RR^{n-1}\cup \cdots\cup \RR^1\cup \RR^0.
+\]
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ITM 3--16]
+Let $X$ be the subset $(\RR\times\{0\})\cup(\RR\times \{1\})\subseteq \RR^2$. Define an equivalence relation on $X$ by declaring $(x,0)\sim (x,1)$ for $x\ne 0$. Show that the quotient space $X/{\sim}$ is locally Euclidean and second countable but not Hausdorff. (This space is called the \emph{line with two origins}.)
+\end{prob}
+
+\begin{prob}[ITM 3--24]
+Consider the action of $\mathrm{O}(n)$ on $\RR^n$ by matrix multiplication as in Example 3.88(b). Prove that the quotient space $\RR^n/\mathrm{O}(n)$ is homeomorphic to $[0,\infty)$.
+\end{prob}
+
+
+
+\end{document}

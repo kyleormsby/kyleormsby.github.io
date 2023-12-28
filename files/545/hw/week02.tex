@@ -1,0 +1,104 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+
+
+\title{Math 545: Manifolds\\ Homework due Friday Week 2}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Topological Manifolds} are marked ITM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}
+Let $G = \mathfrak S_3$ be the symmetric group on three letters and note that $S = \{(1~2),(1~2~3)\}$ generates $G$.
+\begin{enumerate}[(a)]
+\item Draw the Cayley graph $\Gamma_G = \Gamma_{G,S}$ for $G$ relative to $S$.
+\item Use your Cayley graph to argue that
+\[
+  G\cong \langle a,b\mid a^3=b^2=(ab)^2=e\rangle.
+\]
+\item Describe the Cayley complex $\tilde X_G$ of $G$ relative to $S$. (It might be hard to draw a picture, but you could try, and you should write precisely regarding how many 2-cells are attached and in what fashion.)
+\item Describe the left action of $G$ on $\tilde X_G$. (It is enough to specify how the generators act at the level of 2-cells.)
+\item Verify in this case that $\tilde X_G/G\cong X_G$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ITM 11--1]
+Suppose $q\colon E\to X$ is a covering map.
+\begin{enumerate}[(a)]
+\item Show that if $X$ is Hausdorff, then $E$ is too.
+\item Show that if $X$ is an $n$-manfiold, then $E$ is too.
+\item Show that if $E$ is an $n$ manifold and $X$ is Hausdorff, then $X$ is an $n$-manifold.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ITM 11--4]
+Construct a two-sheeted covering of the Klein bottle by the torus.
+\end{prob}
+
+\begin{prob}
+Suppose groups $G_1$, $G_2$ act continuously on spaces $X_1$, $X_2$, respectively, such that the quotient maps $q_i\colon X_i\to X_i/G_i$ are covering maps for $i=1,2$. 
+\begin{enumerate}[(a)]
+\item Show that the action of $G_1\times G_2$ on $X_1\times X_2$ defined by $(g_1,g_2)\cdot (x_1,x_2) = (g_1x_1,g_2x_2)$ makes the quotient map $X_1\times X_2\to (X_1\times X_2)/(G_1\times G_2)$ a covering map.
+\item Prove that $(X_1\times X_2)/(G_1\times G_2)\cong X_1/G_1\times X_2/G_2$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Let $p_3\colon S^1\to S^1$ denote the third power map $z\mapsto z^3$.
+\begin{enumerate}[(a)]
+\item Explicitly describe the monodromy action of $\pi_1(S^1,1)$ on $p_3^{-1}\{1\}$.
+\item What is the isotropy group of each element of $p_3^{-1}\{1\}$?
+\item What is the induced subgroup $(p_3)_*\pi_1(S^1,1)\le \pi_1(S^1,1)$?
+\end{enumerate}
+\end{prob}
+
+\end{document}

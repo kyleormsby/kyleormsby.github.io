@@ -1,0 +1,106 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\SU}{\mathrm{SU}}
+\newcommand{\SO}{\mathrm{SO}}
+\renewcommand{\O}{\mathrm{O}}
+\newcommand{\U}{\mathrm{U}}
+\newcommand{\GL}{\mathrm{GL}}
+\newcommand{\gl}{\mathfrak{gl}}
+\newcommand{\Lie}{\operatorname{Lie}}
+
+
+
+\title{Math 546: Manifolds\\ Homework due Friday Week 3}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ISM 7--15]
+Let $G$ be a Lie group and let $G_0$ be its identity component. Then $G_0$ is a normal subgroup of $G$, and is the only connected open subgroup. Every connected component of $G$ is diffeomorphic to $G_0$.
+\end{prob}
+
+\begin{prob}[ISM 8--10]
+Let $M$ be the open submanifold of $\RR^2$ where both $x$ and $y$ are positive, and let $F\colon M\to M$ be the map $F(x,y) = (xy,y/x)$. Show that $F$ is a diffeomorphism, and compute $F_*X$ and $F_*Y$, where
+\[
+  X = x\frac\partial{\partial x}+y\frac\partial{\partial y},\qquad Y = y\frac\partial{\partial x}.
+\]
+Also compute $[X,Y]$ and $[F_*X,F_*Y]$.
+\end{prob}
+
+\begin{prob}[ISM 8--25]
+Prove that if $G$ is an Abelian Lie group, then $\mathfrak g = \Lie(G)$ is Abelian. [\emph{Hint}: Show that the inversion map $i\colon G\to G$ is a group isomorphism. Prove any parts of ISM Problem 7--2 that might be relevant.]
+\end{prob}
+
+\begin{prob}[ISM 8--29]
+Theorem 8.46 implies that the Lie algebra of any Lie subgroup of $\GL_n\RR$ is canonically isomorphic to a subalgebra of $\gl_n\RR$, with a similar statement for Lie subgroups of $\GL_n\CC$. Under this isomorphism, show that
+\[
+  \Lie(\SO(n))\cong \mathfrak o(n) = \{A\in \gl_n\RR\mid A^T+A=0\}
+\]
+and
+\[
+  \Lie(\U(n))\cong \mathfrak u(n) = \{A\in \gl_n\CC\mid A^*+A=0\}.
+\]
+\end{prob}
+
+\begin{prob}[ISM 9--3(b)]
+Compute the flow the vector field
+\[
+  W = x\frac\partial{\partial x}+2y\frac\partial{\partial y}
+\]
+on $\RR^2$.
+\end{prob}
+
+\end{document}

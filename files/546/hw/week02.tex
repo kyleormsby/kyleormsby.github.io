@@ -1,0 +1,127 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\SU}{\mathrm{SU}}
+\newcommand{\SO}{\mathrm{SO}}
+\renewcommand{\O}{\mathrm{O}}
+
+
+
+\title{Math 546: Manifolds\\ Homework due Friday Week 2}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ISM 7--11]
+Considering $S^{2n+1}$ as the unit sphere in $\CC^{n+1}$, define an action of $S^1$ on $S^{2n+1}$, called the \emph{Hopf action}, by
+\[
+  z\cdot (w^1,\ldots,w^{n+1}) = (zw^1,\ldots,zw^{n+1}).
+\]
+Show that this action is smooth and its orbits are disjoint unit circles in $\CC^{n+1}$ whose union is $S^{2n+1}$.
+\end{prob}
+
+% \begin{prob}[ISM 7--16]
+% Prove that $\SU(2)$ is diffeomorphic to $S^3$.
+% \end{prob}
+
+% \begin{prob}[parts of ISM 7--19, 7--20, and 7--21]
+% \begin{enumerate}[(a)]
+% \item Suppose $G$, $N$, and $H$ are Lie groups. Prove that $G$ is isomorphic to a semi-direct product $N\rtimes H$ if and only if there are Lie group homomorphisms $\varphi\colon G\to H$ and $\psi\colon H\to G$ such that $\varphi\circ \psi = \id_H$ and $\ker\varphi\cong N$.
+% \item Prove that $\O(n)\cong \SO(n)\rtimes \O(1)$ as Lie groups for $n\ge 1$.
+% \item Prove that $\O(n)$ is not isomorphic to $\SO(n)\times \O(1)$ for $n>1$.
+% \end{enumerate}
+% \end{prob}
+
+\begin{prob}[ISM 7--22]
+Let $\HH=\CC\times \CC$ and consider it as a real vector space. Define a bilinear product
+\[
+\begin{aligned}
+  \HH\times\HH&\longrightarrow \HH\\
+  ((a,b),(c,d))&\longmapsto (ac-d\ol b,\ol ad+cb)
+\end{aligned}
+\]
+for $a,b,c,d\in \CC$. This makes $\HH$ a $4$-dimensional $\RR$-algebra called the \emph{quaternions}. For each $p=(a,b)\in \HH$, define $p^* = (\ol a,-b)$. It is useful to work with the basis $(1,i,j,k) = ((1,0),(i,0),(0,1),(0,-i))$ for $\HH$. One may verify that this basis satisfies
+\[
+\begin{aligned}
+&i^2=j^2=k^2=-1,\qquad 1q=q1=q\text{ for all }q\in \HH,\\
+&ij=-ji=k,\qquad jk=-kj=i,\qquad ki=-ik=j,\\
+&1^*=1,\qquad i^*=-i,\qquad j^*=-j,\qquad k^*=-k.
+\end{aligned}
+\]
+A quaternion $p$ is said to be \emph{real} when $p^*=p$, and \emph{imaginary} when $p^*=-p$. Real quaternions can be identified with real numbers via the correspondence $\lambda \leftrightarrow x1$.
+\begin{enumerate}[(a)]
+\item Show that quaternionic multiplication is associative but not commutative.
+\item Show that $(pq)^* = q^*p^*$ for all $p,q\in \HH$.
+\item Show that $\langle p,q\rangle = \frac{1}{2}(p^*q+q^*p)$ is an inner product on $\HH$ with associated norm satisfying $|pq|=|p||q|$.
+\item Show that every nonzero quaternion has a two-sided multiplicative inverse given by $p^{-1} = |p|^{-2}p^*$.
+\item Show that the set $\HH^\times$ of nonzero quaternions is a Lie group under quaternionic multiplication.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ISM 7--23]
+Let $\HH^\times$ be the Lie group of nonzero quaternions, and let $S^3\subseteq \HH^\times$ be the set of norm $1$ quaternions. Show that $S^3$ is a properly embedded Lie subgroup of $\HH^\times$, isomorphic to $\SU(2)$.
+\end{prob}
+
+\begin{prob}[ISM 8--4]
+Let $M$ be a smooth manifold with boundary. Show that there exists a global smooth vector field on $M$ whose restriction to $\partial M$ is everywhere inward-pointing, and one whose restriction to $\partial M$ is everywhere outward-pointing.
+\end{prob}
+
+
+
+
+
+
+
+\end{document}

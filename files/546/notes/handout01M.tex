@@ -1,0 +1,199 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\usepackage{tikz}
+
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+\newcommand{\GL}{\mathrm{GL}}
+\newcommand{\SL}{\mathrm{SL}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\title{Math 546: Manifolds\\ Monday Week 1}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+Let $\RR^{2\times 2}\cong \RR^4$ denote $\RR^4$ with its standard smooth structure. Denote the usual determinant function by
+\[
+\begin{aligned}
+  \det\colon \RR^{2\times 2}&\longrightarrow \RR\\
+  \begin{pmatrix}
+  a&b\\c&d
+  \end{pmatrix}
+  &\longmapsto ad-bc.
+\end{aligned}
+\]
+
+\begin{prob}
+Why is $\det\colon \RR^{2\times 2}\to \RR$ a smooth function? Where does it have rank $1$, and where does it have rank $0$?
+\end{prob}
+
+\begin{prob}
+Why is $\GL_2(\RR) = \{M\in \RR^{2\times 2}\mid \det M\ne 0\}$ an open submanifold of $\RR^{2\times 2}$?
+\end{prob}
+
+\begin{prob}
+Why are the multiplication $\GL_2(\RR)\times \GL_2(\RR)\to \GL_2(\RR)$, $(A,B)\mapsto AB$ and inversion $\GL_2(\RR)\to \GL_2(\RR)$, $A\mapsto A^{-1}$ smooth?
+\end{prob}
+
+When a group has a smooth manifold structure with smooth multiplicaiton and inversion, it's called a \emph{Lie group}; you just proved that $\GL_2(\RR)$ is a Lie group.
+
+\begin{prob}
+Check that $\det\colon \GL_2(\RR)\to \RR^{\times}$ is a smooth group homomorphism of constant rank $1$. (This follows pretty directly from Problem 1.)
+\end{prob}
+
+\begin{prob}
+Show that the special linear group
+\[
+  \SL_2(\RR) := \ker(\det\colon \GL_2(\RR)\to \RR^\times)
+\]
+is an embedded subgroup of $\GL_2(\RR)$ with smooth multiplication and inversion maps.
+\end{prob}
+
+We now turn to the \emph{Iwasawa decomposition} of $\SL_2(\RR)$. Consider the following three subgroups of $\SL_2(\RR)$:
+\[
+  K = \left\{\begin{pmatrix}
+  \cos t&-\sin t\\ \sin t&\cos t
+  \end{pmatrix}~\middle|~ t\in \RR\right\},\qquad A = \left\{\begin{pmatrix}
+  \lambda &0\\ 0&1/\lambda
+  \end{pmatrix} ~\middle|~ \lambda>0\right\},\qquad N = \left\{\begin{pmatrix}
+  1&x\\ 0&1
+  \end{pmatrix}~\middle|~ x\in \RR\right\}.
+\]
+
+\begin{prob}
+Check that $K\approx S^1$, $A\approx \RR_{>0}$, and $N\approx \RR$ as embedded submanifolds of $\SL_2(\RR)$.
+\end{prob}
+
+The Iwasawa decomposition theorem says that the assignment
+\[
+\begin{aligned}
+  K\times A\times N&\longmapsto \SL_2(\RR)\\
+  (k,a,n)&\longmapsto kan
+\end{aligned}
+\]
+is a diffeomorphism. \emph{Note}: It is \emph{not} a group isomorphism. Proving this would take a bit too long for class, but you can check on your own time that a smooth inverse to this map is given by the following rules. For $g = \begin{pmatrix}a&b\\c&d\end{pmatrix}\in \SL_2(\RR)$, set $r(g) := \sqrt{a^2+c^2}$ and
+\[
+  k(g) = \begin{pmatrix}
+  a/r(g)& -c/r(g)\\ c/r(g)& a/r(g)
+  \end{pmatrix},\qquad
+  a(g) = \begin{pmatrix}
+  r(g) & 0\\ 0& 1/r(g)
+  \end{pmatrix},\qquad 
+  n(g) = \begin{pmatrix}
+  1 & (ab+cd)/(a^2+c^2)\\
+  0& 1
+  \end{pmatrix}.
+\]
+Then $g\mapsto k(g)a(g)n(g)$ is inverse to the above assignment.
+
+\begin{prob}
+Use the Iwasawa decomposition to argue that $\SL_2(\RR)$ is diffeomorphic to $S^1\times \RR_{>0}\times \RR$, which is in turn diffeomorphic to the interior of a solid torus.
+\end{prob}
+
+Now define an action of $\RR$ on $\SL_2(\RR)$ via
+\[
+\begin{aligned}
+  \RR\times \SL_2(\RR)&\longrightarrow \SL_2(\RR)\\
+  (t,A)&\longmapsto \begin{pmatrix}
+  \exp(t)&0\\0&\exp(-t)
+  \end{pmatrix}A.
+\end{aligned}
+\]
+
+\begin{prob}
+Verify that this is a smooth left action of $\RR$ (under addition) on $\SL_2(\RR)$.
+\end{prob}
+
+The \emph{orbits} $\RR A$ of elements $A\in \SL_2(\RR)$ under this action are one-dimensional submanifolds of $\SL_2(\RR)$.
+
+\begin{prob}
+Call $A = \begin{pmatrix}a&b\\c&d\end{pmatrix}\in \SL_2(\RR)$ \emph{hyperbolic} when $|a+d|\ge 2$. Check that hyperbolic matrices in $\SL_2(\RR)$ diagonalize over the reals so that there exists $P\in \SL_2(\RR)$ such that
+\[
+  PAP^{-1} = \pm\begin{pmatrix}\exp(t_0)&0\\0&\exp(-t_0)\end{pmatrix}
+\]
+for some $t_0\in \RR$.
+\end{prob}
+
+Working in the above setup, consider the \emph{lattice} $P(\ZZ^2)$. This is a rank $2$ discrete subgroup of $\RR^2$. In fact, if $P = \begin{pmatrix}a&b\\c&d\end{pmatrix}$, then this lattice is generated by $(a,c)$ and $(b,d)$, and the \emph{fundamental parallelepiped} spanned by these vectors has area one. A deep theorem of Quillen (utilizing the Eisenstein series $G_4$ and $G_6$) tells us that the space of unimodular (area one) lattices is diffeomorphic to the complement of a trefoil knot in $S^3$. (\emph{Whoah!})
+
+Now consider the $\RR$-orbit of $P(\ZZ^2)$ in the above setup. These are the points
+\[
+  \begin{pmatrix}
+  \exp(t)&0\\0&\exp(-t)
+  \end{pmatrix}P(\ZZ^2),\qquad t\in \RR.
+\]
+At $t=t_0$, we have
+\[
+  \begin{pmatrix}
+  \exp(t_0)&0\\0&\exp(-t_0)
+  \end{pmatrix}P(\ZZ^2)
+  = PAP^{-1}\cdot P(\ZZ^2)
+  = PA(\ZZ^2).
+\]
+
+\begin{prob}
+Prove that $A\in \SL_2(\RR)$ fixes the lattice $\ZZ^2$ --- \emph{i.e.}, $A(\ZZ^2) = \ZZ^2$ --- if and only if $A$ has integer entries, \emph{i.e.}, $A\in \SL_2(\ZZ)$.
+\end{prob}
+
+We now see that if $A\in \SL_2(\ZZ)$ is hyperbolic, then at $t=t_0$ we get
+\[
+  \begin{pmatrix}
+  \exp(t_0)&0\\0&\exp(-t_0)
+  \end{pmatrix}P(\ZZ^2) = P(\ZZ^2).
+\]
+In fact, the periodic orbits of the \emph{modular flow} on unimodular lattices are in bijection with conjugacy classes of hyperbolic elements of $\SL_2(\ZZ)$! In class, I'll show some animations of these orbits.
+
+Recalling Quillen's theorem on the space of unimodular lattices, we can view these periodic orbits as links for which one component is the trefoil knot. Etienne Ghys has proved some marvelous theorems about these links:
+\begin{itemize}
+\item The linking number of these flows with the trefoil knot equals the \emph{Rademacher function} of the corresponding matrix in $\SL_2(\ZZ)$.
+\item The periodic orbits of the modular flow are the same as the knots occuring in the Lorenz equations.
+\end{itemize}
+
+I could go on and on about this topic, so please ask questions. As we continue this term, you'll see that a lot of these objects are examples of the structures we'll be studying: Lie groups, Lie subgroups, smooth actions on manifolds, flows, \ldots.
+\end{document}

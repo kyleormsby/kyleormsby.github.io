@@ -1,0 +1,105 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\usepackage{tikz}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\title{Math 544: Topology\\ Wednesday Week 1}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+A (planar) \emph{equilateral polygon} is a polygon (embedded in the plane) for which each side has the same length. You're holding an equilateral quadrilateral right now. We allow non-convexity and also degenerate configurations in which some vertices coincide. Below from left to right we see two equilateral quadrilterals, an equilateral pentagon, and a degenerate equilateral quadrilateral.
+
+\begin{center}
+\tikz \draw (0,0) -- (1,0) -- (1,1) -- (0,1) -- (0,0);
+\qquad
+\tikz \draw (0,0) -- (1,0) -- (1.5,0.866) -- (0.5,0.866) -- (0,0);
+\qquad
+\tikz \draw (0,0) -- (1,0) -- (1,1) -- (0.5,0.13397459621) -- (0,1) -- (0,0);
+\qquad
+\tikz \draw (0,0) -- (1,0) -- (1.7071,0.7071);
+\end{center}
+
+
+With your group, discuss and answer the following questions. Flag down the instructor if you have questions.
+
+\bigskip
+\hrulefill
+\bigskip
+
+\begin{enumerate}[(1)]
+\item When should we consider two planar equilateral polygons to be ``the same'' geometrically?
+\item Let
+\[
+  M_n := \left\{(p_1=1,p_2,\ldots,p_{n-1},p_n=0)\in \CC^n~ \middle\vert~
+  \begin{array}{l}
+    \text{for }z_k=p_{k+1}-p_k\\
+    |z_k|=1\text{ for }1\le k\le n-1
+  \end{array}\right\}.
+\]
+In what sense should we consider $M_n$ the ``space'' of planar equilateral $n$-gons up to similarity?
+\item Do we lose any information by rewriting $M_4$ as
+\[
+  M := \left\{(z_1,z_2,z_3)\in \CC^3 ~\middle\vert~
+  \begin{array}{l}
+    |z_1|=|z_2|=|z_3|=1,\\
+    1+z_1+z_2+z_3=0
+  \end{array}\right\}\text{?}
+\]
+\item Let $S^1 := \{z\in \CC\mid |z|=1\}$ be the unit circle. By the first constraint, $M_4$ is a subset of $T^3 := S^1\times S^1\times S^1$, the $3$-dimensional torus. Let $H = \{(z_1,z_2,z_3)\in \CC^3\mid 1+z_1+z_2+z_3=0\}$.
+  \begin{enumerate}[(a)]
+  \item What is the dimension of $H$?
+  \item What is the expected dimension of $M = T^3\cap H$?
+  \end{enumerate}
+\item Fully describe the ``shape'' of $M$ and draw a (cartoon) picture of it. (\emph{Hint}: Play with your model and think about different (non-disjoint) pieces $M$ might break into.)
+\end{enumerate}
+
+\bigskip
+\hrulefill
+\bigskip
+
+It turns out that $M_4$ is \emph{not} a manifold. One of our goals this term is to show that $M_5$ (the space of equilateral pentagons) is a compact $2$-dimensional oriented manifold of genus $4$.
+
+\end{document}

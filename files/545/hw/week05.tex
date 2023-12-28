@@ -1,0 +1,85 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+
+
+\title{Math 545: Manifolds\\ Homework due Friday Week 5}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Topological Manifolds} are marked ITM $x$--$y$; problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ITM 13--7, \textsc{Brouwer fixed point theorem}]
+For each integer $n\ge 0$, prove that every continuous map $f\colon \overline{\mathbb B}^n\to \overline{\mathbb{B}}^n$ has a fixed point. (Use homology to emulate the fundamental group-based proof for $n=2$.)
+\end{prob}
+
+\begin{prob}[ITM 13--8]
+Show that if $n$ is even, then $C_2 = \{\pm 1\}$ is the only nontrivial group that can act freely and continuously on $S^n$. (\emph{Hint}: Show that if $G$ acts continuously on $S^n$, then degree induces a homomorphism $G\to C_2$. \emph{Bonus}: What happens when $n$ is odd?)
+\end{prob}
+
+\begin{prob}[ITM 13--9]
+Use the cell structure of $\RR\PP^3$ to compute its homology. (\emph{Bonus}: Compute the homology of $\RR\PP^n$ for all $n$.)
+\end{prob}
+
+\begin{prob}[ISM 1--8]
+An \emph{angle function} on a subset $U\subseteq S^1\subseteq \CC$ is a continuous function $\theta\colon U\to \RR$ such that $\exp(i\theta(z))=z$ for all $z\in U$. Show that there exists an angle function $\theta$ on an open subset $U\subseteq S^1$ if and only if $U\ne S^1$. For any such angle function, show that $(U,\theta)$ is a smooth coordinate chart for $S^1$ with a standard smooth structure.
+\end{prob}
+
+\begin{prob}[ISM 1--9]
+For $n\ge 0$, \emph{complex projective space}, $\CC\PP^n$, is the set of all $1$-dimensional $\CC$-linear subspaces of $\CC^{n+1}$ with the quotient topology induced by the natural projection $\pi\colon \CC^{n+1}\smallsetminus \{0\}\to \CC\PP^n$. Show that $\CC\PP^n$ is a compact $2n$-dimensional topological manifold, and show how to give it a smooth structure analogous to the smooth structure on $\RR\PP^n$.
+\end{prob}
+
+
+
+
+
+\end{document}

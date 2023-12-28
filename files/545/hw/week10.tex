@@ -1,0 +1,82 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+
+
+\title{Math 545: Manifolds\\ Homework due Friday Week 10}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ISM 6--3]
+Let $M$ be a smooth manifold, let $B\subseteq M$ be a closed subset, and let $\delta\colon M\to \RR$ be a positive continuous function. Show that there is a smooth function $\tilde\delta\colon M\to \RR$ that is zero on $B$, positive on $M\smallsetminus B$, and satisfies $\tilde\delta(x)<\delta(x)$ everywhere. [\emph{Hint}: Consider $f/(f+1)$, where $f$ is a smooth nonnegative function that vanishes exactly on $B$, and use ISM Corollary 6.22.]
+\end{prob}
+
+\begin{prob}[ISM 6--4]
+Let $M$ be a smooth manifold, let $B$ be a closed subset of $M$, and let $\delta\colon M\to \RR$ be a positive continuous function.
+\begin{enumerate}[(a)]
+\item Given any continuous function $f\colon M\to \RR^k$, show that there is a continuous function $\tilde f\colon M\to \RR^k$ that is smooth on $M\smallsetminus B$, agrees with $f$ on $B$, and is $\delta$-close to $f$. (\emph{Hint}: Use the previous problem.)
+\item Given a smooth manifold $N$ and a continuous map $F\colon M\to N$, show that $F$ is homotopic relative $B$ to a map that is smooth on $M\smallsetminus B$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ISM 6--8]
+Prove that every proper continuous map between smooth manifolds is homotopic to a proper smooth map. [\emph{Hint}: Show that the map $\tilde F$ constructed in the proof of ISM Theorem 6.26 is proper if $F$ is.]
+\end{prob}
+
+\begin{prob}[ISM 6--10]
+Suppose $F\colon N\to M$ is a smooth map that is transverse to an embedded submanifold $X\subseteq M$, and let $W = F^{-1}X$. For each $p\in W$, show that $T_pW = (dF_p)^{-1}(T_{F(p)}X)$. Conclude that if two embedded submanifolds $X,X'\subseteq M$ intersect transversely, then $T_p(X\cap X') = T_pX\cap T_pX'$ for every $p\in X\cap X'$.
+\end{prob}
+
+\end{document}

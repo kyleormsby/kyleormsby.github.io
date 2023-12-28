@@ -1,0 +1,91 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+
+
+\title{Math 545: Manifolds\\ Homework due Friday Week 4}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Topological Manifolds} are marked ITM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[12--4]
+Let $\mathscr E \cong S^1\vee S^1$ be the figure-eight space consisting of unit circles centered at $\pm i$ in $\CC$, and let $X$ be the union of the real axis of $\CC$ with infinitely many unit circles centered at $2\pi k+i$, $k\in \ZZ$. Let $q\colon X\to \mathscr E$ be the map sending each circle in $X$ onto the upper circle in $\mathscr E$ by translation by a real number, and sending the real axis onto the lower circle by $x\mapsto ie^{ix}-i$. You may assume that $q$ is a covering map.
+\begin{enumerate}[(a)]
+\item Identify the subgroup $q_*\pi_1(X,0)$ of $\pi_1(\mathscr E,0)$ in terms of the generators of $\pi_1(\mathscr E,0)$.
+\item Determine the automorphism group $\Aut_q(X)$.
+\item Determine whether $q$ is a normal covering.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[12--6]
+Let
+\[
+  E = \{(x,y)\in \RR^3\times \RR^3\mid x\ne y\}
+\]
+considered as a subspace of $\RR^3\times \RR^3=\RR^6$. Define an equivalence relation $\sim$ on $E$ by $(x,y)\sim (y,x)$ for all $(x,y)\in E$. Compute the fundamental group of $E/{\sim}$.  (\emph{Note}: The space $E/{\sim}$ is the \emph{unordered configuration space of two points in $\RR^3$}.)
+\end{prob}
+
+\begin{prob}[12--9]
+Find a covering space action of a group $\Gamma$ on the plane such that $\RR^2/\Gamma$ is homeomorphic to the Klein bottle.
+\end{prob}
+
+\begin{prob}
+Let $X$ be a finite connected simple graph, \emph{i.e.}, a connected $1$-dimensional CW complex with $p$ $0$-cells and $q$ $1$-cells with ``no loops'' and ``no parallel edges''. Compute $H_1(X)$ in terms of $p$ and $q$. (You may use the fact that such a graph has a \emph{spanning tree}: a subgraph which is a tree containing all the vertices of the original graph.)
+\end{prob}
+
+\begin{prob}[13--3, \textsc{Invariance of Dimension}] Prove that if $m\ne n$, then a nonempty topological space cannot be both an $m$-manifold and an $n$-manifold. (You may use Corollary 13.24 identifying the homology of $\RR^n\smallsetminus \{0\}$; you may want to utilize [but still need to prove] the results from Problem 13--2.)
+\end{prob}
+
+
+
+\end{document}

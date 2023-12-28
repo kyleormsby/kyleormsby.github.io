@@ -1,0 +1,101 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+\newcommand{\dd}{\mathsf{d}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\SU}{\mathrm{SU}}
+\newcommand{\SO}{\mathrm{SO}}
+\renewcommand{\O}{\mathrm{O}}
+\newcommand{\U}{\mathrm{U}}
+\newcommand{\GL}{\mathrm{GL}}
+\newcommand{\gl}{\mathfrak{gl}}
+\newcommand{\Lie}{\operatorname{Lie}}
+\newcommand{\dR}{\mathrm{dR}}
+
+
+
+\title{Math 546: Manifolds\\ Homework due Friday Week 8}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ISM 17--1]
+Let $M$ be a smooth manifold with or without boundary, and let $\omega\in\Omega^p(M),\eta\in\Omega^q(M)$ be closed forms. Show that the de Rham cohomology class of $\omega\wedge\eta$ depends only on the cohomology classes of $\omega$ and $\eta$, and thus there is a well-defined bilinear map
+\[
+\begin{aligned}
+  \smile\colon H^p_{\dR}(M)\times H^q_{\dR}(M)&\longrightarrow H^{p+q}_{\dR}(M)\\
+  ([\omega],[\eta])&\longmapsto [\omega]\smile[\eta]:=[\omega\wedge\eta]
+\end{aligned}
+\]
+called the \emph{cup product}.
+\end{prob}
+
+\begin{prob}[ISM 17--5]
+For each $n\ge 1$, compute the de Rham cohomology groups of $\RR^n\smallsetminus \{e_1,-e_1\}$; and for each nonzero cohomology group, give specific differential forms whose cohomology classes form a basis.
+\end{prob}
+
+\begin{prob}[ISM 17--6]
+Let $M$ be a connected smooth manifold of dimension $n\ge 3$. For any $x\in M$ and $0\le p\le n-2$, prove that the map $H^p_{\dR}\to H^p_{\dR}(M\smallsetminus \{x\})$ induced by the inclusion $M\smallsetminus\{x\}\hookrightarrow M$ is an isomorphism. Prove that the same is true for $p=n-1$ if $M$ is compact and orientable. [\emph{Hint}: Use the Mayer--Vietoris theorem. The cases $p=0$, $p=1$, and $p=n-1$ require special handling.]
+\end{prob}
+
+\begin{prob}[ISM 17--10]
+Let $p\in \CC[z]$ be a nonzero polynomial in the variable $z$ with complex coefficients. Read Problems 2--8 and 2--9 and convince yourself that there is a unique well-defined smooth map $\tilde p\colon \CC\PP^1\to\CC\PP^1$ such that $\tilde p([z,1]) = [p(z),1]$. (You do not need to write up solutions to these progblems.) Prove that the degree of $\tilde p$ (as a smooth map between manifolds) is equal to the degree of the polynomial $p$ in the usual sense.
+\end{prob}
+
+\begin{prob}[ISM 17--12]
+Suppose $M$ and $N$ are compact, connected, oriented smooth $n$-manifolds, and $F\colon M\to N$ is a smooth map. Prove that if $\int_M F^*\eta\ne 0$ for some $\eta\in \Omega^n(N)$, then $F$ is surjective. Give an example to show that $F$ can be surjective even if $\int_M F^*\eta = 0$ for every $\eta\in \Omega^n(N)$.
+\end{prob}
+
+
+\end{document}

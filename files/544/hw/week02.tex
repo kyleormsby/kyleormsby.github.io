@@ -1,0 +1,96 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\title{Math 544: Topology\\ Homework due Friday Week 2}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Topological Manifolds} are marked ITM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ITM 2--5]
+For each of the following properties, give an example of consisting of two subsets $X,Y\subseteq \RR^2$, both considered as subspaces of the Euclidean plane, together with a map $f\colon X\to Y$ that has the indicated property. (No justifications required.)
+\begin{enumerate}[(a)]
+  \item The map $f$ is open but neither closed nor continuous.
+  \item The map $f$ is closed but neither open nor continuous.
+  \item The map $f$ is continuous but neither open nor closed.
+  \item The map $f$ is continuous and open but not closed.
+  \item The map $f$ is continuous and closed but not open.
+  \item The map $f$ is open and closed but not continuous.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ITM 2--7]
+Prove Proposition 2.39: In a Hausdorff space, every neighborhood of a limit point contains infinitely many points of the set.
+\end{prob}
+
+\begin{prob}[ITM 2--10]
+Suppose $f,g\colon X\to Y$ are continuous maps and $Y$ is Hausdorff. Show that the \emph{equalizer} of $f$ and $g$,
+\[
+  \operatorname{eq}(f,g) := \{x\in X\mid f(x)=g(x)\},
+\]
+is closed in $X$. Give a counterexample if $Y$ is not Hausdorff.
+\end{prob}
+
+\begin{prob}[ITM 2--14]
+Prove Lemma 2.48: Suppose $X$ is a first countable space, $A$ is any subset of $X$, and $x$ is any point of $X$.
+\begin{enumerate}[(a)]
+  \item A point $x\in \ol A$ if and only if $x$ is a limit of a sequence of points in $A$.
+  \item A point $x\in \Int A$ if and only if every sequence in $X$ converging to $x$ is eventually in $A$.
+  \item The set $A$ is closed in $X$ if and only if $A$ contains every limit of every convergent sequence of points in $A$.
+  \item The set $A$ is open in $X$ if and only if every sequence in $X$ converging to a point in $A$ is eventually in $A$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ITM 2--19]
+Let $X$ be a topological space and let $\sU$ be an open cover of $X$.
+\begin{enumerate}[(a)]
+\item Suppose we are given a basis for each $U\in \sU$ (when considered as a topological space in its own right via the subspace topology). Show that the union of all these bases is a basis for $X$.
+\item Show that if $\sU$ is countable and each $U\in \sU$ is second countable, then $X$ is second countable.
+\end{enumerate}
+\end{prob}
+
+\end{document}

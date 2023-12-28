@@ -1,0 +1,154 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\usepackage{tikz,tikz-cd}
+
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\subspan}{\mathsf{Span}^{\mathrm{sub}}}
+\newcommand{\Diff}{\mathsf{Diff}}
+\newcommand{\op}{{\mathrm{op}}}
+
+\title{Math 545: Manifolds\\ Wednesday Week 10}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+Let $U\xrightarrow{f}Y\xleftarrow{g}V$ be smooth maps between smooth manifolds. We say $f$ and $g$ \emph{intersect transversely} when the product map $f\times g\colon U\times V\to Y\times Y$ intersects the diagonal $\Delta_Y\subseteq Y\times Y$ transversely.
+
+\begin{prob}
+Prove that if $f$ and $g$ intersect transversely, then the fiber product
+\[
+  W = U\times_Y V := \{(p,q)\in U\times V\mid f(p)=g(q)\}
+\]
+is a submanifold of $U\times V$, and for any $(p,q)\in W$,
+\[
+  T_{(p,q)}W = \{(u,v)\in T_pU\times T_qV\mid df_p(u) = dg_q(v)\}.
+\]
+(\emph{Hint}: $W = (f\times g)^{-1}\Delta_Y$.)
+\end{prob}
+
+If $U\xrightarrow fY$ is a smooth submersion, then $f$ is transverse to every smooth map $Y\xleftarrow gV$ (proof presented in class), whence the pullback $W = U\times_YV\subseteq U\times V$ is automatically a smooth submanifold.
+
+\begin{prob}
+Given smooth maps between smooth manifolds $U\xrightarrow{f}Y\xleftarrow{g}V$ where $f$ is a submersion, prove that the induced map $U\times_YV\to V$ is a submersion.
+\end{prob}
+
+Given the above property, we say that submersions are \emph{stable} under pullback.
+
+If $X,Y$ are smooth manifolds, then a diagram of smooth maps $X\leftarrow U\to Y$ is called a \emph{smooth span}. (\emph{Note}: By the universal property of products, this is the same data as a smooth map $U\to X\times Y$.) If the map $U\to Y$ is also a submersion, we will call the diagram $X\leftarrow U\to Y$ as \emph{submersive span}.
+
+\begin{prob}
+Given submersive spans $X\leftarrow U\to Y$ and $Y\leftarrow V\to Z$, form the span $X\leftarrow W\to Z$ as the composition indicated by
+% https://q.uiver.app/?q=WzAsNixbMCwyLCJYIl0sWzEsMSwiVSJdLFsyLDAsIlciXSxbMywxLCJWIl0sWzIsMiwiWSJdLFs0LDIsIloiXSxbMSwwXSxbMSw0XSxbMyw0XSxbMiwxXSxbMiwzXSxbMyw1XSxbMiw0LCIiLDAseyJzdHlsZSI6eyJuYW1lIjoiY29ybmVyIn19XV0=
+\[\begin{tikzcd}
+  && W \\
+  & U && V \\
+  X && Y && Z
+  \arrow[from=2-2, to=3-1]
+  \arrow[from=2-2, to=3-3]
+  \arrow[from=2-4, to=3-3]
+  \arrow[from=1-3, to=2-2]
+  \arrow[from=1-3, to=2-4]
+  \arrow[from=2-4, to=3-5]
+  \arrow["\lrcorner"{anchor=center, pos=0.125, rotate=-45}, draw=none, from=1-3, to=3-3]
+\end{tikzcd}\]
+where $W = U\times_YV$ is the pullback of $U\to Y\leftarrow V$. Prove that $X\leftarrow W\to Z$ is a well-defined submersive span.
+\end{prob}
+
+\begin{prob}
+Under the above hypotheses, show that $W$ is an embedded submanifold of $X\times \Delta_Y\times Z$ and compute its codimension.
+\end{prob}
+
+We now attempt to construct a category $\subspan$ whose objects are smooth manifolds and with $\subspan(X,Y)$ the collection of submersive spans $X\leftarrow U\to Y$. The composition of submersive spans $X\leftarrow U\to Y$ and $Y\leftarrow V\to Z$ is given by the pullback submersive span $X\leftarrow U\times_Y Z\to Z$ of the previous problem.
+
+\begin{prob}
+What submersive span $X\leftarrow U\to X$ acts as the identity morphism on $X$?
+\end{prob}
+
+\begin{prob}
+Given composable spans $X\leftarrow U\to Y\leftarrow V\to Z\leftarrow W\to A$, observe that while there is a canonical natural isomorphism $(U\times_Y V)\times_Z W\cong U\times_Y (V\times_Z W)$, it is not the case that these manifolds are literally equal.
+\end{prob}
+
+This means that $\subspan$ is \emph{not} a category! Instead, it's a bicategory, which is a certain flavor of weak 2-category. (I'll say some words about this during class.) Bicategories have 2-morphisms between morphisms, and this is no exception: a \emph{2-morphism} between submersive spans $X\leftarrow U\to Y$ and $X\leftarrow U'\to Y$ is a smooth map $U\to U'$ making the diagram
+% https://q.uiver.app/?q=WzAsNCxbMCwxLCJYIl0sWzEsMCwiVSJdLFsyLDEsIlkiXSxbMSwyLCJVJyJdLFsxLDBdLFsxLDJdLFszLDBdLFszLDJdLFsxLDNdXQ==
+\[\begin{tikzcd}
+  & U \\
+  X && Y \\
+  & {U'}
+  \arrow[from=1-2, to=2-1]
+  \arrow[from=1-2, to=2-3]
+  \arrow[from=3-2, to=2-1]
+  \arrow[from=3-2, to=2-3]
+  \arrow[from=1-2, to=3-2]
+\end{tikzcd}\]
+commute. One way to extract a category from $\subspan$ is to take $\subspan(X,Y)$ to be the \emph{isomorphism classes} of submersive spans. This is the perspective we'll take from here on.
+
+We now turn to the relation between $\Diff$, the category of smooth manifolds, and $\subspan$. Each smooth map $Y\xrightarrow f X$ has an associated graph
+\[
+  \Gamma_f = \{(f(y),y)\mid y\in Y\}\subseteq X\times Y.
+\]
+
+\begin{prob}
+Check that $X\leftarrow \Gamma_f\to Y$ is a submersive span for all smooth maps $Y\xrightarrow f X$.
+\end{prob}
+
+\begin{prob}
+Prove that for composable smooth maps $Z\xrightarrow g Y\xrightarrow f X$, the submersive span $X\leftarrow \Gamma_f\times_Y\Gamma_g\to Z$ is isomorphic to the submersive span $X\leftarrow \Gamma_{f\circ g}\to Z$. Also show that identity maps are taken to identity spans, and thus $\Gamma\colon \Diff^\op\to \subspan$ (taking a smooth manifold to itself and a smooth map to its graph span) is a functor.
+\end{prob}
+
+\begin{prob}
+In fact, $\Gamma$ is a \emph{faithful} functor which is \emph{not full} (\emph{i.e.}, it is injective but not surjective on morphism sets). Give an example of a submersive span which is \emph{not} isomorphic to the graph of a smooth function.
+\end{prob}
+
+\begin{prob}
+In some applications, it is desirable to restrict submersive spans to those induced by submanifolds $U\subseteq X\times Y$ and restricting the projection maps onto each factor of $X\times Y$. In this case the composition (pullback) $W$ of $X\leftarrow U\to Y$ and $Y\leftarrow V\to Z$ is naturally a submanifold of $X\times \Delta_Y\times Z$. Find conditions guaranteeing that the image of $W$ under the projection $X\times \Delta_Y\times Z\to X\times Z$ is a submanifold. Use this to define an alternative category of submersive spans.
+\end{prob}
+
+\end{document}

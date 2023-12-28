@@ -1,0 +1,82 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+
+
+\title{Math 545: Manifolds\\ Homework due Friday Week 8}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ISM 4--8]
+This problem shows that the converse of ISM Theorem 4.29 is false. Let $\pi\colon \RR^2\to \RR$ be defined by $\pi(x,y)=xy$. Show that $\pi$ is surjective and smooth, and for each smooth manifold $P$, a map $F\colon \RR\to P$ is smooth if and only if $F\circ \pi$ is smooth; but $\pi$ is not a smooth submersion.
+\end{prob}
+
+\begin{prob}[ISM 4--12]
+Using the covering map $\varepsilon^2\colon \RR^2\to \TT^2$, show that the immersion $X\colon \RR^2\to \RR^3$ defined in ISM Example 4.2(d) descends to a smooth embedding of $\TT^2$ into $\RR^3$. Specifically, show that $X$ passes to the quotient to define a smooth map $\tilde X\colon \TT^2\to \RR^3$, and then show that $\tilde X$ is a smooth embedding whose image is the given surface of revolution.
+\end{prob}
+
+\begin{prob}[ISM 4--13]
+Define a map $F\colon S^2\to \RR^4$ by $F(x,y,z) = (x^2-y^2,xy,xz,yz)$. Using the standard smooth covering map $q\colon S^2\to \RR\PP^2$, show that $F$ descends to a smooth embedding of $\RR\PP^2$ into $\RR^4$.
+\end{prob}
+
+
+
+
+
+
+
+
+
+\end{document}
