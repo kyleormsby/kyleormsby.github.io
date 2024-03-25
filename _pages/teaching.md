@@ -10,8 +10,8 @@ Teaching is an intergral part of my work and identity as a scholar. I am particu
 
 # teaching at uw
 
-* Math 583: Topological Data Analysis, Spring 2024
-* [Math 224: Multivariable Calculus](/224), Winter 2024
+* [Math 583B: Topological Data Analysis](/583/), Spring 2024
+* [Math 224: Multivariable Calculus](/224/), Winter 2024
 * [Math 544: Topology & Geometry of Manifolds](/544/), Fall 2022
 * [Math 545: Topology & Geometry of Manifolds](/545/), Winter 2023
 * [Math 546: Topology & Geometry of Manifolds](/546/), Spring 2023
