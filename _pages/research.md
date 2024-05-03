@@ -8,7 +8,7 @@ redirect_from:
   - /publications/
 ---
 
-My research is at the interface of homotopy theory (squishy shapes) and algebraic geometry (polynomial shapes). I have parallel interests in operads (families of compatible operations), mathematics visualization (pretty pictures), and geometric and topological data analysis in neuroimaging (brain shapes). Below, you will find my [research papers](#research-papers), my [students' papers](#student-papers), my [expository writing](#expository-writing), [seminars and conferences](#seminars-and-conferences-organized) I have co-organized, and [recent talks](#recent-talks). Here is my [CV](/files/cv_ormsby.pdf), updated November 2023.
+My research is at the interface of homotopy theory (squishy shapes) and algebraic geometry (polynomial shapes). I have parallel interests in operads (families of compatible operations), mathematics visualization (pretty pictures), and geometric and topological data analysis in neuroimaging (brain shapes). Below, you will find my [research papers](#research-papers), my [students' papers](#student-papers), my [expository writing](#published-expository-writing), [seminars and conferences](#seminars-and-conferences-organized) I have co-organized, and [recent talks](#recent-talks). Here is my [CV](/files/cv_ormsby.pdf), updated November 2023.
 
 # research papers
 
@@ -248,8 +248,16 @@ I have the pleasure of mentoring student research projects at Reed, both through
     For any field $F$ (of characteristic not equal to 2), we determine the Zariski spectrum of homogeneous prime ideals in $K^{MW}_*(F)$, the Milnor-Witt $K$-theory ring of $F$. As a corollary, we recover Lorenz and Leicht's classical result on prime ideals in the Witt ring of $F$. Our computation can be seen as a first step in Balmer's program for studying the tensor triangular geometry of the stable motivic homotopy category.
   </details>
 
+# published expository writing
 
-# expository writing
+* **Homotopical combinatorics**. [Notices of the AMS](https://www.ams.org/journals/notices/202402/noti2882/noti2882.html).
+  <details>
+    <summary>Abstract.</summary>
+
+    A survey of recent progress in homotopical combinatorics focused on transfer systems and model structures on posets; also an advertisement for the [2024 Homotopical Combinatorics MRC](https://www.ams.org/programs/research-communities/2024MRC-HomotopicalComb).
+  </details>
+
+# other expository writing
 
 * **Discrete structures**.  
 [PDF](/files/113full_text.pdf).
@@ -303,6 +311,10 @@ I have the pleasure of mentoring student research projects at Reed, both through
 
 # recent talks
 
+* *Counting model structures*, CU Boulder Topology Day, 23 April 2024.
+* *Transfer systems and the combinatorics of model structures*, UBC Topology Seminar, 20 March 2024.
+* *Factorization systems on posets*, Reed College Math Colloquium, 29 February 2024.
+* *A motivic analogue of the $K(1)$-local sphere spectrum*, UW Topology Seminar, 26 October 2023.
 * *$N_\infty$ operads and the combinatorics of model structures*, Oberwolfach Research Institute for Mathematics, 8 August 2023. [Report](/files/Ninfty.pdf).
 * *Math and shapes*, B.F. Day Elementary School, 1 June 2023. [Slides](/files/mathshapes.pdf).
 * *Counting in Catalan: handshakes, trees, & paths*, UW Math Hour, 21 May 2023. [Slides](/files/Math_Hour_UW.pdf), [video](https://www.youtube.com/watch?v=dk01g2fBCmw).
