@@ -54,7 +54,7 @@ My research is at the interface of homotopy theory (squishy shapes) and algebrai
     We investigate the rich combinatorial structure of premodel structures on finite lattices whose weak equivalences are closed under composition. We prove that there is a natural refinement of the inclusion order of weak factorization systems so that the intervals detect these composition closed premodel structures. In the case that the lattice in question is a finite total order, this natural order retrieves the Kreweras lattice of noncrossing partitions as a refinement of the Tamari lattice, and model structures can be identified with stacked triangulations of a particular shape. (With Scott Balchin and Ethan MacBrough.)
   </details>
 
-* **Hochschild homology of mod-$p$ motivic cohomology over algebraically closed fields**. Submitted. [arXiv:2204.00441](https://arxiv.org/abs/2204.00441).
+* **Hochschild homology of mod-$p$ motivic cohomology over algebraically closed fields**. Accepted in Communications of the AMS. [arXiv:2204.00441](https://arxiv.org/abs/2204.00441).
   <details>
     <summary>Abstract and coauthors.</summary>
 
