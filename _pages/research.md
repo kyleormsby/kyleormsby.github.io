@@ -19,7 +19,7 @@ My research is at the interface of homotopy theory (squishy shapes) and algebrai
     I summarize the main result of <a href="http://arxiv.org/abs/2310.13835"><i>Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick game</i></a> enumerating transfer systems for rank 2 elementary Abelian $p$-groups, and use this to enumerate compatible pairs of transfer systems (in the sense of bi-incomplete Tambara functors) for the same group of equivariance. Based on joint work with Linus Bao, Christy Hazel, Tia Karkos, Alice Kessler, Austin Nicolas, Jeremie Park, Cait Schleff, and Scotty Tilton via the <a href="/eCHT_REU/">eCHT REU</a>.
   </details>
 
-* **Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick games**. Submitted. [arXiv:2310.13835](http://arxiv.org/abs/2310.13835).
+* **Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick games**. Accepted in Tunisian Journal of Mathematics. [arXiv:2310.13835](http://arxiv.org/abs/2310.13835).
   <details>
     <summary>Abstract and coauthors.</summary>
 
