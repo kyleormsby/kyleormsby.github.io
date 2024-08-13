@@ -8,7 +8,7 @@ redirect_from:
   - /publications/
 ---
 
-My research is at the interface of homotopy theory (squishy shapes) and algebraic geometry (polynomial shapes). I have parallel interests in operads (families of compatible operations), mathematics visualization (pretty pictures), and geometric and topological data analysis in neuroimaging (brain shapes). Below, you will find my [research papers](#research-papers), my [students' papers](#student-papers), my [expository writing](#published-expository-writing), [seminars and conferences](#seminars-and-conferences-organized) I have co-organized, and [recent talks](#recent-talks). Here is my [CV](/files/cv_ormsby.pdf), updated November 2023.
+My research is at the interface of homotopy theory (squishy shapes) and algebraic geometry (polynomial shapes). I have parallel interests in operads (families of compatible operations), mathematics visualization (pretty pictures), and geometric and topological data analysis in neuroimaging (brain shapes). Below, you will find my [research papers](#research-papers), my [students' papers](#student-papers), my [expository writing](#published-expository-writing), [seminars and conferences](#seminars-and-conferences-organized) I have co-organized, and [recent talks](#recent-talks). Here is my [CV](/files/cv_ormsby.pdf), updated August 2024.
 
 # research papers
 
@@ -33,7 +33,7 @@ My research is at the interface of homotopy theory (squishy shapes) and algebrai
     We identify the motivic $KGL/2$-local sphere as the fiber of $\psi^3-1$ on $(2,\eta)$-completed Hermitian $K$-theory, over any base scheme containing $1/2$. This is a motivic analogue of the classical resolution of the $K(1)$-local sphere, and extends to a description of the $KGL/2$-localization of any cellular motivic spectrum. Our proof relies on a novel conservativity argument that should be of broad utility in stable motivic homotopy theory. (With William Balderrama and J.D. Quigley.)
   </details>
 
-* **The combinatorics of $N_\infty$ operads for $C_{qp^n}$ and $D_{p^n}$**. Submitted. [arXiv:2209.06992](https://arxiv.org/abs/2209.06992).
+* **The combinatorics of $N_\infty$ operads for $C_{qp^n}$ and $D_{p^n}$**. Accepted in Glasgow Mathematics Journal. [arXiv:2209.06992](https://arxiv.org/abs/2209.06992).
   <details>
     <summary>Abstract and coauthors.</summary>
 
@@ -209,7 +209,7 @@ My research is at the interface of homotopy theory (squishy shapes) and algebrai
 
 I have the pleasure of mentoring student research projects at Reed, both through senior theses and summer research. Some of these result in independent publications, listed here.
 
-* **Equivariant linear isometries operads over Abelian groups** by Ethan MacBrough. Submitted. [arXiv:2311.08797](https://arxiv.org/abs/2311.08797).
+* **Equivariant linear isometries operads over Abelian groups** by Ethan MacBrough. Accepted in Transctions of the American Mathematical Society. [arXiv:2311.08797](https://arxiv.org/abs/2311.08797).
   <details>
     <summary>Abstract.</summary>
     
