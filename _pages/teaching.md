@@ -8,16 +8,12 @@ redirect_from:
 
 Teaching is an intergral part of my work and identity as a scholar. I am particularly interested in inclusive practices, accessibility, flipped classrooms, active lectures, the role of visualization in learning, and the rich interplay between research practice and learning/teaching in mathematics.
 
-# teaching at uw
 
-* [Math 583B: Topological Data Analysis](/583/), Spring 2024
-* [Math 224: Multivariable Calculus](/224/), Winter 2024
-* [Math 544: Topology & Geometry of Manifolds](/544/), Fall 2022
-* [Math 545: Topology & Geometry of Manifolds](/545/), Winter 2023
-* [Math 546: Topology & Geometry of Manifolds](/546/), Spring 2023
 
 # teaching at reed
 
+* [Math 111: Calculus](/111/), Fall 2024
+* [Math 201: Linear Algebra](/201/), Fall 2024
 * [Math 342: Topology](http://people.reed.edu/~ormsbyk/342), Spring 2021
 * [Math 201: Linear Algebra](http://people.reed.edu/~ormsbyk/201), Spring 2021
 * [Math 113: Discrete Structures](http://people.reed.edu/~ormsbyk/113), Fall 2020
@@ -39,6 +35,14 @@ Teaching is an intergral part of my work and identity as a scholar. I am particu
 * [Math 112: Introduction to Analysis](http://people.reed.edu/~ormsbyk/112/), Spring 2015
 * [Math 332: Abstract Algebra](http://people.reed.edu/~ormsbyk/332/), Spring 2015
 * [Math 111: Calculus](http://people.reed.edu/~ormsbyk/111/), Fall 2014
+
+# teaching at uw
+
+* [Math 583B: Topological Data Analysis](/583/), Spring 2024
+* [Math 224: Multivariable Calculus](/224/), Winter 2024
+* [Math 544: Topology & Geometry of Manifolds](/544/), Fall 2022
+* [Math 545: Topology & Geometry of Manifolds](/545/), Winter 2023
+* [Math 546: Topology & Geometry of Manifolds](/546/), Spring 2023
 
 # teaching elsewhere
 
