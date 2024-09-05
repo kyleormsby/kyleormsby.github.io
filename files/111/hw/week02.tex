@@ -1,0 +1,144 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd,hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 111: Calculus\\ Homework due Friday Week 2}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Make sure to review the homework instructions in the syllabus before writing your solutions. In particular, show your work and write in complete sentences (but also aim for concise explanations).
+
+\begin{prob}
+Fill out the Google Form at \href{https://forms.gle/9RqMd7NB3tnYqdHSA}{forms.gle/9RqMd7NB3tnYqdHSA}.
+\end{prob}
+
+\begin{prob}
+Consider the function
+\[
+  f(x) = \frac{x^2-4}{|x-2|}.
+\]
+\begin{enumerate}[(a)]
+\item Use a calculator or computer to fill in the following table:
+\renewcommand{\arraystretch}{1.3}
+\begin{center}
+\begin{tabular}{c|c}
+$x$ & $f(x)$\\ \hline
+1.9 &\\ \hline
+1.99 &\\ \hline
+1.999 &\\ \hline
+2.001 &\\ \hline
+2.01 &\\ \hline
+2.1
+\end{tabular}
+\end{center}
+\item What does the table tell you about the value of
+\[
+  \lim_{x\to 2}f(x)\text{?}
+\]
+\item What about
+\[
+  \lim_{x\to 2^+}f(x)\qquad\text{and}\qquad \lim_{x\to 2^-}f(x)\text?
+\]
+\item (bonus) Can you use some algebra to explain why your answer makes sense?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Consider the function
+\[
+  g(x) = \frac{1-\frac 2x}{x^2-4}.
+\]
+\begin{enumerate}[(a)]
+\item Use a calculator or computer to fill in the following table:
+\renewcommand{\arraystretch}{1.3}
+\begin{center}
+\begin{tabular}{c|c}
+$x$ & $g(x)$\\ \hline
+1.9 &\\ \hline
+1.99 &\\ \hline
+1.999 &\\ \hline
+2.001 &\\ \hline
+2.01 &\\ \hline
+2.1
+\end{tabular}
+\end{center}
+\item What does the table tell you about the value of
+\[
+  \lim_{x\to 2}g(x)\text{?}
+\]
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Consider the function
+\[
+  h(x) = \frac{\sin x}{x}.
+\]
+\begin{enumerate}[(a)]
+\item Use \href{https://www.desmos.com/calculator}{desmos} to sketch the graph of $y=h(x)$.
+\item What does your graph indicate about the values of
+\[
+  \lim_{x\to \infty}h(x)\qquad\text{and}\qquad\lim_{x\to -\infty}h(x)\text?
+\]
+\item What does your graph indicate about the value of
+\[
+  \lim_{x\to 0}h(x)\text?
+\]
+\item Use your answer to (c) to approximate the value of $\sin(0.001)$ without using a calculator.
+\end{enumerate}
+\end{prob}
+
+
+\end{document}
