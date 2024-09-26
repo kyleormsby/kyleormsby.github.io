@@ -1,0 +1,119 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd,hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 111: Calculus\\ Homework due Wednesday Week 5}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Make sure to review the homework instructions in the syllabus before writing your solutions. In particular, show your work, write in complete sentences (but also aim for concise explanations), and explain your reasoning.
+
+\begin{prob}
+Suppose the total profit of a company is $y=P(x)$ thousands of dollars when $x$ units of an item are sold.
+\begin{enumerate}[(a)]
+\item What does $\frac{P(b)-P(a)}{b-a}$ for $0<a<b$ measure, and what are the units?
+\item What does $P'(x)$ measure, and what are the units?
+\item Suppose that $P'(30)=5$. What is the approximate change in profit if the number of items increases from $30$ to $32$?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Sketch the graph of a function $y=f(x)$ with all of the following properaties:
+\begin{enumerate}[(i)]
+\item $f'(x)>0$ for $-2\le x<1$,
+\item $f'(2)=0$,
+\item $f(2)=2$ and $f(0)=1$,
+\item $\lim_{x\to -\infty}f(x)=0$ and $\lim_{x\to +\infty}f(x) = +\infty$,
+\item $f'(1)$ does not exist.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Use differentiation rules to find the derivatives of the following functions:
+\begin{enumerate}[(a)]
+\item $a(x) = 4x^2-7x$,
+\item $b(x) = (x+2)(x^3-5x+1)$,
+\item $c(x) = \frac{x^2+4}{x^2-4}$,
+\item $d(x) = \frac{a(x)c(x)}{b(x)}$,
+\item $e(x) = (3x-2)^{100}$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Determine all points on the graph of $y=x^3+x^2-x-1$ for which
+\begin{enumerate}[(a)]
+\item the tangent line is horizontal;
+\item the tangent line has slope $-1$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Find the equation of the tangent line to $y=(3x+\frac{1}{x})^2$ at the point $(1,16)$. Use desmos to graph the function and the tangent line together.
+\end{prob}
+
+\begin{prob}
+Suppose that the position of an object traveling along a horizontal line is given by
+\[
+ s(t) = \frac{t}{1+t^2},
+\]
+measured in meters, at time $t$ seconds.
+\begin{enumerate}[(a)]
+\item Find the velocity and acceleration functions for the object.
+\item Determine the time intervals when the object is slowing down or speeding up.
+\end{enumerate}
+\end{prob}
+
+
+\end{document}
