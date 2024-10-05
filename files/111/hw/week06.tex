@@ -1,0 +1,170 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd,hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 111: Calculus\\ Homework due Wednesday Week 4}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Make sure to review the homework instructions in the syllabus before writing your solutions. In particular, show your work, write in complete sentences (but also aim for concise explanations), and explain your reasoning.
+
+\begin{prob}
+Find $\frac{dy}{dx}$ for the following functions:
+\begin{enumerate}[(a)]
+\item $y = x-x^3\sin x$,
+\item $y = \frac{e^{-x}}{x}$,
+\item $y = \sin x\tan x$,
+\item $y = 3^{\cos 3x}$,
+\item $y = \displaystyle{\frac{\tan x}{1-\sec x}}$,
+\item $y = x^\pi\cdot \pi^x$,
+\item $y = \cos x(1+\csc x)$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Find all values $x$ for which the graph of $f(x) = x-2\cos x$ has tangent line of slope $2$.
+\end{prob}
+
+\begin{prob}
+Find the local and absolute extrema for the following functions over the indicated domains:
+\begin{enumerate}[(a)]
+\item $a(x) = (x-x^2)^2$ over $[-1,1]$,
+\item $b(\theta) = 4\sin \theta - 3\cos \theta$ over $[0,2\pi]$,
+\item $c(x) = x^3(1-x)^6$ over $(-\infty,\infty)$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Consider a lifeguard $L$ at a circular pool with diameter $40$m. They must reach someone who is drowning at the exact opposite side of the pool (position $D$ in the diagram). The lifeguard swims with a speed $v$ and runs around the pool with a speed $3v$. If the lifeguard first swims at angle $\theta$ across the pool (as indicated in the diagram) and then runs to $D$ around the edge of the pool, at what angle $\theta$ should they swim in order to minimize the time of their journey.
+
+\begin{center}
+\begin{tikzpicture}
+
+    % Draw the circle
+    \draw[thick] (0,0) circle (2cm);
+    
+    % Label the diameter endpoints A and D
+    \filldraw[black] (-2,0) circle (1pt) node[left] {$L$};
+    \filldraw[black] (2,0) circle (1pt) node[right] {$D$};
+    
+    % Draw the diameter
+    \draw[thick] (-2,0) -- (2,0);
+    
+    % Label the length of the diameter
+    \node[below] at (0,-0.2) {$40$ m};
+    
+    % Draw a line from A at 30 degrees
+    \draw[thick] (-2,0) -- ({-2 + 2*sqrt(3)*cos(30)}, {2*sqrt(3)*sin(30)});
+    
+    % Mark and label the angle theta
+    \draw[thick] (-1.5,0) arc[start angle=0, end angle=30, radius=0.5cm];
+    \node at (-1.3,0.2) {$\theta$};
+    
+    % Draw the point where the line intersects the circle
+    \filldraw[black] ({-2 + 2*sqrt(3)*cos(30)}, {2*sqrt(3)*sin(30)}) circle (1pt);
+
+\end{tikzpicture}
+\end{center}
+\end{prob}
+
+\begin{prob}
+Find the largest volume of a cylinder that fits into a cone that has base radius $R$ and height $h$ as indicated in the diagram on the next page.
+
+\begin{center}
+\begin{tikzpicture}
+
+    % Define variables for scaling
+    \def\R{3}    % Cone base radius
+    \def\h{6}    % Cone height
+    \def\H{4}    % Cylinder height (2h/3)
+    \def\Rc{1}   % Cylinder radius (R/3)
+
+    % Draw the cone's sides
+    \draw[thick] (-\R, 0) -- (0, \h); % Left side
+    \draw[thick] (\R, 0) -- (0, \h);  % Right side
+
+    % Draw the base of the cone (ellipse)
+    \draw[dashed] (\R, 0) arc (0:180:\R cm and 0.6cm);     % Front half (now dashed)
+    \draw[thick] (-\R, 0) arc (180:360:\R cm and 0.6cm);   % Back half (now solid)
+
+    % Label the cone's radius R
+    \draw[<->] (-\R, -0.8) -- (0, -0.8) node[midway, below] {$R$};
+
+    % Label the cone's height h
+    \draw[<->] (\R + 0.5, 0) -- (\R + 0.5, \h) node[midway, right] {$h$};
+
+    % Draw the inscribed cylinder's sides
+    \draw[thick] (-\Rc, 0) -- (-\Rc, \H); % Left side
+    \draw[thick] (\Rc, 0) -- (\Rc, \H);   % Right side
+
+    % Draw the top of the cylinder (ellipse)
+    \draw[dashed] (\Rc, \H) arc (0:180:\Rc cm and 0.4cm);     % Front half (now dashed)
+    \draw[thick] (-\Rc, \H) arc (180:360:\Rc cm and 0.4cm);   % Back half (now solid)
+
+    % Draw the base of the cylinder (ellipse)
+    \draw[dashed] (\Rc, 0) arc (0:180:\Rc cm and 0.4cm);      % Front half (now dashed)
+    \draw[thick] (-\Rc, 0) arc (180:360:\Rc cm and 0.4cm);    % Back half (now solid)
+
+    % Removed the label for the cylinder's height (2h/3)
+    % Removed the label for the cylinder's radius (R/3)
+
+\end{tikzpicture}
+\end{center}
+\end{prob}
+
+
+
+
+\end{document}
