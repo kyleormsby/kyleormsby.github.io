@@ -1,0 +1,153 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+\newcommand{\spn}{\operatorname{span}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\ev}{\operatorname{ev}}
+\newcommand{\tr}{\operatorname{tr}}
+
+
+\title{Math 201: Linear Algebra\\ Homework due Friday Week 7}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Suppose that $A$ is an invertible square matrix and $P$ and $Q$ are square matrices such that
+\[
+  PAQ = I.
+\]
+Prove that
+\[
+  A^{-1} = QP.
+\]
+\end{prob}
+
+\begin{prob}
+Square matrices are called \emph{similar} when they represent the same linear transformation, each with respect to the same starting and ending bases. In other words, $A\in F^{n\times n}$ is similar to $B\in F^{n\times n}$ if and only if there are ordered bases $\alpha$ and $\beta$ of $F^n$ and a linear transformation $f\colon F^n\to F^n$ such that
+\[
+  A = A_\alpha^\alpha(f)\qquad\text{and}\qquad B = A_{\beta}^\beta(f).
+\]
+\begin{enumerate}[(a)]
+\item Prove that $A, B\in F^{n\times n}$ are similar if and only if there is an invertible matrix $P\in F^{n\times n}$ such that $A = P^{-1}BP$.
+\item Prove that similarity is an equivalence relation on $F^{n\times n}$.
+\item Show that if $A$ is similar to $B$, then $A^k$ is similar to $B^k$ for all natural numbers $k$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Suppose that, with respect to $\alpha = \mathcal E_2$ and $\beta = ((1,1),(1,-2))$, the linear transformation $t\colon \RR^2\to \RR^2$ is represented by the matrix
+\[
+  A_\alpha^\beta(t) =
+  \begin{pmatrix}
+    1&2 \\ 3&4
+  \end{pmatrix}.
+\]
+Use change-of-basis matrices to represent $t$ with respect to the following pairs of bases:
+\begin{enumerate}[(a)]
+\item $\delta = ((0,1),(1,1))$, $\gamma = ((-1,0),(2,1))$,
+\item $\varepsilon = ((1,2),(1,0))$, $\zeta = ((1,2),(2,1))$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Suppose $f\colon V\to W$ is a linear transformation.  Define $f^*\colon W^*\to V^*$ by the rule
+\[
+  \phi\longmapsto f^*(\phi) = \phi\circ f.
+\]
+(Recall that $\phi$ is a linear map $W\to F$, so $\phi\circ f$ makes sense as a linear map $V\to F$, \emph{i.e.}, an element of $V^*$.)
+\begin{enumerate}[(a)]
+\item Prove that $f^*$ is a linear transformation.
+\item Suppose $g\colon U\to V$ is a linear transformation.  Prove that $(f\circ g)^* = g^*\circ f^*$.  Also verify that $\id_V^* = \id_{V^*}$.\footnote{This makes $(~)^*$ a \emph{constravariant functor}, but you needn't know what that means.}
+\item Suppose that $V$ and $W$ have ordered bases $\langle v_1,\ldots,v_n\rangle$ and $\langle w_1,\ldots,w_m\rangle$, respectively, and suppose that $f$ has matrix $A\in\Mat_{m\times n}(F)$ with respect to these ordered bases.  Prove that the matrix of $f^*$ relative to $\langle w_1^*,\ldots,w_m^*\rangle$ and $\langle v_1^*,\ldots,v_n^*\rangle$ is the \emph{transpose} of $A$, \emph{i.e.}, $A^\top$ with
+\[
+  (A^\top)_{ij} = A_{ji}.
+\]
+\item Use your work from (b) and (c) to write a \textbf{short}, non-computational proof that $(AB)^\top = B^\top A^\top$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+The {\em trace} of an~$n\times n$ matrix~$A$ is the sum of its diagonal
+    elements:
+    \[
+      \tr(A)=\sum_{i=1}^nA_{ii}.
+    \]
+    \begin{enumerate}[(a)]
+      \item If~$A$ and~$B$ are~$n\times n$ matrices, prove
+  that~$\tr(AB)=\tr(BA)$. (You could use the definition of matrix multiplication and
+    summation notation in your proof, or there is a slick proof that uses duals and your work from the previous problem --- how does $\tr(A)$ compare to $\tr(A^\top)$?)
+      \item If~$P$ is an invertible~$n\times n$ matrix, prove
+  that~$\tr(PAP^{-1})=\tr(A)$.
+      \item Consider the following ordered basis
+  for~$\mathcal{M}_{2\times 2}$:
+  \[
+\alpha=
+\left(
+\left(\begin{array}{cc}
+    1&0\\0&0
+\end{array} \right),\quad
+\left(\begin{array}{cc}
+    0&1\\0&0
+\end{array} \right),\quad
+\left(\begin{array}{cc}
+    0&0\\1&0
+\end{array} \right),\quad
+\left(\begin{array}{cc}
+    0&0\\0&1
+\end{array} \right)
+\right).
+  \]
+    \end{enumerate}
+A rote check reveals that $\tr$ is a linear transformation. Assuming this fact, compute the matrix representing the trace
+function~$\tr\colon F^{2\times 2}\to F$ with respect to~$\alpha$ for the
+domain and with respect to the basis~$\left\{ 1 \right\}$ for the codomain.
+\end{prob}
+
+\end{document}
