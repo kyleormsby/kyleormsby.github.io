@@ -1,0 +1,78 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem*{thm*}{Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+\newcommand{\spn}{\operatorname{span}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\ev}{\operatorname{ev}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\rank}{\operatorname{rank}}
+
+
+\title{Math 201: Linear Algebra\\ Homework due Friday Week 13}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Let $P = \{(-1,0),(1,4),(2,4),(3,6)\}\subseteq \RR^2$. Find the least squares line of best fit through $P$ via the following methods:
+\begin{enumerate}[(a)]
+\item Using the adjoint matrix method.
+\item Using Gram--Schmidt to compute an orthogonal projection.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+For the same set of points $P\subseteq \RR^2$ as in Problem 1, find the principal components. Compare and contrast the direction of the first principal component to the direction of the least squares line of best fit.
+\end{prob}
+
+\end{document}
