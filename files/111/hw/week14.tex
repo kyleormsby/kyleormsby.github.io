@@ -1,0 +1,96 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd,hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 111: Calculus\\ Homework due Wednesday Week 14}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Let $y = y(t)$ represent the size of a population varying over time $t$. Suppose that $y$ satisfies
+\[
+  y' = rt(S-y)
+\]
+for positive constants $r,S$. This model is similar to Newton's law of cooling, but now $rt$ instead of just $r$ is multiplying $(S-y)$.
+\begin{enumerate}[(a)]
+\item Find the most general solution to the above differential equation.
+\item What is the limit at $t\to \infty$ of $y(t)$?
+\item Find the particular solution when the initial population is $2S$.
+\item Find the particular solution when the initial population is $S/2$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Suppose that a swimming pool contains 13,000 gallons of water and 350 pounds of salt. As it rains over the winter, water is drained from the pool at a rate of 225 gallons per week to keep the water level constant.
+
+Let $s = s(t)$ denote the number of pounds of salt in the pool at time $t$ (with $t$ measured in weeks).
+
+\begin{enumerate}[(a)]
+\item In terms of $s$, what is the concentration of salt in the pool at time $t$ (in pounds/gallon)?
+\item We have
+\[
+  s' = -(\text{number of pounds of salt lost per week}).
+\]
+Write a differential equation for $s'$ in terms of $s$.
+\item Solve the differential equation to find $s(t)$ with initial condition $s(0) = 350$ pounds.
+\item How many pounds of salt are lost after 28 weeks? Use a calculator to give an approximate solution.
+\end{enumerate}
+
+If you owned this pool, this is the amount of salt you would have to add to the pool at the beginning of the swimming season!
+\end{prob}
+
+
+\end{document}
