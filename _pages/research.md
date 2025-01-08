@@ -311,6 +311,7 @@ I have the pleasure of mentoring student research projects at Reed, both through
 
 # recent talks
 
+* *Poly-Bernoulli numbers & matchstick games on cylinders*, JMM, 9 January 2025. [Slides](/files/pB_matches.pdf).
 * *Counting model structures*, CU Boulder Topology Day, 23 April 2024.
 * *Transfer systems and the combinatorics of model structures*, UBC Topology Seminar, 20 March 2024.
 * *Factorization systems on posets*, Reed College Math Colloquium, 29 February 2024.
