@@ -12,7 +12,7 @@ Teaching is an intergral part of my work and identity as a scholar. I am particu
 
 # teaching at reed
 
-* Math 113: Discrete Structures, Spring 2025
+* [Math 113: Discrete Structures](/113/), Spring 2025
 * [Math 411: Topics in Advanced Analysis](/411/), Spring 2025
 * [Math 111: Calculus](/111/), Fall 2024
 * [Math 201: Linear Algebra](/201/), Fall 2024
