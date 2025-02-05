@@ -1,0 +1,144 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 411: Topics in Advanced Analysis\\ Homework due Wednesday Week 3}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Let $D_n$ denote the $n$-th Dirichlet kernel, and let $F_n$ denote the $n$-th Fej\'er kernel. Prove that for all $n$,
+\[
+  \int_{-1/2}^{1/2} D_n(x)\,dx = 1
+\]
+and use this to deduce that
+\[
+  \int_{-1/2}^{1/2} F_n(x)\,dx = 1.
+\]
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Again let $F_n$ denote the $n$-th Fej\'er kernel. Fix some $\delta$ such that $0<\delta<1/2$.
+\begin{enumerate}[(a)]
+\item Prove that for all $n$ and for $\delta\le |x|\le 1/2$,
+\[
+  F_n(x)\le \frac{1}{n}\frac{1}{\sin^2(\pi\delta)}.
+\]
+\item Prove that
+\[
+  \lim_{n\to \infty} \int_{\delta\le |x|\le 1/2}F_n(x)\,dx=0.
+\]
+\item Write ``This concludes the proof that the Fej\'er kernel is a Dirac kernel.''
+\end{enumerate}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Prove that for $f,g\in C^0(S^1)$,
+\[
+  \widehat{f*g}(n) = \hat f(n)\hat g(n).
+\]
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Let $f\colon S^1\to \RR$ be the function defined by
+\[
+  f(x) = \sum_{n\ge 1}\frac{\sin 2\pi nx}{2^n} = \frac{\sin 2\pi x}{2}+\frac{\sin 4\pi x}{4}+\frac{\sin 6\pi x}{8}+\frac{\sin 8\pi x}{16}+\cdots.
+\]
+\begin{enumerate}[(a)]
+\item Verify that $f$ is a well-defined function.
+\item Evaluate
+\[
+  \int_0^1 f(x)\sin(6\pi x)\,dx.
+\]
+\item Evaluate
+\[
+  \int_0^1 f(x)^2\,dx.
+\]
+\end{enumerate}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+For $f\in C^1(S^1)$, prove that
+\[
+  \widehat{f'}(n) = (2\pi i n)\hat f(n).
+\]
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+For $k\in \NN$ let $x^k\in L^2(S^1)$ denote the function taking values the usual power $x^k$ for $-1/2<x\le 1/2$, made $1$-periodic.
+\begin{enumerate}[(a)]
+\item Show that $\widehat{x^k}(0) = \frac{1}{k+1}$.
+\item Show that for $n\ne 0$, $\widehat{x^0}(n) = 0$.
+\item Use integration by parts to determine an inductive formula for $\widehat{x^{k+1}}(n)$.
+\item Give a non-inductive formula for $\widehat{x^k}(n)$.
+\end{enumerate}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\end{document}
