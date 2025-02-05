@@ -33,7 +33,7 @@ My research is at the interface of homotopy theory (squishy shapes) and algebrai
     We identify the motivic $KGL/2$-local sphere as the fiber of $\psi^3-1$ on $(2,\eta)$-completed Hermitian $K$-theory, over any base scheme containing $1/2$. This is a motivic analogue of the classical resolution of the $K(1)$-local sphere, and extends to a description of the $KGL/2$-localization of any cellular motivic spectrum. Our proof relies on a novel conservativity argument that should be of broad utility in stable motivic homotopy theory. (With William Balderrama and J.D. Quigley.)
   </details>
 
-* **The combinatorics of $N_\infty$ operads for $C_{qp^n}$ and $D_{p^n}$**. Accepted in Glasgow Mathematics Journal. [arXiv:2209.06992](https://arxiv.org/abs/2209.06992).
+* **The combinatorics of $N_\infty$ operads for $C_{qp^n}$ and $D_{p^n}$**. [Glasgow Mathematics Journal](https://doi.org/10.1017/S0017089524000211). [arXiv:2209.06992](https://arxiv.org/abs/2209.06992).
   <details>
     <summary>Abstract and coauthors.</summary>
 
