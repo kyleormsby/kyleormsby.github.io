@@ -1,0 +1,133 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 411: Topics in Advanced Analysis\\ Homework due Wednesday Week 5}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Suppose $u\colon S^1\times \RR_{>0}\to \RR$ is a solution to the heat equation on the circle with $u(x,t)\xrightarrow{t\to 0^+}f(x)\in L^2(S^1)$.
+\begin{enumerate}[(a)]
+\item Prove that for each $t>0$ there is a \emph{bounded} linear operator
+\[
+  T(t)\colon L^2(S^1)\longrightarrow L^2(S^1)
+\]
+satisfying
+\[
+  u(-,t) = T(t)f.
+\]
+\item Use the relationship between convolution and Fourier coefficients that you established on a previous homework to deduce that for each $t>0$ there is a function $g^t\in C^\infty(S^1)$ such that
+\[
+  T(t)f = g^t*f.
+\]
+You should include a formula for the Fourier series of $g^t$.
+\item Prove that for $s,t>0$,
+\[
+  T(s)T(t) = T(s+t).
+\]
+(A family of operators with this property is called a \emph{one-parameter semi-group}.)
+\item {[optional]} Explain a sense in which it might be reasonable to write
+\[
+  T(t) = e^{t\frac{\partial^2}{\partial x^2}}.
+\]
+\end{enumerate}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Suppose $u$ is a solution to the heat equation on the circle with initial condition $f$. Define
+\[
+\begin{aligned}
+  v\colon S^1\times \RR_{>0}&\longrightarrow \RR\\
+  (x,t)&\longmapsto u(x,-t).
+\end{aligned}
+\]
+\begin{enumerate}[(a)]
+\item Show that $v$ does not satisfy the heat equation in general, but does satisfy a closely related equation.
+\item {[related but different]} Can the heat equation be solved ``backward in time''? Make sense of what this might mean formally and say something insightful about the class of initial conditions that admit such time-reversed solutions.
+\end{enumerate}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Read Section 11.4 of Hsu's book, \emph{Fourier series, Fourier transforms, and function spaces}. Prove Theorem 11.4.4:
+\begin{quote}
+The set $\mathscr B_{\text{odd}} = \{\sin(2\pi n x)\mid n\ge 1\}$ is an eigenbasis for $\Delta$ with domain
+\[
+  \mathscr D(\Delta)_{\text{Dir}} = \left\{ f\in C^2([0,1/2])\mid  f(0) = f(1/2) = 0 \right\},
+\]
+and the set $\mathscr B_{\text{even}} = \{\cos(2\pi nx)\mid n\ge 0\}$ is an eigenbasis for $\Delta$ with domain
+\[
+  \mathscr D(\Delta)_{\text{Neu}} = \left\{ f\in C^2([0,1/2]) \mid f'(0)=f'(1/2)=0 \right\}.
+\]
+\end{quote}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}[continuation of Problem 3]
+We will now compute some explicit solutions to the heat equation with Dirichlet and Neumann boundary conditions.
+\begin{enumerate}[(a)]
+\item Compute the sine series of the odd extension of $f(x)=1$ for $x\in [0,1/2]$ and use this to express the solution to the heat equation with Dirichlet boundary conditions and initial condition $f$.
+\item Compute the cosine series of the even extension of $f(x)=x$ for $x\in [0,1/2]$ and use this to express the solution to the heat equation with Neumann boundary conditions and initial condition $f$.
+\end{enumerate}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+
+\end{document}
