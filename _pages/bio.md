@@ -2,7 +2,7 @@
 permalink: /bio/
 title: "biography"
 author_profile: true
-excerpt: "short biography"
+excerpt: "in which i describe my past in the third-person"
 redirect_from: 
   - /bio.html
 ---
