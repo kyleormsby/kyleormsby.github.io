@@ -1,0 +1,276 @@
+\documentclass[11pt]{amsart}
+\usepackage{mathptmx,microtype,libertine}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amscd, amsthm} 
+\usepackage{amssymb, amsfonts} 
+\usepackage{stmaryrd}
+\usepackage{enumerate}
+\usepackage[svgnames]{xcolor} 
+\usepackage{color}
+\usepackage[margin=1.5in]{geometry}
+\usepackage{mathrsfs}
+\usepackage{booktabs}
+\usepackage{aliascnt}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+ \definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=DarkBlue, urlcolor=MediumBlue
+}
+\usepackage{mathrsfs}
+%todonotes
+\usepackage[
+textwidth=3cm,
+textsize=small,
+colorinlistoftodos]
+{todonotes}
+
+% macros
+\usepackage{xargs}
+
+% figs
+\usepackage{float}
+\usepackage{tikz-cd}
+\usepackage{subcaption}
+\usepackage{mathpartir}
+\usepackage{adjustbox}
+\usepackage{tikz-3dplot}
+\usepackage{nicematrix}
+\usepackage{booktabs}
+
+\tdplotsetmaincoords{120}{120}
+
+% quality of life
+\renewcommand{\emptyset}{\varnothing}
+\newcommand{\Q}{\mathbb{Q}} 
+\newcommand{\QQ}{\Q}
+\newcommand{\CC}{\mathbb{C}} 
+\renewcommand{\AA}{\mathbb{A}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\Cc}{\mathscr{C}}
+\renewcommand{\P}{\mathbb{P}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\RR}{\R}
+\renewcommand{\L}{\mathbb{L}}
+\newcommand{\G}{\mathbb{G}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\Ff}{\mathscr{F}}
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\kk}{\mathsf{k}}
+
+\renewcommand{\setminus}{\smallsetminus}
+
+\DeclareMathOperator*{\colim}{\mathrm{colim}}
+\DeclareMathOperator*{\hocolim}{\mathrm{hocolim}}
+\DeclareMathOperator*{\holim}{\mathrm{holim}}
+\DeclareMathOperator{\hocofib}{\mathrm{hocofib}}
+\DeclareMathOperator{\cofiber}{\mathrm{cofiber}}
+\DeclareMathOperator{\hofib}{\mathrm{hofib}}
+\DeclareMathOperator*{\tot}{\mathrm{Tot}}
+\DeclareMathOperator{\diag}{\mathrm{diag}}
+\DeclareMathOperator{\spec}{\mathrm{Spec}}
+\DeclareMathOperator{\proj}{\mathrm{Proj}}
+\DeclareMathOperator{\coker}{\mathrm{coker}}
+\DeclareMathOperator{\codim}{\mathrm{codim}}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\map}{Map}
+\DeclareMathOperator{\Ext}{Ext}
+
+\DeclareMathOperator{\ch}{char}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\rk}{rk}
+\DeclareMathOperator{\sk}{Sk}
+\DeclareMathOperator{\Sym}{Sym}
+\newcommand{\Ann}{\operatorname{Ann}}
+\DeclareMathOperator{\Tr}{Tr}
+
+\DeclareMathOperator{\Sing}{\mathcal{S}}
+
+\DeclareMathOperator{\Gal}{\mathrm{Gal}}
+
+\DeclareMathOperator{\cosat}{cosat}
+\DeclareMathOperator{\sat}{sat}
+
+\DeclareMathOperator{\reft}{reflect}
+\DeclareMathOperator{\coreft}{coreflect}
+
+
+
+\newcommand{\Rrel}{\mathbin{R}}
+\newcommand{\Lrel}{\mathbin{L}}
+\newcommand{\op}{{\mathrm{op}}}
+\newcommand{\refl}{{\mathrm{ref}}}
+\newcommand{\Sub}{\operatorname{Sub}}
+\newcommand{\SubMon}{\operatorname{SubMon}}
+\newcommand{\cl}{\operatorname{cl}}
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\interior}{\operatorname{int}}
+\newcommand{\WFS}{\operatorname{WFS}}
+\newcommand{\Fac}{\operatorname{Fac}}
+\newcommand{\End}{\operatorname{End}}
+\newcommand{\pbn}{poly-Bernoulli number}
+
+\newcommand{\stirling}[2]{\begin{Bmatrix}#1\\#2\end{Bmatrix}}
+
+\newcommand{\im}{\operatorname{im}}
+
+\newcommand{\chain}[1]{[#1]}
+
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+
+%%---------------------------------------------------------------------%%
+%%----------------|  Some theorem-like environments  |-----------------%%
+%%---------------------------------------------------------------------%%
+\numberwithin{equation}{section} %Fiddles with numbering system of the following.
+ 
+
+
+\theoremstyle{plain}
+
+\newaliascnt{theorem}{equation}  
+\newtheorem{theorem}[theorem]{Theorem}  
+\aliascntresetthe{theorem}  
+\providecommand*{\theoremautorefname}{Theorem}
+
+\newaliascnt{dodeca}{equation}  
+\newtheorem{dodeca}[dodeca]{Dodecatheorem}  
+\aliascntresetthe{dodeca}  
+\providecommand*{\dodecaautorefname}{Dodecatheorem}    
+
+ \theoremstyle{definition}
+
+\newaliascnt{prop}{equation}  
+\newtheorem{prop}[prop]{Proposition}
+\aliascntresetthe{prop}  
+\providecommand*{\propautorefname}{Proposition}  
+ 
+
+\newaliascnt{lemma}{equation}  
+\newtheorem{lemma}[lemma]{Lemma}
+\aliascntresetthe{lemma}  
+\providecommand*{\lemmaautorefname}{Lemma}  
+
+\newaliascnt{corollary}{equation}  
+\newtheorem{corollary}[corollary]{Corollary}
+\aliascntresetthe{corollary}  
+\providecommand*{\corollaryautorefname}{Corollary}  
+
+\newaliascnt{claim}{equation}  
+\newtheorem{claim}[claim]{Claim}
+\aliascntresetthe{claim}  
+\providecommand*{\claimautorefname}{Claim}  
+
+\newaliascnt{conjecture}{equation}  
+\newtheorem{conjecture}[conjecture]{Conjecture}
+\aliascntresetthe{conjecture}  
+\providecommand*{\conjectureautorefname}{Conjecture}  
+
+
+\newaliascnt{question}{equation}  
+\newtheorem{question}[question]{Question}
+\aliascntresetthe{question}  
+\providecommand*{\questionautorefname}{Question}  
+
+
+\newaliascnt{defn}{equation}  
+\newtheorem{defn}[defn]{Definition}
+\aliascntresetthe{defn}  
+\providecommand*{\defnautorefname}{Definition}
+
+\newaliascnt{example}{equation}  
+\newtheorem{example}[example]{Example}
+\aliascntresetthe{example}  
+\providecommand*{\exampleautorefname}{Example}
+
+\theoremstyle{remark}
+
+\newaliascnt{remark}{equation}  
+\newtheorem{remark}[remark]{Remark}
+\aliascntresetthe{remark}  
+\providecommand*{\remarkautorefname}{Remark}
+
+\newaliascnt{convention}{equation}  
+\newtheorem{convention}[convention]{Convention}
+\aliascntresetthe{convention}  
+\providecommand*{\remarkautorefname}{Convention}
+
+\theoremstyle{plain}
+\newtheorem*{mainthm}{Main Theorem}
+
+\renewcommand*{\sectionautorefname}{Section}
+\renewcommand*{\subsectionautorefname}{Section}
+
+\title{Math 411: Final Project}
+
+\begin{document}
+\maketitle
+
+In your final project in Math 411, you will explore and explain a special topic in Fourier analysis through a 6--10 page paper (in the provided paper template) and a 20-minute presentation during one of our class meetings 23 April -- 2 May.
+
+\subsection*{Project goals}
+The goals of the paper and presentation are as follows:
+\begin{itemize}
+\item practice your written and oral technical communication skills;
+\item learn to research and understand technical topics independently, including finding, processing, selecting, and organizing information;
+\item to place what we have learned about Fourier analysis this term in a broader context.
+\end{itemize}
+
+\subsection*{Topic selection}
+You can present on any topic within or related to Fourier analysis, as long as it is distinct from the topics covered in class.\footnote{Our upcoming topics include harmonic analysis on locally compact Abelian groups and \emph{maybe} say something about the noncommutative case and the Peter--Weyl theorem.} You are encouraged to use the library, MathSciNet, the arXiv, and the Internet to search for sources. I am happy to consult on topics and help you track down appropriate references.
+
+\subsection*{Project proposal}
+Your project proposal is due by Monday 31 March at 10\textsc{p.m.}~via Gradescope. The proposal should be typed and at most one page long. It should include the following:
+\begin{itemize}
+\item topic;
+\item a short summary of what the topic is about;
+\item a preliminary list of references you will use;
+\item if you have one, a back-up topic.
+\end{itemize}
+If more than one student proposes the same topic, then I will assign the topic to the first student who proposed it and then ask for a back-up topic from other students.
+
+\subsection*{Final paper}
+You will write a 6--10-page paper on your selected topic.  You must write the paper using \LaTeX{} in the \texttt{amsart} document class using the page layout specified in the \href{https://kyleormsby.github.io/files/411/template.tex}{template file}.
+
+The audience for your paper is a contemporaneous Math 411 student.  Your paper should create interest in the topic you are exploring, explain its context, and present some of the pertinent results with proofs. You should assume the material presented in class, but nothing beyond.  Please use \LaTeX's sectioning, numbering, and environment features to format your paper in typical mathematical style; please use \textsc{Bib}\TeX{} for your bibliography.
+
+Here are the deadlines for your paper:
+\begin{itemize}
+\item Monday 21 April by 10\textsc{p.m.}: complete draft due via Gradescope;
+\item Friday 2 May by 10\textsc{p.m.}: final version incorporating my comments on your draft due via Gradescope.
+\end{itemize}
+
+\subsection*{Final presentation}
+You will also give a 20-minute presentation on your topic in class on an assigned date between 2 December and 11 December.  You will schedule a practice talk with me before your talk and are encouraged to incorporate feedback from that meeting into your talk.  The talk may be chalk- or slide-based.\footnote{You can do \LaTeX{} slides via the \texttt{beamer} package, but there are other options as well, including handwritten slides, Keynote, and Beamer. The final two options include \LaTeX-based equation editors, and \href{https://www.chachatelier.fr/latexit/}{\LaTeX{}iT} is a good way to incorporate larger diagrams or aligned equation environments into slides as PNG files with transparent backgrounds.}  Given the time constraints, your talk should focus on concepts and theorem statements, but you should also sketch at least one proof.
+
+You will also act as the audience for your classmates' presentations.  In this role, you will provide written feedback to presenters via a Google Form.
+
+\subsection*{Learning goals and assessment}
+As you progress as a mathematician, you will need to independently learn and communicate material, in both written and verbal forms.  Your final project will provide a structure in which to practice these skills, including \LaTeX{} document preparation and presentation skills pertinent to your Reed thesis work.  By submitting a draft paper and giving a practice presentation, you will have the opportunity to learn from initial mistakes and improve your material.
+
+These papers and presentations are also an opportunity for the class to share its interests with each other and for all of us to learn about additional topics in Fourier analysis.  For some of you, it will be the first of many opportunities to teach mathematics to others.  You are expected to participate as an active audience member and to provide feedback on your peers' presentations.
+
+Your final paper will be assessed based on the following characteristics (in roughly descending order of importance):
+\begin{itemize}
+\item Mathematical content and precision.
+\item Mathematical context and narrative.
+\item Style, including clarity and grammar.
+\item \LaTeX{} formatting.
+\end{itemize}
+Your presentation will be assessed based on the following characteristics (again in roughly descending order of importance):
+\begin{itemize}
+\item Clarity of ideas and information.
+\item Organization and narrative.
+\item Clarity of board work or slides.
+\item Speaking volume and body language.
+\item Response to audience questions.
+\end{itemize}
+You will also receive holistic comments on your paper and presentation.
+
+\end{document}
