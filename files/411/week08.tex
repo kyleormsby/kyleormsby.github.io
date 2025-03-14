@@ -1,0 +1,106 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+\newcommand{\eval}{\operatorname{eval}}
+
+\title{Math 411: Topics in Advanced Analysis\\ Homework due Wednesday Week 8}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Complete the inductive proof from class that $\eval\colon A\to \hat{\hat A}$ is an isomorphism when $A$ is a finite Abelian group. In particular, you need to prove that if $\eval$ is an isomorphism for finite Abelian groups $A$ and $B$, then it is also an isomorphism for $A\times B$.
+\end{prob}
+
+\begin{prob}
+Let $A$ be a finite Abelian group and let $V = \CC^A$ be the complex vector space of $\CC$-valued functions on $A$. The \emph{convolution} of $f,g\in V$ is defined to be
+\[
+\begin{aligned}
+  f*g\colon A&\longrightarrow \CC\\
+  a&\longmapsto \frac{1}{|A|}\sum_{b\in A}f(b)g(ab^{-1}).
+\end{aligned}
+\]
+\begin{enumerate}[(a)]
+\item Show that for all $f,g\in V$ and $\chi\in \hat A$, one has
+\[
+  \widehat{f*g}(\chi) = \hat f(\chi)\hat g(\chi).
+\]
+\item Show that if $\chi\in\hat A$ and $1\ne a\in A$, then
+\[
+  \sum_{\chi\in \hat A}\chi(a) = 0.
+\]
+(You may want to use the fact that $\hat A$ is an orthogonal basis for $V$.)
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Define the \emph{Fourier series} of $f\in V$ to be
+\[
+\begin{aligned}
+  Sf\colon A&\longrightarrow \CC\\
+  a&\longmapsto \sum_{\chi\in \hat A}\hat f(\chi)\chi(a).
+\end{aligned}
+\]
+\begin{enumerate}[(a)]
+\item Show that
+\[
+  \hat f = f*D
+\]
+where $D$ is defined by
+\[
+  D(a) = \sum_{\chi\in \hat A} \chi(a) =
+  \begin{cases}
+  |A|&\text{if }a=1,\\
+  0&\text{otherwise}.
+  \end{cases}
+\]
+\item Prove that $f*D = f$ and thus $Sf=f$.
+\end{enumerate}
+\end{prob}
+
+
+
+
+\end{document}
