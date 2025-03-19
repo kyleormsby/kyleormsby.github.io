@@ -59,7 +59,7 @@ Let $A$ be a finite Abelian group and let $V = \CC^A$ be the complex vector spac
 \[
 \begin{aligned}
   f*g\colon A&\longrightarrow \CC\\
-  a&\longmapsto \frac{1}{|A|}\sum_{b\in A}f(b)g(ab^{-1}).
+  a&\longmapsto \frac{1}{\sqrt{|A|}}\sum_{b\in A}f(b)g(ab^{-1}).
 \end{aligned}
 \]
 \begin{enumerate}[(a)]
@@ -80,7 +80,7 @@ Define the \emph{Fourier series} of $f\in V$ to be
 \[
 \begin{aligned}
   Sf\colon A&\longrightarrow \CC\\
-  a&\longmapsto \sum_{\chi\in \hat A}\hat f(\chi)\chi(a).
+  a&\longmapsto \frac{1}{\sqrt{|A|}}\sum_{\chi\in \hat A}\hat f(\chi)\chi(a).
 \end{aligned}
 \]
 \begin{enumerate}[(a)]
@@ -90,9 +90,9 @@ Define the \emph{Fourier series} of $f\in V$ to be
 \]
 where $D$ is defined by
 \[
-  D(a) = \frac{1}{|A|}\sum_{\chi\in \hat A} \chi(a) =
+  D(a) = \frac{1}{\sqrt{|A|}}\sum_{\chi\in \hat A} \chi(a) =
   \begin{cases}
-  1&\text{if }a=1,\\
+  \sqrt{|A|}&\text{if }a=1,\\
   0&\text{otherwise}.
   \end{cases}
 \]
