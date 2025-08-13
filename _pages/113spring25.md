@@ -1,10 +1,10 @@
 ---
-permalink: /113/
+permalink: /113spring25/
 title: "math 113: discrete structures"
 author_profile: false
 excerpt: "Course page for Math 113: Discrete Structures"
 redirect_from: 
-  - /113.html
+  - /113spring25.html
 ---
 
 I am co-teaching this course with Angélica Osorno and we will post all of our materials to [its Moodle site](https://moodle.reed.edu/course/view.php?id=5954).

@@ -12,6 +12,13 @@ My research is at the interface of homotopy theory (squishy shapes) and algebrai
 
 # research papers
 
+* **Combinatorics of factorization systems on lattices**. Submitted. [arXiv:2503.22883](https://arxiv.org/abs/2503.22883).
+  <details>
+    <summary>Abstract.</summary>
+
+    We initiate the combinatorial study of factorization systems on finite lattices, paying special attention to the role that reflective and coreflective factorization systems play in partitioning the poset of factorization systems on a fixed lattice. We ultimately uncover an intricate web of relations with such diverse combinatorial structures as submonoids, monads, Moore systems, transfer systems (from stable equivariant homotopy theory), and poly-Bernoulli numbers. (With Jishnu Bose, Tien Chih, Hannah Housden, Legrand Jones II, Chloe Lewis, and Millie Rose.)
+  </details>
+
 * **$N_\infty$ operads, transfer systems, and the combinatorics of bi-incomplete Tambara functors**. Oberwolfach report. [PDF](/files/Ninfty.pdf).
   <details>
     <summary>Abstract.</summary>
@@ -19,14 +26,14 @@ My research is at the interface of homotopy theory (squishy shapes) and algebrai
     I summarize the main result of <a href="http://arxiv.org/abs/2310.13835"><i>Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick game</i></a> enumerating transfer systems for rank 2 elementary Abelian $p$-groups, and use this to enumerate compatible pairs of transfer systems (in the sense of bi-incomplete Tambara functors) for the same group of equivariance. Based on joint work with Linus Bao, Christy Hazel, Tia Karkos, Alice Kessler, Austin Nicolas, Jeremie Park, Cait Schleff, and Scotty Tilton via the <a href="/eCHT_REU/">eCHT REU</a>.
   </details>
 
-* **Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick games**. Accepted in Tunisian Journal of Mathematics. [arXiv:2310.13835](http://arxiv.org/abs/2310.13835).
+* **Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick games**. [Tunisian Journal of Mathematics](https://doi.org/10.2140/tunis.2025.7.167). [arXiv:2310.13835](http://arxiv.org/abs/2310.13835).
   <details>
     <summary>Abstract and coauthors.</summary>
 
     We prove that Hill's characteristic function $\chi$ for transfer systems on a lattice $P$ surjects onto interior operators for $P$. Moreover, the fibers of $\chi$ have unique maxima which are exactly the saturated transfer systems. In order to apply this theorem in examples relevant to equivariant homotopy theory, we develop the theory of saturated transfer systems on modular lattices, ultimately producing a ``matchstick game'' that puts saturated transfer systems in bijection with certain structured subsets of covering relations. After an interlude developing a recursion for transfer systems on certain combinations of bounded posets, we apply these results to determine the full lattice of transfer systems for rank two elementary Abelian groups. (With Linus Bao, Christy Hazel, Tia Karkos, Alice Kessler, Austin Nicolas, Jeremie Park, Cait Schleff, and Scotty Tilton via the <a href="/eCHT_REU/">eCHT REU</a>.)
   </details>
 
-* **A motivic analogue of the $K(1)$-local sphere spectrum**. Accepted in JEMS. [arXiv:2307.13512](https://arxiv.org/abs/2307.13512).
+* **A motivic analogue of the $K(1)$-local sphere spectrum**. [JEMS](https://doi.org/10.4171/jems/1641). [arXiv:2307.13512](https://arxiv.org/abs/2307.13512).
   <details>
     <summary>Abstract and coauthors.</summary>
 
@@ -54,7 +61,7 @@ My research is at the interface of homotopy theory (squishy shapes) and algebrai
     We investigate the rich combinatorial structure of premodel structures on finite lattices whose weak equivalences are closed under composition. We prove that there is a natural refinement of the inclusion order of weak factorization systems so that the intervals detect these composition closed premodel structures. In the case that the lattice in question is a finite total order, this natural order retrieves the Kreweras lattice of noncrossing partitions as a refinement of the Tamari lattice, and model structures can be identified with stacked triangulations of a particular shape. (With Scott Balchin and Ethan MacBrough.)
   </details>
 
-* **Hochschild homology of mod-$p$ motivic cohomology over algebraically closed fields**. Accepted in Communications of the AMS. [arXiv:2204.00441](https://arxiv.org/abs/2204.00441).
+* **Hochschild homology of mod-$p$ motivic cohomology over algebraically closed fields**. [Communications of the AMS](https://doi.org/10.1090/cams/36). [arXiv:2204.00441](https://arxiv.org/abs/2204.00441).
   <details>
     <summary>Abstract and coauthors.</summary>
 
