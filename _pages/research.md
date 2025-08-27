@@ -300,6 +300,7 @@ I have the pleasure of mentoring student research projects at Reed, both through
 
 # seminars and conferences organized
 
+* Co-organizer of [Equivariant, Motivic, and Physical Topology in the Midwest](https://cse.umn.edu/math/events/equivariant-motivic-and-physical-topology-midwest) at University of Minnesota, October 24-26, 2025.
 * Co-organizer of a 2024 [Mathematics Research Community](http://www.ams.org/programs/research-communities/mrc) on homotopical combinatorics.
 * Director for the [eCHT REU](/eCHT_REU/) (virtual), June 12 - July 21, 2023.
 * Co-organizer of the [UW Topology Seminar](https://math.washington.edu/events/series/topology-seminar), 2022 - present.
