@@ -12,9 +12,16 @@ My research is at the interface of homotopy theory (squishy shapes) and algebrai
 
 # research papers
 
+* **Enumerating submonoids of finite commutative monoids**. Submitted. [arXiv:2508.20786](https://arxiv.org/abs/2508.20786).
+  <details>
+    <summary>Abstract and coauthors.</summary>
+
+    Given a finite commutative monoid $M$, we show that submonoids of $M\times [n]$ — where $[n] = \{0,1,\ldots,n\}$ is equipped with the max operation $\vee$ — may be enumerated via the transfer matrix method. When $M$ is also idempotent, we show that there are finitely many integers $\lambda$ and rational numbers $b_\lambda$ (only depending on $M$) such that the number of submonoids of $M\times [n]$ is $\sum_\lambda b_\lambda\lambda^n$. This answers a question of Knuth regarding ternary (and higher order) max-closed relations, and has applications to the enumeration of saturated transfer systems in equivariant infinite loop space theory. (With Caoilainn Kirkpatrick, Amelie el Mahmoud, Angélica M. Osorno, Dale Schandelmeier-Lynch, Riley Shahar, Lixing Yi, Avery Young, and Saron Zhu.)
+  </details>
+
 * **Combinatorics of factorization systems on lattices**. Submitted. [arXiv:2503.22883](https://arxiv.org/abs/2503.22883).
   <details>
-    <summary>Abstract.</summary>
+    <summary>Abstract and coauthors.</summary>
 
     We initiate the combinatorial study of factorization systems on finite lattices, paying special attention to the role that reflective and coreflective factorization systems play in partitioning the poset of factorization systems on a fixed lattice. We ultimately uncover an intricate web of relations with such diverse combinatorial structures as submonoids, monads, Moore systems, transfer systems (from stable equivariant homotopy theory), and poly-Bernoulli numbers. (With Jishnu Bose, Tien Chih, Hannah Housden, Legrand Jones II, Chloe Lewis, and Millie Rose.)
   </details>
