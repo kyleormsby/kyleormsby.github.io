@@ -326,6 +326,8 @@ I have the pleasure of mentoring student research projects at Reed, both through
 
 # recent talks
 
+* *Homotopical combinatorics and equivariant derived algebraic geometry*, Washington University Algebraic Geometry & Combinatorics Seminar, 21 October 2025.
+* *Poly-Bernoulli numbers and the enumeration of submonoids*, Reed College Mathematics & Statistics Colloquium, 11 September 2025.
 * *Poly-Bernoulli numbers & matchstick games on cylinders*, JMM, 9 January 2025. [Slides](/files/pB_matches.pdf).
 * *Counting model structures*, CU Boulder Topology Day, 23 April 2024.
 * *Transfer systems and the combinatorics of model structures*, UBC Topology Seminar, 20 March 2024.
