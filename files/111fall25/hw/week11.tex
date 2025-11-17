@@ -1,0 +1,99 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd,hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 111: Calculus\\ Homework due Friday Week 11}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Make sure to review the homework instructions in the syllabus before writing your solutions. In particular, show your work and write in complete sentences (but also aim for concise explanations).
+
+\begin{prob}
+Suppose $f\colon [a,b]\to \RR$ is an integrable function. Let $L_n$ and $R_n$ denote the left and right Riemann sums of $f$ over $[a,b]$ with $n$ subdivisions.
+\begin{enumerate}[(a)]
+\item Explain why $R_n-L_n = (f(b)-f(a))\cdot \frac{b-a}{n}$.
+\item Suppose further that $f$ is increasing on $[a,b]$. Explain why, in this case, the error between either $L_n$ or $R_n$ and $\int_a^b f(x)\,dx$ is at most $(f(b)-f(a))\cdot \frac{b-a}{n}$.
+\item Find an example of a function where the error between $L_n$ and $\int_a^b f(x)\,dx$ is greater than $(f(b)-f(a))\cdot \frac{b-a}{n}$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Suppose that
+\[
+  A=\int_0^{2\pi}\sin^2 t\,dt\qquad\text{and}\qquad B=\int_0^{2\pi} \cos^2 t\,dt.
+\]
+Without computing any antiderivatives, show that $A+B=2\pi$ and $A=B$.
+\end{prob}
+
+\begin{prob}
+Evaluate the following integrals using the Fundamental Theorem of Calculus and basic properties of integrals:
+\begin{enumerate}[(a)]
+\item $\displaystyle{\int_{-1}^2 (x^2-3x)\,dx}$
+\item $\displaystyle{\int_1^2 \frac{2}{x^3}\,dx}$
+\item $\displaystyle{\int_0^{\pi/4} \sec^2\theta\,d\theta}$
+\item $\displaystyle{\int_0^{\pi/2}(x-\sin x)\,dx}$
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+A horizontal cylindrical tank has cross-sectional area $A(x) = 4(6x-x^2)$ m$^2$ at height $x$ meters above the bottom when $x\le 3$.
+\begin{enumerate}[(a)]
+\item The volume $V$ of the tank between heights $a$ and $b$ is $\int_a^b A(x)\,dx$. Find the volume between heights $2$ m and $3$ m.
+\item Suppose that oil is being pumped into the tank at a rate of $50$ L/min. Using the chain rule, at how many meters per minute is the height of the oil in the tank changing, expressed in terms of $x$, when the height is at $x$ meters? (Note that there are 1,000 liters in a cubic meter; you will need this fact in order for your units to work out properly.)
+\item How long does it take to fill the tank to $3$ m when you start from a fill level of $2$ m?
+\end{enumerate}
+\end{prob}
+
+\end{document}
