@@ -1,0 +1,99 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+
+\newcommand{\Aut}{\operatorname{Aut}}
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 2}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Monday February 2 by 10pm.
+\bigskip
+
+\begin{rmk}
+This is homework on the content covered Wednesday of Week 1.   In general,
+homework on content delivered during course meeting $n$ will be due at the start
+of course meeting $n+2$. You are encouraged to start working on the homework
+shortly after course meeting $n$ in order to have time to ask questions during
+office hours, the evening session,  or via our Zulip channel.
+\end{rmk}
+
+\begin{rmk}
+Make sure to review the \emph{Homework} portion of the syllabus before writing
+up your solutions!  For instance: \textbf{you will only receive full credit if
+you provide full explanations}.  Also, your \textbf{solutions should consist
+\emph{solely} of complete sentences}.  Simply providing the correct numerical
+solution does not suffice.  See the \emph{Mathematical Writing} appendix of the
+textbook for more tips.
+\end{rmk}
+\bigskip
+
+\begin{prob}
+At a Go tournament, there are eight players and four boards.  In how many ways can the players sit down to play if
+\begin{enumerate}[(a)]
+\item We count the order in which pairs of players are seated at the boards, but do not care which side each player sits on?  (Here A vs B, C vs D, E vs F, G vs H is the same as B vs A, C vs D, E vs F, G vs H but is different from G vs H, E vs F, C vs D, A vs B.)
+\item we count who sits on which side of each board, but do not care about the ordering of the boards?  (In this version, A vs B, C vs D, E vs F, G vs H is different from B vs A, C vs D, E vs F, G vs H but is the same as G vs H, E vs F, C vs D, A vs B.)
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+In how many ways can King Arthur and his twelve knights (13 people, in all) sit down at the
+legendary Round Table in Camelot?  (Since the table is round, we will not
+consider rotations of a given seating arrangement as different.)
+\end{prob}
+
+\end{document}

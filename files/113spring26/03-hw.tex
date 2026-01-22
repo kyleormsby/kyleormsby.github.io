@@ -1,0 +1,90 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+
+\newcommand{\Aut}{\operatorname{Aut}}
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 3}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Wednesday February 4 by 10pm.
+\bigskip
+
+\noindent
+This is homework on the content covered Friday of Week 1.  
+\bigskip
+
+\begin{prob}
+Let~$A$ and~$B$ be finite sets.  Explain why
+\[
+  |A\cup B|=|A|+|B|-|A\cap B|.
+\]
+\end{prob}
+
+\begin{prob}
+Let $A$, $B$, $C$ and $D$ be sets.
+\begin{enumerate}[(a)]
+ \item Prove that 
+ \[(A \cap B) \times (C \cap D) = (A \times C) \cap (B \times D).\]
+ \item Is the following equality always true?
+  \[(A \cup B) \times (C \cup D) = (A \times C) \cup (B \times D)\]
+  If it is, prove it. If not, provide a counterexample.
+\end{enumerate}
+
+\end{prob}
+
+\end{document}
