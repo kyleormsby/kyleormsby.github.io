@@ -12,6 +12,8 @@ Teaching is an intergral part of my work and identity as a scholar. I am particu
 
 # teaching at reed
 
+* [Math 342: Topology](/342/), Spring 2026
+* [Math 113: Discrete Structures](/113/), Spring 2026
 * [Math 111: Caclulus](/111/), Fall 2025
 * [Math 113: Discrete Structures](/113spring25/), Spring 2025
 * [Math 411: Topics in Advanced Analysis](/411/), Spring 2025
