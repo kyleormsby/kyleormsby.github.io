@@ -1,0 +1,112 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+
+\newcommand{\Aut}{\operatorname{Aut}}
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 04}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Friday, February 6 at 10pm.
+\bigskip
+
+\begin{prob}
+Your movie collection consists of five films directed by Werner Herzog, four films directed by Lana and Lilly Wachowski, and three films directed by Alejandro Jodorowsky.  Give (good) examples of questions about your movie collection which have the following answers:
+\begin{enumerate}[(a)]
+\item $12=5+4+3$,
+\item $60=5\cdot 4\cdot 3$,
+\item $360 = 5\cdot 4\cdot 3\cdot 3!$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Suppose you have a collection of 11 balls, 3 of which are red, 2 are blue, 2 are yellow, and 4 are green. The balls of each color are identical. You take a bunch of balls at random and take a look at the distribution of colors. For example, one distribution is you have 0 balls of each color, while another distribution is 1 red, 2 blue, 1 yellow, 0 green. Use the multiplicative counting principle to count the possible distributions.
+\end{prob}
+
+\begin{prob}
+We have seen that there are $2^n$ subsets of a set $A$ of cardinality $n$.  We can use an \emph{$n$-bit string} to encode such a subset.  This is a length $n$ word in the alphabet $\{0,1\}$.  Such an object looks like $b_{n-1}b_{n-2}\ldots b_0$ where each $b_i\in\{0,1\}$, $0\le i \le n-1$.  To turn a subset into a bit string, label the elements of $A$ as $A = \{a_0,a_1,\ldots,a_{n-1}\}$; then for $B\in 2^A$, set
+\[
+  b_i =
+  \begin{cases}
+  1 &\text{if }a_i\in B,\\
+  0 &\text{if }a_i\notin B.
+  \end{cases}
+\]
+For instance, if $A = \{0,1,2,3\}$ and $B = \{0,2,3\}$, then the associated bit string is $1101$.
+
+Given a bit string, we may treat it as a \emph{binary representation} of a number.  This associates the number
+\[
+  [b_{n-1}b_{n-2}\ldots b_1b_0]_2 = b_{n-1}2^{n-1}+b_{n-2}2^{n-2}+\cdots+b_12^1+b_02^0
+\]
+with the bit string $b_{n-1}\ldots b_1b_0$.  In the case of the bit string $1101$, we have
+\[
+  [1101]_2 = 1\cdot 2^3 + 1\cdot 2^2 + 0\cdot 2^1 + 1\cdot 2^0 = 13.
+\]
+(Of course, the final expression is a \emph{decimal representation}: $13 = 1\cdot 10^1 + 3\cdot 10^0$.)
+
+By turning a subset into a bit string and then a bit string into a number, we
+get a one-to-one correspondence between the subsets of $A$ and the integers
+$0,1,\ldots,2^n-1$.  The following questions all refer to this numerical
+encoding of subsets of an arbitrary set~$A$ with~$|A|=n$.
+\begin{enumerate}[(a)]
+\item What numbers correspond to subsets of cardinality one?
+\item What subsets correspond to even numbers?
+\item Note that $A$ is itself and element of $2^A$ (since $A$ is a subset of itself). What number corresponds to the element $A\in 2^A$?
+\end{enumerate}
+\end{prob}
+
+\end{document}

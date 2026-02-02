@@ -1,0 +1,82 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 06}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Wednesday, February 11.
+\bigskip
+
+
+\begin{prob}
+Let $A,B$ be nonempty sets and let $f\colon A\to B$ be a function.  Show that a function $g\colon B\to A$ such that $g\circ
+f = \id_A$ exists if and only if $f$ is injective.  (Note that this is an ``if
+  and only if'' proof.  So there will be two parts to your proof: first suppose
+  there is a function~$g$ with the stated properties, and show that it follows
+  that~$f$ is injective;  next, suppose that~$f$ is injective, and use that to
+  prove that the appropriate function~$g$ exists. For this last part you need to construct the function $g$.)
+\end{prob}
+
+\begin{prob}
+Let $A$ be a nonempty finite set, let $E\subseteq 2^A$ be the collection of subsets of $A$ of even cardinality, and let $O\subseteq 2^A$ be the collection of subsets of $A$ of odd cardinality.  Create an explicit bijective function $f\colon E\to O$ and conclude that $|E|=|O| = 2^{|A|-1}$.  (You should define $f$ by giving an explicit procedure one can perform to turn an element of $E$ into an element of $O$.  You should prove that $f$ is bijective either by exhibiting a two-sided inverse, or by proving that $f$ is injective and surjective.)
+\end{prob}
+
+\end{document}
