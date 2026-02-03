@@ -8,7 +8,7 @@ redirect_from:
   - /publications/
 ---
 
-My research is at the interface of homotopy theory (squishy shapes) and algebraic geometry (polynomial shapes). I have parallel interests in operads (families of compatible operations), mathematics visualization (pretty pictures), and geometric and topological data analysis in neuroimaging (brain shapes). Below, you will find my [research papers](#research-papers), my [students' papers](#student-papers), my [expository writing](#published-expository-writing), [seminars and conferences](#seminars-and-conferences-organized) I have co-organized, and [recent talks](#recent-talks). Here is my [CV](/files/cv_ormsby.pdf), updated August 2024, and here is a [short biography](/bio/).
+My research is at the interface of homotopy theory (squishy shapes) and algebraic geometry (polynomial shapes). I have parallel interests in operads (families of compatible operations), mathematics visualization (pretty pictures), and geometric and topological data analysis in neuroimaging (brain shapes). Below, you will find my [research papers](#research-papers), my [students' papers](#student-papers), my [expository writing](#published-expository-writing), [seminars and conferences](#seminars-and-conferences-organized) I have co-organized, and [recent talks](#recent-talks). Here is my [CV](/files/ormsby-cv-2026.pdf), updated February 2026, and here is a [short biography](/bio/).
 
 # research papers
 
