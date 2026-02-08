@@ -1,0 +1,117 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 07}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Friday, February 13 at 10pm.
+\bigskip
+
+Suppose we have an identity~$E=F$ where~$E$ and~$F$ are two algebraic
+expressions that evaluate to the same integer (see the examples below).  A {\em
+combinatorial} explanation for the identity~$E=F$ requires identifying both~$E$
+and~$F$ as solutions to counting problems and explaining why these
+counting problems should have the same solution.  As an example, we give a proof
+of the identity
+\[
+  \binom{n}{k}=\binom{n-1}{k-1}+\binom{n-1}{k}
+\]
+in the case where~$n>k>0$.  (It is true for general~$n$ and~$k$, but we will
+  skip these trivial cases.)
+
+\begin{proof}
+Let~$S=\left\{ 1,\dots,n
+\right\}$.  The left-hand side counts the~$k$-subsets of~$S$.  Each~$k$-subset
+of~$S$ is of exactly one of two types: (1) those that contain~$n$, and (2) those
+that do not.  To find the number of~$k$-subsets of~$S$, we can just count
+the numbers of each type and add.  A subset of size~$k$ containing~$n$, i.e, of
+type (1), is the same thing as
+a subset of~$\left\{ 1,\dots,n-1 \right\}$ of size~$k-1$ to which we then 
+append~$n$.  Thus, there are~$\binom{n-1}{k-1}$ subsets of type (1).
+A~$k$-subset of~$S$ that does not contain~$n$, i.e., of type (2), is the same as a subset
+of~$\left\{ 1,\dots,n-1 \right\}$, and there are~$\binom{n-1}{k}$ of these.
+\end{proof}
+\medskip
+
+\begin{prob}
+Consider the identity
+\[
+  \binom{n}{k}-\binom{n-3}{k}=\binom{n-1}{k-1}+\binom{n-2}{k-1}+\binom{n-3}{k-1}
+\]
+for~$n\geq 3$ and~$n\geq k$.
+\begin{enumerate}[(a)]
+  \item\label{lhs} Suppose there is a set $S$ of $n$ people, and in that set, there are three special people $a$, $b$, and $c$.  What is the left-hand side of the identity counting in the context of $S$ and its three distinguished members?
+  \item Provide a combinatorial proof of the identity by showing the thing you
+    counted in part~(\ref{lhs}) can be counted a different way.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Give a combinatorial explanation of the following identity:
+\[
+  \binom{17}{5}=\binom{10}{0}\binom{7}{5}+\binom{10}{1}\binom{7}{4}+
+  \binom{10}{2}\binom{7}{3}+\binom{10}{3}\binom{7}{2}+\binom{10}{4}\binom{7}{1}+
+  \binom{10}{5}\binom{7}{0}.
+\]
+Hint: you might think about coloring the elements of a set.
+\end{prob}
+
+\end{document}
