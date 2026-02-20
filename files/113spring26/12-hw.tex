@@ -1,0 +1,132 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 12}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Wednesday, February 25 at 10pm.
+\bigskip
+
+
+\noindent{\bf Note.} See the next page for a model proof by induction.  Try to emulate it
+in your own work.
+\bigskip
+
+\begin{prob}
+Let $n\geq 1$. Use induction to prove that
+\[
+  \sum_{k=1}^n k^3=1+8+27+\dots + n^3=\frac{n^2(n+1)^2}{4}.
+\]
+\end{prob}
+
+\begin{prob}
+Suppose that $n$ lines in the plane are drawn in such a fashion that no two are
+parallel and no three intersect in a common point.  Using induction, prove that the plane is
+divided into precisely $\frac{n(n+1)}{2}+1$ regions by the lines. (\emph{Hint:} by playing with small examples of $n$, find out how many new regions are formed when you add a new line.)
+\end{prob}
+
+\newpage
+
+
+\centerline{\bf A typical induction proof}
+\vskip0.3in
+
+\noindent{\bf Proposition.} For $n\ge 1$,
+\[
+1+2+\dots+n = \frac{n(n+1)}{2}.
+\]
+\smallskip
+
+\begin{proof}
+  We will prove this by induction.  First note that the statement holds when
+  $n=1$:
+  \[
+  1 = \frac{1(1+1)}{2}.
+  \]
+  Next, suppose the statement holds for some $n\ge 1$:
+  \[
+  1+2+\dots+n=\frac{n(n+1)}{2}.
+  \]
+  It follows that
+  \begin{eqnarray*}  
+    1+2+\dots+n+(n+1)&=& \frac{n(n+1)}{2}+(n+1)\\
+    &=& \frac{n(n+1)+2(n+1)}{2}\\[5pt]
+    &=& \frac{(n+1)(n+2)}{2},
+  \end{eqnarray*}
+  and the result then holds for $n+1$, too.  Hence, the statement holds for all
+  $n\geq1$ by induction.
+\end{proof}
+
+\noindent{\bf Note:}
+\begin{itemize}
+  \item The first sentence of the proof is obligatory.  The reader needs to
+    know you are about to give a proof by induction.
+  \item It is good to explicitly state your induction hypothesis.  In the above
+    proof, it is the sentence starting ``Next, suppose \dots''  You are not
+    claiming this statement is true!  Your argument will be that {\em if} this
+    statement is true, then something good happens (namely, the statement also
+      holds for the case~$n+1$).
+    \item Notice the easy-to-follow linear arrangement of equations following
+      ``It follows that''.  When you have a string of calculations, please try
+      to use a similar form.
+\end{itemize}
+
+\end{document}
