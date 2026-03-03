@@ -1,0 +1,121 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 18}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Wednesday, March 11 at 10pm.
+\bigskip
+
+Consider $2n$ vertices on the boundary of a circle forming a regular $2n$-gon (this means that any two adjacent vertices are the same distance apart). The nodes are labeled $0,1,\dots,2n-1$ counterclockwise. Let $R_n$ be the set of ways to draw straight line segments connecting pairs of distinct vertices, such that no two segments intersect, and every vertex is the endpoint of exactly one segment (so there are $n$ segments in total). These are called \emph{non-crossing pairings}. For example, here are two elements of $R_4$.
+\begin{center}
+	\begin{tikzpicture}[scale=0.5]
+	 \draw[black!50] (0,0) circle (2);
+	  \foreach \t in {0,...,7} {
+	    \node[ball,label={45*\t:\t}] at (45*\t:2) (\t) {};
+	  };
+	  \draw (1)--(4);
+	  \draw (2)--(3);
+	  \draw (5)--(0);
+	  \draw (6)--(7);
+	  \begin{scope}[xshift=10cm]
+	   \draw[black!50] (0,0) circle (2);
+	    \foreach \t in {0,...,7} {
+	    \node[ball,label={45*\t:\t}] at (45*\t:2) (\t) {};
+	  };
+	  \draw (1)--(2);
+	  \draw (3)--(4);
+	  \draw (5)--(6);
+	  \draw (7)--(0);
+	  \end{scope}
+      \end{tikzpicture}
+      \end{center}
+Let $r_n=|R_n|$
+
+\begin{prob}\
+\begin{enumerate}[(a)]
+\item List all of the possible non-crossing pairings when $n=1$, $n=2$ and $n=3$.
+\item[(pause)] Convince yourself that $0$ can only be paired with odd vertices. (Do not turn this in.)
+\item Fix $n\geq 0$. Given $ 0\leq k\leq n$, let $Z_k$ denote the set of non-crossing pairings in $R_{n+1}$ for which $0$ is paired with $2k+1$. Show that $|Z_k|=r_k r_{n-k}$.  Be careful with the indexing here, note that we are working with $R_{n+1}$ and \emph{not} with $R_n$. 
+\item Using part (b), prove that $r_n$ satisfies the Catalan recurrence, i.e.,
+\[r_0=1 \quad \text{and} \quad r_{n+1}=\sum_{k=0}^n r_kr_{n-k} \text{ for } n\geq 0.\] 
+\item Using induction, prove that $r_n=C_n$, the $n$th Catalan number. (Note that you have done most of the work, this step just puts the work together into a proof).
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Problem 1 showed there is an equal number of elements in $R_n$ and $D_n$, where $D_n$ is the set of Dyck paths of length $2n$. We now describe a bijection between these sets.
+
+ Given a non-crossing partition, start at the vertex 0 and move counterclockwise (in increasing order). As you visit each vertex, write E if you encounter a line for the first time and N if you encounter a line for the second time.
+\begin{enumerate}[(a)]
+ \item Which path corresponds to each of the two examples from $R_4$ above?
+ \item Prove that this construction does indeed give a Dyck path of length $2n$. That is, you need to explain why this construction gives a $NE$ path from $(0,0)$ to $(n,n)$ that is always below the diagonal.
+ \item Describe the inverse of this construction, i.e., describe a process that takes a Dyck path and gives a non-crossing pairing. You must explain why these two processes are inverses of each other. Conclude that there is a bijection between $R_n$ and $D_n$.
+\end{enumerate}
+\end{prob}
+
+
+\end{document}

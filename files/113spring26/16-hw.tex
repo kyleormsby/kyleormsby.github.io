@@ -1,0 +1,157 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.13}
+\usetikzlibrary{positioning}
+\usetikzlibrary{trees}
+\usetikzlibrary{decorations.pathmorphing}    
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{arrows.meta,calc}
+\usetikzlibrary{bending}
+\usetikzlibrary{decorations.markings,shapes.geometric}
+\tikzset{->-/.style={decoration={markings, mark=at position #1 with
+  {\arrow{>}}},postaction={decorate}}}
+\tikzset{-|-/.style={decoration={markings, mark=at position #1 with
+  {\arrow{stealth}}},postaction={decorate}}}
+\tikzset{movearrow/.style 2 args ={
+        decoration={markings,
+	  mark= at position {#1} with {\arrow{#2}} ,
+        },
+        postaction={decorate}
+    }
+}
+\tikzset{<--/.style={decoration={markings, mark=at position #1 with
+  {\arrow{<}}},postaction={decorate}}}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+\tikzstyle{bball} = [circle,shading=ball, ball color=blue,
+    minimum size=1mm,inner sep=1.3pt]
+\tikzstyle{miniball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=0.5pt]
+\tikzstyle{redminiball} = [circle,shading=ball, ball color=red,
+    minimum size=1mm,inner sep=0.5pt]
+\tikzstyle{mminiball} = [circle,shading=ball, ball color=black,
+    minimum size=0.6mm,inner sep=0.1pt]
+\tikzstyle{mycircle} = [draw,circle, minimum size=1mm,inner sep=1.3pt]
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 16}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Friday, March 6 at 10pm.
+\bigskip
+
+\begin{prob}
+Consider the following floor plan for a building:
+
+\begin{center}
+\begin{tikzpicture}[scale=1.0]
+  \def\wid{3.5}
+  \def\ht{2}
+  \node at (0,0 ) (bl) {};
+  \node at (\wid,0) (br) {};
+  \node at (\wid,\ht) (tr) {};
+  \node at (0,\ht) (tl) {};
+  \node at (0,\ht/2) (ml) {};
+  \node at (\wid/3,\ht/2) (mml) {};
+  \node at (2*\wid/3,\ht/2) (mmr) {};
+  \node at (\wid,\ht/2) (mr) {};
+  \node at (\wid/2,2*\ht/3) (mup) {};
+  \node at (\wid/3,0) (bml) {};
+  \node at (2*\wid/3,0) (bmr) {};
+  \node at (\wid/2,\ht) (tm) {};
+  \draw (bl.center)--(br.center)--(tr.center)--(tl.center)--(bl.center);
+  \draw (ml.center)--(mml.center)--(mup.center)--(mmr.center)--(mr.center);
+  \draw (bml.center)--(mml.center);
+  \draw (bmr.center)--(mmr.center);
+  \draw (mup.center)--(tm.center);
+\end{tikzpicture}
+\end{center}
+
+We would like to know if it is possible to cross each interior wall in the building exactly once (without teleporting).
+
+\begin{enumerate}[(a)]
+  \item Turn this into graph theory problem. (Draw the corresponding graph.)
+\item Either find such a walk, or prove that no such walk exists.
+\item What if we want to pass through the exterior walls exactly once as well?
+\end{enumerate}
+
+\end{prob}
+
+\begin{prob} 
+  If~$G$ is a graph and~$e$ is an edge of~$G$, define~$G-e$ to be the graph
+  obtained from~$G$ by removal of~$e$ (but not the endpoints of~$e$).
+  Recall that to say a graph is {\em connected} means that every pair of its
+  vertices can be connected by a path. 
+  \begin{enumerate}[(a)]
+    \item Give an example of a connected graph~$G$ with an edge~$e$ such
+      that~$G-e$ is not connected.
+    \item Suppose~$G$ is a connected graph and~$e$ is an edge of~$G$ that is
+      part of a cycle.  Prove that removal of~$e$ does not disconnect the graph. 
+      Your proof is required to start with the line: ``Let~$u$ and~$v$ be vertices
+      of~$G$.'' It should then show there must be a path in~$G-e$ 
+      connecting~$u$ and~$v$.
+  \end{enumerate}
+\end{prob}
+
+\end{document}
