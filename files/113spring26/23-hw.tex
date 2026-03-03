@@ -1,0 +1,106 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+\usetikzlibrary{shapes}
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+\DeclareRobustCommand{\stir}{\genfrac\{\}{0pt}{}}
+
+% For solutions.
+\newenvironment{sol}{
+  \medskip
+
+  \noindent\textsc{Solution:}
+}
+{
+  \medskip
+
+}
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 23}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Wednesday, April 1 at 10pm.
+\bigskip
+
+\begin{prob}
+Consider the sequence $a_0,a_1,a_2,\dots$ determined by
+\[a_0=0 \quad \text{and} \quad a_{n+1}=2a_n+1 \text{ for }n\geq0.\]
+
+  \begin{enumerate}[(a)]
+    \item Compute the first few members of the sequence. Make a conjecture for a closed formula for the sequence and prove it using induction.
+    \item Let $A(x)=a_0+a_1x+a_2x^2+\dots$ be the generating function for this sequence. Find a closed formula for $A(x)$ using the recurrence for $(a_n)_{n=0}^\infty$.
+    \item Use your answer to (b) to confirm the closed formula you found in (a).
+  \end{enumerate}
+\end{prob}
+
+\begin{prob}  Recall that $\frac{1}{1-x}=1+x+x^2+x^3+\dots$, and recall the definition of multiplication of power series.
+\begin{enumerate}[(a)]
+ \item  What sequence corresponds to $\frac{1}{(1-x)^2}$?
+ \item What sequence corresponds to $\frac{1}{(1-x)^3}$?
+\end{enumerate}
+\end{prob}
+
+\begin{prob} (BONUS) Recall the recurrence for the sequence of Catalan numbers:
+\[C_0=1 \quad \text{and} \quad C_{n+1}=\sum_{k=0}^n C_kC_{n-k} \text{ for } n\geq 0.\]
+Find a closed formula for the generating function for the Catalan sequence.
+\end{prob}
+
+\end{document}

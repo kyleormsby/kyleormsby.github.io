@@ -1,0 +1,151 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 21}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Friday, March 13 at 10pm.
+\bigskip
+
+\begin{prob}\label{Catalan bijections} Consider the full binary tree~$T$:
+  \begin{center}
+    \begin{tikzpicture}
+      \node[ball] at (0,0.2) (0) {};
+      \node[ball] at (-1.6,-1) (l) {};
+      \node[ball] at (1.6,-1) (r) {};
+      \node[ball] at (-2.6,-2) (ll) {};
+      \node[ball] at (-0.6,-2) (lr) {};
+      \node[ball] at (2.6,-2) (rr) {};
+      \node[ball] at (0.6,-2) (rl) {};
+      \node[ball] at (-1.6,-3) (lrl) {};
+      \node[ball] at (-0.4,-3) (llr) {};
+      \node[ball] at (1.6,-3) (rrl) {};
+      \node[ball] at (-3.6,-3) (lll) {};
+      \draw (0)--(l)--(ll)--(lrl);
+      \draw (l)--(lr);
+      \draw (rl)--(llr);
+      \draw (0)--(r)--(rr);
+      \draw (ll)--(lll);
+      \draw (r)--(rl)--(rrl);
+    \end{tikzpicture}
+  \end{center}
+  Using the bijections described in our text, find each of the following Catalan
+  structures corresponding to~$T$:
+  \begin{enumerate}[(a)]
+    \item a full parenthesization of the letters~$a,b,c,d,e,f$ (``full'' means
+	each multiplication is binary, i.e., involves two factors);
+    \item a balanced parenthetical expression with five pairs of~$()$s;
+    \item and a Dyck path of length ten.
+  \end{enumerate}
+  {\bf Note:} It is important to precisely use the conventions used in the
+  text.  For example, reordering labels, etc., will not yield the same
+  bijection.
+\end{prob}
+
+\begin{prob}
+  Coin stackings form another set of Catalan structures (i.e., their count is given
+  by Catalan numbers).  Here are the~$C_3=5$ coin stackings with a base of three coins:
+  \begin{center}
+    \begin{tikzpicture}[scale=0.3]
+      \draw (0,0) circle (1);
+      \draw (2,0) circle (1);
+      \draw (4,0) circle (1);
+      \begin{scope}[xshift=8cm]
+	\draw (0,0) circle (1);
+	\draw (2,0) circle (1);
+	\draw (4,0) circle (1);
+	\draw (1,1.732) circle (1);
+      \end{scope}
+      \begin{scope}[xshift=16cm]
+	\draw (0,0) circle (1);
+	\draw (2,0) circle (1);
+	\draw (4,0) circle (1);
+	\draw (3,1.732) circle (1);
+      \end{scope}
+      \begin{scope}[xshift=24cm]
+	\draw (0,0) circle (1);
+	\draw (2,0) circle (1);
+	\draw (4,0) circle (1);
+	\draw (1,1.732) circle (1);
+	\draw (3,1.732) circle (1);
+      \end{scope}
+      \begin{scope}[xshift=32cm]
+	\draw (0,0) circle (1);
+	\draw (2,0) circle (1);
+	\draw (4,0) circle (1);
+	\draw (1,1.732) circle (1);
+	\draw (3,1.732) circle (1);
+	\draw (2,3.464) circle (1);
+      \end{scope}
+    \end{tikzpicture}
+  \end{center}
+  \begin{enumerate}[(a)]
+    \item Draw the~$C_4=14$ coin stackings with a base of~$4$ coins.
+    \item Prove that the number of coin stackings with a base of~$n$ coins
+      is~$C_n$ by describing a bijection between them and Dyck paths of
+      length~$2n$. [Hint: consider the region between a Dyck path and the
+      diagonal.]
+  \end{enumerate}
+\end{prob}
+
+\end{document}
