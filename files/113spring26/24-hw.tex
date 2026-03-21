@@ -1,0 +1,104 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+\DeclareRobustCommand{\stir}{\genfrac\{\}{0pt}{}}
+
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 24}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Friday, April 3 at 10pm.
+\bigskip
+
+\begin{prob}
+  A subset~$X$ is chosen uniformly at random from the set~$[n]$. (The word
+    ``uniform'' here means that each subset is equally likely.) 
+  \begin{enumerate}[(a)]
+    \item What is the probability that~$X$ has an even number of
+      elements?
+    \item Suppose~$n\geq2$.  What is the probability that~$X$ contains~$1$ and~$n$?
+    \item Suppose~$n\geq10$.  What is the probability that the smallest number in~$X$ is~$10$?
+  \end{enumerate}
+\end{prob}
+
+\begin{prob}
+  Suppose a bag contains balls numbered~$1,2,\dots,10$.  Choose two balls from
+  the bag.
+  \begin{enumerate}[(a)]
+    \item What is the probability the first ball is~$5$ and the second
+      is~$3$ if the ball numbered~$5$ is not put back into the bag before
+      drawing the second ball?
+    \item What is the probability the first ball is~$5$ and the second
+      is~$3$ if the ball numbered~$5$ is put back into the bag before
+      drawing the second ball?
+  \end{enumerate}
+\end{prob}
+
+\begin{prob} Recall that a standard poker deck has four suits and 13 cards within each suit. The deck contains 4 aces (one of every suit).
+   \begin{enumerate}[(a)]
+     \item What is the probability that a five-card poker hand contains exactly
+       one ace?
+     \item What is the probability that a five-card poker hand contains at least
+       one ace?
+   \end{enumerate}
+\end{prob}
+\end{document}

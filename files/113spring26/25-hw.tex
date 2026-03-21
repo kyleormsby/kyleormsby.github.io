@@ -1,0 +1,115 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}[prop]{Problem}
+\newtheorem{q}[prop]{Question}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+
+\newcommand{\Aut}{\operatorname{Aut}}
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 25}
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Monday, April 6 at 10pm.
+\bigskip
+
+\begin{prob}\label{independence} 
+Suppose a fair coin is flipped~$n>1$ times. We record the result at a string of
+length~$n$ in the letters~$H$ and~$T$.  For instance, if~$n=3$, then~$HTT$ says
+that the first flip was heads and the next two were tails.  Our sample
+space~$S$ is, thus, the set of strings of length~$n$ consisting of the
+letters~$H$ and~$T$, upon which we place the uniform distribution.
+Let~$A$ be the event that the first flip is heads, and let~$B$ be the event that
+the last flip is heads.  
+
+\begin{enumerate}[(a)]
+    \item Prove that these events are independent by computing
+ the relevant probabilities and using the definition of independence.
+   \item For the case of $n=2$, give an example of a probability distribution on $S$ for which these same two events $A$ and $B$ are \emph{not} independent. Note that to give a probability distribution you will need to assign probabilities to each of the outcomes, i.e., to each of the elements of $S$.
+\end{enumerate}
+\end{prob}
+
+
+\begin{prob}\label{birthday problem} This is the famous birthday problem.
+  Suppose there are~$n$ people in a room.  For simplicity, we will say that
+  there are~$365$ possible birthdays (i.e., we will ignore leap years) and that
+  each day is equally likely to be a birthday. To create the sample space,~$S$,
+  number the people from~$1$ to~$n$, then the possible outcomes are the
+  sequences of length~$n$ where the~$i$-th element of the sequence is a possible
+  birthday for person~$i$. Let~$B$ be the event that at least two people in the
+  room share a birthday.
+  \begin{enumerate}[(a)]
+    \item What is~$|S|$?
+    \item Consider the complementary event~$B^c$, i.e., the event that no two
+      people have the same birthday.  Give an expression for~$B^c$, and use it
+      to find the probability~$P(B^c)$.  (The result will depend on~$n$.)
+    \item Use the previous result to give an expression for~$P(B)$.
+    \item A plot of~$P(B)$ as a function
+      of~$n$ looks like this:
+      \begin{center}
+	\includegraphics[height=1.5in]{birthday.png}
+      \end{center}
+      Use a calculator of some sort to give decimal approximations, accurate to
+      three decimal places, for~$P(B)$ when~$n=22$ and~$n=23$. You should see
+      that if the room contains at least~$23$ people, then the probability two
+      people share the same birthday is more than one half.
+  \end{enumerate}
+\end{prob}
+\end{document}
