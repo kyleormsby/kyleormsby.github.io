@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bipartite Polyhedra</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0d0d1a; overflow: hidden; font-family: system-ui, -apple-system, sans-serif; }
+    canvas { display: block; }
+
+    /* ── Solid selector ── */
+    #selector {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: calc(100vw - 32px);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 22px;
+      padding: 8px 34px 8px 18px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      color: rgba(255,255,255,0.88);
+      font-size: 13px;
+      font-family: system-ui, -apple-system, sans-serif;
+      letter-spacing: 0.15px;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-color: rgba(255,255,255,0.07);
+    }
+    #selector option {
+      background: #1a1a2e;
+      color: rgba(255,255,255,0.88);
+    }
+
+    /* ── Info ── */
+    #info {
+      position: fixed;
+      top: 68px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+      user-select: none;
+      max-width: calc(100vw - 32px);
+    }
+    #solid-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.88);
+      letter-spacing: 0.2px;
+    }
+    #solid-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.38);
+      margin-top: 3px;
+    }
+
+    /* ── Bottom UI ── */
+    #ui {
+      position: fixed;
+      bottom: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      max-width: calc(100vw - 32px);
+      width: max-content;
+    }
+    #toggle-btn {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.9);
+      padding: 9px 28px;
+      border-radius: 22px;
+      cursor: pointer;
+      font-size: 13.5px;
+      letter-spacing: 0.15px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: background 0.15s, border-color 0.15s;
+      touch-action: manipulation;
+    }
+    #toggle-btn:hover {
+      background: rgba(255,255,255,0.13);
+      border-color: rgba(255,255,255,0.35);
+    }
+    #status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      color: rgba(255,255,255,0.7);
+    }
+    #swatch {
+      width: 10px; height: 10px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    #hint {
+      font-size: 10.5px;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.3px;
+      white-space: normal;
+      text-align: center;
+    }
+    @media (max-width: 480px) {
+      #selector   { font-size: 12px; padding: 7px 30px 7px 14px; }
+      #solid-name { font-size: 15px; }
+      #solid-sub  { font-size: 11px; }
+      #toggle-btn { font-size: 13px; padding: 10px 24px; }
+      #ui         { bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <select id="selector"></select>
+
+  <div id="info">
+    <div id="solid-name"></div>
+    <div id="solid-sub"></div>
+  </div>
+
+  <div id="ui">
+    <button id="toggle-btn">Toggle Face Class</button>
+    <div id="status">
+      <span id="swatch"></span>
+      <span id="status-text"></span>
+    </div>
+    <div id="hint">T to toggle &nbsp;·&nbsp; drag to rotate &nbsp;·&nbsp; pinch / scroll to zoom</div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three":         "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // ═══════════════════════════════════════════════════════════════════
+    // SOLID DATA
+    // ═══════════════════════════════════════════════════════════════════
+
+    const a   = 1 + Math.SQRT2;             // ≈ 2.414, used in rhombicuboctahedron
+    const phi  = (1 + Math.sqrt(5)) / 2;   // golden ratio φ ≈ 1.618
+    const phi2 = phi + 1;                   // φ² = φ+1 ≈ 2.618
+    // Disdyakis-dodecahedron vertex radii (polar dual of truncated cuboctahedron,
+    // with cubic vertices normalised to (±1,±1,±1)):
+    const dd_a = 3*(3+Math.SQRT2)/7;       // octahedral-axis vertices   ≈ 1.892
+    const dd_b = 3*(4+Math.SQRT2)/14;      // edge-midpoint vertices      ≈ 1.160
+
+    // ── Helpers for algorithmic face extraction ──
+    function _d2(a,b){ return (a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2; }
+    function _n3(v){ const r=Math.sqrt(v[0]**2+v[1]**2+v[2]**2); return r<1e-12?[0,0,0]:[v[0]/r,v[1]/r,v[2]/r]; }
+    function _s3(a,b){ return [a[0]-b[0],a[1]-b[1],a[2]-b[2]]; }
+    function _dot(a,b){ return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]; }
+    function _proj(v,n){ const d=_dot(v,n); return [v[0]-d*n[0],v[1]-d*n[1],v[2]-d*n[2]]; }
+    function _angle(a,b,n){
+      const la=Math.sqrt(_dot(a,a)), lb=Math.sqrt(_dot(b,b));
+      if(la<1e-10||lb<1e-10) return 0;
+      const cos=Math.max(-1,Math.min(1,_dot(a,b)/(la*lb)));
+      const cx=a[1]*b[2]-a[2]*b[1], cy=a[2]*b[0]-a[0]*b[2], cz=a[0]*b[1]-a[1]*b[0];
+      return Math.atan2((cx*n[0]+cy*n[1]+cz*n[2])/(la*lb), cos);
+    }
+
+    function buildRhombicosidodecahedron() {
+      const p = (1+Math.sqrt(5))/2;
+      const p2 = p*p, p3 = p*p2, tp = 2*p, pp = 2+p;
+      const V = [];
+      // Group 1: even perms of (±1, ±1, ±φ³)  → 24 vertices
+      for(const s1 of [1,-1]) for(const s2 of [1,-1]) for(const s3 of [1,-1]){
+        V.push([s1,      s2,      s3*p3 ]);
+        V.push([s3*p3,   s1,      s2    ]);
+        V.push([s2,      s3*p3,   s1    ]);
+      }
+      // Group 2: even perms of (±φ², ±φ, ±2φ)  → 24 vertices
+      for(const s1 of [1,-1]) for(const s2 of [1,-1]) for(const s3 of [1,-1]){
+        V.push([s1*p2,   s2*p,    s3*tp ]);
+        V.push([s3*tp,   s1*p2,   s2*p  ]);
+        V.push([s2*p,    s3*tp,   s1*p2 ]);
+      }
+      // Group 3: even perms of (±(2+φ), 0, ±φ²)  → 12 vertices
+      for(const s1 of [1,-1]) for(const s2 of [1,-1]){
+        V.push([s1*pp,   0,       s2*p2 ]);
+        V.push([s2*p2,   s1*pp,   0     ]);
+        V.push([0,       s2*p2,   s1*pp ]);
+      }
+      // Edge length² = 4 (verified analytically)
+      const N = V.length;  // 60
+      const adj = Array.from({length:N},()=>[]);
+      for(let i=0;i<N;i++) for(let j=i+1;j<N;j++)
+        if(Math.abs(_d2(V[i],V[j])-4)<0.5){ adj[i].push(j); adj[j].push(i); }
+
+      // For directed edge u→v, face to the LEFT: at v pick neighbor w (≠u)
+      // giving the MAXIMUM counterclockwise angle from (v→u) to (v→w) around outward normal.
+      function nextVert(u,v){
+        const n=_n3(V[v]), vu=_proj(_s3(V[u],V[v]),n);
+        let bw=-1, ba=-1;
+        for(const w of adj[v]){
+          if(w===u) continue;
+          const vw=_proj(_s3(V[w],V[v]),n);
+          let a=_angle(vu,vw,n);
+          a=((a%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+          if(a>0.001&&a>ba){ ba=a; bw=w; }
+        }
+        return bw;
+      }
+
+      const used=new Set(), faces=[];
+      for(let u=0;u<N;u++){
+        for(const v0 of adj[u]){
+          if(used.has(u*N+v0)) continue;
+          const face=[u]; let prev=u, curr=v0;
+          for(let k=0;k<8;k++){
+            used.add(prev*N+curr); face.push(curr);
+            const nx=nextVert(prev,curr); prev=curr; curr=nx;
+            if(nx<0||nx===u) break;
+          }
+          if(curr===u) used.add(prev*N+u);
+          if(face.length>=3) faces.push(face);
+        }
+      }
+      return {
+        vertices: V,
+        classA: faces.filter(f=>f.length!==4),  // 20 triangles + 12 pentagons
+        classB: faces.filter(f=>f.length===4),   // 30 squares
+      };
+    }
+
+    const _rid = buildRhombicosidodecahedron();
+
+    // ── Disdyakis Triacontahedron ──────────────────────────────────────────
+    // Built directly from the icosahedron.  The DT has three vertex orbits:
+    //   Type I  (12, degree 10): icosahedron vertices
+    //   Type II (20, degree  6): icosahedron face centres
+    //   Type III(30, degree  4): icosahedron edge midpoints
+    // Each icosahedron face [a,b,c] with centre D and edge midpoints eAB, eBC, eCA
+    // contributes 6 DT triangles arranged in a 6-ring around D:
+    //   (a,D,eAB), (b,D,eAB), (b,D,eBC), (c,D,eBC), (c,D,eCA), (a,D,eCA)
+    // 20 faces × 6 = 120 triangles total.
+    // All cycles in the face-adjacency graph are even (the ring around every
+    // type-I vertex is a 10-cycle, around type-II a 6-cycle, around type-III a
+    // 4-cycle), so the graph is bipartite and BFS 2-colouring succeeds.
+    function buildDisdyakisTriacontahedron() {
+      const p = (1 + Math.sqrt(5)) / 2;
+      const sqp2 = Math.sqrt(p + 2);                 // √(φ+2)
+
+      // Wikipedia Cartesian coordinates (Catalan-solid normalization):
+      //   Type-I  radius = 1         (circumsphere)
+      //   Type-II radius = R√3,  R = 5 / (3φ√(φ+2))
+      //   Type-III radius = S,   S = (7φ−6)√(φ+2) / 11
+      const R  = 5 / (3 * p * sqp2);
+      const rII = R * Math.sqrt(3);
+      const S  = (7*p - 6) * sqp2 / 11;
+
+      // 1. Natural icosahedron vertices (0, ±1, ±φ) and cyclic (edge length 2,
+      //    circumradius √(1+φ²) = √(2+φ)).  Used only for topology; discarded after.
+      const VN = [];
+      for (const s1 of [1,-1]) for (const s2 of [1,-1]) {
+        VN.push([0,    s1,    s2*p]);
+        VN.push([s1,   s2*p,  0  ]);
+        VN.push([s2*p, 0,     s1 ]);
+      }
+
+      // 2. Icosahedron edges: d² = 4 in natural coords (30 total)
+      const icoEdges = [];
+      const eIdx = new Map();
+      for (let i = 0; i < 12; i++)
+        for (let j = i+1; j < 12; j++)
+          if (Math.abs(_d2(VN[i], VN[j]) - 4) < 0.01) {
+            eIdx.set(i*12+j, icoEdges.length);
+            icoEdges.push([i, j]);
+          }
+
+      // 3. Icosahedron adjacency list
+      const icoAdj = Array.from({length:12}, ()=>[]);
+      for (const [i,j] of icoEdges) { icoAdj[i].push(j); icoAdj[j].push(i); }
+
+      // 4. Icosahedron faces: all triangles i<j<k mutually adjacent (20 total)
+      const icoFaces = [];
+      for (let i = 0; i < 12; i++)
+        for (const j of icoAdj[i]) if (j > i)
+          for (const k of icoAdj[i]) if (k > j && icoAdj[j].includes(k))
+            icoFaces.push([i, j, k]);
+
+      // 5. Place DT vertices at exact Wikipedia radii:
+      //    Type-I:   unit-normalize each natural icosahedron vertex
+      //    Type-II:  project face-centroid direction to radius rII (dodecahedron orbit)
+      //    Type-III: project edge-midpoint direction to radius S   (icosidodecahedron orbit)
+      const rN = Math.sqrt(1 + p*p);   // circumradius of natural icosahedron = √(2+φ)
+      const VI   = VN.map(v => [v[0]/rN, v[1]/rN, v[2]/rN]);
+      const VII  = icoFaces.map(([i,j,k]) => {
+        const cx = VN[i][0]+VN[j][0]+VN[k][0];
+        const cy = VN[i][1]+VN[j][1]+VN[k][1];
+        const cz = VN[i][2]+VN[j][2]+VN[k][2];
+        const r  = Math.sqrt(cx*cx + cy*cy + cz*cz);
+        return [cx/r*rII, cy/r*rII, cz/r*rII];
+      });
+      const VIII = icoEdges.map(([i,j]) => {
+        const mx = VN[i][0]+VN[j][0];
+        const my = VN[i][1]+VN[j][1];
+        const mz = VN[i][2]+VN[j][2];
+        const r  = Math.sqrt(mx*mx + my*my + mz*mz);
+        return [mx/r*S, my/r*S, mz/r*S];
+      });
+
+      // Combined: indices 0–11 = typeI, 12–31 = typeII, 32–61 = typeIII
+      const V = [...VI, ...VII, ...VIII];
+
+      // 6. 120 DT triangles — 6 per icosahedron face
+      const dtFaces = [];
+      for (let fi = 0; fi < icoFaces.length; fi++) {
+        const [a, b, c] = icoFaces[fi];
+        const D   = 12 + fi;
+        const eAB = 32 + eIdx.get(Math.min(a,b)*12+Math.max(a,b));
+        const eBC = 32 + eIdx.get(Math.min(b,c)*12+Math.max(b,c));
+        const eCA = 32 + eIdx.get(Math.min(c,a)*12+Math.max(c,a));
+        dtFaces.push([a,D,eAB],[b,D,eAB],[b,D,eBC],[c,D,eBC],[c,D,eCA],[a,D,eCA]);
+      }
+
+      // 7. BFS 2-colouring of face-adjacency graph
+      const dtEdgeFace = new Map();
+      for (let fi = 0; fi < 120; fi++) {
+        const f = dtFaces[fi];
+        for (let k = 0; k < 3; k++) {
+          const u = f[k], v = f[(k+1)%3];
+          const key = Math.min(u,v)*62 + Math.max(u,v);
+          if (!dtEdgeFace.has(key)) dtEdgeFace.set(key, []);
+          dtEdgeFace.get(key).push(fi);
+        }
+      }
+      const dtFAdj = Array.from({length:120}, ()=>[]);
+      for (const flist of dtEdgeFace.values())
+        if (flist.length === 2) {
+          dtFAdj[flist[0]].push(flist[1]);
+          dtFAdj[flist[1]].push(flist[0]);
+        }
+      const col = new Array(120).fill(-1);
+      col[0] = 0;
+      const bfsQ = [0];
+      while (bfsQ.length) {
+        const fi = bfsQ.shift();
+        for (const fj of dtFAdj[fi])
+          if (col[fj] === -1) { col[fj] = 1-col[fi]; bfsQ.push(fj); }
+      }
+
+      return {
+        vertices: V,
+        classA: dtFaces.filter((_,i) => col[i] === 0),
+        classB: dtFaces.filter((_,i) => col[i] === 1),
+      };
+    }
+
+    const _dt = buildDisdyakisTriacontahedron();
+
+    const SOLIDS = {
+
+      octahedron: {
+        name: 'Octahedron',
+        // The face-adjacency graph of the octahedron is the 3-cube graph Q₃:
+        // label each of the 8 faces by its octant sign-pattern (±,±,±);
+        // two faces are adjacent iff their patterns differ in exactly one sign,
+        // which is precisely the adjacency rule for Q₃.  Since Q₃ is bipartite,
+        // the two classes are the "even-parity" and "odd-parity" faces.
+        subtitle: 'face graph = Q₃: even-parity triangles ↔ odd-parity triangles',
+        vertices: [
+          [ 1,  0,  0],  // 0  (+x)
+          [-1,  0,  0],  // 1  (−x)
+          [ 0,  1,  0],  // 2  (+y)
+          [ 0, -1,  0],  // 3  (−y)
+          [ 0,  0,  1],  // 4  (+z)
+          [ 0,  0, -1],  // 5  (−z)
+        ],
+        // Class A — 4 even-parity triangles (0 or 2 negative-axis vertices)
+        classA: [
+          [0, 2, 4],  // (+,+,+)  0 minuses
+          [0, 3, 5],  // (+,−,−)  2 minuses
+          [1, 2, 5],  // (−,+,−)  2 minuses
+          [1, 3, 4],  // (−,−,+)  2 minuses
+        ],
+        // Class B — 4 odd-parity triangles (1 or 3 negative-axis vertices)
+        classB: [
+          [0, 2, 5],  // (+,+,−)  1 minus
+          [0, 3, 4],  // (+,−,+)  1 minus
+          [1, 2, 4],  // (−,+,+)  1 minus
+          [1, 3, 5],  // (−,−,−)  3 minuses
+        ],
+        labelA: 'Even triangles  (4)',
+        labelB: 'Odd triangles  (4)',
+        colorA: 0xff6b35,
+        colorB: 0x38c9c0,
+        // Circumradius = 1; normalised to TARGET_R in code.
+      },
+
+      cuboctahedron: {
+        name: 'Cuboctahedron',
+        // Face graph bipartition: triangles vs squares
+        // Each triangle is surrounded exclusively by squares and vice versa.
+        subtitle: 'face graph bipartition: triangles ↔ squares',
+        vertices: [
+          [ 1,  1,  0],  //  0
+          [ 1, -1,  0],  //  1
+          [-1,  1,  0],  //  2
+          [-1, -1,  0],  //  3
+          [ 1,  0,  1],  //  4
+          [ 1,  0, -1],  //  5
+          [-1,  0,  1],  //  6
+          [-1,  0, -1],  //  7
+          [ 0,  1,  1],  //  8
+          [ 0,  1, -1],  //  9
+          [ 0, -1,  1],  // 10
+          [ 0, -1, -1],  // 11
+        ],
+        // Class A — 8 triangular faces (one per octant)
+        classA: [
+          [ 0, 8, 4], [ 0, 5, 9], [ 1, 4,10], [ 1,11, 5],
+          [ 2, 6, 8], [ 2, 9, 7], [ 3,10, 6], [ 3, 7,11],
+        ],
+        // Class B — 6 square faces (one per coordinate axis)
+        classB: [
+          [ 0, 4, 1, 5], [ 2, 7, 3, 6],
+          [ 0, 9, 2, 8], [ 1,10, 3,11],
+          [ 4, 8, 6,10], [ 5,11, 7, 9],
+        ],
+        labelA: 'Triangles  (8)',
+        labelB: 'Squares  (6)',
+        colorA: 0xff6b35,
+        colorB: 0x38c9c0,
+        // Raw circumradius = sqrt(2); we'll normalise to TARGET_R in code.
+      },
+
+      tetrakisHexahedron: {
+        name: 'Tetrakis Hexahedron',
+        // The face-adjacency graph equals the skeleton of the truncated octahedron,
+        // which is bipartite (permutation-parity of the permutohedron P₄).
+        // Each pyramid over a cube face contributes 4 triangles in a 4-cycle;
+        // the two classes alternate around every vertex of the polyhedron.
+        subtitle: 'face graph bipartition: 12 triangles ↔ 12 triangles',
+        vertices: [
+          // 8 cube corners
+          [ 1,  1,  1],  //  0  +++
+          [ 1,  1, -1],  //  1  ++-
+          [ 1, -1,  1],  //  2  +-+
+          [ 1, -1, -1],  //  3  +--
+          [-1,  1,  1],  //  4  -++
+          [-1,  1, -1],  //  5  -+-
+          [-1, -1,  1],  //  6  --+
+          [-1, -1, -1],  //  7  ---
+          // 6 pyramid peaks along axes
+          // k = 3/2 is the Catalan-solid value (polar dual of the truncated
+          // octahedron): cube corners sit at radius √3, peaks at radius 3/2 < 2,
+          // which guarantees strict convexity (non-convex iff k ≥ 2).
+          [ 1.5,  0,    0   ],  //  8  x+
+          [-1.5,  0,    0   ],  //  9  x−
+          [ 0,    1.5,  0   ],  // 10  y+
+          [ 0,   -1.5,  0   ],  // 11  y−
+          [ 0,    0,    1.5 ],  // 12  z+
+          [ 0,    0,   -1.5 ],  // 13  z−
+        ],
+        // Class A — 12 triangles whose base edge is parallel to the "preceding"
+        // cyclic axis (x→y→z→x): z-faces use y‖ edges, x-faces use z‖ edges,
+        // y-faces use x‖ edges.
+        classA: [
+          [12, 0, 2], [12, 6, 4],   // z+ pyramid, y-parallel base edges
+          [13, 1, 3], [13, 7, 5],   // z− pyramid, y-parallel base edges
+          [ 8, 3, 2], [ 8, 0, 1],   // x+ pyramid, z-parallel base edges
+          [ 9, 6, 7], [ 9, 5, 4],   // x− pyramid, z-parallel base edges
+          [10, 0, 4], [10, 5, 1],   // y+ pyramid, x-parallel base edges
+          [11, 6, 2], [11, 3, 7],   // y− pyramid, x-parallel base edges
+        ],
+        // Class B — the complementary 12 triangles
+        classB: [
+          [12, 2, 6], [12, 4, 0],   // z+ pyramid, x-parallel base edges
+          [13, 3, 7], [13, 5, 1],   // z− pyramid, x-parallel base edges
+          [ 8, 2, 0], [ 8, 1, 3],   // x+ pyramid, y-parallel base edges
+          [ 9, 4, 6], [ 9, 7, 5],   // x− pyramid, y-parallel base edges
+          [10, 4, 5], [10, 1, 0],   // y+ pyramid, z-parallel base edges
+          [11, 2, 3], [11, 7, 6],   // y− pyramid, z-parallel base edges
+        ],
+        labelA: 'A-type triangles  (12)',
+        labelB: 'B-type triangles  (12)',
+        colorA: 0xff6b35,
+        colorB: 0x38c9c0,
+        // Circumradius: corners at √3 ≈ 1.732, peaks at 3/2 = 1.5; normalised in code.
+      },
+
+      rhombicuboctahedron: {
+        name: 'Rhombicuboctahedron',
+        // Face graph bipartition:
+        //   Class A = 8 triangles + 6 axial squares  (each adjacent only to belt squares)
+        //   Class B = 12 belt squares                (each adjacent to 2 tri + 2 axial)
+        subtitle: 'face graph bipartition: (triangles + axial squares) ↔ belt squares',
+        vertices: [
+          // x = ±a  (a = 1+√2)
+          [ a,  1,  1], [ a,  1, -1], [ a, -1,  1], [ a, -1, -1],  //  0– 3
+          [-a,  1,  1], [-a,  1, -1], [-a, -1,  1], [-a, -1, -1],  //  4– 7
+          // y = ±a
+          [ 1,  a,  1], [ 1,  a, -1], [-1,  a,  1], [-1,  a, -1],  //  8–11
+          [ 1, -a,  1], [ 1, -a, -1], [-1, -a,  1], [-1, -a, -1],  // 12–15
+          // z = ±a
+          [ 1,  1,  a], [ 1, -1,  a], [-1,  1,  a], [-1, -1,  a],  // 16–19
+          [ 1,  1, -a], [ 1, -1, -a], [-1,  1, -a], [-1, -1, -a],  // 20–23
+        ],
+        // Class A — 8 triangles (one per octant) + 6 axial squares
+        classA: [
+          // triangles
+          [ 0,  8, 16], [ 1,  9, 20], [ 2, 12, 17], [ 3, 13, 21],
+          [ 4, 10, 18], [ 5, 11, 22], [ 6, 14, 19], [ 7, 15, 23],
+          // axial squares (all 4 vertices share the same max coordinate)
+          [ 0,  1,  3,  2], [ 4,  5,  7,  6],
+          [ 8,  9, 11, 10], [12, 13, 15, 14],
+          [16, 17, 19, 18], [20, 21, 23, 22],
+        ],
+        // Class B — 12 belt squares (one per edge direction of the embedded cube)
+        classB: [
+          [ 0,  1,  9,  8], [ 0,  2, 17, 16],   // x+ ↔ y+/z+
+          [ 1,  3, 21, 20], [ 2,  3, 13, 12],   // x+ ↔ z−/y−
+          [ 4,  5, 11, 10], [ 4,  6, 19, 18],   // x− ↔ y+/z+
+          [ 5,  7, 23, 22], [ 6,  7, 15, 14],   // x− ↔ z−/y−
+          [ 8, 10, 18, 16], [ 9, 11, 22, 20],   // y+ ↔ z+/z−
+          [12, 14, 19, 17], [13, 15, 23, 21],   // y− ↔ z+/z−
+        ],
+        labelA: 'Triangles + axial squares  (14)',
+        labelB: 'Belt squares  (12)',
+        colorA: 0xff6b35,
+        colorB: 0x38c9c0,
+        // Raw circumradius = sqrt(a²+1+1) = sqrt(5+2√2); normalised in code.
+      },
+
+      disdyakisDoDecahedron: {
+        name: 'Disdyakis Dodecahedron',
+        // Catalan solid dual to the truncated cuboctahedron (26 vertices, 48 faces).
+        // Vertices come in three orbits under octahedral symmetry:
+        //   cubic (0–7):  (±1,±1,±1)
+        //   octahedral (8–13):  (±dd_a,0,0) and axis permutations
+        //   edge-midpoint (14–25): (±dd_b,±dd_b,0) and axis permutations
+        // Every face is a scalene triangle with one vertex of each orbit type.
+        //
+        // Bipartition: around each octahedral vertex the 8 faces form an 8-cycle
+        // which bicolours with alternating classes A and B; checking all 48 cross-
+        // adjacencies between different octahedral vertices shows the colouring is
+        // globally consistent.
+        subtitle: 'face graph bipartition: 24 scalene triangles ↔ 24 scalene triangles',
+        vertices: [
+          //  8 cubic vertices
+          [ 1,  1,  1],  //  0
+          [ 1,  1, -1],  //  1
+          [ 1, -1,  1],  //  2
+          [ 1, -1, -1],  //  3
+          [-1,  1,  1],  //  4
+          [-1,  1, -1],  //  5
+          [-1, -1,  1],  //  6
+          [-1, -1, -1],  //  7
+          //  6 octahedral vertices  (dd_a ≈ 1.892)
+          [ dd_a,   0,    0  ],  //  8  +x
+          [-dd_a,   0,    0  ],  //  9  −x
+          [ 0,    dd_a,   0  ],  // 10  +y
+          [ 0,   -dd_a,   0  ],  // 11  −y
+          [ 0,    0,    dd_a ],  // 12  +z
+          [ 0,    0,   -dd_a],  // 13  −z
+          // 12 edge-midpoint vertices  (dd_b ≈ 1.160)
+          [ dd_b,  dd_b,  0  ],  // 14  +x+y
+          [ dd_b, -dd_b,  0  ],  // 15  +x−y
+          [-dd_b,  dd_b,  0  ],  // 16  −x+y
+          [-dd_b, -dd_b,  0  ],  // 17  −x−y
+          [ dd_b,  0,    dd_b],  // 18  +x+z
+          [ dd_b,  0,   -dd_b],  // 19  +x−z
+          [-dd_b,  0,    dd_b],  // 20  −x+z
+          [-dd_b,  0,   -dd_b],  // 21  −x−z
+          [ 0,    dd_b,  dd_b],  // 22  +y+z
+          [ 0,    dd_b, -dd_b],  // 23  +y−z
+          [ 0,   -dd_b,  dd_b],  // 24  −y+z
+          [ 0,   -dd_b, -dd_b],  // 25  −y−z
+        ],
+        // Class A — alternating faces in each octahedral-vertex ring (positions 2,4,6,8)
+        classA: [
+          [ 8, 14,  0], [ 8, 18,  2], [ 8, 15,  3], [ 8, 19,  1],  // +x oct
+          [ 9,  4, 20], [ 9,  6, 17], [ 9,  7, 21], [ 9,  5, 16],  // −x oct
+          [10,  0, 22], [10,  4, 16], [10,  5, 23], [10,  1, 14],  // +y oct
+          [11, 15,  2], [11, 24,  6], [11, 17,  7], [11, 25,  3],  // −y oct
+          [12, 18,  0], [12, 22,  4], [12, 20,  6], [12, 24,  2],  // +z oct
+          [13,  1, 23], [13,  5, 21], [13,  7, 25], [13,  3, 19],  // −z oct
+        ],
+        // Class B — the complementary 24 faces (positions 1,3,5,7 in each ring)
+        classB: [
+          [ 8,  0, 18], [ 8,  2, 15], [ 8,  3, 19], [ 8,  1, 14],  // +x oct
+          [ 9, 16,  4], [ 9, 20,  6], [ 9, 17,  7], [ 9, 21,  5],  // −x oct
+          [10, 14,  0], [10, 22,  4], [10, 16,  5], [10, 23,  1],  // +y oct
+          [11,  2, 24], [11,  6, 17], [11,  7, 25], [11,  3, 15],  // −y oct
+          [12,  0, 22], [12,  4, 20], [12,  6, 24], [12,  2, 18],  // +z oct
+          [13, 19,  1], [13, 23,  5], [13, 21,  7], [13, 25,  3],  // −z oct
+        ],
+        labelA: 'A-type triangles  (24)',
+        labelB: 'B-type triangles  (24)',
+        colorA: 0xff6b35,
+        colorB: 0x38c9c0,
+        // Circumradius = dd_a ≈ 1.892 (octahedral vertices are outermost); normalised in code.
+      },
+
+      icosidodecahedron: {
+        name: 'Icosidodecahedron',
+        // Face graph bipartition: triangles vs pentagons.
+        // Each triangle is surrounded entirely by pentagons, and vice versa.
+        // Vertices = edge-midpoints of a regular icosahedron with vertices at
+        // (0,±1,±φ) and cyclic permutations (edge length 2, circumradius φ).
+        subtitle: 'face graph bipartition: triangles ↔ pentagons',
+        vertices: [
+          // Axis vertices — midpoints of the 6 "axis" icosahedron edges
+          [    0,      0,   phi],  //  0  mid(v0,v2)
+          [    0,      0,  -phi],  //  5→ stored as  5
+          [    0,    phi,     0],  // 18
+          [    0,   -phi,     0],  // 23
+          [  phi,      0,     0],  // 28
+          [ -phi,      0,     0],  // 29
+          // Remaining 24 vertices: cyclic perms of (±½, ±φ²/2, ±φ/2)
+          //   index layout mirrors icosahedron edge ordering (see comments)
+          [  0.5,  phi2/2,  phi/2],  //  1  mid(v0,v4)
+          [ -0.5,  phi2/2,  phi/2],  //  2  mid(v0,v5)
+          [ phi/2,     0.5, phi2/2], //  3  mid(v0,v8)
+          [-phi/2,     0.5, phi2/2], //  4  mid(v0,v10)
+          [  0.5,  phi2/2, -phi/2],  //  6  mid(v1,v4)
+          [ -0.5,  phi2/2, -phi/2],  //  7  mid(v1,v5)
+          [ phi/2,     0.5,-phi2/2], //  8  mid(v1,v9)
+          [-phi/2,     0.5,-phi2/2], //  9  mid(v1,v11)
+          [  0.5, -phi2/2,  phi/2],  // 10  mid(v2,v6)
+          [ -0.5, -phi2/2,  phi/2],  // 11  mid(v2,v7)
+          [ phi/2,    -0.5, phi2/2], // 12  mid(v2,v8)
+          [-phi/2,    -0.5, phi2/2], // 13  mid(v2,v10)
+          [  0.5, -phi2/2, -phi/2],  // 14  mid(v3,v6)
+          [ -0.5, -phi2/2, -phi/2],  // 15  mid(v3,v7)
+          [ phi/2,    -0.5,-phi2/2], // 16  mid(v3,v9)
+          [-phi/2,    -0.5,-phi2/2], // 17  mid(v3,v11)
+          [ phi2/2,  phi/2,    0.5], // 19  mid(v4,v8)
+          [ phi2/2,  phi/2,   -0.5], // 20  mid(v4,v9)
+          [-phi2/2,  phi/2,    0.5], // 21  mid(v5,v10)
+          [-phi2/2,  phi/2,   -0.5], // 22  mid(v5,v11)
+          [ phi2/2, -phi/2,    0.5], // 24  mid(v6,v8)
+          [ phi2/2, -phi/2,   -0.5], // 25  mid(v6,v9)
+          [-phi2/2, -phi/2,    0.5], // 26  mid(v7,v10)
+          [-phi2/2, -phi/2,   -0.5], // 27  mid(v7,v11)
+        ],
+        // ── re-index: the "natural" edge-label indices above are remapped
+        // to positions 0..29 in the array as stored.
+        // Stored order: 0→idx0, 1→idx5, 2→idx18, 3→idx23, 4→idx28, 5→idx29,
+        //               6→idx1,  7→idx2,  8→idx3,  9→idx4,
+        //              10→idx6, 11→idx7, 12→idx8, 13→idx9,
+        //              14→idx10,15→idx11,16→idx12,17→idx13,
+        //              18→idx14,19→idx15,20→idx16,21→idx17,
+        //              22→idx19,23→idx20,24→idx21,25→idx22,
+        //              26→idx24,27→idx25,28→idx26,29→idx27
+        //
+        // To avoid confusion, faces are given in terms of array positions.
+        // Array position map (edge-label → array index):
+        //  0→0,  5→1, 18→2, 23→3, 28→4, 29→5,
+        //  1→6,  2→7,  3→8,  4→9,
+        //  6→10, 7→11, 8→12, 9→13,
+        // 10→14,11→15,12→16,13→17,
+        // 14→18,15→19,16→20,17→21,
+        // 19→22,20→23,21→24,22→25,
+        // 24→26,25→27,26→28,27→29
+        //
+        // Class A — 20 triangular faces
+        // Each triangle comes from one icosahedron face {i,j,k} →
+        // vertices {mid(ij), mid(jk), mid(ik)} remapped to array positions.
+        classA: [
+          // icos face {v0,v2,v8}  → mid(02)=0, mid(28)=16, mid(08)=8
+          [ 0, 16,  8],
+          // icos face {v0,v2,v10} → 0, 17, 9
+          [ 0, 17,  9],
+          // icos face {v0,v4,v5}  → 6, 2, 7
+          [ 6,  2,  7],
+          // icos face {v0,v4,v8}  → 6, 22, 8
+          [ 6, 22,  8],
+          // icos face {v0,v5,v10} → 7, 24, 9
+          [ 7, 24,  9],
+          // icos face {v1,v3,v9}  → 12, 20, 1  (mid13=1,mid39=20,mid19=12)
+          [ 1, 20, 12],
+          // icos face {v1,v3,v11} → mid13=1, mid311=21, mid111=13
+          [ 1, 21, 13],
+          // icos face {v1,v4,v5}  → mid14=10, mid45=2, mid15=11
+          [10,  2, 11],
+          // icos face {v1,v4,v9}  → mid14=10, mid49=23, mid19=12
+          [10, 23, 12],
+          // icos face {v1,v5,v11} → mid15=11, mid511=25, mid111=13
+          [11, 25, 13],
+          // icos face {v2,v6,v7}  → mid26=14, mid67=3, mid27=15
+          [14,  3, 15],
+          // icos face {v2,v6,v8}  → mid26=14, mid68=26, mid28=16
+          [14, 26, 16],
+          // icos face {v2,v7,v10} → mid27=15, mid710=28, mid210=17
+          [15, 28, 17],
+          // icos face {v3,v6,v7}  → mid36=18, mid67=3, mid37=19
+          [18,  3, 19],
+          // icos face {v3,v6,v9}  → mid36=18, mid69=27, mid39=20
+          [18, 27, 20],
+          // icos face {v3,v7,v11} → mid37=19, mid711=29, mid311=21
+          [19, 29, 21],
+          // icos face {v4,v8,v9}  → mid48=22, mid89=4, mid49=23
+          [22,  4, 23],
+          // icos face {v5,v10,v11}→ mid510=24, mid1011=5, mid511=25
+          [24,  5, 25],
+          // icos face {v6,v8,v9}  → mid68=26, mid89=4, mid69=27
+          [26,  4, 27],
+          // icos face {v7,v10,v11}→ mid710=28, mid1011=5, mid711=29
+          [28,  5, 29],
+        ],
+        // Class B — 12 pentagonal faces
+        // Each pentagon surrounds one icosahedron vertex; its 5 vertices are
+        // the edge-midpoints of the 5 edges leaving that vertex, in cyclic order.
+        classB: [
+          // around icos v0: cyclic nbrs 2→8→4→5→10
+          //   edges: mid02=0, mid08=8, mid04=6, mid05=7, mid010=9
+          [ 0,  8,  6,  7,  9],
+          // around icos v1: cyclic nbrs 3→9→4→5→11
+          //   edges: mid13=1, mid19=12, mid14=10, mid15=11, mid111=13
+          [ 1, 12, 10, 11, 13],
+          // around icos v2: cyclic nbrs 0→8→6→7→10
+          //   edges: mid02=0, mid28=16, mid26=14, mid27=15, mid210=17
+          [ 0, 16, 14, 15, 17],
+          // around icos v3: cyclic nbrs 1→9→6→7→11
+          //   edges: mid13=1, mid39=20, mid36=18, mid37=19, mid311=21
+          [ 1, 20, 18, 19, 21],
+          // around icos v4: cyclic nbrs 0→5→1→9→8
+          //   edges: mid04=6, mid45=2, mid14=10, mid49=23, mid48=22
+          [ 6,  2, 10, 23, 22],
+          // around icos v5: cyclic nbrs 0→4→1→11→10
+          //   edges: mid05=7, mid45=2, mid15=11, mid511=25, mid510=24
+          [ 7,  2, 11, 25, 24],
+          // around icos v6: cyclic nbrs 2→7→3→9→8
+          //   edges: mid26=14, mid67=3, mid36=18, mid69=27, mid68=26
+          [14,  3, 18, 27, 26],
+          // around icos v7: cyclic nbrs 2→6→3→11→10
+          //   edges: mid27=15, mid67=3, mid37=19, mid711=29, mid710=28
+          [15,  3, 19, 29, 28],
+          // around icos v8: cyclic nbrs 0→2→6→9→4
+          //   edges: mid08=8, mid28=16, mid68=26, mid89=4, mid48=22
+          [ 8, 16, 26,  4, 22],
+          // around icos v9: cyclic nbrs 1→3→6→8→4
+          //   edges: mid19=12, mid39=20, mid69=27, mid89=4, mid49=23
+          [12, 20, 27,  4, 23],
+          // around icos v10: cyclic nbrs 0→2→7→11→5
+          //   edges: mid010=9, mid210=17, mid710=28, mid1011=5, mid510=24
+          [ 9, 17, 28,  5, 24],
+          // around icos v11: cyclic nbrs 1→3→7→10→5
+          //   edges: mid111=13, mid311=21, mid711=29, mid1011=5, mid511=25
+          [13, 21, 29,  5, 25],
+        ],
+        labelA: 'Triangles  (20)',
+        labelB: 'Pentagons  (12)',
+        colorA: 0xff6b35,
+        colorB: 0x38c9c0,
+        // Raw circumradius = φ ≈ 1.618; normalised in code.
+      },
+
+      rhombicosidodecahedron: {
+        name: 'Rhombicosidodecahedron',
+        subtitle: 'face graph bipartition: (triangles + pentagons) ↔ squares',
+        vertices: _rid.vertices,
+        classA:   _rid.classA,
+        classB:   _rid.classB,
+        labelA: 'Triangles + pentagons  (32)',
+        labelB: 'Squares  (30)',
+        colorA: 0xff6b35,
+        colorB: 0x38c9c0,
+        // Raw circumradius = √(2+φ⁶) ≈ 4.466; normalised in code.
+      },
+
+      disdyakisTriacontahedron: {
+        name: 'Disdyakis Triacontahedron',
+        // Catalan solid (62 vertices, 120 scalene-triangle faces).  Vertices are
+        // the three icosahedral orbits built at load time: 12 icosahedron vertices
+        // (degree 10), 20 face centres (degree 6), 30 edge midpoints (degree 4).
+        // Bipartition: all face-adjacency cycles are even (10-, 6-, 4-cycles around
+        // the three vertex types), so BFS 2-colouring gives 60 + 60 triangle classes.
+        subtitle: 'face graph bipartition: 60 scalene triangles ↔ 60 scalene triangles',
+        vertices: _dt.vertices,
+        classA:   _dt.classA,
+        classB:   _dt.classB,
+        labelA: 'A-type triangles  (60)',
+        labelB: 'B-type triangles  (60)',
+        colorA: 0xff6b35,
+        colorB: 0x38c9c0,
+      },
+    };
+
+    // ═══════════════════════════════════════════════════════════════════
+    // THREE.JS SETUP
+    // ═══════════════════════════════════════════════════════════════════
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setClearColor(0x0d0d1a);
+    renderer.toneMapping         = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    renderer.outputColorSpace    = THREE.SRGBColorSpace;
+    document.body.prepend(renderer.domElement);
+
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 200);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping   = true;
+    controls.dampingFactor   = 0.06;
+    controls.autoRotate      = true;
+    controls.autoRotateSpeed = 0.7;
+    controls.addEventListener('start', () => { controls.autoRotate = false; });
+
+    // Lighting — boosted for physical glass specular
+    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+    const sun = new THREE.DirectionalLight(0xffffff, 2.8);
+    sun.position.set(4, 6, 4);
+    scene.add(sun);
+    const fill = new THREE.DirectionalLight(0x7799ff, 0.9);
+    fill.position.set(-4, -3, -5);
+    scene.add(fill);
+    const rim = new THREE.PointLight(0xffffff, 2.2, 30);
+    rim.position.set(-3, 4, -4);
+    scene.add(rim);
+
+    // ═══════════════════════════════════════════════════════════════════
+    // GEOMETRY UTILITIES
+    // ═══════════════════════════════════════════════════════════════════
+
+    const TARGET_R = 2.0;  // normalised circumradius for all solids
+
+    function circumscribedScale(verts) {
+      const maxR2 = verts.reduce((m, v) => Math.max(m, v[0]**2 + v[1]**2 + v[2]**2), 0);
+      return TARGET_R / Math.sqrt(maxR2);
+    }
+
+    // For a convex polyhedron with centroid at origin:
+    // ensures the normal of the fan-triangulation points outward.
+    function fixWinding(indices, verts) {
+      const pts = indices.map(i => verts[i]);
+      // face centroid
+      const cx = pts.reduce((s,p)=>s+p[0],0)/pts.length;
+      const cy = pts.reduce((s,p)=>s+p[1],0)/pts.length;
+      const cz = pts.reduce((s,p)=>s+p[2],0)/pts.length;
+      // normal of first triangle in fan
+      const ab = [pts[1][0]-pts[0][0], pts[1][1]-pts[0][1], pts[1][2]-pts[0][2]];
+      const ac = [pts[2][0]-pts[0][0], pts[2][1]-pts[0][1], pts[2][2]-pts[0][2]];
+      const nx = ab[1]*ac[2] - ab[2]*ac[1];
+      const ny = ab[2]*ac[0] - ab[0]*ac[2];
+      const nz = ab[0]*ac[1] - ab[1]*ac[0];
+      return (nx*cx + ny*cy + nz*cz < 0) ? [...indices].reverse() : indices;
+    }
+
+    // Builds a flat-shaded BufferGeometry for a convex polygon.
+    // `indices` is a valid cyclic edge-order list; `scale` maps raw→world coords.
+    function polyGeom(indices, verts, scale) {
+      const fixed = fixWinding(indices, verts);
+      const pts   = fixed.map(i => new THREE.Vector3(verts[i][0]*scale, verts[i][1]*scale, verts[i][2]*scale));
+
+      const ab = new THREE.Vector3().subVectors(pts[1], pts[0]);
+      const ac = new THREE.Vector3().subVectors(pts[2], pts[0]);
+      const n  = new THREE.Vector3().crossVectors(ab, ac).normalize();
+
+      const pos = [], nrm = [];
+      for (let i = 1; i < pts.length - 1; i++) {
+        for (const p of [pts[0], pts[i], pts[i+1]]) {
+          pos.push(p.x, p.y, p.z);
+          nrm.push(n.x, n.y, n.z);
+        }
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+      geo.setAttribute('normal',   new THREE.BufferAttribute(new Float32Array(nrm), 3));
+      return geo;
+    }
+
+    function makeMat(color) {
+      return new THREE.MeshPhysicalMaterial({
+        color,
+        metalness:         0,
+        roughness:         0.05,
+        transmission:      0.82,
+        thickness:         0.6,
+        ior:               1.5,
+        specularIntensity: 1.0,
+        specularColor:     new THREE.Color(0xffffff),
+        transparent:       true,
+        side:              THREE.DoubleSide,
+        depthWrite:        false,
+      });
+    }
+
+    // Builds a LineSegments object from all unique edges of a face list.
+    function buildEdgeLines(faces, verts, scale) {
+      const seen = new Set();
+      const pts  = [];
+      for (const face of faces) {
+        const n = face.length;
+        for (let i = 0; i < n; i++) {
+          const a = face[i], b = face[(i+1)%n];
+          const key = a < b ? `${a}:${b}` : `${b}:${a}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            pts.push(
+              verts[a][0]*scale, verts[a][1]*scale, verts[a][2]*scale,
+              verts[b][0]*scale, verts[b][1]*scale, verts[b][2]*scale,
+            );
+          }
+        }
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pts), 3));
+      return new THREE.LineSegments(
+        geo,
+        new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.45 }),
+      );
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // STATE & SOLID SWITCHING
+    // ═══════════════════════════════════════════════════════════════════
+
+    let groupA = null, groupB = null, edgeLines = null;
+    let viewState = 0;   // 0 = both, 1 = A only, 2 = B only
+
+    function disposeSolid() {
+      for (const obj of [groupA, groupB, edgeLines]) {
+        if (!obj) continue;
+        scene.remove(obj);
+        obj.traverse(child => { if (child.geometry) child.geometry.dispose(); });
+      }
+      groupA = groupB = edgeLines = null;
+    }
+
+    function loadSolid(key) {
+      disposeSolid();
+      viewState = 0;   // 0 = both, 1 = A only, 2 = B only
+
+      const solid = SOLIDS[key];
+      const scale = circumscribedScale(solid.vertices);
+      const allFaces = [...solid.classA, ...solid.classB];
+
+      const matA = makeMat(solid.colorA);
+      const matB = makeMat(solid.colorB);
+
+      groupA = new THREE.Group();
+      groupB = new THREE.Group();
+      solid.classA.forEach(f => groupA.add(new THREE.Mesh(polyGeom(f, solid.vertices, scale), matA)));
+      solid.classB.forEach(f => groupB.add(new THREE.Mesh(polyGeom(f, solid.vertices, scale), matB)));
+
+      edgeLines = buildEdgeLines(allFaces, solid.vertices, scale);
+
+      scene.add(groupA);
+      scene.add(groupB);
+      scene.add(edgeLines);
+
+      groupA.visible = true;
+      groupB.visible = true;
+
+      // Camera reset
+      const d = TARGET_R * 2.8;
+      camera.position.set(d, d * 0.7, d);
+      controls.target.set(0, 0, 0);
+      controls.update();
+      controls.autoRotate = true;
+
+      updateUI(key);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // UI
+    // ═══════════════════════════════════════════════════════════════════
+
+    let currentKey = 'octahedron';
+
+    function updateUI(key) {
+      const solid = SOLIDS[key || currentKey];
+      document.getElementById('solid-name').textContent = solid.name;
+      document.getElementById('solid-sub').textContent  = solid.subtitle;
+
+      const sw = document.getElementById('swatch');
+      const hexA = '#' + solid.colorA.toString(16).padStart(6,'0');
+      const hexB = '#' + solid.colorB.toString(16).padStart(6,'0');
+      if (viewState === 0) {
+        sw.style.background = `linear-gradient(135deg, ${hexA} 50%, ${hexB} 50%)`;
+        document.getElementById('status-text').textContent = solid.labelA + '  +  ' + solid.labelB;
+      } else if (viewState === 1) {
+        sw.style.background = hexA;
+        document.getElementById('status-text').textContent = solid.labelA;
+      } else {
+        sw.style.background = hexB;
+        document.getElementById('status-text').textContent = solid.labelB;
+      }
+
+      // Sync dropdown
+      document.getElementById('selector').value = key || currentKey;
+    }
+
+    function toggle() {
+      viewState = (viewState + 1) % 3;   // both → A → B → both
+      groupA.visible = viewState !== 2;
+      groupB.visible = viewState !== 1;
+      updateUI();
+    }
+
+    function selectSolid(key) {
+      if (key === currentKey) return;
+      currentKey = key;
+      loadSolid(key);
+    }
+
+    // Build selector options
+    const selectorEl = document.getElementById('selector');
+    for (const [key, solid] of Object.entries(SOLIDS)) {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = solid.name;
+      selectorEl.appendChild(opt);
+    }
+    selectorEl.addEventListener('change', () => selectSolid(selectorEl.value));
+
+    document.getElementById('toggle-btn').addEventListener('click', toggle);
+    document.addEventListener('keydown', e => {
+      if (e.key === 't' || e.key === 'T') toggle();
+    });
+
+    // ═══════════════════════════════════════════════════════════════════
+    // RESIZE + RENDER LOOP
+    // ═══════════════════════════════════════════════════════════════════
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    (function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    })();
+
+    // ── Initial load ──
+    loadSolid('octahedron');
+
+  </script>
+</body>
+</html>
