@@ -1,0 +1,84 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}[prop]{Problem}
+\newtheorem{q}[prop]{Question}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+
+\newcommand{\Aut}{\operatorname{Aut}}
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 30}
+
+\begin{document}
+\maketitle
+
+
+
+\begin{prob}
+Use the Fundamental Theorem of Arithmetic to prove that if $p$ is prime, $a$ and
+$b$ are integers, and $p|ab$, then either $p|a$ or $p|b$ (or both).
+\end{prob}
+
+\begin{prob}
+Let $p$ be a prime and let $a$ be an integer $1\le a\le p-1$.  Consider the
+numbers $a,2a,3a,\ldots,(p-1)a$. Use the division algorithm to write
+\[
+ia =pq_i+r_i
+\]
+with~$0\leq r_i<p$ and integers~$q_i$ for~$1\leq i\leq p-1$.
+\begin{enumerate}[(a)]
+  \item Prove that~$r_i>0$ for each~$i$.
+  \item If~$r_i=r_j$, show that~$p|(i-j)a$, and explain why we can then conclude
+    that~$i=j$.
+  \item Prove that~$\left\{ r_1,\dots,r_{p-1} \right\}=\left\{ 1,2,\dots,p-1\right\}$.
+\end{enumerate}
+\end{prob}
+\end{document}
