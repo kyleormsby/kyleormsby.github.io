@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>G(a, m): directed graph of b → b + a (mod m)</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --ink: #1a1a1a;
+    --muted: #666;
+    --accent: #c0392b;
+    --panel: #ffffff;
+    --border: #d8d4c7;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Computer Modern Serif", Georgia, "Times New Roman", serif;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: 100vh;
+    height: 100dvh;
+    width: 100vw;
+  }
+
+  .panel {
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 20px 18px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  .panel h1 {
+    font-size: 20px;
+    margin: 0 0 4px 0;
+    font-weight: 600;
+  }
+  .panel .sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 18px;
+    font-style: italic;
+  }
+
+  .control { margin-bottom: 14px; }
+  .control label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  .control label .val {
+    font-family: "Computer Modern Typewriter", "Courier New", monospace;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .control input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+
+  /* Toggle styled as a two-state pill */
+  .toggle {
+    display: flex;
+    background: #f0ece0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px;
+    margin-bottom: 14px;
+  }
+  .toggle button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 7px 8px;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: #555;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .toggle button.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  .toggle button:hover:not(.active) { color: var(--ink); }
+
+  .facts {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: #f5f1e6;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .facts .row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .facts .row:last-child { margin-bottom: 0; }
+  .facts .row b {
+    font-family: "Computer Modern Typewriter", "Courier New", monospace;
+    color: var(--accent);
+  }
+
+  .notes {
+    margin-top: 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #333;
+  }
+  .notes h2 {
+    font-size: 13px;
+    margin: 0 0 6px 0;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #555;
+  }
+  .notes p { margin: 0 0 8px 0; }
+  .notes code {
+    font-family: "Computer Modern Typewriter", "Courier New", monospace;
+    background: #f0ece0;
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 220px;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "title legend"
+      "svg   legend";
+    gap: 0;
+  }
+
+  .header {
+    grid-area: title;
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 16px 4px 16px;
+  }
+  .title { font-size: 16px; }
+  .title em {
+    color: var(--muted);
+    font-size: 12px;
+    display: block;
+    margin-top: 2px;
+    font-style: italic;
+  }
+
+  .legend-rail {
+    grid-area: legend;
+    border-left: 1px solid var(--border);
+    background: #fcfaf3;
+    padding: 14px 14px;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  .legend {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .legend .dot {
+    display: inline-block;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+  .legend .lrow {
+    margin: 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .legend .lhead {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #555;
+  }
+
+  .svg-host {
+    grid-area: svg;
+    min-height: 0;
+    min-width: 0;
+    position: relative;
+  }
+
+  svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .vlabel {
+    font-family: "Computer Modern Serif", Georgia, serif;
+    fill: #fff;
+    text-anchor: middle;
+    dominant-baseline: central;
+    pointer-events: none;
+    user-select: none;
+    font-weight: 600;
+  }
+
+  @media (max-width: 760px) {
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+    .panel {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      max-height: 48vh;
+    }
+    .panel h1 { font-size: 18px; }
+    .panel .sub { margin-bottom: 12px; }
+    .notes { display: none; }
+    /* Stack on mobile: title on top, svg in middle, legend below */
+    .canvas-wrap {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr auto;
+      grid-template-areas:
+        "title"
+        "svg"
+        "legend";
+    }
+    .legend-rail {
+      border-left: none;
+      border-top: 1px solid var(--border);
+      padding: 8px 12px;
+      max-height: 90px;
+    }
+    .legend { font-size: 11px; }
+    .legend .lhead { display: none; }
+    .header { padding: 8px 12px 2px 12px; }
+    .title { font-size: 14px; }
+  }
+
+  @media (max-width: 480px) {
+    .panel { max-height: 42vh; }
+    .legend-rail { max-height: 70px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <h1>G(a, m)</h1>
+    <div class="sub">V = {0, 1, …, m−1}, edges b → b + a (mod m)</div>
+
+    <div class="control">
+      <label>m (vertices) <span class="val" id="mVal">12</span></label>
+      <input type="range" id="mSlider" min="2" max="40" value="12" />
+    </div>
+    <div class="control">
+      <label>a (step) <span class="val" id="aVal">3</span></label>
+      <input type="range" id="aSlider" min="0" max="12" value="3" />
+    </div>
+
+    <div class="toggle" id="toggle">
+      <button data-mode="natural" class="active">Natural order</button>
+      <button data-mode="cycles">Disjoint cycles</button>
+    </div>
+
+    <div class="facts" id="facts"></div>
+
+    <div class="notes">
+      <h2>What to look for</h2>
+      <p>Every vertex has out-degree 1, so G(a, m) is a disjoint union of directed cycles.</p>
+      <p>Let d = gcd(a, m). Then G(a, m) has exactly <b>d</b> cycles, each of length <b>m/d</b>.</p>
+      <p>Toggle to <em>Disjoint cycles</em> to see each coset b + aℤ drawn as its own regular polygon, with vertices in the order b → b+a → b+2a → ….</p>
+    </div>
+  </aside>
+
+  <main class="canvas-wrap">
+    <div class="header">
+      <div class="title">G(a, m)<em id="titleSub"></em></div>
+    </div>
+    <div class="svg-host">
+      <svg id="svg" preserveAspectRatio="xMidYMid meet">
+        <defs></defs>
+        <g id="root"></g>
+      </svg>
+    </div>
+    <aside class="legend-rail">
+      <div class="legend" id="legend"></div>
+    </aside>
+  </main>
+</div>
+
+<script>
+(() => {
+  const mSlider = document.getElementById('mSlider');
+  const aSlider = document.getElementById('aSlider');
+  const mVal = document.getElementById('mVal');
+  const aVal = document.getElementById('aVal');
+  const factsEl = document.getElementById('facts');
+  const legendEl = document.getElementById('legend');
+  const titleSub = document.getElementById('titleSub');
+  const toggleEl = document.getElementById('toggle');
+  const svg = document.getElementById('svg');
+  const svgHost = svg.parentElement;
+  const root = document.getElementById('root');
+  const defs = svg.querySelector('defs');
+
+  const CYCLE_COLORS = [
+    '#c0392b', '#2980b9', '#27ae60', '#8e44ad',
+    '#d35400', '#16a085', '#2c3e50', '#c71585',
+    '#7f8c8d', '#b8860b', '#008b8b', '#483d8b'
+  ];
+
+  // -------------------------- math helpers --------------------------
+
+  function gcd(x, y) {
+    x = Math.abs(x); y = Math.abs(y);
+    while (y) { [x, y] = [y, x % y]; }
+    return x;
+  }
+
+  function cycles(a, m) {
+    const visited = new Array(m).fill(false);
+    const out = [];
+    for (let start = 0; start < m; start++) {
+      if (visited[start]) continue;
+      const cyc = [];
+      let v = start;
+      while (!visited[v]) {
+        visited[v] = true;
+        cyc.push(v);
+        v = (v + a) % m;
+      }
+      out.push(cyc);
+    }
+    return out;
+  }
+
+  // -------------------------- layouts --------------------------
+
+  // Rescale a set of points around the canvas center so that the bounding box
+  // (expanded by an extra `nodePad` for node radii) fits within the canvas
+  // with a margin. Operates in-place and returns scale factor.
+  function fitPointsToCanvas(pts, W, H, nodePad, marginFrac) {
+    if (pts.length === 0) return 1;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const p of pts) {
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y > maxY) maxY = p.y;
+    }
+    const cx = W / 2, cy = H / 2;
+    // expand bounds by nodePad to leave room for the node disks themselves
+    const bw = (maxX - minX) + 2 * nodePad;
+    const bh = (maxY - minY) + 2 * nodePad;
+    if (bw <= 0 || bh <= 0) return 1;
+    const availW = W * (1 - 2 * marginFrac);
+    const availH = H * (1 - 2 * marginFrac);
+    const scale = Math.min(availW / bw, availH / bh, 1); // never scale up
+    if (scale >= 0.999) return 1;
+    for (const p of pts) {
+      p.x = cx + (p.x - cx) * scale;
+      p.y = cy + (p.y - cy) * scale;
+    }
+    return scale;
+  }
+
+  // Natural layout: all vertices on a single circle in order 0,...,m-1.
+  function naturalLayout(m, W, H) {
+    const cx = W / 2, cy = H / 2;
+    const minDim = Math.min(W, H);
+    const pad = minDim < 360 ? 0.32 : 0.38;
+    const R = minDim * pad;
+    const pts = new Array(m);
+    for (let i = 0; i < m; i++) {
+      const theta = -(2 * Math.PI * i) / m;
+      pts[i] = { x: cx + R * Math.cos(theta), y: cy + R * Math.sin(theta) };
+    }
+    // Fit pass with margin (mostly a safety net)
+    const baseScale = minDim / 800;
+    const estNodeR = Math.max(7, Math.min(22 * baseScale + 3, 260 * baseScale / Math.sqrt(m)));
+    const scale = fitPointsToCanvas(pts, W, H, estNodeR, 0.04);
+    return { pts, R: R * scale };
+  }
+
+  // Cycles layout: each of the d cycles drawn as its own regular polygon,
+  // vertices in traversal order b -> b+a -> b+2a -> ...  The d small circles
+  // are arranged on a "circle of circles" (or centered if d == 1).
+  function cyclesLayout(cyc, m, W, H) {
+    const pts = new Array(m);
+    const d = cyc.length;
+    const cx = W / 2, cy = H / 2;
+    const minDim = Math.min(W, H);
+
+    if (d === 1) {
+      // Single cycle: fill the canvas
+      const R = minDim * (minDim < 360 ? 0.32 : 0.38);
+      const C = cyc[0];
+      for (let k = 0; k < C.length; k++) {
+        const v = C[k];
+        const theta = -(2 * Math.PI * k) / C.length;
+        pts[v] = { x: cx + R * Math.cos(theta), y: cy + R * Math.sin(theta) };
+      }
+      return { pts, R, cycleR: R };
+    }
+
+    // Multiple cycles: arrange their centers on a big circle.
+    // Big-circle radius (modest; the fit pass below will downscale if needed).
+    const bigR = minDim * 0.30;
+    // Each small circle gets an angular slice 2π/d on the big circle;
+    // distance between adjacent centers is 2 * bigR * sin(π/d).
+    const sliceDist = 2 * bigR * Math.sin(Math.PI / d);
+    const maxByGap = sliceDist * 0.42;
+    const absoluteCap = minDim * 0.18;
+    let smallR = Math.min(maxByGap, absoluteCap);
+    smallR = Math.max(smallR, Math.min(minDim * 0.06, 30));
+
+    for (let i = 0; i < d; i++) {
+      const phi = -Math.PI / 2 + (2 * Math.PI * i) / d;
+      const ccx = cx + bigR * Math.cos(phi);
+      const ccy = cy + bigR * Math.sin(phi);
+      const C = cyc[i];
+      // Place vertex 0 of each small cycle on its right (theta=0) and traverse
+      // counterclockwise, matching the natural-layout convention.
+      for (let k = 0; k < C.length; k++) {
+        const v = C[k];
+        const theta = -(2 * Math.PI * k) / C.length;
+        pts[v] = { x: ccx + smallR * Math.cos(theta), y: ccy + smallR * Math.sin(theta) };
+      }
+    }
+
+    // Fit pass: estimate node radius and rescale so everything fits with margin.
+    const baseScale = minDim / 800;
+    const cycleLen = m / d;
+    const chord = 2 * smallR * Math.sin(Math.PI / Math.max(cycleLen, 2));
+    const estNodeR = Math.max(7, Math.min(22 * baseScale + 3, chord * 0.42));
+    const marginFrac = 0.04;
+    const scale = fitPointsToCanvas(pts, W, H, estNodeR, marginFrac);
+
+    return { pts, R: bigR * scale, cycleR: smallR * scale };
+  }
+
+  // -------------------------- edge drawing --------------------------
+
+  function edgePath(p, q, cx, cy, nodeR, isSelf, bend) {
+    if (isSelf) {
+      const vx = p.x - cx, vy = p.y - cy;
+      const len = Math.hypot(vx, vy) || 1;
+      const ux = vx / len, uy = vy / len;
+      const tx = -uy, ty = ux;
+      const loopR = nodeR * 1.1;
+      const start = { x: p.x + ux * nodeR + tx * 2, y: p.y + uy * nodeR + ty * 2 };
+      const end   = { x: p.x + ux * nodeR - tx * 2, y: p.y + uy * nodeR - ty * 2 };
+      const c1 = { x: p.x + ux * (nodeR + 3 * loopR) + tx * loopR,
+                   y: p.y + uy * (nodeR + 3 * loopR) + ty * loopR };
+      const c2 = { x: p.x + ux * (nodeR + 3 * loopR) - tx * loopR,
+                   y: p.y + uy * (nodeR + 3 * loopR) - ty * loopR };
+      return `M ${start.x} ${start.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${end.x} ${end.y}`;
+    }
+    const dx = q.x - p.x, dy = q.y - p.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const ux = dx / dist, uy = dy / dist;
+    const sx = p.x + ux * nodeR;
+    const sy = p.y + uy * nodeR;
+    const ex = q.x - ux * nodeR;
+    const ey = q.y - uy * nodeR;
+    const px = -uy, py = ux;
+    const mx = (sx + ex) / 2 + px * bend;
+    const my = (sy + ey) / 2 + py * bend;
+    return `M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}`;
+  }
+
+  function bendFor(p, q, mode) {
+    const dx = q.x - p.x, dy = q.y - p.y;
+    const d = Math.hypot(dx, dy);
+    // In "cycles" mode, bending isn't really needed (consecutive vertices
+    // are adjacent), but we keep a tiny bend for visual continuity.
+    if (mode === 'cycles') return Math.min(8, d * 0.05);
+    return Math.min(40, Math.max(6, d * 0.12));
+  }
+
+  function ensureMarker(id, color) {
+    let m = document.getElementById(id);
+    if (m) {
+      const existing = m.querySelector('path');
+      if (existing) existing.setAttribute('fill', color);
+      return;
+    }
+    m = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    m.setAttribute('id', id);
+    m.setAttribute('viewBox', '0 0 10 10');
+    m.setAttribute('refX', '9');
+    m.setAttribute('refY', '5');
+    m.setAttribute('markerWidth', '7');
+    m.setAttribute('markerHeight', '7');
+    m.setAttribute('orient', 'auto-start-reverse');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+    path.setAttribute('fill', color);
+    m.appendChild(path);
+    defs.appendChild(m);
+  }
+
+  // -------------------------- state & animation --------------------------
+
+  // Persistent SVG element references so we can update without rebuilding
+  // (this is what lets the animation be smooth at 60fps).
+  const NS = 'http://www.w3.org/2000/svg';
+  let edgesG = null, nodesG = null;
+  let edgePaths = [];   // index by source vertex b
+  let nodeGroups = [];  // index by vertex
+  let nodeCircles = [];
+  let nodeLabels = [];
+
+  // Layouts being interpolated between
+  let fromPts = null;
+  let toPts = null;
+  let curPts = null;   // current interpolated positions
+  let animStart = 0;
+  let animDur = 700;   // ms
+  let animating = false;
+
+  let mode = 'natural';        // 'natural' | 'cycles'
+  let lastSize = { W: 0, H: 0 };
+  let lastParams = { m: -1, a: -1 };
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  // Compute layout for a given mode.
+  function computeLayout(modeName, m, a, W, H) {
+    if (modeName === 'natural') {
+      return naturalLayout(m, W, H);
+    } else {
+      const cyc = cycles(a, m);
+      cyc.sort((A, B) => Math.min(...A) - Math.min(...B));
+      return cyclesLayout(cyc, m, W, H);
+    }
+  }
+
+  // Build the SVG structure (nodes + edges) when the topology changes
+  // (i.e. m, a, or the canvas size). Layout-independent: positions are
+  // applied separately so we can animate.
+  function rebuildSvg(m, a, W, H) {
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+    const cyc = cycles(a, m);
+    cyc.sort((A, B) => Math.min(...A) - Math.min(...B));
+    const cycleOf = new Array(m);
+    cyc.forEach((C, i) => C.forEach(v => cycleOf[v] = i));
+
+    cyc.forEach((_, i) => {
+      ensureMarker(`arrow-${i}`, CYCLE_COLORS[i % CYCLE_COLORS.length]);
+    });
+
+    root.innerHTML = '';
+    edgesG = document.createElementNS(NS, 'g');
+    edgesG.setAttribute('fill', 'none');
+    root.appendChild(edgesG);
+
+    nodesG = document.createElementNS(NS, 'g');
+    root.appendChild(nodesG);
+
+    const minDim = Math.min(W, H);
+    const baseScale = minDim / 800;
+    const strokeW = Math.max(1.1, 1.8 * baseScale);
+
+    edgePaths = new Array(m);
+    for (let b = 0; b < m; b++) {
+      const ci = cycleOf[b];
+      const color = CYCLE_COLORS[ci % CYCLE_COLORS.length];
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('stroke', color);
+      path.setAttribute('stroke-width', strokeW);
+      path.setAttribute('opacity', '0.85');
+      path.setAttribute('marker-end', `url(#arrow-${ci})`);
+      edgesG.appendChild(path);
+      edgePaths[b] = path;
+    }
+
+    nodeGroups = new Array(m);
+    nodeCircles = new Array(m);
+    nodeLabels = new Array(m);
+
+    for (let v = 0; v < m; v++) {
+      const ci = cycleOf[v];
+      const color = CYCLE_COLORS[ci % CYCLE_COLORS.length];
+      const g = document.createElementNS(NS, 'g');
+      const circle = document.createElementNS(NS, 'circle');
+      circle.setAttribute('fill', color);
+      circle.setAttribute('stroke', '#fff');
+      circle.setAttribute('stroke-width', Math.max(1, 2 * baseScale));
+      g.appendChild(circle);
+
+      const label = document.createElementNS(NS, 'text');
+      label.setAttribute('class', 'vlabel');
+      label.textContent = v;
+      g.appendChild(label);
+
+      nodesG.appendChild(g);
+      nodeGroups[v] = g;
+      nodeCircles[v] = circle;
+      nodeLabels[v] = label;
+    }
+  }
+
+  // Apply positions (and node sizing) for the current frame.
+  function applyPositions(pts, m, a, W, H, layoutInfo) {
+    const minDim = Math.min(W, H);
+    const baseScale = minDim / 800;
+    const cx = W / 2, cy = H / 2;
+
+    // Decide node radius based on the *smaller* of the two layouts' scales,
+    // to avoid clipping during interpolation. For cycles mode this is governed
+    // by the small-circle radius and cycle length.
+    let nodeR;
+    if (mode === 'cycles' && layoutInfo && layoutInfo.cycleR != null) {
+      const d = gcd(a, m);
+      const cycleLen = m / d;
+      // chord-based estimate of how big a node can be without overlap
+      const chord = 2 * layoutInfo.cycleR * Math.sin(Math.PI / Math.max(cycleLen, 2));
+      nodeR = Math.max(7, Math.min(22 * baseScale + 3, chord * 0.42));
+    } else {
+      nodeR = Math.max(7, Math.min(22 * baseScale + 3, 260 * baseScale / Math.sqrt(m)));
+    }
+
+    const labelSize = Math.max(9, Math.min(nodeR * 0.95, 16));
+    const showLabels = nodeR >= 9;
+
+    // Update node positions and sizes
+    for (let v = 0; v < m; v++) {
+      const p = pts[v];
+      nodeGroups[v].setAttribute('transform', `translate(${p.x}, ${p.y})`);
+      nodeCircles[v].setAttribute('r', nodeR);
+      if (showLabels) {
+        nodeLabels[v].setAttribute('font-size', labelSize);
+        nodeLabels[v].style.display = '';
+      } else {
+        nodeLabels[v].style.display = 'none';
+      }
+    }
+
+    // Update edge paths from current positions
+    for (let b = 0; b < m; b++) {
+      const c = (b + a) % m;
+      const p = pts[b], q = pts[c];
+      const isSelf = (b === c);
+      const bend = isSelf ? 0 : bendFor(p, q, mode);
+      const dStr = edgePath(p, q, cx, cy, nodeR, isSelf, bend);
+      edgePaths[b].setAttribute('d', dStr);
+    }
+  }
+
+  // Linear interpolation of two point arrays
+  function lerpPts(A, B, t) {
+    const out = new Array(A.length);
+    for (let i = 0; i < A.length; i++) {
+      out[i] = {
+        x: A[i].x + (B[i].x - A[i].x) * t,
+        y: A[i].y + (B[i].y - A[i].y) * t
+      };
+    }
+    return out;
+  }
+
+  function startAnimation(targetMode, m, a, W, H) {
+    const fromLayout = computeLayout(mode, m, a, W, H);
+    const toLayout = computeLayout(targetMode, m, a, W, H);
+    fromPts = fromLayout.pts;
+    toPts = toLayout.pts;
+    curPts = fromPts;
+    animStart = performance.now();
+    animating = true;
+    mode = targetMode;
+    // For interpolated frames we use the *target* layout's info for sizing
+    // once we cross the halfway point, to avoid sudden jumps.
+    requestAnimationFrame((t) => animate(t, m, a, W, H, toLayout, fromLayout));
+  }
+
+  function animate(now, m, a, W, H, toLayout, fromLayout) {
+    if (!animating) return;
+    const t = Math.min(1, (now - animStart) / animDur);
+    const e = easeInOutCubic(t);
+    curPts = lerpPts(fromPts, toPts, e);
+    // Choose layoutInfo based on which side we're closer to (for node sizing)
+    const layoutInfo = e < 0.5 ? fromLayout : toLayout;
+    applyPositions(curPts, m, a, W, H, layoutInfo);
+    if (t < 1) {
+      requestAnimationFrame((nt) => animate(nt, m, a, W, H, toLayout, fromLayout));
+    } else {
+      animating = false;
+      curPts = toPts;
+    }
+  }
+
+  // -------------------------- top-level render --------------------------
+
+  function updateInfoPanels(m, a) {
+    const d = gcd(a, m);
+    const cyc = cycles(a, m);
+    cyc.sort((A, B) => Math.min(...A) - Math.min(...B));
+    const cycleLen = m / d;
+
+    factsEl.innerHTML = `
+      <div class="row"><span>gcd(a, m)</span><b>${d}</b></div>
+      <div class="row"><span>number of cycles</span><b>${d}</b></div>
+      <div class="row"><span>length of each cycle</span><b>${cycleLen}</b></div>
+      <div class="row"><span>connected?</span><b>${d === 1 ? 'yes' : 'no'}</b></div>
+    `;
+
+    let legendHTML = `<div class="lhead">Cycles (cosets b + aℤ)</div>`;
+    cyc.forEach((C, i) => {
+      const color = CYCLE_COLORS[i % CYCLE_COLORS.length];
+      const minV = Math.min(...C);
+      legendHTML += `<div class="lrow"><span class="dot" style="background:${color}"></span>${minV}+${a}ℤ (${C.length})</div>`;
+    });
+    legendEl.innerHTML = legendHTML;
+  }
+
+  function render(opts = {}) {
+    const m = parseInt(mSlider.value, 10);
+    aSlider.max = Math.max(0, m - 1);
+    if (parseInt(aSlider.value, 10) > m - 1) aSlider.value = m - 1;
+    const a = parseInt(aSlider.value, 10);
+
+    mVal.textContent = m;
+    aVal.textContent = a;
+    titleSub.textContent = `a = ${a},  m = ${m}`;
+
+    const rect = svgHost.getBoundingClientRect();
+    const W = Math.max(120, Math.floor(rect.width));
+    const H = Math.max(120, Math.floor(rect.height));
+
+    const topologyChanged =
+      lastParams.m !== m ||
+      lastParams.a !== a ||
+      lastSize.W !== W ||
+      lastSize.H !== H;
+
+    if (topologyChanged) {
+      // Cancel any in-flight animation
+      animating = false;
+      rebuildSvg(m, a, W, H);
+      lastParams = { m, a };
+      lastSize = { W, H };
+      // Snap to current mode's layout (no animation when params/size change)
+      const layout = computeLayout(mode, m, a, W, H);
+      curPts = layout.pts;
+      applyPositions(curPts, m, a, W, H, layout);
+    }
+
+    updateInfoPanels(m, a);
+  }
+
+  // -------------------------- event wiring --------------------------
+
+  mSlider.addEventListener('input', () => render());
+  aSlider.addEventListener('input', () => render());
+
+  toggleEl.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button[data-mode]');
+    if (!btn) return;
+    const targetMode = btn.dataset.mode;
+    if (targetMode === mode && !animating) return;
+
+    // Update active-button styling
+    toggleEl.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === targetMode);
+    });
+
+    const m = parseInt(mSlider.value, 10);
+    const a = parseInt(aSlider.value, 10);
+    const rect = svgHost.getBoundingClientRect();
+    const W = Math.max(120, Math.floor(rect.width));
+    const H = Math.max(120, Math.floor(rect.height));
+
+    // Make sure the SVG is built for current params; then animate to target.
+    if (lastParams.m !== m || lastParams.a !== a || lastSize.W !== W || lastSize.H !== H) {
+      rebuildSvg(m, a, W, H);
+      lastParams = { m, a };
+      lastSize = { W, H };
+    }
+    startAnimation(targetMode, m, a, W, H);
+  });
+
+  // Resize: rebuild and snap (no animation on resize is the right call)
+  const ro = new ResizeObserver(() => render());
+  ro.observe(svgHost);
+
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => render(), 100);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
