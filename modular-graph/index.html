@@ -470,7 +470,11 @@
 
   // -------------------------- edge drawing --------------------------
 
-  function edgePath(p, q, cx, cy, nodeR, isSelf, bend) {
+  // Build a quadratic-Bezier edge path from p to q using a given control point.
+  // Endpoints are shortened by nodeR so the arrowhead and source vertex don't
+  // overlap their respective circles. The control point is *not* the apex of
+  // the curve — the apex sits at (M + control)/2 where M is the chord midpoint.
+  function edgePath(p, q, cx, cy, nodeR, isSelf, ctrl) {
     if (isSelf) {
       const vx = p.x - cx, vy = p.y - cy;
       const len = Math.hypot(vx, vy) || 1;
@@ -485,26 +489,83 @@
                    y: p.y + uy * (nodeR + 3 * loopR) - ty * loopR };
       return `M ${start.x} ${start.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${end.x} ${end.y}`;
     }
-    const dx = q.x - p.x, dy = q.y - p.y;
-    const dist = Math.hypot(dx, dy) || 1;
-    const ux = dx / dist, uy = dy / dist;
-    const sx = p.x + ux * nodeR;
-    const sy = p.y + uy * nodeR;
-    const ex = q.x - ux * nodeR;
-    const ey = q.y - uy * nodeR;
-    const px = -uy, py = ux;
-    const mx = (sx + ex) / 2 + px * bend;
-    const my = (sy + ey) / 2 + py * bend;
-    return `M ${sx} ${sy} Q ${mx} ${my} ${ex} ${ey}`;
+    // Shorten endpoints along the curve's tangent at each end.
+    // Tangent at p (start of quadratic) points toward ctrl;
+    // tangent at q (end of quadratic) points from ctrl toward q.
+    const t1x = ctrl.x - p.x, t1y = ctrl.y - p.y;
+    const l1 = Math.hypot(t1x, t1y) || 1;
+    const sx = p.x + (t1x / l1) * nodeR;
+    const sy = p.y + (t1y / l1) * nodeR;
+    const t2x = q.x - ctrl.x, t2y = q.y - ctrl.y;
+    const l2 = Math.hypot(t2x, t2y) || 1;
+    const ex = q.x - (t2x / l2) * nodeR;
+    const ey = q.y - (t2y / l2) * nodeR;
+    return `M ${sx} ${sy} Q ${ctrl.x} ${ctrl.y} ${ex} ${ey}`;
   }
 
-  function bendFor(p, q, mode) {
+  // Compute the Bezier control point for an edge p -> q.
+  //
+  // Strategy: we want the curve to pass on the *inside* of the polygon,
+  // dipping toward the canvas center deeply enough to clearly clear any
+  // intermediate vertices b+1, ..., b+a-1 that sit on the outer circle.
+  //
+  // For the natural layout we know the relevant geometry: vertices lie on
+  // a circle of radius R about (cx, cy), and the chord from b to b+a spans
+  // angular arc 2π·a/m. Its midpoint M sits at radius r_mid = R · cos(π·a/m).
+  //
+  // We pick a target apex radius
+  //     r_apex = min(r_mid, R · (1 − α · sin(π·a/m)))
+  // and place the control point on the ray from center through M, at radius
+  //     r_ctrl = 2·r_apex − r_mid
+  // (so that the Bezier's apex — the midpoint of M and the control point —
+  // lands at radius r_apex). The min() with r_mid guarantees the curve is
+  // never bowed *outward* relative to the chord, so it always stays inside
+  // the polygon.
+  //
+  // For the cycles layout (each cycle drawn as its own polygon, edges between
+  // adjacent vertices), there are no intermediate vertices to dodge, so we
+  // use a small perpendicular bend just for visual continuity.
+  function controlPointFor(p, q, cx, cy, modeName, a, m) {
+    const mx = (p.x + q.x) / 2;
+    const my = (p.y + q.y) / 2;
+
+    if (modeName === 'natural' && m >= 2) {
+      const aMod = ((a % m) + m) % m;
+      // Symmetrize: a and m-a give congruent chord geometries
+      const aEff = Math.min(aMod, m - aMod);
+      if (aEff === 0) {
+        // self-loop case shouldn't reach here, but be safe
+        return { x: mx, y: my };
+      }
+      // Vector from center to chord midpoint
+      const vx = mx - cx, vy = my - cy;
+      const rMid = Math.hypot(vx, vy);
+      // Outer radius of the natural layout: distance from center to either endpoint
+      const R = Math.hypot(p.x - cx, p.y - cy);
+      const ALPHA = 0.35;
+      const targetApexR = R * (1 - ALPHA * Math.sin(Math.PI * aEff / m));
+      const rApex = Math.min(rMid, targetApexR);
+      const rCtrl = 2 * rApex - rMid;
+      // Place control point along the (cx,cy)→M ray at radius rCtrl.
+      // If rMid is essentially 0 (chord is a diameter through center), there's
+      // no preferred radial direction — fall back to a tiny perpendicular bend.
+      if (rMid < 1e-6) {
+        const dx = q.x - p.x, dy = q.y - p.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const px = -dy / dist, py = dx / dist;
+        const bend = Math.min(8, dist * 0.04);
+        return { x: mx + px * bend, y: my + py * bend };
+      }
+      const ux = vx / rMid, uy = vy / rMid;
+      return { x: cx + ux * rCtrl, y: cy + uy * rCtrl };
+    }
+
+    // Cycles mode (or fallback): small perpendicular bend
     const dx = q.x - p.x, dy = q.y - p.y;
-    const d = Math.hypot(dx, dy);
-    // In "cycles" mode, bending isn't really needed (consecutive vertices
-    // are adjacent), but we keep a tiny bend for visual continuity.
-    if (mode === 'cycles') return Math.min(8, d * 0.05);
-    return Math.min(40, Math.max(6, d * 0.12));
+    const dist = Math.hypot(dx, dy) || 1;
+    const px = -dy / dist, py = dx / dist;
+    const bend = Math.min(8, dist * 0.05);
+    return { x: mx + px * bend, y: my + py * bend };
   }
 
   function ensureMarker(id, color) {
@@ -634,7 +695,7 @@
   }
 
   // Apply positions (and node sizing) for the current frame.
-  function applyPositions(pts, m, a, W, H, layoutInfo) {
+  function applyPositions(pts, m, a, W, H, layoutInfo, ctrlOverride) {
     const minDim = Math.min(W, H);
     const baseScale = minDim / 800;
     const cx = W / 2, cy = H / 2;
@@ -674,8 +735,15 @@
       const c = (b + a) % m;
       const p = pts[b], q = pts[c];
       const isSelf = (b === c);
-      const bend = isSelf ? 0 : bendFor(p, q, mode);
-      const dStr = edgePath(p, q, cx, cy, nodeR, isSelf, bend);
+      let dStr;
+      if (isSelf) {
+        dStr = edgePath(p, q, cx, cy, nodeR, true, null);
+      } else {
+        const ctrl = ctrlOverride
+          ? ctrlOverride[b]
+          : controlPointFor(p, q, cx, cy, mode, a, m);
+        dStr = edgePath(p, q, cx, cy, nodeR, false, ctrl);
+      }
       edgePaths[b].setAttribute('d', dStr);
     }
   }
@@ -692,30 +760,63 @@
     return out;
   }
 
+  // Compute the array of control points for each non-self edge given a layout.
+  function computeCtrls(pts, modeName, m, a, W, H) {
+    const cx = W / 2, cy = H / 2;
+    const ctrls = new Array(m);
+    for (let b = 0; b < m; b++) {
+      const c = (b + a) % m;
+      if (b === c) {
+        ctrls[b] = null; // self-loop, no control point used
+      } else {
+        ctrls[b] = controlPointFor(pts[b], pts[c], cx, cy, modeName, a, m);
+      }
+    }
+    return ctrls;
+  }
+
+  // Lerp two control-point arrays, treating nulls (self-loops) as null.
+  function lerpCtrls(A, B, t) {
+    const out = new Array(A.length);
+    for (let i = 0; i < A.length; i++) {
+      if (A[i] === null || B[i] === null) {
+        out[i] = null;
+      } else {
+        out[i] = {
+          x: A[i].x + (B[i].x - A[i].x) * t,
+          y: A[i].y + (B[i].y - A[i].y) * t
+        };
+      }
+    }
+    return out;
+  }
+
   function startAnimation(targetMode, m, a, W, H) {
-    const fromLayout = computeLayout(mode, m, a, W, H);
+    const fromMode = mode;
+    const fromLayout = computeLayout(fromMode, m, a, W, H);
     const toLayout = computeLayout(targetMode, m, a, W, H);
     fromPts = fromLayout.pts;
     toPts = toLayout.pts;
+    // Precompute control points at each endpoint, in their own mode's geometry
+    const fromCtrls = computeCtrls(fromPts, fromMode, m, a, W, H);
+    const toCtrls = computeCtrls(toPts, targetMode, m, a, W, H);
     curPts = fromPts;
     animStart = performance.now();
     animating = true;
     mode = targetMode;
-    // For interpolated frames we use the *target* layout's info for sizing
-    // once we cross the halfway point, to avoid sudden jumps.
-    requestAnimationFrame((t) => animate(t, m, a, W, H, toLayout, fromLayout));
+    requestAnimationFrame((t) => animate(t, m, a, W, H, toLayout, fromLayout, fromCtrls, toCtrls));
   }
 
-  function animate(now, m, a, W, H, toLayout, fromLayout) {
+  function animate(now, m, a, W, H, toLayout, fromLayout, fromCtrls, toCtrls) {
     if (!animating) return;
     const t = Math.min(1, (now - animStart) / animDur);
     const e = easeInOutCubic(t);
     curPts = lerpPts(fromPts, toPts, e);
-    // Choose layoutInfo based on which side we're closer to (for node sizing)
+    const curCtrls = lerpCtrls(fromCtrls, toCtrls, e);
     const layoutInfo = e < 0.5 ? fromLayout : toLayout;
-    applyPositions(curPts, m, a, W, H, layoutInfo);
+    applyPositions(curPts, m, a, W, H, layoutInfo, curCtrls);
     if (t < 1) {
-      requestAnimationFrame((nt) => animate(nt, m, a, W, H, toLayout, fromLayout));
+      requestAnimationFrame((nt) => animate(nt, m, a, W, H, toLayout, fromLayout, fromCtrls, toCtrls));
     } else {
       animating = false;
       curPts = toPts;
