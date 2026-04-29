@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRT Clock: Z/12Z ≅ Z/4Z × Z/3Z</title>
+<style>
+  :root {
+    --bg: #faf9f5;
+    --fg: #222220;
+    --muted: #5f5e5a;
+    --hint: #888780;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.15);
+    --border-strong: rgba(0,0,0,0.3);
+    --radius: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --fg: #eeeeec;
+      --muted: #b4b2a9;
+      --hint: #888780;
+      --surface: #2a2a28;
+      --border: rgba(255,255,255,0.15);
+      --border-strong: rgba(255,255,255,0.3);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 3rem;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 500;
+    margin: 0 0 0.5rem;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 1.5rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: stretch;
+  }
+  @media (max-width: 560px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .card-label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .mount {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 1 / 1;
+  }
+  #torusMount { cursor: grab; }
+  .readout {
+    margin-top: 12px;
+    text-align: center;
+  }
+  .readout-num {
+    font-size: 24px;
+    font-weight: 500;
+  }
+  .readout-cap {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .slider-row label {
+    font-size: 13px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .slider-row input[type=range] {
+    flex: 1;
+  }
+  .slider-row .val {
+    font-size: 13px;
+    color: var(--fg);
+    min-width: 36px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  button {
+    font: inherit;
+    font-size: 14px;
+    padding: 8px 14px;
+    background: transparent;
+    color: var(--fg);
+    border: 0.5px solid var(--border-strong);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  button:hover { background: var(--border); }
+  button:active { transform: scale(0.98); }
+  .hint {
+    font-size: 12px;
+    color: var(--hint);
+    margin-left: 8px;
+  }
+  .note {
+    margin-top: 2rem;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .note code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Z/12Z ≅ Z/4Z × Z/3Z</h1>
+  <p class="subtitle">A 12-hour clock and its image under the  isomorphism from Sunzi's Theorem, embedded on a torus.</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-label">Z/12Z</div>
+      <div id="clockMount" class="mount"></div>
+      <div class="readout">
+        <div class="readout-num" id="nVal">0</div>
+        <div class="readout-cap">n mod 12</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Z/4Z × Z/3Z</div>
+      <div id="torusMount" class="mount"></div>
+      <div class="readout">
+        <div class="readout-num">
+          (<span id="aVal">0</span>, <span id="bVal">0</span>)
+        </div>
+        <div class="readout-cap">(n mod 4, n mod 3)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="playBtn" type="button">Pause</button>
+    <button id="stepBtn" type="button">Step +1</button>
+    <button id="resetBtn" type="button">Reset</button>
+    <span class="hint">Drag the torus to rotate</span>
+  </div>
+
+  <div class="slider-row">
+    <label for="opacitySlider">Torus opacity</label>
+    <input id="opacitySlider" type="range" min="0" max="100" value="30" step="1">
+    <span class="val" id="opacityVal">30%</span>
+  </div>
+
+  <p class="note">
+    The dashed curve is the lift of the diagonal <code>s ↦ (s·2π/4, s·2π/3)</code> for <code>s ∈ [0,12]</code> — a (4,3)-torus knot. Its 12 evenly-spaced sample points are exactly the lattice points <code>(n mod 4, n mod 3)</code>. Since gcd(4,3) = 1, the curve is a single closed loop visiting all twelve points. Each hour <code>n</code> on the clock shares its color with the corresponding point on the torus.
+  </p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  const TAU = Math.PI * 2;
+
+  const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const surfaceColor = isDark ? 0x2a2a28 : 0xf1efe8;
+  const surfaceEdge  = isDark ? 0x55554f : 0xc9c7be;
+  const handColor    = isDark ? 0xeeeeec : 0x222220;
+  const labelColor   = isDark ? '#eeeeec' : '#222220';
+  const tickColor    = 0x888780;
+  const highlightColor = isDark ? 0xffffff : 0x000000;
+  const trajectoryColor = isDark ? 0xeeeeec : 0x222220;
+
+  // 12-color palette indexed by n in Z/12Z. Used identically on the clock and the torus.
+  const palette = [
+    0x378ADD, 0x1D9E75, 0xD85A30, 0xD4537E,
+    0x7F77DD, 0xBA7517, 0x639922, 0xE24B4A,
+    0x0F6E56, 0x993C1D, 0x534AB7, 0x3B6D11
+  ];
+  function hexCss(h) {
+    return '#' + h.toString(16).padStart(6, '0');
+  }
+
+  // Single-character label sprite, used for clock numbers. Optional bg disc draws
+  // a colored circle behind the digit so the number reads as colored.
+  function makeLabelSprite(text, color, sizePx, bgColor) {
+    const canvas = document.createElement('canvas');
+    const dpr = window.devicePixelRatio || 1;
+    const fontPx = sizePx || 36;
+    canvas.width = 96 * dpr;
+    canvas.height = 96 * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0,0,96,96);
+    if (bgColor) {
+      ctx.beginPath();
+      ctx.arc(48, 48, 30, 0, TAU);
+      ctx.fillStyle = bgColor;
+      ctx.fill();
+    }
+    ctx.fillStyle = color;
+    ctx.font = '500 ' + fontPx + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(text), 48, 50);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false });
+    return new THREE.Sprite(mat);
+  }
+
+  // Wider sprite for ordered-pair labels like "(2,1)". Aspect ratio 2.5:1.
+  function makePairSprite(text, color, sizePx) {
+    const canvas = document.createElement('canvas');
+    const dpr = window.devicePixelRatio || 1;
+    const fontPx = sizePx || 32;
+    const W = 160, H = 64;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = color;
+    ctx.font = '500 ' + fontPx + 'px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(text), W/2, H/2);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false });
+    return new THREE.Sprite(mat);
+  }
+
+  // ---------- Clock scene ----------
+  function buildClock(mount) {
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    renderer.setSize(mount.clientWidth, mount.clientHeight, false);
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    renderer.domElement.style.display = 'block';
+    mount.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    camera.position.set(0, -2.4, 6.0);
+    camera.lookAt(0, 0, 0);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+    dir.position.set(2, 3, 4);
+    scene.add(dir);
+
+    const diskGeo = new THREE.CylinderGeometry(2.0, 2.0, 0.18, 96);
+    const diskMat = new THREE.MeshStandardMaterial({ color: surfaceColor, roughness: 0.85 });
+    const disk = new THREE.Mesh(diskGeo, diskMat);
+    disk.rotation.x = Math.PI / 2;
+    scene.add(disk);
+
+    const rimGeo = new THREE.TorusGeometry(2.0, 0.04, 16, 96);
+    const rimMat = new THREE.MeshStandardMaterial({ color: surfaceEdge, roughness: 0.7 });
+    const rim = new THREE.Mesh(rimGeo, rimMat);
+    rim.position.z = 0.09;
+    scene.add(rim);
+
+    // Hour markers: a tick mark plus the digit on a colored disc that matches
+    // the corresponding torus point.
+    for (let h = 0; h < 12; h++) {
+      const theta = h * TAU / 12;
+      const cx = Math.cos(theta), sy = Math.sin(theta);
+
+      // tick mark (outer)
+      const tg = new THREE.BufferGeometry();
+      const r1 = 1.82, r2 = 1.92;
+      const pts = new Float32Array([cx*r1, sy*r1, 0.10, cx*r2, sy*r2, 0.10]);
+      tg.setAttribute('position', new THREE.BufferAttribute(pts, 3));
+      scene.add(new THREE.Line(tg, new THREE.LineBasicMaterial({ color: tickColor })));
+
+      // digit on a colored disc
+      const sp = makeLabelSprite(h, labelColor, 40, hexCss(palette[h]));
+      sp.position.set(cx * 1.55, sy * 1.55, 0.14);
+      sp.scale.set(0.42, 0.42, 1);
+      scene.add(sp);
+    }
+
+    const hubGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.06, 24);
+    const hubMat = new THREE.MeshStandardMaterial({ color: handColor, roughness: 0.5 });
+    const hub = new THREE.Mesh(hubGeo, hubMat);
+    hub.rotation.x = Math.PI / 2;
+    hub.position.z = 0.14;
+    scene.add(hub);
+
+    const handGeo = new THREE.BoxGeometry(1.25, 0.06, 0.04);
+    const handMat = new THREE.MeshStandardMaterial({ color: handColor, roughness: 0.4 });
+    const hand = new THREE.Mesh(handGeo, handMat);
+    hand.geometry.translate(0.625, 0, 0);
+    hand.position.z = 0.14;
+    scene.add(hand);
+
+    function setHand(n) { hand.rotation.z = n * TAU / 12; }
+    setHand(0);
+
+    function render() { renderer.render(scene, camera); }
+    function resize() {
+      const W = mount.clientWidth, H = mount.clientHeight;
+      renderer.setSize(W, H, false);
+      camera.aspect = W / H;
+      camera.updateProjectionMatrix();
+      render();
+    }
+    window.addEventListener('resize', resize);
+
+    return { setHand, render, resize };
+  }
+
+  // ---------- Torus scene ----------
+  function buildTorus(mount) {
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    renderer.setSize(mount.clientWidth, mount.clientHeight, false);
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    renderer.domElement.style.display = 'block';
+    mount.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+    camera.position.set(0, -3.2, 4.8);
+    camera.lookAt(0, 0, 0);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const dir1 = new THREE.DirectionalLight(0xffffff, 0.5);
+    dir1.position.set(3, 2, 4); scene.add(dir1);
+    const dir2 = new THREE.DirectionalLight(0xffffff, 0.25);
+    dir2.position.set(-2, -1, 2); scene.add(dir2);
+
+    const pivot = new THREE.Group();
+    scene.add(pivot);
+    pivot.rotation.x = -0.55;
+
+    const R = 1.20, r = 0.40;
+
+    const torusGeo = new THREE.TorusGeometry(R, r, 64, 128);
+    const torusMat = new THREE.MeshStandardMaterial({
+      color: surfaceColor, roughness: 0.85,
+      transparent: true, opacity: 0.30, depthWrite: false,
+      side: THREE.DoubleSide
+    });
+    const torusMesh = new THREE.Mesh(torusGeo, torusMat);
+    pivot.add(torusMesh);
+
+    function torusPoint(u, v) {
+      return new THREE.Vector3(
+        (R + r * Math.cos(v)) * Math.cos(u),
+        (R + r * Math.cos(v)) * Math.sin(u),
+        r * Math.sin(v)
+      );
+    }
+    function torusNormal(u, v) {
+      return new THREE.Vector3(
+        Math.cos(u) * Math.cos(v),
+        Math.sin(u) * Math.cos(v),
+        Math.sin(v)
+      ).normalize();
+    }
+
+    const lineMat = new THREE.LineBasicMaterial({
+      color: surfaceEdge, transparent: true, opacity: 0.55
+    });
+
+    for (let a = 0; a < 4; a++) {
+      const u0 = a * TAU / 4;
+      const pts = [];
+      for (let i = 0; i <= 96; i++) pts.push(torusPoint(u0, i / 96 * TAU));
+      pivot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat));
+    }
+    for (let b = 0; b < 3; b++) {
+      const v0 = b * TAU / 3;
+      const pts = [];
+      for (let i = 0; i <= 192; i++) pts.push(torusPoint(i / 192 * TAU, v0));
+      pivot.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), lineMat));
+    }
+
+    // Trajectory: (4,3)-torus knot
+    const trajPts = [];
+    for (let i = 0; i <= 1200; i++) {
+      const s = i / 1200 * 12;
+      trajPts.push(torusPoint(s * TAU / 4, s * TAU / 3));
+    }
+    const trajGeo = new THREE.BufferGeometry().setFromPoints(trajPts);
+    const trajMat = new THREE.LineDashedMaterial({
+      color: trajectoryColor, dashSize: 0.10, gapSize: 0.07,
+      transparent: true, opacity: 0.95
+    });
+    const trajLine = new THREE.Line(trajGeo, trajMat);
+    trajLine.computeLineDistances();
+    pivot.add(trajLine);
+
+    // Lattice points labeled as ordered pairs (a,b)
+    const sphereGeo = new THREE.SphereGeometry(0.085, 24, 16);
+    for (let n = 0; n < 12; n++) {
+      const a = n % 4, b = n % 3;
+      const u = a * TAU / 4, v = b * TAU / 3;
+      const p = torusPoint(u, v);
+      const normal = torusNormal(u, v);
+
+      const mesh = new THREE.Mesh(sphereGeo, new THREE.MeshStandardMaterial({
+        color: palette[n], roughness: 0.5, metalness: 0.05
+      }));
+      mesh.position.copy(p).add(normal.clone().multiplyScalar(0.005));
+      pivot.add(mesh);
+
+      const sp = makePairSprite('(' + a + ',' + b + ')', labelColor, 32);
+      sp.position.copy(p).add(normal.clone().multiplyScalar(0.26));
+      sp.scale.set(0.65, 0.26, 1);
+      pivot.add(sp);
+    }
+
+    const ringGeo = new THREE.TorusGeometry(0.16, 0.018, 12, 48);
+    const ring = new THREE.Mesh(ringGeo, new THREE.MeshStandardMaterial({
+      color: highlightColor, roughness: 0.4
+    }));
+    pivot.add(ring);
+
+    function setActive(n) {
+      const a = n % 4, b = n % 3;
+      const u = a * TAU / 4, v = b * TAU / 3;
+      const p = torusPoint(u, v);
+      const normal = torusNormal(u, v);
+      ring.position.copy(p).add(normal.clone().multiplyScalar(0.01));
+      const z = new THREE.Vector3(0,0,1);
+      ring.quaternion.copy(new THREE.Quaternion().setFromUnitVectors(z, normal));
+    }
+    setActive(0);
+
+    function setOpacity(o) {
+      torusMat.opacity = o;
+      torusMat.depthWrite = o >= 0.99;
+      torusMat.transparent = o < 0.99;
+      torusMat.needsUpdate = true;
+    }
+
+    let dragging = false, lastX = 0, lastY = 0, autoSpin = true;
+    const dom = renderer.domElement;
+    dom.addEventListener('pointerdown', (e) => {
+      dragging = true; autoSpin = false;
+      lastX = e.clientX; lastY = e.clientY;
+      dom.setPointerCapture(e.pointerId);
+      mount.style.cursor = 'grabbing';
+    });
+    dom.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      lastX = e.clientX; lastY = e.clientY;
+      pivot.rotation.z += dx * 0.01;
+      pivot.rotation.x += dy * 0.01;
+      pivot.rotation.x = Math.max(-Math.PI/2 + 0.05, Math.min(Math.PI/2 - 0.05, pivot.rotation.x));
+    });
+    function endDrag() { dragging = false; mount.style.cursor = 'grab'; }
+    dom.addEventListener('pointerup', endDrag);
+    dom.addEventListener('pointercancel', endDrag);
+    dom.addEventListener('pointerleave', endDrag);
+
+    function render() { renderer.render(scene, camera); }
+    function resize() {
+      const W = mount.clientWidth, H = mount.clientHeight;
+      renderer.setSize(W, H, false);
+      camera.aspect = W / H;
+      camera.updateProjectionMatrix();
+      render();
+    }
+    window.addEventListener('resize', resize);
+
+    function tickFrame(dt) {
+      if (autoSpin) pivot.rotation.z += dt * 0.15;
+      render();
+    }
+
+    return { setActive, setOpacity, render, tickFrame, resize };
+  }
+
+  const clock = buildClock(document.getElementById('clockMount'));
+  const torus = buildTorus(document.getElementById('torusMount'));
+  setTimeout(() => { clock.resize(); torus.resize(); }, 0);
+
+  let n = 0, playing = true;
+  const nVal = document.getElementById('nVal');
+  const aVal = document.getElementById('aVal');
+  const bVal = document.getElementById('bVal');
+  const playBtn = document.getElementById('playBtn');
+
+  function updateState() {
+    nVal.textContent = n;
+    nVal.style.color = hexCss(palette[n]);
+    aVal.textContent = n % 4;
+    bVal.textContent = n % 3;
+    clock.setHand(n);
+    torus.setActive(n);
+  }
+  updateState();
+
+  let lastT = performance.now();
+  function loop(t) {
+    const dt = Math.min(0.05, (t - lastT) / 1000);
+    lastT = t;
+    torus.tickFrame(dt);
+    clock.render();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  setInterval(() => {
+    if (playing) { n = (n + 1) % 12; updateState(); }
+  }, 1000);
+
+  playBtn.addEventListener('click', () => {
+    playing = !playing;
+    playBtn.textContent = playing ? 'Pause' : 'Play';
+  });
+  document.getElementById('stepBtn').addEventListener('click', () => {
+    n = (n + 1) % 12; updateState();
+  });
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    n = 0; updateState();
+  });
+
+  const opacitySlider = document.getElementById('opacitySlider');
+  const opacityVal = document.getElementById('opacityVal');
+  function applyOpacity() {
+    const pct = parseInt(opacitySlider.value, 10);
+    opacityVal.textContent = pct + '%';
+    torus.setOpacity(pct / 100);
+  }
+  opacitySlider.addEventListener('input', applyOpacity);
+  applyOpacity();
+})();
+</script>
+</body>
+</html>
