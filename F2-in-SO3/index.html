@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>F₂ inside SO(3) ≅ ℝP³</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #0b0d12;
+    color: #e8e8ef;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    height: 100%;
+    overflow: hidden;
+  }
+  #canvas-holder { position: absolute; inset: 0; }
+  #ui {
+    position: absolute;
+    top: 14px; left: 14px;
+    background: rgba(14, 16, 22, 0.82);
+    border: 1px solid #2a2e3a;
+    border-radius: 10px;
+    padding: 14px 16px;
+    max-width: 340px;
+    backdrop-filter: blur(6px);
+    font-size: 13px;
+    line-height: 1.45;
+    z-index: 10;
+  }
+  #ui h1 {
+    font-size: 15px; margin: 0 0 8px 0; font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  #ui p { margin: 6px 0; color: #b8bcc8; }
+  .row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .row label { flex: 0 0 90px; color: #9aa0ad; font-size: 12px; }
+  .row input[type=range] { flex: 1; accent-color: #8ab4ff; }
+  .row .val { flex: 0 0 40px; text-align: right; font-variant-numeric: tabular-nums; color: #e8e8ef; }
+  .row input[type=checkbox] { accent-color: #8ab4ff; }
+  .legend { margin-top: 10px; font-size: 12px; }
+  .legend span.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  #readout {
+    position: absolute;
+    bottom: 14px; left: 14px;
+    background: rgba(14, 16, 22, 0.82);
+    border: 1px solid #2a2e3a;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    color: #c8ccd8;
+    z-index: 10;
+    max-width: 520px;
+  }
+  code { background: #1a1d26; padding: 1px 5px; border-radius: 3px; color: #e8e8ef; }
+</style>
+</head>
+<body>
+<div id="canvas-holder"></div>
+
+<div id="ui">
+  <h1>F₂ inside SO(3) ≅ ℝP³</h1>
+  <p>Generators <code>A</code> = rotation by arccos(1/3) about x-axis, <code>B</code> = same about z-axis. Each reduced word w becomes a rotation in SO(3); we plot it as the point θn̂ in the ball of radius π, where θ ∈ [0, π] is the rotation angle and n̂ is its unit axis. Edges are true SO(3)-geodesics — some wrap through ∂B and reappear at the antipodal point (the ℝP³ identification).</p>
+  <div class="row">
+    <label>Max word length</label>
+    <input id="lenSlider" type="range" min="1" max="10" value="6" step="1"/>
+    <div class="val" id="lenVal">6</div>
+  </div>
+  <div class="row">
+    <label>Point size</label>
+    <input id="sizeSlider" type="range" min="0.005" max="0.05" value="0.018" step="0.001"/>
+    <div class="val" id="sizeVal">0.018</div>
+  </div>
+  <div class="row">
+    <label>Show edges</label>
+    <input id="edgeToggle" type="checkbox" checked />
+    <div class="val"></div>
+  </div>
+  <div class="row">
+    <label>Show ball</label>
+    <input id="ballToggle" type="checkbox" checked />
+    <div class="val"></div>
+  </div>
+  <div class="row">
+    <label>Show axes</label>
+    <input id="axesToggle" type="checkbox" checked />
+    <div class="val"></div>
+  </div>
+  <div class="row">
+    <label>Auto-rotate</label>
+    <input id="spinToggle" type="checkbox" checked />
+    <div class="val"></div>
+  </div>
+  <div class="row">
+    <label>Tree layout</label>
+    <input id="morphSlider" type="range" min="0" max="1" value="0" step="0.01"/>
+    <div class="val" id="morphVal">0.00</div>
+  </div>
+  <div class="row" style="margin-top:6px; gap:6px;">
+    <label></label>
+    <button id="btnSO3"  style="flex:1; background:#1a1d26; color:#e8e8ef; border:1px solid #2a2e3a; border-radius:6px; padding:6px 8px; font-size:11.5px; cursor:pointer; font-family:inherit;">Animate → SO(3)</button>
+    <button id="btnTree" style="flex:1; background:#1a1d26; color:#e8e8ef; border:1px solid #2a2e3a; border-radius:6px; padding:6px 8px; font-size:11.5px; cursor:pointer; font-family:inherit;">Animate → Tree</button>
+    <div class="val"></div>
+  </div>
+  <div class="legend">
+    <div><span class="sw" style="background:#ff6b6b"></span>starts with A</div>
+    <div><span class="sw" style="background:#ffb86b"></span>starts with A⁻¹</div>
+    <div><span class="sw" style="background:#6bd4ff"></span>starts with B</div>
+    <div><span class="sw" style="background:#a98bff"></span>starts with B⁻¹</div>
+    <div><span class="sw" style="background:#ffffff"></span>identity</div>
+  </div>
+</div>
+
+<div id="readout">
+  <div id="countLine">— points</div>
+  <div id="tipLine" style="color:#7f8699; margin-top:4px;">drag to rotate · scroll to zoom</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ---------- Math: 3x3 matrices and axis-angle ----------
+
+function matMul(A, B) {
+  const C = [[0,0,0],[0,0,0],[0,0,0]];
+  for (let i=0;i<3;i++) for (let j=0;j<3;j++) {
+    let s=0; for (let k=0;k<3;k++) s += A[i][k]*B[k][j];
+    C[i][j]=s;
+  }
+  return C;
+}
+
+// Rotation by angle φ where cos φ = 1/3, sin φ = 2√2/3
+const c = 1/3;
+const s = Math.sqrt(8)/3;
+
+// A: about x-axis
+const A = [[1,0,0],[0,c,-s],[0,s,c]];
+const Ainv = [[1,0,0],[0,c,s],[0,-s,c]];
+
+// B: about z-axis
+const B = [[c,-s,0],[s,c,0],[0,0,1]];
+const Binv = [[c,s,0],[-s,c,0],[0,0,1]];
+
+const GENS = { 'A': A, 'a': Ainv, 'B': B, 'b': Binv }; // lowercase = inverse
+
+// Convert rotation matrix to axis-angle; return point = angle * unitAxis in ball of radius π.
+function matToBallPoint(M) {
+  // angle
+  const tr = M[0][0] + M[1][1] + M[2][2];
+  let cosA = (tr - 1) / 2;
+  if (cosA > 1) cosA = 1;
+  if (cosA < -1) cosA = -1;
+  const angle = Math.acos(cosA);
+
+  if (angle < 1e-9) return [0, 0, 0]; // identity -> origin
+
+  // For angle close to π, the standard formula for axis is numerically unstable;
+  // handle that case specially using (M + Mᵀ)/2 + I.
+  let ax, ay, az;
+  if (Math.PI - angle < 1e-4) {
+    // near π: axis from diagonal of (M+I)/2
+    const Mxx = (M[0][0] + 1) / 2;
+    const Myy = (M[1][1] + 1) / 2;
+    const Mzz = (M[2][2] + 1) / 2;
+    const Mxy = (M[0][1] + M[1][0]) / 2;
+    const Mxz = (M[0][2] + M[2][0]) / 2;
+    const Myz = (M[1][2] + M[2][1]) / 2;
+    // pick largest diagonal
+    if (Mxx >= Myy && Mxx >= Mzz) {
+      ax = Math.sqrt(Math.max(Mxx, 0));
+      ay = Mxy / (ax || 1e-9);
+      az = Mxz / (ax || 1e-9);
+    } else if (Myy >= Mzz) {
+      ay = Math.sqrt(Math.max(Myy, 0));
+      ax = Mxy / (ay || 1e-9);
+      az = Myz / (ay || 1e-9);
+    } else {
+      az = Math.sqrt(Math.max(Mzz, 0));
+      ax = Mxz / (az || 1e-9);
+      ay = Myz / (az || 1e-9);
+    }
+  } else {
+    const k = 1 / (2 * Math.sin(angle));
+    ax = (M[2][1] - M[1][2]) * k;
+    ay = (M[0][2] - M[2][0]) * k;
+    az = (M[1][0] - M[0][1]) * k;
+  }
+
+  const n = Math.hypot(ax, ay, az) || 1;
+  return [angle * ax / n, angle * ay / n, angle * az / n];
+}
+
+// ---------- Quaternions (for true geodesics) ----------
+// Quaternion format: [w, x, y, z] (scalar first).
+
+function matToQuat(M) {
+  // Standard conversion, with sign chosen so scalar part ≥ 0.
+  const tr = M[0][0] + M[1][1] + M[2][2];
+  let qw, qx, qy, qz;
+  if (tr > 0) {
+    const s = Math.sqrt(tr + 1) * 2;
+    qw = 0.25 * s;
+    qx = (M[2][1] - M[1][2]) / s;
+    qy = (M[0][2] - M[2][0]) / s;
+    qz = (M[1][0] - M[0][1]) / s;
+  } else if (M[0][0] > M[1][1] && M[0][0] > M[2][2]) {
+    const s = Math.sqrt(1 + M[0][0] - M[1][1] - M[2][2]) * 2;
+    qw = (M[2][1] - M[1][2]) / s;
+    qx = 0.25 * s;
+    qy = (M[0][1] + M[1][0]) / s;
+    qz = (M[0][2] + M[2][0]) / s;
+  } else if (M[1][1] > M[2][2]) {
+    const s = Math.sqrt(1 + M[1][1] - M[0][0] - M[2][2]) * 2;
+    qw = (M[0][2] - M[2][0]) / s;
+    qx = (M[0][1] + M[1][0]) / s;
+    qy = 0.25 * s;
+    qz = (M[1][2] + M[2][1]) / s;
+  } else {
+    const s = Math.sqrt(1 + M[2][2] - M[0][0] - M[1][1]) * 2;
+    qw = (M[1][0] - M[0][1]) / s;
+    qx = (M[0][2] + M[2][0]) / s;
+    qy = (M[1][2] + M[2][1]) / s;
+    qz = 0.25 * s;
+  }
+  // normalize, and pick q with qw ≥ 0 so it lies in the "northern hemisphere"
+  let q = [qw, qx, qy, qz];
+  const nrm = Math.hypot(q[0], q[1], q[2], q[3]) || 1;
+  q = [q[0]/nrm, q[1]/nrm, q[2]/nrm, q[3]/nrm];
+  if (q[0] < 0) q = [-q[0], -q[1], -q[2], -q[3]];
+  return q;
+}
+
+function quatDot(p, q) { return p[0]*q[0] + p[1]*q[1] + p[2]*q[2] + p[3]*q[3]; }
+function quatNeg(q) { return [-q[0], -q[1], -q[2], -q[3]]; }
+
+// Spherical linear interpolation on S³.
+function slerp(q1, q2, t) {
+  let dot = quatDot(q1, q2);
+  if (dot < 0) { q2 = quatNeg(q2); dot = -dot; }
+  if (dot > 0.9995) {
+    // nearly parallel — linear interpolate and normalize
+    const r = [
+      q1[0] + t*(q2[0]-q1[0]),
+      q1[1] + t*(q2[1]-q1[1]),
+      q1[2] + t*(q2[2]-q1[2]),
+      q1[3] + t*(q2[3]-q1[3]),
+    ];
+    const n = Math.hypot(r[0], r[1], r[2], r[3]) || 1;
+    return [r[0]/n, r[1]/n, r[2]/n, r[3]/n];
+  }
+  const theta = Math.acos(Math.max(-1, Math.min(1, dot)));
+  const sT = Math.sin(theta);
+  const a = Math.sin((1-t) * theta) / sT;
+  const b = Math.sin(t * theta) / sT;
+  return [
+    a*q1[0] + b*q2[0],
+    a*q1[1] + b*q2[1],
+    a*q1[2] + b*q2[2],
+    a*q1[3] + b*q2[3],
+  ];
+}
+
+// Convert a unit quaternion q = [cos(θ/2), sin(θ/2) n̂] to a point θ n̂ in the
+// ball of radius π, choosing the representative with scalar part ≥ 0.
+function quatToBallPoint(q) {
+  let w = q[0], x = q[1], y = q[2], z = q[3];
+  if (w < 0) { w = -w; x = -x; y = -y; z = -z; }
+  const halfAngle = Math.acos(Math.max(-1, Math.min(1, w)));
+  const sinH = Math.sin(halfAngle);
+  if (sinH < 1e-9) return [0, 0, 0];
+  const angle = 2 * halfAngle;
+  const k = angle / sinH;
+  return [x * k, y * k, z * k];
+}
+
+// Variant that does NOT force w ≥ 0: used at boundary wraps so that a
+// rotation-by-π can appear on either side of the ball (sign = ±1 picks
+// which of the two antipodal ∂B points to use).
+function quatToBallPointWithSign(q, sign) {
+  let w = sign * q[0], x = sign * q[1], y = sign * q[2], z = sign * q[3];
+  const nrm = Math.hypot(w, x, y, z) || 1;
+  w /= nrm; x /= nrm; y /= nrm; z /= nrm;
+  const halfAngle = Math.acos(Math.max(-1, Math.min(1, w)));
+  const sinH = Math.sin(halfAngle);
+  if (sinH < 1e-9) return [0, 0, 0];
+  const angle = 2 * halfAngle;
+  const k = angle / sinH;
+  return [x * k, y * k, z * k];
+}
+
+// ---------- Enumerate reduced words in F_2 up to length N ----------
+
+// We label letters with 'A','a','B','b' where 'a' = A^{-1}, 'b' = B^{-1}.
+// A reduced word never has a letter adjacent to its inverse.
+function inverseOf(ch) { return ({A:'a',a:'A',B:'b',b:'B'})[ch]; }
+
+function enumerateWords(maxLen) {
+  const letters = ['A','a','B','b'];
+  const results = [{ word: '', matrix: [[1,0,0],[0,1,0],[0,0,1]] }];
+  let frontier = [{ word: '', matrix: [[1,0,0],[0,1,0],[0,0,1]] }];
+  for (let len = 1; len <= maxLen; len++) {
+    const next = [];
+    for (const node of frontier) {
+      const lastLetter = node.word.length > 0 ? node.word[node.word.length - 1] : null;
+      const forbidden = lastLetter ? inverseOf(lastLetter) : null;
+      for (const L of letters) {
+        if (L === forbidden) continue;
+        const M = matMul(node.matrix, GENS[L]);
+        next.push({ word: node.word + L, matrix: M });
+      }
+    }
+    for (const n of next) results.push(n);
+    frontier = next;
+  }
+  return results;
+}
+
+// ---------- Standard 4-valent tree layout in the plane ----------
+//
+// Place the root e at the origin. Its four children A, A^{-1}, B, B^{-1} go
+// in the four cardinal directions of the xy-plane. At each subsequent step,
+// a node carries a "forward" direction; its three children fan out as forward,
+// left-perpendicular, and right-perpendicular, at step length r^depth.
+//
+// Embedded into 3D as (x, y, 0) so it lies in the xy-plane.
+// We deliberately keep the entire tree inside the unit disc so that every
+// tree position corresponds to a small rotation (angle ≤ 1 < π), well away
+// from ∂B. This means the morph from SO(3) to the tree, when computed
+// continuously on S³, smoothly "uncreases" any boundary-wrapping edges.
+
+const TREE_SHRINK = 0.42;        // step length ratio per level
+// Initial step chosen so the tree fits in a disc of radius 0.9π:
+// max distance from origin = TREE_ROOT_STEP * (1 + r + r^2 + ...) = TREE_ROOT_STEP / (1 - r).
+// We want this ≤ 0.9π, so TREE_ROOT_STEP ≤ 0.9π · (1 - r) = 0.9π · 0.58 ≈ 1.640.
+const TREE_ROOT_STEP = 0.9 * Math.PI * (1 - TREE_SHRINK);
+
+// Cardinal directions for each letter at the root, in the xy-plane.
+const ROOT_DIR = {
+  'A': [ 1,  0],
+  'a': [-1,  0],
+  'B': [ 0,  1],
+  'b': [ 0, -1],
+};
+
+// Given the incoming letter, the three valid outgoing letters in
+// (forward, left, right) order.
+const OUT_ORDER = {
+  'A': ['A', 'B', 'b'],
+  'a': ['a', 'b', 'B'],
+  'B': ['B', 'a', 'A'],
+  'b': ['b', 'A', 'a'],
+};
+
+function rotPerp(v, sign) {
+  // Rotate 2D vector v by ±90°. sign = +1 -> CCW (left), -1 -> CW (right).
+  return sign > 0 ? [-v[1], v[0]] : [v[1], -v[0]];
+}
+
+// Returns array of [x, y, z] tree positions per word, embedded in the xy-plane.
+function computeTreeLayout(words, indexMap) {
+  const positions = new Array(words.length);
+  positions[indexMap.get('')] = [0, 0, 0];
+
+  const incomingDir = new Array(words.length);
+  incomingDir[indexMap.get('')] = null;
+
+  const byLen = [];
+  for (const w of words) {
+    const len = w.word.length;
+    if (!byLen[len]) byLen[len] = [];
+    byLen[len].push(w.word);
+  }
+
+  if (byLen[1]) {
+    for (const childWord of byLen[1]) {
+      const L = childWord;
+      const dir = ROOT_DIR[L];
+      const idx = indexMap.get(childWord);
+      positions[idx] = [dir[0] * TREE_ROOT_STEP, dir[1] * TREE_ROOT_STEP, 0];
+      incomingDir[idx] = dir;
+    }
+  }
+
+  for (let k = 2; k < byLen.length; k++) {
+    const wordsK = byLen[k];
+    if (!wordsK) continue;
+    const stepLen = TREE_ROOT_STEP * Math.pow(TREE_SHRINK, k - 1);
+    for (const word of wordsK) {
+      const parentWord = word.slice(0, -1);
+      const lastLetter = word[word.length - 1];
+      const parentIdx = indexMap.get(parentWord);
+      const parentPos = positions[parentIdx];
+      const parentLast = parentWord[parentWord.length - 1];
+      const parentDir = incomingDir[parentIdx];
+      const order = OUT_ORDER[parentLast];
+      let childDir;
+      if (lastLetter === order[0])      childDir = parentDir;
+      else if (lastLetter === order[1]) childDir = rotPerp(parentDir, +1);
+      else                              childDir = rotPerp(parentDir, -1);
+      const idx = indexMap.get(word);
+      positions[idx] = [
+        parentPos[0] + childDir[0] * stepLen,
+        parentPos[1] + childDir[1] * stepLen,
+        0,
+      ];
+      incomingDir[idx] = childDir;
+    }
+  }
+  return positions;
+}
+
+// Convert a tree position (x, y, 0) with |(x,y)| ≤ 1 to a unit quaternion in S³.
+// We use the inverse of the ball model: a ball point p of length r corresponds
+// to the rotation by angle r about axis p/r, i.e., the quaternion
+//   q = (cos(r/2), sin(r/2) * p/r).
+// When r is small, q is close to the identity (1, 0, 0, 0).
+function ballPointToQuat(p) {
+  const r = Math.hypot(p[0], p[1], p[2]);
+  if (r < 1e-9) return [1, 0, 0, 0];
+  const c = Math.cos(r / 2);
+  const s = Math.sin(r / 2) / r;
+  return [c, s * p[0], s * p[1], s * p[2]];
+}
+
+// ---------- Color by first letter ----------
+
+const COLORS = {
+  '': new THREE.Color('#ffffff'),
+  'A': new THREE.Color('#ff6b6b'),
+  'a': new THREE.Color('#ffb86b'),
+  'B': new THREE.Color('#6bd4ff'),
+  'b': new THREE.Color('#a98bff'),
+};
+
+function colorForWord(word) {
+  if (word === '') return COLORS[''];
+  return COLORS[word[0]];
+}
+
+// ---------- Three.js scene ----------
+
+const holder = document.getElementById('canvas-holder');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#0b0d12');
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.01, 100);
+camera.position.set(5, 3.5, 5);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+holder.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.5;
+
+// Lighting (for the ball shell)
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+dirLight.position.set(5, 7, 4);
+scene.add(dirLight);
+
+// The ball of radius π (translucent shell showing ℝP³)
+const ballGeo = new THREE.SphereGeometry(Math.PI, 48, 48);
+const ballMat = new THREE.MeshPhongMaterial({
+  color: 0x3a4258,
+  transparent: true,
+  opacity: 0.07,
+  side: THREE.DoubleSide,
+  depthWrite: false,
+});
+const ball = new THREE.Mesh(ballGeo, ballMat);
+scene.add(ball);
+
+// Wireframe to suggest boundary
+const wireGeo = new THREE.SphereGeometry(Math.PI, 24, 12);
+const wire = new THREE.LineSegments(
+  new THREE.WireframeGeometry(wireGeo),
+  new THREE.LineBasicMaterial({ color: 0x3a4258, transparent: true, opacity: 0.18 })
+);
+scene.add(wire);
+
+// Coordinate axes (subtle)
+const axesMat = new THREE.LineBasicMaterial({ color: 0x555a6a, transparent: true, opacity: 0.5 });
+function axisLine(a, b) {
+  const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a), new THREE.Vector3(...b)]);
+  return new THREE.Line(g, axesMat);
+}
+const R = Math.PI;
+const axesGroup = new THREE.Group();
+axesGroup.add(axisLine([-R,0,0],[R,0,0]));
+axesGroup.add(axisLine([0,-R,0],[0,R,0]));
+axesGroup.add(axisLine([0,0,-R],[0,0,R]));
+scene.add(axesGroup);
+
+// ---------- Groups for points + edges ----------
+
+let pointsMesh = null;    // instanced spheres for word endpoints
+let edgesMesh = null;     // line segments between parent/child words
+
+// Cached layout data (set by rebuild, used by applyMorph each frame).
+let cache = null;
+// cache = {
+//   wordList: [...],
+//   qSO3: [[w,x,y,z], ...],   // SO(3) quaternion per word (matToQuat of the word's matrix)
+//   qTree: [[w,x,y,z], ...],  // target quaternion per word (= ballPointToQuat of tree position)
+//   edges: [{ i, j, parentCol, childCol }, ...],
+//   pointSize, showEdges,
+// };
+
+let currentMorph = 0;     // α ∈ [0,1]: 0 = SO(3), 1 = tree
+
+const SEG_PER_EDGE = 16;  // polyline samples per edge (each frame)
+
+function clearDynamic() {
+  if (pointsMesh) { scene.remove(pointsMesh); pointsMesh.geometry.dispose(); pointsMesh.material.dispose(); pointsMesh = null; }
+  if (edgesMesh)  { scene.remove(edgesMesh); edgesMesh.geometry.dispose(); edgesMesh.material.dispose(); edgesMesh = null; }
+  cache = null;
+}
+
+function rebuild(maxLen, pointSize, showEdges) {
+  clearDynamic();
+  const words = enumerateWords(maxLen);
+
+  // Map word -> index
+  const indexMap = new Map();
+  for (let i = 0; i < words.length; i++) {
+    indexMap.set(words[i].word, i);
+  }
+  const treePos = computeTreeLayout(words, indexMap);
+
+  // Per-word quaternions for both layouts.
+  const qSO3 = new Array(words.length);
+  const qTree = new Array(words.length);
+  for (let i = 0; i < words.length; i++) {
+    qSO3[i] = matToQuat(words[i].matrix);
+    qTree[i] = ballPointToQuat(treePos[i]);
+  }
+
+  // Edges: list of (parent, child) word index pairs.
+  const edges = [];
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i].word;
+    if (w.length >= maxLen) continue;
+    const lastLetter = w.length > 0 ? w[w.length - 1] : null;
+    const forbidden = lastLetter ? inverseOf(lastLetter) : null;
+    for (const L of ['A','a','B','b']) {
+      if (L === forbidden) continue;
+      const j = indexMap.get(w + L);
+      if (j == null) continue;
+      edges.push({
+        i, j,
+        parentCol: colorForWord(w),
+        childCol:  colorForWord(w + L),
+      });
+    }
+  }
+
+  // ---- Instanced spheres for points ----
+  const sphereGeo = new THREE.SphereGeometry(1, 10, 8);
+  const inst = new THREE.InstancedMesh(sphereGeo, new THREE.MeshBasicMaterial(), words.length);
+  inst.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  const colorArr = new Float32Array(words.length * 3);
+  for (let i = 0; i < words.length; i++) {
+    const col = colorForWord(words[i].word);
+    colorArr[i*3+0] = col.r;
+    colorArr[i*3+1] = col.g;
+    colorArr[i*3+2] = col.b;
+  }
+  inst.instanceColor = new THREE.InstancedBufferAttribute(colorArr, 3);
+  scene.add(inst);
+  pointsMesh = inst;
+
+  // ---- Edges geometry (allocated once, updated each frame). ----
+  // For each edge we emit SEG_PER_EDGE line-segments (i.e., 2*SEG_PER_EDGE vertices).
+  // When an edge wraps through ∂B, we additionally emit one extra splitting segment;
+  // to keep the buffer fixed-size, we always allocate one extra "slot" per edge that
+  // is set to a degenerate (zero-length) segment when the edge isn't wrapping.
+  if (showEdges && edges.length > 0) {
+    const segsPerEdge = SEG_PER_EDGE + 1; // +1 for the optional split segment
+    const verts = edges.length * segsPerEdge * 2; // 2 vertices per segment
+    const positions = new Float32Array(verts * 3);
+    const colors    = new Float32Array(verts * 3);
+    // Colors are static per-segment-index (interpolation along t doesn't change with α).
+    // But we'll also fill them now, because each edge has different parent/child colors.
+    // Wait: colors do interpolate with t (segment index k/SEG), so they're constant given the edge.
+    // Fill colors here; positions are filled in applyMorph each frame.
+    let off = 0;
+    for (const e of edges) {
+      const { parentCol, childCol } = e;
+      // Segments k = 0 .. SEG_PER_EDGE-1 plus one extra split slot.
+      // For each segment at index k, the two endpoints are at parameters
+      // t1 = k/SEG_PER_EDGE and t2 = (k+1)/SEG_PER_EDGE, and the colors are
+      // linearly interpolated between parent and child at those parameters.
+      for (let k = 0; k < SEG_PER_EDGE; k++) {
+        const t1 = k / SEG_PER_EDGE;
+        const t2 = (k + 1) / SEG_PER_EDGE;
+        // start vertex
+        colors[off + 0] = parentCol.r + (childCol.r - parentCol.r) * t1;
+        colors[off + 1] = parentCol.g + (childCol.g - parentCol.g) * t1;
+        colors[off + 2] = parentCol.b + (childCol.b - parentCol.b) * t1;
+        off += 3;
+        // end vertex
+        colors[off + 0] = parentCol.r + (childCol.r - parentCol.r) * t2;
+        colors[off + 1] = parentCol.g + (childCol.g - parentCol.g) * t2;
+        colors[off + 2] = parentCol.b + (childCol.b - parentCol.b) * t2;
+        off += 3;
+      }
+      // Extra split slot: color matches the child end (will be overwritten if used).
+      colors[off + 0] = childCol.r; colors[off + 1] = childCol.g; colors[off + 2] = childCol.b;
+      off += 3;
+      colors[off + 0] = childCol.r; colors[off + 1] = childCol.g; colors[off + 2] = childCol.b;
+      off += 3;
+    }
+
+    const eGeo = new THREE.BufferGeometry();
+    eGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    eGeo.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
+    const eMat = new THREE.LineBasicMaterial({
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.28,
+    });
+    edgesMesh = new THREE.LineSegments(eGeo, eMat);
+    scene.add(edgesMesh);
+  }
+
+  cache = {
+    wordList: words,
+    qSO3, qTree, edges,
+    pointSize, showEdges,
+  };
+
+  applyMorph(currentMorph);
+
+  // For the readout, count wraps at the *current* morph value (will be updated by applyMorph).
+  updateCountReadout(maxLen);
+}
+
+// Compute the displayed quaternion for word i at the given morph α ∈ [0,1].
+function morphedQuat(i, alpha, qSO3, qTree) {
+  if (alpha <= 0) return qSO3[i];
+  if (alpha >= 1) return qTree[i];
+  return slerp(qSO3[i], qTree[i], alpha);
+}
+
+let lastWrapCount = 0;
+let lastEdgeCount = 0;
+
+// Apply the SO(3)→tree morph: alpha = 0 means full SO(3), alpha = 1 means full tree.
+function applyMorph(alpha) {
+  currentMorph = alpha;
+  if (!cache || !pointsMesh) return;
+  const { wordList, qSO3, qTree, edges, pointSize, showEdges } = cache;
+
+  // ---- Update points ----
+  const dummy = new THREE.Object3D();
+  for (let i = 0; i < wordList.length; i++) {
+    const q = morphedQuat(i, alpha, qSO3, qTree);
+    const p = quatToBallPoint(q);
+    dummy.position.set(p[0], p[1], p[2]);
+    const depth = wordList[i].word.length;
+    const scale = pointSize * (i === 0 ? 2.4 : Math.max(0.45, 1 - depth * 0.06));
+    dummy.scale.setScalar(scale);
+    dummy.updateMatrix();
+    pointsMesh.setMatrixAt(i, dummy.matrix);
+  }
+  pointsMesh.instanceMatrix.needsUpdate = true;
+
+  // ---- Update edges: for each edge, recompute the great-circle arc in S^3
+  //      between the morphed endpoints, project to the ball, and detect wraps. ----
+  let wrapCount = 0;
+  if (showEdges && edgesMesh) {
+    const arr = edgesMesh.geometry.attributes.position.array;
+    let off = 0;
+    const segsPerEdge = SEG_PER_EDGE + 1;
+    for (const e of edges) {
+      const { i, j } = e;
+      const q1 = morphedQuat(i, alpha, qSO3, qTree);
+      let q2  = morphedQuat(j, alpha, qSO3, qTree);
+      if (quatDot(q1, q2) < 0) q2 = quatNeg(q2);
+
+      // Sample SEG_PER_EDGE+1 points along the arc.
+      let prevQ = q1;
+      let prevP = quatToBallPoint(prevQ);
+      let wrapped = false;
+      let writeIdx = off; // start of this edge's slot in arr (in floats)
+      for (let k = 1; k <= SEG_PER_EDGE; k++) {
+        const t = k / SEG_PER_EDGE;
+        const q = slerp(q1, q2, t);
+        const p = quatToBallPoint(q);
+        if (prevQ[0] * q[0] < 0 && !wrapped) {
+          // Boundary crossing. Find the exact crossing parameter.
+          const prev_t = (k - 1) / SEG_PER_EDGE;
+          const a_ = prevQ[0], b_ = q[0];
+          const alphaCross = a_ / (a_ - b_);
+          const tCross = prev_t + alphaCross * (t - prev_t);
+          const qCross = slerp(q1, q2, tCross);
+          const pExit  = quatToBallPointWithSign(qCross, +1);
+          const pEnter = quatToBallPointWithSign(qCross, -1);
+          // Replace this segment with two: prev->exit and enter->p.
+          // Write prev->exit into the current slot.
+          arr[writeIdx + 0] = prevP[0]; arr[writeIdx + 1] = prevP[1]; arr[writeIdx + 2] = prevP[2];
+          arr[writeIdx + 3] = pExit[0]; arr[writeIdx + 4] = pExit[1]; arr[writeIdx + 5] = pExit[2];
+          writeIdx += 6;
+          // Write enter->p into the next slot (the SEG_PER_EDGE-th slot is the extra one,
+          // but we need to keep overall slot count consistent. We've used k slots so far for k segments,
+          // and there are SEG_PER_EDGE - k segments left. Put the enter->p in the next slot (which
+          // would have been the segment from t=(k-1)/SEG to t=k/SEG that we just split).
+          // Wait — we're inside the k-th iteration emitting the k-th segment. Originally that segment
+          // was prev->p (one slot). Now we emit prev->exit then enter->p (two slots). So we use
+          // one of the "extra" slots here — the one allocated at the end. We'll consume it now,
+          // and the very last extra slot at the edge's tail becomes degenerate.
+          arr[writeIdx + 0] = pEnter[0]; arr[writeIdx + 1] = pEnter[1]; arr[writeIdx + 2] = pEnter[2];
+          arr[writeIdx + 3] = p[0];      arr[writeIdx + 4] = p[1];      arr[writeIdx + 5] = p[2];
+          writeIdx += 6;
+          wrapped = true;
+        } else {
+          arr[writeIdx + 0] = prevP[0]; arr[writeIdx + 1] = prevP[1]; arr[writeIdx + 2] = prevP[2];
+          arr[writeIdx + 3] = p[0];     arr[writeIdx + 4] = p[1];     arr[writeIdx + 5] = p[2];
+          writeIdx += 6;
+        }
+        prevQ = q; prevP = p;
+      }
+      // Fill the remaining slot(s) with degenerate (zero-length) segments at p.
+      const slotsConsumed = (writeIdx - off) / 6;
+      const slotsRemaining = segsPerEdge - slotsConsumed;
+      for (let s = 0; s < slotsRemaining; s++) {
+        arr[writeIdx + 0] = prevP[0]; arr[writeIdx + 1] = prevP[1]; arr[writeIdx + 2] = prevP[2];
+        arr[writeIdx + 3] = prevP[0]; arr[writeIdx + 4] = prevP[1]; arr[writeIdx + 5] = prevP[2];
+        writeIdx += 6;
+      }
+      off += segsPerEdge * 6;
+      if (wrapped) wrapCount++;
+    }
+    edgesMesh.geometry.attributes.position.needsUpdate = true;
+  }
+
+  lastWrapCount = wrapCount;
+  lastEdgeCount = cache.edges.length;
+  // Live-update wrap count in readout (cheap)
+  if (cache.showEdges) {
+    const n = cache.wordList.length;
+    const maxLen = parseInt(document.getElementById('lenSlider').value, 10);
+    document.getElementById('countLine').innerHTML =
+      n.toLocaleString() + ' points · length ≤ ' + maxLen +
+      ' · ' + lastEdgeCount.toLocaleString() + ' edges, of which <span style="color:#ffcd8a">' +
+      lastWrapCount.toLocaleString() + ' wrap through ∂B</span>';
+  }
+}
+
+function updateCountReadout(maxLen) {
+  if (!cache) return;
+  const n = cache.wordList.length;
+  const countLine = document.getElementById('countLine');
+  if (cache.showEdges) {
+    countLine.innerHTML =
+      n.toLocaleString() + ' points · length ≤ ' + maxLen +
+      ' · ' + lastEdgeCount.toLocaleString() + ' edges, of which <span style="color:#ffcd8a">' +
+      lastWrapCount.toLocaleString() + ' wrap through ∂B</span>';
+  } else {
+    countLine.textContent = n.toLocaleString() + ' points · length ≤ ' + maxLen;
+  }
+}
+
+// ---------- UI wiring ----------
+
+const lenSlider = document.getElementById('lenSlider');
+const lenVal = document.getElementById('lenVal');
+const sizeSlider = document.getElementById('sizeSlider');
+const sizeVal = document.getElementById('sizeVal');
+const edgeToggle = document.getElementById('edgeToggle');
+const ballToggle = document.getElementById('ballToggle');
+const axesToggle = document.getElementById('axesToggle');
+const spinToggle = document.getElementById('spinToggle');
+const morphSlider = document.getElementById('morphSlider');
+const morphVal = document.getElementById('morphVal');
+const btnSO3 = document.getElementById('btnSO3');
+const btnTree = document.getElementById('btnTree');
+
+function refresh() {
+  const len = parseInt(lenSlider.value, 10);
+  const size = parseFloat(sizeSlider.value);
+  lenVal.textContent = len;
+  sizeVal.textContent = size.toFixed(3);
+  rebuild(len, size, edgeToggle.checked);
+}
+
+// Length slider: rebuild continuously as it moves.
+lenSlider.addEventListener('input', refresh);
+sizeSlider.addEventListener('input', refresh);
+edgeToggle.addEventListener('change', refresh);
+ballToggle.addEventListener('change', () => {
+  ball.visible = ballToggle.checked;
+  wire.visible = ballToggle.checked;
+});
+axesToggle.addEventListener('change', () => {
+  axesGroup.visible = axesToggle.checked;
+});
+spinToggle.addEventListener('change', () => {
+  controls.autoRotate = spinToggle.checked;
+});
+
+// Morph slider: live drag updates layout. Cancels any in-progress animation.
+let morphAnim = null; // { from, to, t, dur }
+morphSlider.addEventListener('input', () => {
+  morphAnim = null;
+  const a = parseFloat(morphSlider.value);
+  morphVal.textContent = a.toFixed(2);
+  applyMorph(a);
+});
+
+// Quick-animate buttons: smoothly transition to α=0 or α=1.
+function startMorphAnim(targetAlpha) {
+  morphAnim = {
+    from: currentMorph,
+    to: targetAlpha,
+    t: 0,
+    dur: 1.5, // seconds
+  };
+}
+btnSO3.addEventListener('click',  () => startMorphAnim(0));
+btnTree.addEventListener('click', () => startMorphAnim(1));
+
+refresh();
+
+// ---------- Render loop ----------
+
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener('resize', onResize);
+
+const morphClock = new THREE.Clock();
+
+// Smoothstep ease.
+function ease(x) { return x*x*(3 - 2*x); }
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = morphClock.getDelta();
+  if (morphAnim) {
+    morphAnim.t += dt / morphAnim.dur;
+    if (morphAnim.t >= 1) {
+      morphAnim.t = 1;
+      const finalA = morphAnim.to;
+      morphAnim = null;
+      applyMorph(finalA);
+      morphSlider.value = String(finalA);
+      morphVal.textContent = finalA.toFixed(2);
+    } else {
+      const a = morphAnim.from + (morphAnim.to - morphAnim.from) * ease(morphAnim.t);
+      applyMorph(a);
+      morphSlider.value = String(a);
+      morphVal.textContent = a.toFixed(2);
+    }
+  }
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>
