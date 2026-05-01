@@ -328,11 +328,11 @@ function enumerateWords(maxLen) {
 // ---------- Standard 4-valent tree layout in the plane ----------
 //
 // Place the root e at the origin. Its four children A, A^{-1}, B, B^{-1} go
-// in the four cardinal directions of the xy-plane. At each subsequent step,
+// in the four cardinal directions of the xz-plane. At each subsequent step,
 // a node carries a "forward" direction; its three children fan out as forward,
 // left-perpendicular, and right-perpendicular, at step length r^depth.
 //
-// Embedded into 3D as (x, y, 0) so it lies in the xy-plane.
+// Embedded into 3D as (x, 0, z) so it lies in the xz-plane.
 // We deliberately keep the entire tree inside the unit disc so that every
 // tree position corresponds to a small rotation (angle ≤ 1 < π), well away
 // from ∂B. This means the morph from SO(3) to the tree, when computed
@@ -386,7 +386,7 @@ function computeTreeLayout(words, indexMap) {
       const L = childWord;
       const dir = ROOT_DIR[L];
       const idx = indexMap.get(childWord);
-      positions[idx] = [dir[0] * TREE_ROOT_STEP, dir[1] * TREE_ROOT_STEP, 0];
+      positions[idx] = [dir[0] * TREE_ROOT_STEP, 0, dir[1] * TREE_ROOT_STEP];
       incomingDir[idx] = dir;
     }
   }
@@ -410,8 +410,8 @@ function computeTreeLayout(words, indexMap) {
       const idx = indexMap.get(word);
       positions[idx] = [
         parentPos[0] + childDir[0] * stepLen,
-        parentPos[1] + childDir[1] * stepLen,
         0,
+        parentPos[2] + childDir[1] * stepLen,
       ];
       incomingDir[idx] = childDir;
     }
