@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Finite subgroups of SO(3)</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #0b0d12;
+    color: #e8e8ef;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    height: 100%;
+    overflow: hidden;
+  }
+  #canvas-holder { position: absolute; inset: 0; }
+  #ui {
+    position: absolute;
+    top: 14px; left: 14px;
+    background: rgba(14, 16, 22, 0.82);
+    border: 1px solid #2a2e3a;
+    border-radius: 10px;
+    padding: 14px 16px;
+    max-width: 360px;
+    backdrop-filter: blur(6px);
+    font-size: 13px;
+    line-height: 1.45;
+    z-index: 10;
+  }
+  #ui h1 {
+    font-size: 15px; margin: 0 0 8px 0; font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  #ui p { margin: 6px 0; color: #b8bcc8; }
+  .row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .row label { flex: 0 0 130px; color: #9aa0ad; font-size: 12px; }
+  .row input[type=checkbox] { accent-color: #8ab4ff; }
+  .row input[type=range] { flex: 1; accent-color: #8ab4ff; }
+  .row .val { flex: 0 0 36px; text-align: right; font-variant-numeric: tabular-nums; color: #e8e8ef; font-size: 12px; }
+  .row select {
+    flex: 1;
+    background: #1a1d26;
+    color: #e8e8ef;
+    border: 1px solid #2a2e3a;
+    border-radius: 5px;
+    padding: 4px 6px;
+    font-size: 12px;
+    font-family: inherit;
+  }
+  .legend { margin-top: 12px; font-size: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin: 4px 0; color: #b8bcc8; }
+  .legend-item .sw { display: inline-block; width: 11px; height: 11px; border-radius: 50%; }
+  #readout {
+    position: absolute;
+    bottom: 14px; left: 14px;
+    background: rgba(14, 16, 22, 0.82);
+    border: 1px solid #2a2e3a;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    color: #c8ccd8;
+    z-index: 10;
+    max-width: 400px;
+  }
+  code { background: #1a1d26; padding: 1px 5px; border-radius: 3px; color: #e8e8ef; font-size: 12px; }
+  .order-toggles { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .order-toggle { display: flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: 5px; background: #1a1d26; font-size: 11px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div id="canvas-holder"></div>
+
+<div id="ui">
+  <h1 id="title">Finite subgroups of SO(3)</h1>
+  <p>Each rotation by angle θ about axis n̂ is plotted as the point θn̂ in the ball of radius π. Antipodal points on ∂B are identified.</p>
+
+  <div class="row">
+    <label>Group</label>
+    <select id="groupSelect">
+      <option value="C">Cyclic Cₙ</option>
+      <option value="D">Dihedral Dₙ</option>
+      <option value="A4">Tetrahedral A₄</option>
+      <option value="S4">Octahedral S₄</option>
+      <option value="A5" selected>Icosahedral A₅</option>
+    </select>
+  </div>
+  <div class="row" id="orderRow">
+    <label>n</label>
+    <input id="orderSlider" type="range" min="2" max="12" step="1" value="5">
+    <span class="val" id="orderVal">5</span>
+  </div>
+
+  <div id="orderToggles" class="order-toggles"></div>
+
+  <div class="row">
+    <label>Max word length</label>
+    <input id="maxWordLen" type="range" min="0" max="10" step="1" value="10">
+    <span class="val" id="maxWordLenVal">∞</span>
+  </div>
+
+  <div class="row">
+    <label>Cayley edges</label>
+    <input id="showEdges" type="checkbox" checked>
+  </div>
+  <div class="row">
+    <label>Conj. shells</label>
+    <input id="showShells" type="checkbox">
+  </div>
+  <div class="row">
+    <label>Rotation axes</label>
+    <input id="showAxes" type="checkbox">
+  </div>
+  <div class="row">
+    <label>Word labels</label>
+    <input id="showLabels" type="checkbox">
+  </div>
+  <div class="row">
+    <label>Point size</label>
+    <input id="pointSize" type="range" min="0.2" max="2.5" step="0.05" value="0.5">
+    <span class="val" id="pointSizeVal">0.5</span>
+  </div>
+
+  <div class="legend" id="legend"></div>
+</div>
+
+<div id="readout">
+  <div id="orderInfo"></div>
+  <div id="axesInfo" style="margin-top:4px;color:#9aa0ad"></div>
+  <div id="wrapInfo" style="margin-top:4px;color:#8ab4ff"></div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+
+// ========================================================================
+// Quaternion helpers
+// ========================================================================
+const PI = Math.PI;
+
+function qMul(p, q) {
+  return [
+    p[0]*q[0] - p[1]*q[1] - p[2]*q[2] - p[3]*q[3],
+    p[0]*q[1] + p[1]*q[0] + p[2]*q[3] - p[3]*q[2],
+    p[0]*q[2] - p[1]*q[3] + p[2]*q[0] + p[3]*q[1],
+    p[0]*q[3] + p[1]*q[2] - p[2]*q[1] + p[3]*q[0],
+  ];
+}
+function qNeg(q) { return [-q[0],-q[1],-q[2],-q[3]]; }
+function qDot(p, q) { return p[0]*q[0]+p[1]*q[1]+p[2]*q[2]+p[3]*q[3]; }
+
+// Canonical representative in S^3 / {±1}: q[0] ≥ 0; for q[0] = 0, take the
+// lift whose first nonzero vector component is positive. This makes the
+// canonicalization unambiguous on the equator (rotations by π).
+function qCanonical(q) {
+  if (q[0] > 1e-9) return q.slice();
+  if (q[0] < -1e-9) return qNeg(q);
+  // q[0] ≈ 0: equator. Tie-break by first nonzero vec component.
+  for (let i = 1; i < 4; i++) {
+    if (q[i] > 1e-9) return q.slice();
+    if (q[i] < -1e-9) return qNeg(q);
+  }
+  return q.slice();
+}
+
+function axisAngleToQuat(n, a) {
+  const h = a / 2;
+  return [Math.cos(h), Math.sin(h)*n[0], Math.sin(h)*n[1], Math.sin(h)*n[2]];
+}
+
+function qToBall(q) {
+  // Project q (assumed q[0] ≥ 0 within numerical tolerance) to ball coords.
+  const w = Math.max(-1, Math.min(1, q[0]));
+  const halfAngle = Math.acos(w);
+  const angle = 2 * halfAngle;
+  const s = Math.sin(halfAngle);
+  if (s < 1e-9) return [0, 0, 0];
+  return [angle * q[1] / s, angle * q[2] / s, angle * q[3] / s];
+}
+function qToBallSigned(q, sigma) {
+  return qToBall(sigma > 0 ? q : qNeg(q));
+}
+
+function slerpAt(q1, q2, t) {
+  let p2 = q2.slice();
+  if (qDot(q1, p2) < 0) p2 = qNeg(p2);
+  const dot = Math.max(-1, Math.min(1, qDot(q1, p2)));
+  const omega = Math.acos(dot);
+  const sinOm = Math.sin(omega);
+  if (Math.abs(sinOm) < 1e-7) {
+    const q = [
+      q1[0]*(1-t) + p2[0]*t,
+      q1[1]*(1-t) + p2[1]*t,
+      q1[2]*(1-t) + p2[2]*t,
+      q1[3]*(1-t) + p2[3]*t,
+    ];
+    const n = Math.hypot(q[0],q[1],q[2],q[3]);
+    return q.map(x => x/n);
+  }
+  const a = Math.sin((1-t)*omega) / sinOm;
+  const b = Math.sin(t*omega) / sinOm;
+  return [
+    a*q1[0] + b*p2[0],
+    a*q1[1] + b*p2[1],
+    a*q1[2] + b*p2[2],
+    a*q1[3] + b*p2[3],
+  ];
+}
+
+// ========================================================================
+// Group construction
+// ========================================================================
+
+// Hash a canonicalized quaternion to a string for set membership.
+function qkey(q) {
+  const qc = qCanonical(q);
+  return [0,1,2,3].map(i => Math.round(qc[i]*1e6)).join(',');
+}
+
+// Close a set of generators under multiplication. Returns array of canonical quats.
+function closeGroup(generatorQuats, maxSize=1000) {
+  const id = [1,0,0,0];
+  const elements = [id];
+  const seen = new Set([qkey(id)]);
+  const queue = [id];
+  while (queue.length > 0) {
+    if (elements.length > maxSize) break;
+    const x = queue.shift();
+    for (const g of generatorQuats) {
+      const newQ = qCanonical(qMul(g, x));
+      const k = qkey(newQ);
+      if (!seen.has(k)) {
+        seen.add(k);
+        elements.push(newQ);
+        queue.push(newQ);
+      }
+    }
+  }
+  return elements;
+}
+
+function normv(v) {
+  const n = Math.hypot(v[0],v[1],v[2]);
+  return [v[0]/n, v[1]/n, v[2]/n];
+}
+
+// Determine the order of an element (smallest k with g^k = ±id).
+// Returns 1 for identity, 2/3/4/5/6/... for finite-order rotations.
+function orderOf(q) {
+  // angle of rotation = 2 arccos(|q[0]|)
+  const w = Math.min(1, Math.abs(q[0]));
+  const angle = 2 * Math.acos(w);
+  if (angle < 1e-6) return 1;
+  // angle = 2π * k / n for some k coprime to n; we want the smallest n
+  // such that n * angle = 2π * (integer). Equivalently, find smallest n
+  // with n*angle / (2π) ≈ integer.
+  for (let n = 2; n <= 60; n++) {
+    const v = n * angle / (2*PI);
+    if (Math.abs(v - Math.round(v)) < 1e-5) return n;
+  }
+  return 0; // shouldn't happen for finite subgroups
+}
+
+// Build a group spec given a key and (optional) parameter n.
+// Returns: { name, elements, generators, presentation, axesByOrder }
+function buildGroup(key, n) {
+  let label, generators;
+  if (key === 'C') {
+    label = `C_${n}`;
+    const aQ = axisAngleToQuat([0,0,1], 2*PI/n);
+    generators = [{ q: aQ, name: 'a', color: 0xef476f }];
+  } else if (key === 'D') {
+    label = `D_${n}`;
+    const aQ = axisAngleToQuat([0,0,1], 2*PI/n);
+    const bQ = axisAngleToQuat([1,0,0], PI);
+    generators = [
+      { q: aQ, name: 'a', color: 0xef476f },
+      { q: bQ, name: 'b', color: 0x06d6a0 },
+    ];
+  } else if (key === 'A4') {
+    label = 'A_4';
+    const aQ = axisAngleToQuat(normv([1,1,1]), 2*PI/3);
+    const bQ = axisAngleToQuat([1,0,0], PI);
+    generators = [
+      { q: aQ, name: 'a', color: 0x8ab4ff },
+      { q: bQ, name: 'b', color: 0x06d6a0 },
+    ];
+  } else if (key === 'S4') {
+    label = 'S_4';
+    const aQ = axisAngleToQuat([0,0,1], PI/2);
+    const bQ = axisAngleToQuat(normv([1,0,-1]), PI);
+    generators = [
+      { q: aQ, name: 'a', color: 0xff9f1c },
+      { q: bQ, name: 'b', color: 0x06d6a0 },
+    ];
+  } else if (key === 'A5') {
+    label = 'A_5';
+    // Use the geometric construction: a = rotation by 2π/5 about an
+    // icosahedron vertex direction; b = order-2 rotation chosen so (ab)^3=1.
+    const phi = (1 + Math.sqrt(5)) / 2;
+    const v = normv([0, 1, phi]);
+    const aQ = axisAngleToQuat(v, 2*PI/5);
+    // Find a b axis (an icosahedron edge midpoint) making (ab)^3 = id.
+    // We'll search among likely candidates: edge midpoints between icosahedron vertices.
+    const icoVerts = [];
+    for (const s1 of [-1,1]) for (const s2 of [-1,1]) {
+      icoVerts.push(normv([0, s1, s2*phi]));
+      icoVerts.push(normv([s1, s2*phi, 0]));
+      icoVerts.push(normv([s2*phi, 0, s1]));
+    }
+    // Find edge length squared
+    let edgeLen2 = Infinity;
+    for (let i = 0; i < 12; i++) for (let j = i+1; j < 12; j++) {
+      const d2 = (icoVerts[i][0]-icoVerts[j][0])**2 +
+                 (icoVerts[i][1]-icoVerts[j][1])**2 +
+                 (icoVerts[i][2]-icoVerts[j][2])**2;
+      if (d2 < edgeLen2) edgeLen2 = d2;
+    }
+    let bQ = null;
+    for (let i = 0; i < 12 && !bQ; i++) for (let j = i+1; j < 12 && !bQ; j++) {
+      const d2 = (icoVerts[i][0]-icoVerts[j][0])**2 +
+                 (icoVerts[i][1]-icoVerts[j][1])**2 +
+                 (icoVerts[i][2]-icoVerts[j][2])**2;
+      if (Math.abs(d2 - edgeLen2) > 1e-6) continue;
+      const m = normv([
+        (icoVerts[i][0]+icoVerts[j][0])/2,
+        (icoVerts[i][1]+icoVerts[j][1])/2,
+        (icoVerts[i][2]+icoVerts[j][2])/2,
+      ]);
+      const cand = [0, m[0], m[1], m[2]];
+      const ab = qMul(aQ, cand);
+      const ab2 = qMul(ab, ab);
+      const ab3 = qMul(ab2, ab);
+      if (Math.abs(Math.abs(ab3[0]) - 1) < 1e-5 &&
+          Math.hypot(ab3[1],ab3[2],ab3[3]) < 1e-4) {
+        bQ = cand;
+      }
+    }
+    if (!bQ) throw new Error('A_5: failed to find generator b');
+    generators = [
+      { q: aQ, name: 'a', color: 0xef476f },
+      { q: bQ, name: 'b', color: 0x06d6a0 },
+    ];
+  } else {
+    throw new Error('Unknown group key: ' + key);
+  }
+
+  // Close the group
+  const elements = closeGroup(generators.map(g => g.q));
+
+  // Annotate each element with its order and ball point
+  const annotated = elements.map(q => ({
+    q,
+    order: orderOf(q),
+    pt: qToBall(q),
+  }));
+
+  // Group axes by order. An axis is a pair {n̂, -n̂}; we store one rep per pair.
+  // For each non-identity element, the axis is q[1:4] / sin(angle/2) (the ball
+  // point divided by its norm).
+  const axesByOrder = {}; // { order: [unit vectors] }
+  for (const el of annotated) {
+    if (el.order === 1) continue;
+    const r = Math.hypot(el.pt[0], el.pt[1], el.pt[2]);
+    if (r < 1e-9) continue;
+    const ax = [el.pt[0]/r, el.pt[1]/r, el.pt[2]/r];
+    if (!axesByOrder[el.order]) axesByOrder[el.order] = [];
+    const exists = axesByOrder[el.order].some(w =>
+      Math.abs(ax[0]-w[0])+Math.abs(ax[1]-w[1])+Math.abs(ax[2]-w[2]) < 1e-5 ||
+      Math.abs(ax[0]+w[0])+Math.abs(ax[1]+w[1])+Math.abs(ax[2]+w[2]) < 1e-5
+    );
+    if (!exists) axesByOrder[el.order].push(ax);
+  }
+
+  return { label, elements: annotated, generators, axesByOrder };
+}
+
+// ========================================================================
+// Three.js scene setup
+// ========================================================================
+const holder = document.getElementById('canvas-holder');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x0b0d12, 1);
+holder.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x0b0d12, 8, 22);
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.05, 100);
+camera.position.set(6.5, 4.0, 6.5);
+camera.lookAt(0,0,0);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+dirLight.position.set(5,8,5);
+scene.add(dirLight);
+
+// Trackball-style mouse rotation
+let isDragging = false, lastX=0, lastY=0;
+let camTheta = Math.atan2(camera.position.x, camera.position.z);
+let camPhi = Math.atan2(camera.position.y, Math.hypot(camera.position.x, camera.position.z));
+let camR = camera.position.length();
+function updateCamera() {
+  camera.position.set(
+    camR * Math.cos(camPhi) * Math.sin(camTheta),
+    camR * Math.sin(camPhi),
+    camR * Math.cos(camPhi) * Math.cos(camTheta),
+  );
+  camera.lookAt(0,0,0);
+}
+renderer.domElement.addEventListener('mousedown', e => { isDragging=true; lastX=e.clientX; lastY=e.clientY; });
+window.addEventListener('mouseup', () => { isDragging=false; });
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx=e.clientX-lastX, dy=e.clientY-lastY;
+  lastX=e.clientX; lastY=e.clientY;
+  camTheta -= dx*0.005;
+  camPhi += dy*0.005;
+  camPhi = Math.max(-PI/2+0.01, Math.min(PI/2-0.01, camPhi));
+  updateCamera();
+});
+renderer.domElement.addEventListener('wheel', e => {
+  e.preventDefault();
+  camR *= Math.exp(e.deltaY*0.001);
+  camR = Math.max(2.5, Math.min(20, camR));
+  updateCamera();
+}, { passive: false });
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ========================================================================
+// Static elements: ball boundary and axes
+// ========================================================================
+const ballR = PI;
+
+// Wireframe boundary. depthWrite:false so transparent fragments don't occlude
+// content rendered behind/inside them — particularly Cayley arcs on ∂B.
+scene.add(new THREE.Mesh(
+  new THREE.SphereGeometry(ballR, 48, 32),
+  new THREE.MeshBasicMaterial({ color: 0x2a3245, wireframe: true, transparent: true, opacity: 0.18, depthWrite: false })
+));
+// Faint inside fill for depth
+scene.add(new THREE.Mesh(
+  new THREE.SphereGeometry(ballR, 48, 32),
+  new THREE.MeshBasicMaterial({ color: 0x141925, transparent: true, opacity: 0.04, side: THREE.BackSide, depthWrite: false })
+));
+// Coordinate axes
+function makeAxis(dir, color) {
+  const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.25 });
+  const pts = [new THREE.Vector3(0,0,0), new THREE.Vector3(dir[0]*ballR*1.05, dir[1]*ballR*1.05, dir[2]*ballR*1.05)];
+  return new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat);
+}
+scene.add(makeAxis([1,0,0], 0x6a7080));
+scene.add(makeAxis([0,1,0], 0x6a7080));
+scene.add(makeAxis([0,0,1], 0x6a7080));
+
+// ========================================================================
+// Per-group dynamic content (rebuilt on group change)
+// ========================================================================
+const dynamicGroup = new THREE.Group();
+scene.add(dynamicGroup);
+
+// Color palette by order (with extras for high orders in C_n / D_n)
+function colorForOrder(order) {
+  const map = {
+    1: 0xffd166,  // identity yellow
+    2: 0x06d6a0,  // green
+    3: 0x8ab4ff,  // blue
+    4: 0xff9f1c,  // orange
+    5: 0xef476f,  // pink
+    6: 0xc77dff,  // purple
+    7: 0x00b4d8,  // cyan
+    8: 0xff6b9d,  // hot pink
+  };
+  if (map[order]) return map[order];
+  // For order >= 9, cycle through hues
+  const h = ((order-2) * 47) % 360;
+  return new THREE.Color().setHSL(h/360, 0.7, 0.6).getHex();
+}
+function colorForOrderHex(order) {
+  return '#' + colorForOrder(order).toString(16).padStart(6, '0');
+}
+
+let currentGroup = null;
+let elementMeshes = [];
+let elementLabels = [];
+let edgeLines = []; // [{ line, i, j }] for visibility filtering
+let edgeGroup = null;
+let shellGroup = null;
+let axisGroup = null;
+let labelGroup = null;
+let pointGroup = null;
+let totalWraps = 0;
+let boundaryEdgeCount = 0;
+let wordOf = [];
+let wordLengths = []; // word length per element (0 for identity)
+let visibleOrders = new Set();
+let maxWordLen = Infinity;
+
+// ========================================================================
+// Build labels using BFS for shortest words
+// ========================================================================
+
+function bfsWords(group) {
+  const N = group.elements.length;
+  // Find identity index
+  let idIdx = -1;
+  for (let i = 0; i < N; i++) {
+    if (Math.abs(group.elements[i].q[0] - 1) < 1e-6) { idIdx = i; break; }
+  }
+  const words = new Array(N).fill(null);
+  words[idIdx] = 'e';
+  // Generators for BFS: include each generator and its inverse, named accordingly.
+  // For an order-2 generator (b), the inverse is itself, so we don't need it twice.
+  const bfsGens = [];
+  for (const gen of group.generators) {
+    bfsGens.push({ q: gen.q, name: gen.name });
+    // Inverse: conjugate q. Only add if it's distinct (i.e., gen has order > 2).
+    const order = orderOf(gen.q);
+    if (order > 2) {
+      // inverse name: for 'a', use 'A'; for general single-letter, use UPPERCASE
+      const invName = gen.name.length === 1 ? gen.name.toUpperCase() : gen.name + '⁻¹';
+      const invQ = qCanonical([gen.q[0], -gen.q[1], -gen.q[2], -gen.q[3]]);
+      bfsGens.push({ q: invQ, name: invName });
+    }
+  }
+  // BFS in order to get short words
+  const queue = [idIdx];
+  const findElByQuat = (q) => {
+    for (let i = 0; i < N; i++) {
+      if (Math.abs(Math.abs(qDot(group.elements[i].q, q)) - 1) < 1e-5) return i;
+    }
+    return -1;
+  };
+  while (queue.length > 0) {
+    const i = queue.shift();
+    const wi = words[i];
+    for (const gen of bfsGens) {
+      const newQ = qMul(gen.q, group.elements[i].q);
+      const j = findElByQuat(newQ);
+      if (j < 0 || words[j] !== null) continue;
+      words[j] = (wi === 'e') ? gen.name : gen.name + wi;
+      queue.push(j);
+    }
+  }
+  return words;
+}
+
+// ========================================================================
+// Render a group
+// ========================================================================
+function renderGroup(group) {
+  // Clear previous
+  while (dynamicGroup.children.length > 0) {
+    const child = dynamicGroup.children[0];
+    dynamicGroup.remove(child);
+    if (child.geometry) child.geometry.dispose();
+    if (child.material) child.material.dispose && child.material.dispose();
+  }
+  elementMeshes = [];
+  elementLabels = [];
+  edgeLines = [];
+  totalWraps = 0;
+  boundaryEdgeCount = 0;
+
+  pointGroup = new THREE.Group(); dynamicGroup.add(pointGroup);
+  edgeGroup = new THREE.Group(); dynamicGroup.add(edgeGroup);
+  shellGroup = new THREE.Group(); dynamicGroup.add(shellGroup);
+  axisGroup = new THREE.Group(); dynamicGroup.add(axisGroup);
+  labelGroup = new THREE.Group(); dynamicGroup.add(labelGroup);
+
+  // Compute words
+  wordOf = bfsWords(group);
+  // Word length per element: identity has length 0, others use string length
+  // (since each generator-name is a single character: 'a', 'b', 'A', etc.)
+  wordLengths = wordOf.map(w => (w === 'e' || w === null) ? 0 : w.length);
+
+  // ---- Points ----
+  const sphereGeoms = {};
+  const getSphereGeom = (order) => {
+    const r = order === 1 ? 0.13 : 0.085;
+    const seg = order === 1 ? 24 : 18;
+    if (!sphereGeoms[order]) sphereGeoms[order] = new THREE.SphereGeometry(r, seg, seg);
+    return sphereGeoms[order];
+  };
+  // Read current slider value so newly created meshes match the user's setting
+  // (especially needed on initial render before any input event has fired).
+  const initPointScale = parseFloat(document.getElementById('pointSize').value);
+  for (let i = 0; i < group.elements.length; i++) {
+    const el = group.elements[i];
+    const color = colorForOrder(el.order);
+    const mat = new THREE.MeshLambertMaterial({ color });
+    const mesh = new THREE.Mesh(getSphereGeom(el.order), mat);
+    mesh.position.set(el.pt[0], el.pt[1], el.pt[2]);
+    mesh.scale.setScalar(initPointScale);
+    mesh.userData.order = el.order;
+    mesh.userData.elementIdx = i;
+    pointGroup.add(mesh);
+    elementMeshes.push(mesh);
+    // Ghost for elements on ∂B (order 2)
+    if (el.order === 2) {
+      const ghost = new THREE.Mesh(
+        getSphereGeom(2),
+        new THREE.MeshLambertMaterial({ color, transparent: true, opacity: 0.32 })
+      );
+      ghost.position.set(-el.pt[0], -el.pt[1], -el.pt[2]);
+      ghost.scale.setScalar(initPointScale);
+      ghost.userData.order = 2;
+      ghost.userData.ghost = true;
+      ghost.userData.elementIdx = i;
+      pointGroup.add(ghost);
+      elementMeshes.push(ghost);
+    }
+  }
+
+  // ---- Conjugacy shells ----
+  // Distinct rotation angles among non-identity elements
+  const angles = new Set();
+  for (const el of group.elements) {
+    if (el.order === 1) continue;
+    const r = Math.hypot(el.pt[0], el.pt[1], el.pt[2]);
+    if (r > 1e-6) angles.add(Math.round(r * 1e4));
+  }
+  for (const aRound of angles) {
+    const r = aRound / 1e4;
+    // Find a representative order at this radius
+    let repOrder = 2;
+    for (const el of group.elements) {
+      if (Math.abs(Math.hypot(el.pt[0],el.pt[1],el.pt[2]) - r) < 1e-3) {
+        repOrder = el.order; break;
+      }
+    }
+    shellGroup.add(new THREE.Mesh(
+      new THREE.SphereGeometry(r, 32, 24),
+      new THREE.MeshBasicMaterial({ color: colorForOrder(repOrder), wireframe: true, transparent: true, opacity: 0.07 })
+    ));
+  }
+  shellGroup.visible = false;
+
+  // ---- Rotation axes ----
+  for (const order of Object.keys(group.axesByOrder)) {
+    const color = colorForOrder(parseInt(order));
+    for (const ax of group.axesByOrder[order]) {
+      const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.3 });
+      const pts = [
+        new THREE.Vector3(-PI*ax[0], -PI*ax[1], -PI*ax[2]),
+        new THREE.Vector3( PI*ax[0],  PI*ax[1],  PI*ax[2])
+      ];
+      axisGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), mat));
+    }
+  }
+  axisGroup.visible = false;
+
+  // ---- Cayley edges ----
+  // For each generator g, draw an edge from i to j = g·i. The Cayley graph
+  // is regular: each generator contributes |G| directed edges, which become
+  // |G|/2 undirected edges if g is an involution, and |G| undirected edges
+  // (i.e. one full orbit cycle) for non-involutions. We dedupe by the
+  // unordered pair {i,j} per generator-class.
+  const findElByQuat = (q) => {
+    for (let i = 0; i < group.elements.length; i++) {
+      if (Math.abs(Math.abs(qDot(group.elements[i].q, q)) - 1) < 1e-5) return i;
+    }
+    return -1;
+  };
+  const edgeList = [];
+  const seenEdges = new Set();
+  for (let gi = 0; gi < group.generators.length; gi++) {
+    const gen = group.generators[gi];
+    for (let i = 0; i < group.elements.length; i++) {
+      const newQ = qMul(gen.q, group.elements[i].q);
+      const j = findElByQuat(newQ);
+      if (j === -1) continue;
+      // Dedupe by {min,max} per generator. For an involution, edge ij and ji
+      // come from the same generator, so we just use one. For a non-involution
+      // a, the edges i→ai and ai→a²i are distinct (different cycle steps),
+      // but each undirected edge {i,ai} is reached via a from i and via a⁻¹
+      // from ai — we count it once. Including a⁻¹ as a separate generator
+      // would double-count, but our generators list does NOT include
+      // inverses, so we're fine: each gen-class hits each edge exactly once
+      // from one side (involution) or each edge twice from both sides
+      // (non-inv, but only one direction since we don't store inverses).
+      // Wait: for a non-involution gen a (in group.generators), each
+      // undirected {i,ai} is reached by a from i. We don't reach it from
+      // ai (since the inverse a⁻¹ isn't in group.generators). So no dedup
+      // needed for non-involutions. But for an involution (e.g. b), {i,bi}
+      // is reached by b from i AND from bi (since b⁻¹=b). Dedup needed.
+      const key = `${gi}:${Math.min(i,j)}-${Math.max(i,j)}`;
+      if (seenEdges.has(key)) continue;
+      seenEdges.add(key);
+      edgeList.push({
+        i, j, color: gen.color, q1: group.elements[i].q, q2: group.elements[j].q,
+        orderI: group.elements[i].order, orderJ: group.elements[j].order,
+      });
+    }
+  }
+  buildEdges(edgeList);
+
+  // ---- Labels ----
+  const offsetAmt = 0.10;
+  for (let i = 0; i < group.elements.length; i++) {
+    const el = group.elements[i];
+    const w = wordOf[i] || '?';
+    const colorHex = colorForOrderHex(el.order);
+    const r = Math.hypot(el.pt[0], el.pt[1], el.pt[2]);
+    const dir = (r < 1e-6) ? [0, 1, 0] : [el.pt[0]/r, el.pt[1]/r, el.pt[2]/r];
+    const lpos = [
+      el.pt[0] + offsetAmt*dir[0],
+      el.pt[1] + offsetAmt*dir[1],
+      el.pt[2] + offsetAmt*dir[2],
+    ];
+    const sprite = makeLabel(w, lpos, colorHex);
+    sprite.userData.order = el.order;
+    sprite.userData.elementIdx = i;
+    labelGroup.add(sprite);
+    elementLabels.push(sprite);
+    if (el.order === 2) {
+      const gpos = [-el.pt[0]-offsetAmt*dir[0], -el.pt[1]-offsetAmt*dir[1], -el.pt[2]-offsetAmt*dir[2]];
+      const gs = makeLabel(w, gpos, colorHex);
+      gs.material.opacity = 0.45;
+      gs.userData.order = 2;
+      gs.userData.ghost = true;
+      gs.userData.elementIdx = i;
+      labelGroup.add(gs);
+      elementLabels.push(gs);
+    }
+  }
+  labelGroup.visible = false;
+
+  // ---- UI updates ----
+  document.getElementById('orderInfo').textContent = `|${group.label}| = ${group.elements.length}`;
+  const axInfo = Object.keys(group.axesByOrder)
+    .sort((a,b)=>parseInt(a)-parseInt(b))
+    .map(o => `${group.axesByOrder[o].length}×${o}-fold`)
+    .join(', ');
+  document.getElementById('axesInfo').textContent = axInfo || '(no nontrivial axes)';
+  document.getElementById('wrapInfo').textContent =
+    `Cayley edges: ${edgeList.length}  ·  ∂B-crossings: ${totalWraps}`;
+  rebuildLegend(group);
+  rebuildOrderToggles(group);
+  // Update the word-length slider's range based on the longest word in this group.
+  const maxLen = Math.max(0, ...wordLengths);
+  const slider = document.getElementById('maxWordLen');
+  slider.max = String(maxLen);
+  // Reset to "show all": position slider at max, set the cap to Infinity.
+  slider.value = String(maxLen);
+  maxWordLen = Infinity;
+  document.getElementById('maxWordLenVal').textContent = '∞';
+}
+
+// ========================================================================
+// Cayley edge construction
+// ========================================================================
+
+// Pure function: given two quaternions, return the segmented ball-curve for
+// the SO(3) geodesic between them (handling ∂B wraps via σ-tracking).
+// Returns an array of segments, each segment an array of [x,y,z] ball points.
+function traceEdgeSegments(q1, q2) {
+  const N_SAMPLES = 48;
+  const NOISE_EPS = 1e-9;
+  const samples = [];
+  for (let kk = 0; kk <= N_SAMPLES; kk++) {
+    samples.push(slerpAt(q1, q2, kk / N_SAMPLES));
+  }
+  let firstNonzero = 0;
+  for (let kk = 0; kk < samples.length; kk++) {
+    if (Math.abs(samples[kk][0]) >= NOISE_EPS) { firstNonzero = samples[kk][0]; break; }
+  }
+  let sigma = (firstNonzero >= 0) ? +1 : -1;
+  const segments = [[ qToBallSigned(samples[0], sigma) ]];
+  let lastNonzeroSign = (Math.abs(samples[0][0]) >= NOISE_EPS) ? Math.sign(samples[0][0]) : 0;
+  for (let k = 1; k < samples.length; k++) {
+    const qPrev = samples[k-1];
+    const q = samples[k];
+    const w0 = (Math.abs(qPrev[0]) < NOISE_EPS) ? 0 : qPrev[0];
+    const w1 = (Math.abs(q[0])     < NOISE_EPS) ? 0 : q[0];
+    const sigCurr = (w1 === 0) ? 0 : Math.sign(w1);
+    const productCross = (w0 !== 0 && w1 !== 0 && w0 * w1 < 0);
+    const trackedCross = (lastNonzeroSign !== 0 && sigCurr !== 0 && lastNonzeroSign !== sigCurr);
+    if (productCross || trackedCross) {
+      const t = (Math.abs(w0 - w1) > 1e-15) ? Math.max(0, Math.min(1, w0/(w0-w1))) : 0.5;
+      const qB = [
+        0,
+        qPrev[1] + t*(q[1]-qPrev[1]),
+        qPrev[2] + t*(q[2]-qPrev[2]),
+        qPrev[3] + t*(q[3]-qPrev[3]),
+      ];
+      const nrm = Math.hypot(qB[1], qB[2], qB[3]);
+      const ex = PI * sigma * qB[1] / nrm;
+      const ey = PI * sigma * qB[2] / nrm;
+      const ez = PI * sigma * qB[3] / nrm;
+      segments[segments.length-1].push([ex, ey, ez]);
+      sigma = -sigma;
+      segments.push([[-ex, -ey, -ez]]);
+    }
+    segments[segments.length-1].push(qToBallSigned(q, sigma));
+    if (sigCurr !== 0) lastNonzeroSign = sigCurr;
+  }
+  return segments;
+}
+
+// Inset points just inside ∂B to avoid z-fighting with the boundary sphere.
+function insetSeg(seg) {
+  const INSET = 0.995;
+  return seg.map(p => {
+    const r = Math.hypot(p[0], p[1], p[2]);
+    if (r > PI - 0.005) {
+      const s = (PI * INSET) / r;
+      return [p[0]*s, p[1]*s, p[2]*s];
+    }
+    return p;
+  });
+}
+
+// Build static Cayley edges. Each segment of each edge is a separate
+// THREE.Line; for boundary edges (with at least one order-2 endpoint) we also
+// add the antipodal copy so both lifts of the boundary endpoint are visited.
+function buildEdges(edgeList) {
+  totalWraps = 0;
+  boundaryEdgeCount = 0;
+  const ptneg = (p) => [-p[0],-p[1],-p[2]];
+
+  for (const e of edgeList) {
+    const hasBoundaryEnd = (e.orderI === 2 || e.orderJ === 2);
+    if (e.orderI === 2 && e.orderJ === 2) boundaryEdgeCount++;
+
+    const segments = traceEdgeSegments(e.q1, e.q2);
+    totalWraps += Math.max(0, segments.length - 1);
+
+    function addLine(seg) {
+      if (seg.length < 2) return;
+      const inset = insetSeg(seg);
+      const pts = inset.map(p => new THREE.Vector3(p[0], p[1], p[2]));
+      const geom = new THREE.BufferGeometry().setFromPoints(pts);
+      const mat = new THREE.LineBasicMaterial({ color: e.color, transparent: true, opacity: 0.55 });
+      const line = new THREE.Line(geom, mat);
+      edgeGroup.add(line);
+      edgeLines.push({ line, i: e.i, j: e.j });
+    }
+    for (const seg of segments) addLine(seg);
+    if (hasBoundaryEnd) {
+      for (const seg of segments) addLine(seg.map(ptneg));
+    }
+  }
+}
+
+// ========================================================================
+// Labels (canvas-textured sprites)
+// ========================================================================
+function makeLabel(text, position, color) {
+  const canvas = document.createElement('canvas');
+  const fontSize = 32;
+  const padding = 8;
+  const ctx0 = canvas.getContext('2d');
+  ctx0.font = `${fontSize}px -apple-system, "Segoe UI", Helvetica, Arial, sans-serif`;
+  const metrics = ctx0.measureText(text);
+  const textW = Math.ceil(metrics.width);
+  canvas.width = textW + 2*padding;
+  canvas.height = fontSize + 2*padding;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'rgba(11,13,18,0.78)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.font = `${fontSize}px -apple-system, "Segoe UI", Helvetica, Arial, sans-serif`;
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = color;
+  ctx.fillText(text, padding, canvas.height/2);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.minFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(mat);
+  const scale = 0.006;
+  sprite.scale.set(canvas.width*scale, canvas.height*scale, 1);
+  sprite.position.set(position[0], position[1], position[2]);
+  return sprite;
+}
+
+// ========================================================================
+// UI: legend, order toggles
+// ========================================================================
+function rebuildLegend(group) {
+  const orders = Array.from(new Set(group.elements.map(el => el.order))).sort((a,b)=>a-b);
+  const lines = [];
+  for (const o of orders) {
+    const count = group.elements.filter(el => el.order === o).length;
+    const label = o === 1 ? 'Identity' :
+                  o === 2 ? `Order 2 (rotation by π) — on ∂B` :
+                  `Order ${o} (rotation by 2π/${o} or multiples)`;
+    lines.push(`<div class="legend-item"><span class="sw" style="background:${colorForOrderHex(o)}"></span>${label} (${count})</div>`);
+  }
+  // Also show generator legend
+  const genLines = group.generators.map(g => {
+    const o = orderOf(g.q);
+    return `<code style="color:${colorForOrderHex(o)}">${g.name}</code>`;
+  }).join(', ');
+  lines.push(`<div style="margin-top:8px;color:#9aa0ad;font-size:11px">Generators: ${genLines}. Cayley edge i→j means j = g·i.</div>`);
+  document.getElementById('legend').innerHTML = lines.join('');
+}
+
+function rebuildOrderToggles(group) {
+  const container = document.getElementById('orderToggles');
+  container.innerHTML = '';
+  visibleOrders = new Set();
+  const orders = Array.from(new Set(group.elements.map(el => el.order))).sort((a,b)=>a-b);
+  for (const o of orders) {
+    visibleOrders.add(o);
+    const div = document.createElement('div');
+    div.className = 'order-toggle';
+    div.style.color = colorForOrderHex(o);
+    const count = group.elements.filter(el => el.order === o).length;
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = true;
+    cb.dataset.order = o;
+    cb.addEventListener('change', () => {
+      if (cb.checked) visibleOrders.add(o); else visibleOrders.delete(o);
+      refreshVisibility();
+    });
+    const lbl = document.createElement('label');
+    const oName = o === 1 ? 'e' : `ord ${o}`;
+    lbl.textContent = `${oName} (${count})`;
+    div.appendChild(cb);
+    div.appendChild(lbl);
+    container.appendChild(div);
+  }
+}
+
+function refreshVisibility() {
+  // Element visible iff its order is enabled AND its word length is within the cap.
+  const elementVisible = (idx, order) => {
+    if (!visibleOrders.has(order)) return false;
+    if (idx === undefined || idx === null) return true;
+    return wordLengths[idx] <= maxWordLen;
+  };
+  for (const m of elementMeshes) {
+    m.visible = elementVisible(m.userData.elementIdx, m.userData.order);
+  }
+  // Edges: visible iff (a) the master toggle is on, (b) both endpoints
+  // pass the element-visible test.
+  const edgeMaster = document.getElementById('showEdges').checked;
+  edgeGroup.visible = edgeMaster;
+  if (edgeMaster) {
+    for (const er of edgeLines) {
+      const oi = currentGroup ? currentGroup.elements[er.i].order : 1;
+      const oj = currentGroup ? currentGroup.elements[er.j].order : 1;
+      er.line.visible = elementVisible(er.i, oi) && elementVisible(er.j, oj);
+    }
+  }
+  shellGroup.visible = document.getElementById('showShells').checked;
+  axisGroup.visible = document.getElementById('showAxes').checked;
+  const showLabels = document.getElementById('showLabels').checked;
+  labelGroup.visible = showLabels;
+  if (showLabels) {
+    for (const s of elementLabels) {
+      s.visible = elementVisible(s.userData.elementIdx, s.userData.order);
+    }
+  }
+}
+
+document.getElementById('showEdges').addEventListener('change', refreshVisibility);
+document.getElementById('showShells').addEventListener('change', refreshVisibility);
+document.getElementById('showAxes').addEventListener('change', refreshVisibility);
+document.getElementById('showLabels').addEventListener('change', refreshVisibility);
+document.getElementById('maxWordLen').addEventListener('input', e => {
+  const v = parseInt(e.target.value);
+  const slider = document.getElementById('maxWordLen');
+  const sliderMax = parseInt(slider.max);
+  if (v >= sliderMax) {
+    maxWordLen = Infinity;
+    document.getElementById('maxWordLenVal').textContent = '∞';
+  } else {
+    maxWordLen = v;
+    document.getElementById('maxWordLenVal').textContent = String(v);
+  }
+  refreshVisibility();
+});
+document.getElementById('pointSize').addEventListener('input', e => {
+  const v = parseFloat(e.target.value);
+  document.getElementById('pointSizeVal').textContent = v.toFixed(2);
+  for (const m of elementMeshes) m.scale.setScalar(v);
+});
+
+// ========================================================================
+// Group selection
+// ========================================================================
+const groupSelect = document.getElementById('groupSelect');
+const orderRow = document.getElementById('orderRow');
+const orderSlider = document.getElementById('orderSlider');
+const orderVal = document.getElementById('orderVal');
+
+function updateGroup() {
+  const key = groupSelect.value;
+  const n = parseInt(orderSlider.value);
+  // Show order slider only for C and D
+  if (key === 'C' || key === 'D') {
+    orderRow.classList.remove('hidden');
+  } else {
+    orderRow.classList.add('hidden');
+  }
+  document.getElementById('title').textContent =
+    (key === 'C' ? `Cyclic C${subscript(n)}` :
+     key === 'D' ? `Dihedral D${subscript(n)}` :
+     key === 'A4' ? 'Tetrahedral A₄' :
+     key === 'S4' ? 'Octahedral S₄' :
+     'Icosahedral A₅') + ' inside SO(3)';
+  try {
+    currentGroup = buildGroup(key, n);
+    renderGroup(currentGroup);
+    refreshVisibility();
+  } catch (err) {
+    console.error('Group build failed:', err);
+  }
+}
+
+function subscript(n) {
+  const s = '₀₁₂₃₄₅₆₇₈₉';
+  return String(n).split('').map(c => s[parseInt(c)]).join('');
+}
+
+groupSelect.addEventListener('change', updateGroup);
+orderSlider.addEventListener('input', () => {
+  orderVal.textContent = orderSlider.value;
+  updateGroup();
+});
+
+// Initial build
+updateGroup();
+
+// ========================================================================
+// Animate
+// ========================================================================
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+</script>
+</body>
+</html>
