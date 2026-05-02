@@ -12,7 +12,7 @@
     height: 100%;
     overflow: hidden;
   }
-  #canvas-holder { position: absolute; inset: 0; }
+  #canvas-holder { position: absolute; inset: 0; touch-action: none; }
   #ui {
     position: absolute;
     top: 14px; left: 14px;
@@ -435,6 +435,64 @@ renderer.domElement.addEventListener('wheel', e => {
   camR = Math.max(2.5, Math.min(20, camR));
   updateCamera();
 }, { passive: false });
+
+// Touch handlers: single-finger drag rotates (like mouse), two-finger pinch zooms.
+// `touch-action: none` on the canvas (in CSS) prevents the browser from
+// intercepting these gestures for page scroll/zoom.
+let lastPinchDist = 0;
+function touchDist(t1, t2) {
+  return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+}
+renderer.domElement.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (e.touches.length === 1) {
+    isDragging = true;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+  } else if (e.touches.length === 2) {
+    isDragging = false;
+    lastPinchDist = touchDist(e.touches[0], e.touches[1]);
+  }
+}, { passive: false });
+renderer.domElement.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (e.touches.length === 1 && isDragging) {
+    const dx = e.touches[0].clientX - lastX;
+    const dy = e.touches[0].clientY - lastY;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+    camTheta -= dx * 0.005;
+    camPhi += dy * 0.005;
+    camPhi = Math.max(-PI/2+0.01, Math.min(PI/2-0.01, camPhi));
+    updateCamera();
+  } else if (e.touches.length === 2) {
+    const d = touchDist(e.touches[0], e.touches[1]);
+    if (lastPinchDist > 0) {
+      // Pinch in (d shrinks) → zoom out (camR grows). Match the wheel behavior.
+      const factor = lastPinchDist / d;
+      camR *= factor;
+      camR = Math.max(2.5, Math.min(20, camR));
+      updateCamera();
+    }
+    lastPinchDist = d;
+  }
+}, { passive: false });
+renderer.domElement.addEventListener('touchend', e => {
+  if (e.touches.length === 0) {
+    isDragging = false;
+    lastPinchDist = 0;
+  } else if (e.touches.length === 1) {
+    // Transitioning from pinch to single-finger drag — re-anchor the drag origin.
+    isDragging = true;
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+    lastPinchDist = 0;
+  }
+}, { passive: false });
+renderer.domElement.addEventListener('touchcancel', () => {
+  isDragging = false;
+  lastPinchDist = 0;
+});
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
