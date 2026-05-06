@@ -135,7 +135,6 @@
         <div id="closure-tag" class="hint"></div>
       </div>
       <canvas id="pentagon-canvas" width="800" height="760"></canvas>
-      <div id="status">awaiting click on surface…</div>
     </div>
   </div>
 </div>
@@ -867,24 +866,20 @@ function scheduleRecompute() {
 }
 
 function recomputeSurface() {
-  const status = document.getElementById('status');
-  status.textContent = 'computing surface…';
-  // Validate r4 against pentagon inequality (each r_i < sum of others)
+  const info = document.getElementById('info');
+  // Validate the pentagon inequality (each r_i < sum of others, i.e. < 0.5
+  // when normalized). When violated, the moduli space is empty and we hide
+  // the surface; surface a brief note in the HUD so the user knows why.
   const sum = state.r.reduce((a,b)=>a+b, 0);
   const bad = state.r.some(rr => rr >= sum - rr - 1e-9);
   if (bad) {
-    status.innerHTML = '<span class="err">no pentagon: some side ≥ sum of others. surface is empty.</span>';
+    if (info) info.textContent = 'no pentagon: some r_i ≥ sum of others — surface is empty.';
+    disposeGlyphs();
     if (surfaceMesh) { scene.remove(surfaceMesh); surfaceMesh.geometry.dispose(); surfaceMesh = null; }
     return;
   }
   setTimeout(() => {
-    const t0 = performance.now();
     const ok = setSurface(state.r, state.N);
-    const dt = performance.now() - t0;
-    status.innerHTML = ok
-      ? `surface built in ${dt.toFixed(0)} ms (N=${state.N}). click on the surface to pick a point.`
-      : '<span class="err">marching cubes returned empty mesh.</span>';
-    // If we already have a selected point, re-snap it onto the new surface.
     if (state.point && ok) {
       const a = newtonSnap(state.point.slice());
       setPointFromAngle(a);
