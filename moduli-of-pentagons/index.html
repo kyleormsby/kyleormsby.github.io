@@ -54,6 +54,17 @@
   .hint { color: var(--muted); font-size: 11px; line-height: 1.4; }
   .hint kbd { background: #2a3142; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--edge); font-family: ui-monospace, monospace; font-size: 10px; }
   .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+  .pb { position: relative; width: 100%; height: 28px; border-radius: 4px; overflow: hidden;
+        background: #0c0f15; user-select: none; touch-action: none; }
+  .pb-seg { position: absolute; top: 0; height: 100%; }
+  .pb-handle { position: absolute; top: -2px; height: 32px; width: 12px; margin-left: -6px;
+               cursor: ew-resize; z-index: 2; }
+  .pb-handle::before { content: ''; position: absolute; left: 5px; top: 0; width: 2px; height: 100%;
+                       background: rgba(255,255,255,0.45); transition: background 0.1s; }
+  .pb-handle:hover::before, .pb-handle.dragging::before { background: rgba(255,255,255,0.95); }
+  .pb-vals { display: flex; justify-content: space-between; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+             font-size: 11px; margin-top: 6px; gap: 6px; }
+  .pb-vals span { color: var(--muted); white-space: nowrap; }
   .err { color: #ff6b6b; }
   .ok  { color: #6bdc8a; }
 </style>
@@ -72,8 +83,9 @@
     <div class="sub">Drag to rotate the view. <kbd>Shift</kbd>+drag on the surface to slide the point along it; drag through any face and the point wraps to the opposite face. Wheel = zoom.</div>
 
     <div class="controls">
-      <div style="font-weight:600; margin-bottom:6px;">Side lengths (auto-renormalize to 1)</div>
-      <div id="sliders"></div>
+      <div style="font-weight:600; margin-bottom:6px;">Side lengths (drag dividers to redistribute)</div>
+      <div class="pb" id="partition-bar"></div>
+      <div class="pb-vals" id="partition-vals"></div>
       <div class="button-row">
         <button id="btn-recompute" class="primary">Recompute surface</button>
         <button id="btn-equal">Equal sides</button>
@@ -100,21 +112,21 @@
       </div>
 
       <div style="height: 1px; background: var(--edge); margin: 14px 0;"></div>
-      <div style="font-weight:600; margin-bottom:6px;">Pentagon tattoo</div>
+      <div style="font-weight:600; margin-bottom:6px;">Pentagon glyphs</div>
       <div class="checkbox-row" style="margin-top:0;">
-        <label><input type="checkbox" id="tattoo-toggle" checked /> Draw pentagons on the surface</label>
+        <label><input type="checkbox" id="glyph-toggle" checked /> Draw pentagons on the surface</label>
       </div>
       <div class="row">
         <label style="width:42px;">count</label>
-        <input type="range" id="tattoo-count" min="100" max="3000" step="50" value="900" />
-        <span class="val" id="tattoo-count-val">900</span>
+        <input type="range" id="glyph-count" min="100" max="3000" step="50" value="900" />
+        <span class="val" id="glyph-count-val">900</span>
       </div>
       <div class="row">
         <label style="width:42px;">size</label>
-        <input type="range" id="tattoo-scale" min="0.02" max="0.20" step="0.005" value="0.07" />
-        <span class="val" id="tattoo-scale-val">0.07</span>
+        <input type="range" id="glyph-scale" min="0.02" max="0.20" step="0.005" value="0.07" />
+        <span class="val" id="glyph-scale-val">0.07</span>
       </div>
-      <div class="legend">Each tattoo pentagon is the pentagon encoded by its (x,y,z) basepoint, drawn in the tangent plane to the surface with &ldquo;up&rdquo; given by the projection of the world z-axis. Pentagons in the singular curve where ẑ ⊥ tangent plane are skipped.</div>
+      <div class="legend">Each glyph is the pentagon encoded by its (x,y,z) basepoint, drawn in the tangent plane to the surface with &ldquo;up&rdquo; given by the projection of the world z-axis. Glyphs in the singular curve where ẑ ⊥ tangent plane are skipped.</div>
     </div>
 
     <div id="pentagon-wrap">
@@ -602,12 +614,12 @@ const surfaceMat = new THREE.MeshStandardMaterial({
   transparent: false, opacity: 1.0, depthWrite: true
 });
 
-// Tattoo: small pentagons drawn in the tangent plane at many points on the
+// Glyphs: small pentagons drawn in the tangent plane at many points on the
 // surface (a single LineSegments mesh, rebuilt whenever r, the surface, or
-// tattoo controls change).
-let tattooLines = null;
+// glyph controls change).
+let glyphLines = null;
 
-const TATTOO_SIDE_COLORS = [
+const GLYPH_SIDE_COLORS = [
   [1.00, 0.42, 0.42],  // r1
   [1.00, 0.72, 0.42],  // r2
   [0.95, 0.85, 0.38],  // r3
@@ -615,29 +627,29 @@ const TATTOO_SIDE_COLORS = [
   [0.43, 0.66, 1.00],  // r5
 ];
 
-function disposeTattoo() {
-  if (!tattooLines) return;
-  scene.remove(tattooLines);
-  tattooLines.geometry.dispose();
-  tattooLines.material.dispose();
-  tattooLines = null;
+function disposeGlyphs() {
+  if (!glyphLines) return;
+  scene.remove(glyphLines);
+  glyphLines.geometry.dispose();
+  glyphLines.material.dispose();
+  glyphLines = null;
 }
 
-function buildTattoo() {
-  disposeTattoo();
-  if (!state.tattoo || !surfaceMesh) return;
+function buildGlyphs() {
+  disposeGlyphs();
+  if (!state.glyphs || !surfaceMesh) return;
   const surfPos = surfaceMesh.geometry.attributes.position.array;
   const numTris = surfPos.length / 9;
   if (numTris === 0) return;
 
-  const SCALE = state.tattooScale;
+  const SCALE = state.glyphScale;
   const SING_THRESHOLD = 0.05;       // skip pentagons where |proj_z| < this
   const NORMAL_LIFT = 0.0015;        // tiny lift along n to avoid z-fighting
 
   // ----- Spatially regular sampling --------------------------------------
   // Bin triangle centroids on a 3D grid of cell size h, keep one per cell
   // (the centroid closest to the cell center). h is sized so the expected
-  // number of surface-occupied cells matches state.tattooCount, using
+  // number of surface-occupied cells matches state.glyphCount, using
   // h ≈ sqrt(area / count) — a 2-manifold has ~area/h² cells in a 3D grid.
   let totalArea = 0;
   for (let t = 0; t < numTris; t++) {
@@ -650,7 +662,7 @@ function buildTattoo() {
     totalArea += 0.5 * Math.hypot(crx, cry, crz);
   }
   // Multiplier slightly > 1 keeps pentagons from crowding when count is low.
-  const h = Math.max(1e-3, Math.sqrt(totalArea / Math.max(1, state.tattooCount)));
+  const h = Math.max(1e-3, Math.sqrt(totalArea / Math.max(1, state.glyphCount)));
 
   const buckets = new Map(); // key "i,j,k" → { cx, cy, cz, d2 }
   for (let t = 0; t < numTris; t++) {
@@ -718,7 +730,7 @@ function buildTattoo() {
       const p1y = baseY + a1*vy + b1*uy;
       const p1z = baseZ + a1*vz + b1*uz;
       positions.push(p0x, p0y, p0z, p1x, p1y, p1z);
-      const c = TATTOO_SIDE_COLORS[k];
+      const c = GLYPH_SIDE_COLORS[k];
       colors.push(c[0], c[1], c[2], c[0], c[1], c[2]);
     }
   }
@@ -728,12 +740,12 @@ function buildTattoo() {
   g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   g.setAttribute('color',    new THREE.Float32BufferAttribute(colors, 3));
   const mat = new THREE.LineBasicMaterial({ vertexColors: true });
-  tattooLines = new THREE.LineSegments(g, mat);
-  scene.add(tattooLines);
+  glyphLines = new THREE.LineSegments(g, mat);
+  scene.add(glyphLines);
 }
 
 function setSurface(r, N) {
-  disposeTattoo();
+  disposeGlyphs();
   if (surfaceMesh) {
     scene.remove(surfaceMesh);
     surfaceMesh.geometry.dispose();
@@ -743,7 +755,7 @@ function setSurface(r, N) {
   if (geom.attributes.position.count === 0) return false;
   surfaceMesh = new THREE.Mesh(geom, surfaceMat);
   scene.add(surfaceMesh);
-  buildTattoo();
+  buildGlyphs();
   return true;
 }
 
@@ -755,47 +767,94 @@ const state = {
   N: 56,
   point: null,   // [x,y,z] in [0, 2π]^3 (or null)
   snap: true,
-  tattoo: true,
-  tattooCount: 900,
-  tattooScale: 0.07
+  glyphs: true,
+  glyphCount: 900,
+  glyphScale: 0.07
 };
 
 const SLIDER_COLORS = ['--r1','--r2','--r3','--r4','--r5'];
-function buildSliders() {
-  const container = document.getElementById('sliders');
-  container.innerHTML = '';
+
+// Partition bar: a single horizontal bar split into five colored segments
+// whose widths are r_1..r_5. Dragging the divider between segment i and i+1
+// redistributes mass between those two sides only (the other three are
+// untouched), preserving sum r_i = 1 by construction.
+const MIN_R = 0.02;     // floor enforced so handles can't be dragged on top of each other
+let _pbInited = false;
+
+function refreshPartitionBar() {
+  const bar = document.getElementById('partition-bar');
+  const vals = document.getElementById('partition-vals');
+  if (!_pbInited) { setupPartitionBarEvents(bar); _pbInited = true; }
+  bar.innerHTML = '';
+  vals.innerHTML = '';
+  let cum = 0;
   for (let i=0; i<5; i++) {
-    const row = document.createElement('div');
-    row.className = 'row';
-    const sw = document.createElement('div'); sw.className = 'swatch';
-    sw.style.background = `var(${SLIDER_COLORS[i]})`;
-    const lab = document.createElement('label'); lab.textContent = `r${i+1}`;
-    const inp = document.createElement('input');
-    inp.type = 'range'; inp.min = '0.02'; inp.max = '0.5'; inp.step = '0.005';
-    inp.value = state.r[i].toFixed(3);
-    const val = document.createElement('span'); val.className = 'val'; val.textContent = state.r[i].toFixed(3);
-    inp.addEventListener('input', () => {
-      const v = parseFloat(inp.value);
-      // Adjust this index, redistribute remainder among the other 4 proportionally
-      const others = state.r.reduce((s,rj,j)=> s + (j===i?0:rj), 0);
-      const target = 1 - v;
-      if (others > 0 && target > 0) {
-        for (let j=0; j<5; j++) if (j!==i) state.r[j] = state.r[j] / others * target;
-      }
-      state.r[i] = v;
-      // Refresh all displayed values + slider positions
-      for (let j=0; j<5; j++) {
-        const sliders = container.querySelectorAll('input[type="range"]');
-        const vals = container.querySelectorAll('.val');
-        sliders[j].value = state.r[j].toFixed(3);
-        vals[j].textContent = state.r[j].toFixed(3);
-      }
-      drawPentagon();
-      scheduleRecompute();
-    });
-    row.appendChild(sw); row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
-    container.appendChild(row);
+    const seg = document.createElement('div');
+    seg.className = 'pb-seg';
+    seg.style.left = `${cum * 100}%`;
+    seg.style.width = `${state.r[i] * 100}%`;
+    seg.style.background = `var(${SLIDER_COLORS[i]})`;
+    bar.appendChild(seg);
+    cum += state.r[i];
   }
+  cum = 0;
+  for (let i=0; i<4; i++) {
+    cum += state.r[i];
+    const h = document.createElement('div');
+    h.className = 'pb-handle';
+    h.style.left = `${cum * 100}%`;
+    h.dataset.idx = String(i);
+    bar.appendChild(h);
+  }
+  for (let i=0; i<5; i++) {
+    const v = document.createElement('span');
+    v.style.color = `var(${SLIDER_COLORS[i]})`;
+    v.innerHTML = `r<sub>${i+1}</sub>=${state.r[i].toFixed(3)}`;
+    vals.appendChild(v);
+  }
+}
+
+function setupPartitionBarEvents(bar) {
+  let dragIdx = -1;
+  let barRect = null;
+  let activeHandle = null;
+  bar.addEventListener('pointerdown', (e) => {
+    const t = e.target;
+    if (!t.classList || !t.classList.contains('pb-handle')) return;
+    dragIdx = parseInt(t.dataset.idx, 10);
+    barRect = bar.getBoundingClientRect();
+    activeHandle = t;
+    activeHandle.classList.add('dragging');
+    bar.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  bar.addEventListener('pointermove', (e) => {
+    if (dragIdx < 0) return;
+    const x = (e.clientX - barRect.left) / barRect.width;
+    // Boundary i sits between r[dragIdx] and r[dragIdx+1]; r[<dragIdx] and
+    // r[>dragIdx+1] stay constant. Available range is the sum r[dragIdx]+r[dragIdx+1]
+    // sitting between the previous and next boundaries.
+    let leftBound = 0;
+    for (let j=0; j<dragIdx; j++) leftBound += state.r[j];
+    const rightBound = leftBound + state.r[dragIdx] + state.r[dragIdx+1];
+    const pos = Math.max(leftBound + MIN_R, Math.min(rightBound - MIN_R, x));
+    state.r[dragIdx]   = pos - leftBound;
+    state.r[dragIdx+1] = rightBound - pos;
+    refreshPartitionBar();
+    drawPentagon();
+    scheduleRecompute();
+  });
+  const end = (e) => {
+    if (dragIdx < 0) return;
+    if (activeHandle) { activeHandle.classList.remove('dragging'); activeHandle = null; }
+    dragIdx = -1;
+    if (e && e.pointerId !== undefined && bar.hasPointerCapture(e.pointerId)) {
+      bar.releasePointerCapture(e.pointerId);
+    }
+  };
+  bar.addEventListener('pointerup', end);
+  bar.addEventListener('pointercancel', end);
+  bar.addEventListener('lostpointercapture', end);
 }
 
 let recomputeTimer = null;
@@ -1085,7 +1144,7 @@ renderer.domElement.addEventListener('click', (e) => {
 document.getElementById('btn-recompute').addEventListener('click', recomputeSurface);
 document.getElementById('btn-equal').addEventListener('click', () => {
   state.r = [0.2, 0.2, 0.2, 0.2, 0.2];
-  buildSliders(); recomputeSurface(); drawPentagon();
+  refreshPartitionBar(); recomputeSurface(); drawPentagon();
 });
 document.getElementById('btn-random').addEventListener('click', () => {
   // Sample on the simplex with each component in (0.05, 0.45).
@@ -1096,7 +1155,7 @@ document.getElementById('btn-random').addEventListener('click', () => {
     r = r.map(rj => rj/s);
   } while (r.some(rj => rj < 0.05 || rj > 0.45));
   state.r = r;
-  buildSliders(); recomputeSurface(); drawPentagon();
+  refreshPartitionBar(); recomputeSurface(); drawPentagon();
 });
 document.getElementById('snap-newton').addEventListener('change', (e) => {
   state.snap = e.target.checked;
@@ -1123,27 +1182,27 @@ document.getElementById('res').addEventListener('change', (e) => {
   });
 }
 
-document.getElementById('tattoo-toggle').addEventListener('change', (e) => {
-  state.tattoo = e.target.checked;
-  buildTattoo();
+document.getElementById('glyph-toggle').addEventListener('change', (e) => {
+  state.glyphs = e.target.checked;
+  buildGlyphs();
 });
 {
-  const cInp = document.getElementById('tattoo-count');
-  const cVal = document.getElementById('tattoo-count-val');
+  const cInp = document.getElementById('glyph-count');
+  const cVal = document.getElementById('glyph-count-val');
   let timer = null;
   cInp.addEventListener('input', () => {
-    state.tattooCount = parseInt(cInp.value, 10);
-    cVal.textContent = state.tattooCount;
+    state.glyphCount = parseInt(cInp.value, 10);
+    cVal.textContent = state.glyphCount;
     if (timer) clearTimeout(timer);
-    timer = setTimeout(buildTattoo, 80);   // debounce while sliding
+    timer = setTimeout(buildGlyphs, 80);   // debounce while sliding
   });
-  const sInp = document.getElementById('tattoo-scale');
-  const sVal = document.getElementById('tattoo-scale-val');
+  const sInp = document.getElementById('glyph-scale');
+  const sVal = document.getElementById('glyph-scale-val');
   sInp.addEventListener('input', () => {
-    state.tattooScale = parseFloat(sInp.value);
-    sVal.textContent = state.tattooScale.toFixed(3);
+    state.glyphScale = parseFloat(sInp.value);
+    sVal.textContent = state.glyphScale.toFixed(3);
     if (timer) clearTimeout(timer);
-    timer = setTimeout(buildTattoo, 80);
+    timer = setTimeout(buildGlyphs, 80);
   });
 }
 
@@ -1160,7 +1219,7 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-buildSliders();
+refreshPartitionBar();
 recomputeSurface();
 drawPentagon();
 loop();
