@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Pentagon Moduli Space</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #161a22;
+    --panel2: #1d222c;
+    --fg: #e6e8ee;
+    --muted: #8b93a7;
+    --accent: #6ea8ff;
+    --edge: #2a313e;
+    --r1: #ff6b6b;
+    --r2: #ffb86b;
+    --r3: #f1d860;
+    --r4: #6bdc8a;
+    --r5: #6ea8ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--fg);
+                font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; }
+  #app { display: flex; height: 100vh; }
+  #left { flex: 1; position: relative; min-width: 0; }
+  #three-host { position: absolute; inset: 0; }
+  #hud { position: absolute; top: 12px; left: 12px; right: 12px; pointer-events: none;
+         display: flex; justify-content: space-between; gap: 12px; }
+  #hud > div { background: rgba(15,17,21,0.6); padding: 8px 12px; border-radius: 8px;
+               border: 1px solid var(--edge); pointer-events: auto; backdrop-filter: blur(6px); }
+  #title { font-weight: 600; }
+  #info { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: var(--muted); white-space: pre; }
+  #right { width: 440px; min-width: 440px; padding: 18px; overflow-y: auto;
+           background: var(--panel); border-left: 1px solid var(--edge); }
+  h1 { font-size: 16px; margin: 0 0 4px 0; }
+  .sub { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+  .row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+  .row label { width: 32px; font-family: ui-monospace, monospace; }
+  .row input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .row .val { width: 56px; text-align: right; font-family: ui-monospace, monospace; color: var(--muted); font-size: 12px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; }
+  .controls { background: var(--panel2); border: 1px solid var(--edge); border-radius: 10px; padding: 12px; }
+  .controls .legend { color: var(--muted); font-size: 11px; margin-top: 8px; }
+  button { background: #2a3142; color: var(--fg); border: 1px solid var(--edge);
+           border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
+  button:hover { background: #344056; }
+  button.primary { background: var(--accent); color: #0c1220; border-color: transparent; font-weight: 600; }
+  .button-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  #pentagon-wrap { margin-top: 16px; background: var(--panel2); border: 1px solid var(--edge);
+                   border-radius: 10px; padding: 12px; }
+  #pentagon-canvas { display: block; width: 100%; height: 380px; border-radius: 6px;
+                     background: #0c0f15; }
+  #status { font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.5; white-space: pre; }
+  .hint { color: var(--muted); font-size: 11px; line-height: 1.4; }
+  .hint kbd { background: #2a3142; padding: 1px 5px; border-radius: 3px; border: 1px solid var(--edge); font-family: ui-monospace, monospace; font-size: 10px; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--muted); }
+  .err { color: #ff6b6b; }
+  .ok  { color: #6bdc8a; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="left">
+    <div id="three-host"></div>
+    <div id="hud">
+      <div id="title">Moduli space of pentagons<br><span class="hint">Surface in (&#8477;/2&pi;&#8484;)&sup3; defined by &Sigma; r<sub>i</sub>e<sup>i&theta;<sub>i</sub></sup>=0</span></div>
+      <div id="info">x = -\ny = -\nz = -\nF = -</div>
+    </div>
+  </div>
+  <div id="right">
+    <h1>Pentagon Moduli</h1>
+    <div class="sub">Drag to rotate the view. <kbd>Shift</kbd>+drag on the surface to slide the point along it; drag through any face and the point wraps to the opposite face. Wheel = zoom.</div>
+
+    <div class="controls">
+      <div style="font-weight:600; margin-bottom:6px;">Side lengths (auto-renormalize to 1)</div>
+      <div id="sliders"></div>
+      <div class="button-row">
+        <button id="btn-recompute" class="primary">Recompute surface</button>
+        <button id="btn-equal">Equal sides</button>
+        <button id="btn-random">Random</button>
+      </div>
+      <div class="checkbox-row">
+        <label><input type="checkbox" id="snap-newton" checked /> Snap (x,y,z) to F=0 (one Newton step)</label>
+      </div>
+      <div class="checkbox-row">
+        <label>Resolution
+          <select id="res">
+            <option value="36">36 (fast)</option>
+            <option value="56" selected>56</option>
+            <option value="72">72</option>
+            <option value="96">96 (slow)</option>
+          </select>
+        </label>
+      </div>
+      <div class="legend">Recomputing the surface samples F on a (N+1)<sup>3</sup> grid and runs marching cubes; ~50&ndash;1500 ms depending on N.</div>
+      <div class="row" style="margin-top:10px;">
+        <label style="width:62px;">opacity</label>
+        <input type="range" id="surface-opacity" min="0" max="1" step="0.01" value="1" />
+        <span class="val" id="surface-opacity-val">1.00</span>
+      </div>
+
+      <div style="height: 1px; background: var(--edge); margin: 14px 0;"></div>
+      <div style="font-weight:600; margin-bottom:6px;">Pentagon tattoo</div>
+      <div class="checkbox-row" style="margin-top:0;">
+        <label><input type="checkbox" id="tattoo-toggle" checked /> Draw pentagons on the surface</label>
+      </div>
+      <div class="row">
+        <label style="width:42px;">count</label>
+        <input type="range" id="tattoo-count" min="100" max="3000" step="50" value="900" />
+        <span class="val" id="tattoo-count-val">900</span>
+      </div>
+      <div class="row">
+        <label style="width:42px;">size</label>
+        <input type="range" id="tattoo-scale" min="0.02" max="0.20" step="0.005" value="0.07" />
+        <span class="val" id="tattoo-scale-val">0.07</span>
+      </div>
+      <div class="legend">Each tattoo pentagon is the pentagon encoded by its (x,y,z) basepoint, drawn in the tangent plane to the surface with &ldquo;up&rdquo; given by the projection of the world z-axis. Pentagons in the singular curve where ẑ ⊥ tangent plane are skipped.</div>
+    </div>
+
+    <div id="pentagon-wrap">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <div style="font-weight:600;">Pentagon at the selected point</div>
+        <div id="closure-tag" class="hint"></div>
+      </div>
+      <canvas id="pentagon-canvas" width="800" height="760"></canvas>
+      <div id="status">awaiting click on surface…</div>
+    </div>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// =====================================================================
+// Marching cubes lookup tables (Paul Bourke / public domain).
+// =====================================================================
+const MC_EDGE_TABLE = new Int32Array([
+0x0,0x109,0x203,0x30a,0x406,0x50f,0x605,0x70c,0x80c,0x905,0xa0f,0xb06,0xc0a,0xd03,0xe09,0xf00,
+0x190,0x99,0x393,0x29a,0x596,0x49f,0x795,0x69c,0x99c,0x895,0xb9f,0xa96,0xd9a,0xc93,0xf99,0xe90,
+0x230,0x339,0x33,0x13a,0x636,0x73f,0x435,0x53c,0xa3c,0xb35,0x83f,0x936,0xe3a,0xf33,0xc39,0xd30,
+0x3a0,0x2a9,0x1a3,0xaa,0x7a6,0x6af,0x5a5,0x4ac,0xbac,0xaa5,0x9af,0x8a6,0xfaa,0xea3,0xda9,0xca0,
+0x460,0x569,0x663,0x76a,0x66,0x16f,0x265,0x36c,0xc6c,0xd65,0xe6f,0xf66,0x86a,0x963,0xa69,0xb60,
+0x5f0,0x4f9,0x7f3,0x6fa,0x1f6,0xff,0x3f5,0x2fc,0xdfc,0xcf5,0xfff,0xef6,0x9fa,0x8f3,0xbf9,0xaf0,
+0x650,0x759,0x453,0x55a,0x256,0x35f,0x55,0x15c,0xe5c,0xf55,0xc5f,0xd56,0xa5a,0xb53,0x859,0x950,
+0x7c0,0x6c9,0x5c3,0x4ca,0x3c6,0x2cf,0x1c5,0xcc,0xfcc,0xec5,0xdcf,0xcc6,0xbca,0xac3,0x9c9,0x8c0,
+0x8c0,0x9c9,0xac3,0xbca,0xcc6,0xdcf,0xec5,0xfcc,0xcc,0x1c5,0x2cf,0x3c6,0x4ca,0x5c3,0x6c9,0x7c0,
+0x950,0x859,0xb53,0xa5a,0xd56,0xc5f,0xf55,0xe5c,0x15c,0x55,0x35f,0x256,0x55a,0x453,0x759,0x650,
+0xaf0,0xbf9,0x8f3,0x9fa,0xef6,0xfff,0xcf5,0xdfc,0x2fc,0x3f5,0xff,0x1f6,0x6fa,0x7f3,0x4f9,0x5f0,
+0xb60,0xa69,0x963,0x86a,0xf66,0xe6f,0xd65,0xc6c,0x36c,0x265,0x16f,0x66,0x76a,0x663,0x569,0x460,
+0xca0,0xda9,0xea3,0xfaa,0x8a6,0x9af,0xaa5,0xbac,0x4ac,0x5a5,0x6af,0x7a6,0xaa,0x1a3,0x2a9,0x3a0,
+0xd30,0xc39,0xf33,0xe3a,0x936,0x83f,0xb35,0xa3c,0x53c,0x435,0x73f,0x636,0x13a,0x33,0x339,0x230,
+0xe90,0xf99,0xc93,0xd9a,0xa96,0xb9f,0x895,0x99c,0x69c,0x795,0x49f,0x596,0x29a,0x393,0x99,0x190,
+0xf00,0xe09,0xd03,0xc0a,0xb06,0xa0f,0x905,0x80c,0x70c,0x605,0x50f,0x406,0x30a,0x203,0x109,0x0
+]);
+
+const MC_TRI_TABLE = [
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,8,3,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,1,9,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,8,3,9,8,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,2,10,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,8,3,1,2,10,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[9,2,10,0,2,9,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[2,8,3,2,10,8,10,9,8,-1,-1,-1,-1,-1,-1,-1],
+[3,11,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,11,2,8,11,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,9,0,2,3,11,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,11,2,1,9,11,9,8,11,-1,-1,-1,-1,-1,-1,-1],
+[3,10,1,11,10,3,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,10,1,0,8,10,8,11,10,-1,-1,-1,-1,-1,-1,-1],
+[3,9,0,3,11,9,11,10,9,-1,-1,-1,-1,-1,-1,-1],
+[9,8,10,10,8,11,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[4,7,8,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[4,3,0,7,3,4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,1,9,8,4,7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[4,1,9,4,7,1,7,3,1,-1,-1,-1,-1,-1,-1,-1],
+[1,2,10,8,4,7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[3,4,7,3,0,4,1,2,10,-1,-1,-1,-1,-1,-1,-1],
+[9,2,10,9,0,2,8,4,7,-1,-1,-1,-1,-1,-1,-1],
+[2,10,9,2,9,7,2,7,3,7,9,4,-1,-1,-1,-1],
+[8,4,7,3,11,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[11,4,7,11,2,4,2,0,4,-1,-1,-1,-1,-1,-1,-1],
+[9,0,1,8,4,7,2,3,11,-1,-1,-1,-1,-1,-1,-1],
+[4,7,11,9,4,11,9,11,2,9,2,1,-1,-1,-1,-1],
+[3,10,1,3,11,10,7,8,4,-1,-1,-1,-1,-1,-1,-1],
+[1,11,10,1,4,11,1,0,4,7,11,4,-1,-1,-1,-1],
+[4,7,8,9,0,11,9,11,10,11,0,3,-1,-1,-1,-1],
+[4,7,11,4,11,9,9,11,10,-1,-1,-1,-1,-1,-1,-1],
+[9,5,4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[9,5,4,0,8,3,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,5,4,1,5,0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[8,5,4,8,3,5,3,1,5,-1,-1,-1,-1,-1,-1,-1],
+[1,2,10,9,5,4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[3,0,8,1,2,10,4,9,5,-1,-1,-1,-1,-1,-1,-1],
+[5,2,10,5,4,2,4,0,2,-1,-1,-1,-1,-1,-1,-1],
+[2,10,5,3,2,5,3,5,4,3,4,8,-1,-1,-1,-1],
+[9,5,4,2,3,11,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,11,2,0,8,11,4,9,5,-1,-1,-1,-1,-1,-1,-1],
+[0,5,4,0,1,5,2,3,11,-1,-1,-1,-1,-1,-1,-1],
+[2,1,5,2,5,8,2,8,11,4,8,5,-1,-1,-1,-1],
+[10,3,11,10,1,3,9,5,4,-1,-1,-1,-1,-1,-1,-1],
+[4,9,5,0,8,1,8,10,1,8,11,10,-1,-1,-1,-1],
+[5,4,0,5,0,11,5,11,10,11,0,3,-1,-1,-1,-1],
+[5,4,8,5,8,10,10,8,11,-1,-1,-1,-1,-1,-1,-1],
+[9,7,8,5,7,9,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[9,3,0,9,5,3,5,7,3,-1,-1,-1,-1,-1,-1,-1],
+[0,7,8,0,1,7,1,5,7,-1,-1,-1,-1,-1,-1,-1],
+[1,5,3,3,5,7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[9,7,8,9,5,7,10,1,2,-1,-1,-1,-1,-1,-1,-1],
+[10,1,2,9,5,0,5,3,0,5,7,3,-1,-1,-1,-1],
+[8,0,2,8,2,5,8,5,7,10,5,2,-1,-1,-1,-1],
+[2,10,5,2,5,3,3,5,7,-1,-1,-1,-1,-1,-1,-1],
+[7,9,5,7,8,9,3,11,2,-1,-1,-1,-1,-1,-1,-1],
+[9,5,7,9,7,2,9,2,0,2,7,11,-1,-1,-1,-1],
+[2,3,11,0,1,8,1,7,8,1,5,7,-1,-1,-1,-1],
+[11,2,1,11,1,7,7,1,5,-1,-1,-1,-1,-1,-1,-1],
+[9,5,8,8,5,7,10,1,3,10,3,11,-1,-1,-1,-1],
+[5,7,0,5,0,9,7,11,0,1,0,10,11,10,0,-1],
+[11,10,0,11,0,3,10,5,0,8,0,7,5,7,0,-1],
+[11,10,5,7,11,5,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[10,6,5,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,8,3,5,10,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[9,0,1,5,10,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,8,3,1,9,8,5,10,6,-1,-1,-1,-1,-1,-1,-1],
+[1,6,5,2,6,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,6,5,1,2,6,3,0,8,-1,-1,-1,-1,-1,-1,-1],
+[9,6,5,9,0,6,0,2,6,-1,-1,-1,-1,-1,-1,-1],
+[5,9,8,5,8,2,5,2,6,3,2,8,-1,-1,-1,-1],
+[2,3,11,10,6,5,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[11,0,8,11,2,0,10,6,5,-1,-1,-1,-1,-1,-1,-1],
+[0,1,9,2,3,11,5,10,6,-1,-1,-1,-1,-1,-1,-1],
+[5,10,6,1,9,2,9,11,2,9,8,11,-1,-1,-1,-1],
+[6,3,11,6,5,3,5,1,3,-1,-1,-1,-1,-1,-1,-1],
+[0,8,11,0,11,5,0,5,1,5,11,6,-1,-1,-1,-1],
+[3,11,6,0,3,6,0,6,5,0,5,9,-1,-1,-1,-1],
+[6,5,9,6,9,11,11,9,8,-1,-1,-1,-1,-1,-1,-1],
+[5,10,6,4,7,8,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[4,3,0,4,7,3,6,5,10,-1,-1,-1,-1,-1,-1,-1],
+[1,9,0,5,10,6,8,4,7,-1,-1,-1,-1,-1,-1,-1],
+[10,6,5,1,9,7,1,7,3,7,9,4,-1,-1,-1,-1],
+[6,1,2,6,5,1,4,7,8,-1,-1,-1,-1,-1,-1,-1],
+[1,2,5,5,2,6,3,0,4,3,4,7,-1,-1,-1,-1],
+[8,4,7,9,0,5,0,6,5,0,2,6,-1,-1,-1,-1],
+[7,3,9,7,9,4,3,2,9,5,9,6,2,6,9,-1],
+[3,11,2,7,8,4,10,6,5,-1,-1,-1,-1,-1,-1,-1],
+[5,10,6,4,7,2,4,2,0,2,7,11,-1,-1,-1,-1],
+[0,1,9,4,7,8,2,3,11,5,10,6,-1,-1,-1,-1],
+[9,2,1,9,11,2,9,4,11,7,11,4,5,10,6,-1],
+[8,4,7,3,11,5,3,5,1,5,11,6,-1,-1,-1,-1],
+[5,1,11,5,11,6,1,0,11,7,11,4,0,4,11,-1],
+[0,5,9,0,6,5,0,3,6,11,6,3,8,4,7,-1],
+[6,5,9,6,9,11,4,7,9,7,11,9,-1,-1,-1,-1],
+[10,4,9,6,4,10,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[4,10,6,4,9,10,0,8,3,-1,-1,-1,-1,-1,-1,-1],
+[10,0,1,10,6,0,6,4,0,-1,-1,-1,-1,-1,-1,-1],
+[8,3,1,8,1,6,8,6,4,6,1,10,-1,-1,-1,-1],
+[1,4,9,1,2,4,2,6,4,-1,-1,-1,-1,-1,-1,-1],
+[3,0,8,1,2,9,2,4,9,2,6,4,-1,-1,-1,-1],
+[0,2,4,4,2,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[8,3,2,8,2,4,4,2,6,-1,-1,-1,-1,-1,-1,-1],
+[10,4,9,10,6,4,11,2,3,-1,-1,-1,-1,-1,-1,-1],
+[0,8,2,2,8,11,4,9,10,4,10,6,-1,-1,-1,-1],
+[3,11,2,0,1,6,0,6,4,6,1,10,-1,-1,-1,-1],
+[6,4,1,6,1,10,4,8,1,2,1,11,8,11,1,-1],
+[9,6,4,9,3,6,9,1,3,11,6,3,-1,-1,-1,-1],
+[8,11,1,8,1,0,11,6,1,9,1,4,6,4,1,-1],
+[3,11,6,3,6,0,0,6,4,-1,-1,-1,-1,-1,-1,-1],
+[6,4,8,11,6,8,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[7,10,6,7,8,10,8,9,10,-1,-1,-1,-1,-1,-1,-1],
+[0,7,3,0,10,7,0,9,10,6,7,10,-1,-1,-1,-1],
+[10,6,7,1,10,7,1,7,8,1,8,0,-1,-1,-1,-1],
+[10,6,7,10,7,1,1,7,3,-1,-1,-1,-1,-1,-1,-1],
+[1,2,6,1,6,8,1,8,9,8,6,7,-1,-1,-1,-1],
+[2,6,9,2,9,1,6,7,9,0,9,3,7,3,9,-1],
+[7,8,0,7,0,6,6,0,2,-1,-1,-1,-1,-1,-1,-1],
+[7,3,2,6,7,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[2,3,11,10,6,8,10,8,9,8,6,7,-1,-1,-1,-1],
+[2,0,7,2,7,11,0,9,7,6,7,10,9,10,7,-1],
+[1,8,0,1,7,8,1,10,7,6,7,10,2,3,11,-1],
+[11,2,1,11,1,7,10,6,1,6,7,1,-1,-1,-1,-1],
+[8,9,6,8,6,7,9,1,6,11,6,3,1,3,6,-1],
+[0,9,1,11,6,7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[7,8,0,7,0,6,3,11,0,11,6,0,-1,-1,-1,-1],
+[7,11,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[7,6,11,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[3,0,8,11,7,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,1,9,11,7,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[8,1,9,8,3,1,11,7,6,-1,-1,-1,-1,-1,-1,-1],
+[10,1,2,6,11,7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,2,10,3,0,8,6,11,7,-1,-1,-1,-1,-1,-1,-1],
+[2,9,0,2,10,9,6,11,7,-1,-1,-1,-1,-1,-1,-1],
+[6,11,7,2,10,3,10,8,3,10,9,8,-1,-1,-1,-1],
+[7,2,3,6,2,7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[7,0,8,7,6,0,6,2,0,-1,-1,-1,-1,-1,-1,-1],
+[2,7,6,2,3,7,0,1,9,-1,-1,-1,-1,-1,-1,-1],
+[1,6,2,1,8,6,1,9,8,8,7,6,-1,-1,-1,-1],
+[10,7,6,10,1,7,1,3,7,-1,-1,-1,-1,-1,-1,-1],
+[10,7,6,1,7,10,1,8,7,1,0,8,-1,-1,-1,-1],
+[0,3,7,0,7,10,0,10,9,6,10,7,-1,-1,-1,-1],
+[7,6,10,7,10,8,8,10,9,-1,-1,-1,-1,-1,-1,-1],
+[6,8,4,11,8,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[3,6,11,3,0,6,0,4,6,-1,-1,-1,-1,-1,-1,-1],
+[8,6,11,8,4,6,9,0,1,-1,-1,-1,-1,-1,-1,-1],
+[9,4,6,9,6,3,9,3,1,11,3,6,-1,-1,-1,-1],
+[6,8,4,6,11,8,2,10,1,-1,-1,-1,-1,-1,-1,-1],
+[1,2,10,3,0,11,0,6,11,0,4,6,-1,-1,-1,-1],
+[4,11,8,4,6,11,0,2,9,2,10,9,-1,-1,-1,-1],
+[10,9,3,10,3,2,9,4,3,11,3,6,4,6,3,-1],
+[8,2,3,8,4,2,4,6,2,-1,-1,-1,-1,-1,-1,-1],
+[0,4,2,4,6,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,9,0,2,3,4,2,4,6,4,3,8,-1,-1,-1,-1],
+[1,9,4,1,4,2,2,4,6,-1,-1,-1,-1,-1,-1,-1],
+[8,1,3,8,6,1,8,4,6,6,10,1,-1,-1,-1,-1],
+[10,1,0,10,0,6,6,0,4,-1,-1,-1,-1,-1,-1,-1],
+[4,6,3,4,3,8,6,10,3,0,3,9,10,9,3,-1],
+[10,9,4,6,10,4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[4,9,5,7,6,11,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,8,3,4,9,5,11,7,6,-1,-1,-1,-1,-1,-1,-1],
+[5,0,1,5,4,0,7,6,11,-1,-1,-1,-1,-1,-1,-1],
+[11,7,6,8,3,4,3,5,4,3,1,5,-1,-1,-1,-1],
+[9,5,4,10,1,2,7,6,11,-1,-1,-1,-1,-1,-1,-1],
+[6,11,7,1,2,10,0,8,3,4,9,5,-1,-1,-1,-1],
+[7,6,11,5,4,10,4,2,10,4,0,2,-1,-1,-1,-1],
+[3,4,8,3,5,4,3,2,5,10,5,2,11,7,6,-1],
+[7,2,3,7,6,2,5,4,9,-1,-1,-1,-1,-1,-1,-1],
+[9,5,4,0,8,6,0,6,2,6,8,7,-1,-1,-1,-1],
+[3,6,2,3,7,6,1,5,0,5,4,0,-1,-1,-1,-1],
+[6,2,8,6,8,7,2,1,8,4,8,5,1,5,8,-1],
+[9,5,4,10,1,6,1,7,6,1,3,7,-1,-1,-1,-1],
+[1,6,10,1,7,6,1,0,7,8,7,0,9,5,4,-1],
+[4,0,10,4,10,5,0,3,10,6,10,7,3,7,10,-1],
+[7,6,10,7,10,8,5,4,10,4,8,10,-1,-1,-1,-1],
+[6,9,5,6,11,9,11,8,9,-1,-1,-1,-1,-1,-1,-1],
+[3,6,11,0,6,3,0,5,6,0,9,5,-1,-1,-1,-1],
+[0,11,8,0,5,11,0,1,5,5,6,11,-1,-1,-1,-1],
+[6,11,3,6,3,5,5,3,1,-1,-1,-1,-1,-1,-1,-1],
+[1,2,10,9,5,11,9,11,8,11,5,6,-1,-1,-1,-1],
+[0,11,3,0,6,11,0,9,6,5,6,9,1,2,10,-1],
+[11,8,5,11,5,6,8,0,5,10,5,2,0,2,5,-1],
+[6,11,3,6,3,5,2,10,3,10,5,3,-1,-1,-1,-1],
+[5,8,9,5,2,8,5,6,2,3,8,2,-1,-1,-1,-1],
+[9,5,6,9,6,0,0,6,2,-1,-1,-1,-1,-1,-1,-1],
+[1,5,8,1,8,0,5,6,8,3,8,2,6,2,8,-1],
+[1,5,6,2,1,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,3,6,1,6,10,3,8,6,5,6,9,8,9,6,-1],
+[10,1,0,10,0,6,9,5,0,5,6,0,-1,-1,-1,-1],
+[0,3,8,5,6,10,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[10,5,6,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[11,5,10,7,5,11,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[11,5,10,11,7,5,8,3,0,-1,-1,-1,-1,-1,-1,-1],
+[5,11,7,5,10,11,1,9,0,-1,-1,-1,-1,-1,-1,-1],
+[10,7,5,10,11,7,9,8,1,8,3,1,-1,-1,-1,-1],
+[11,1,2,11,7,1,7,5,1,-1,-1,-1,-1,-1,-1,-1],
+[0,8,3,1,2,7,1,7,5,7,2,11,-1,-1,-1,-1],
+[9,7,5,9,2,7,9,0,2,2,11,7,-1,-1,-1,-1],
+[7,5,2,7,2,11,5,9,2,3,2,8,9,8,2,-1],
+[2,5,10,2,3,5,3,7,5,-1,-1,-1,-1,-1,-1,-1],
+[8,2,0,8,5,2,8,7,5,10,2,5,-1,-1,-1,-1],
+[9,0,1,5,10,3,5,3,7,3,10,2,-1,-1,-1,-1],
+[9,8,2,9,2,1,8,7,2,10,2,5,7,5,2,-1],
+[1,3,5,3,7,5,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,8,7,0,7,1,1,7,5,-1,-1,-1,-1,-1,-1,-1],
+[9,0,3,9,3,5,5,3,7,-1,-1,-1,-1,-1,-1,-1],
+[9,8,7,5,9,7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[5,8,4,5,10,8,10,11,8,-1,-1,-1,-1,-1,-1,-1],
+[5,0,4,5,11,0,5,10,11,11,3,0,-1,-1,-1,-1],
+[0,1,9,8,4,10,8,10,11,10,4,5,-1,-1,-1,-1],
+[10,11,4,10,4,5,11,3,4,9,4,1,3,1,4,-1],
+[2,5,1,2,8,5,2,11,8,4,5,8,-1,-1,-1,-1],
+[0,4,11,0,11,3,4,5,11,2,11,1,5,1,11,-1],
+[0,2,5,0,5,9,2,11,5,4,5,8,11,8,5,-1],
+[9,4,5,2,11,3,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[2,5,10,3,5,2,3,4,5,3,8,4,-1,-1,-1,-1],
+[5,10,2,5,2,4,4,2,0,-1,-1,-1,-1,-1,-1,-1],
+[3,10,2,3,5,10,3,8,5,4,5,8,0,1,9,-1],
+[5,10,2,5,2,4,1,9,2,9,4,2,-1,-1,-1,-1],
+[8,4,5,8,5,3,3,5,1,-1,-1,-1,-1,-1,-1,-1],
+[0,4,5,1,0,5,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[8,4,5,8,5,3,9,0,5,0,3,5,-1,-1,-1,-1],
+[9,4,5,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[4,11,7,4,9,11,9,10,11,-1,-1,-1,-1,-1,-1,-1],
+[0,8,3,4,9,7,9,11,7,9,10,11,-1,-1,-1,-1],
+[1,10,11,1,11,4,1,4,0,7,4,11,-1,-1,-1,-1],
+[3,1,4,3,4,8,1,10,4,7,4,11,10,11,4,-1],
+[4,11,7,9,11,4,9,2,11,9,1,2,-1,-1,-1,-1],
+[9,7,4,9,11,7,9,1,11,2,11,1,0,8,3,-1],
+[11,7,4,11,4,2,2,4,0,-1,-1,-1,-1,-1,-1,-1],
+[11,7,4,11,4,2,8,3,4,3,2,4,-1,-1,-1,-1],
+[2,9,10,2,7,9,2,3,7,7,4,9,-1,-1,-1,-1],
+[9,10,7,9,7,4,10,2,7,8,7,0,2,0,7,-1],
+[3,7,10,3,10,2,7,4,10,1,10,0,4,0,10,-1],
+[1,10,2,8,7,4,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[4,9,1,4,1,7,7,1,3,-1,-1,-1,-1,-1,-1,-1],
+[4,9,1,4,1,7,0,8,1,8,7,1,-1,-1,-1,-1],
+[4,0,3,7,4,3,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[4,8,7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[9,10,8,10,11,8,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[3,0,9,3,9,11,11,9,10,-1,-1,-1,-1,-1,-1,-1],
+[0,1,10,0,10,8,8,10,11,-1,-1,-1,-1,-1,-1,-1],
+[3,1,10,11,3,10,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,2,11,1,11,9,9,11,8,-1,-1,-1,-1,-1,-1,-1],
+[3,0,9,3,9,11,1,2,9,2,11,9,-1,-1,-1,-1],
+[0,2,11,8,0,11,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[3,2,11,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[2,3,8,2,8,10,10,8,9,-1,-1,-1,-1,-1,-1,-1],
+[9,10,2,0,9,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[2,3,8,2,8,10,0,1,8,1,10,8,-1,-1,-1,-1],
+[1,10,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[1,3,8,9,1,8,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,9,1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[0,3,8,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1],
+[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
+];
+
+// Cube vertex offsets and edge endpoint indices.
+const MC_VERT = [
+  [0,0,0],[1,0,0],[1,1,0],[0,1,0],
+  [0,0,1],[1,0,1],[1,1,1],[0,1,1]
+];
+const MC_EDGE_VERTS = [
+  [0,1],[1,2],[2,3],[3,0],
+  [4,5],[5,6],[6,7],[7,4],
+  [0,4],[1,5],[2,6],[3,7]
+];
+
+// =====================================================================
+// The implicit function F(x,y,z; r). Surface is { F = 0 }.
+// =====================================================================
+function F(x, y, z, r) {
+  const r1=r[0], r2=r[1], r3=r[2], r4=r[3], r5=r[4];
+  const cx=Math.cos(x), sx=Math.sin(x);
+  const cy=Math.cos(y), sy=Math.sin(y);
+  const cz=Math.cos(z), sz=Math.sin(z);
+  // |r1 e^{ix} + r2 e^{iy} + r3 e^{iz} + r5|^2 - r4^2
+  const reSum = r1*cx + r2*cy + r3*cz + r5;
+  const imSum = r1*sx + r2*sy + r3*sz;
+  return reSum*reSum + imSum*imSum - r4*r4;
+}
+function gradF(x, y, z, r) {
+  const r1=r[0], r2=r[1], r3=r[2], r5=r[4];
+  const cx=Math.cos(x), sx=Math.sin(x);
+  const cy=Math.cos(y), sy=Math.sin(y);
+  const cz=Math.cos(z), sz=Math.sin(z);
+  const reSum = r1*cx + r2*cy + r3*cz + r5;
+  const imSum = r1*sx + r2*sy + r3*sz;
+  // ∂F/∂x = 2(reSum)(-r1 sx) + 2(imSum)(r1 cx) = 2 r1 (imSum cx - reSum sx)
+  const gx = 2*r1*(imSum*cx - reSum*sx);
+  const gy = 2*r2*(imSum*cy - reSum*sy);
+  const gz = 2*r3*(imSum*cz - reSum*sz);
+  return [gx, gy, gz];
+}
+
+// =====================================================================
+// Marching cubes: build BufferGeometry of { F = 0 } over [0, 2π]^3.
+// =====================================================================
+const TWO_PI = Math.PI * 2;
+function buildSurfaceGeometry(r, N) {
+  const dim = N + 1;
+  const field = new Float32Array(dim*dim*dim);
+  const idx = (i,j,k) => i + j*dim + k*dim*dim;
+  for (let k=0; k<dim; k++) {
+    const z = (k/N) * TWO_PI;
+    for (let j=0; j<dim; j++) {
+      const y = (j/N) * TWO_PI;
+      for (let i=0; i<dim; i++) {
+        const x = (i/N) * TWO_PI;
+        field[idx(i,j,k)] = F(x, y, z, r);
+      }
+    }
+  }
+  const positions = [];
+  const normals = [];
+  const verts = [
+    new Float32Array(3), new Float32Array(3), new Float32Array(3),
+    new Float32Array(3), new Float32Array(3), new Float32Array(3),
+    new Float32Array(3), new Float32Array(3), new Float32Array(3),
+    new Float32Array(3), new Float32Array(3), new Float32Array(3)
+  ];
+  for (let k=0; k<N; k++) {
+    for (let j=0; j<N; j++) {
+      for (let i=0; i<N; i++) {
+        const v = [
+          field[idx(i,   j,   k  )], field[idx(i+1, j,   k  )],
+          field[idx(i+1, j+1, k  )], field[idx(i,   j+1, k  )],
+          field[idx(i,   j,   k+1)], field[idx(i+1, j,   k+1)],
+          field[idx(i+1, j+1, k+1)], field[idx(i,   j+1, k+1)]
+        ];
+        let cubeIdx = 0;
+        if (v[0] < 0) cubeIdx |= 1;
+        if (v[1] < 0) cubeIdx |= 2;
+        if (v[2] < 0) cubeIdx |= 4;
+        if (v[3] < 0) cubeIdx |= 8;
+        if (v[4] < 0) cubeIdx |= 16;
+        if (v[5] < 0) cubeIdx |= 32;
+        if (v[6] < 0) cubeIdx |= 64;
+        if (v[7] < 0) cubeIdx |= 128;
+        const edgeMask = MC_EDGE_TABLE[cubeIdx];
+        if (edgeMask === 0) continue;
+        // Compute crossing positions for needed edges.
+        for (let e=0; e<12; e++) {
+          if ((edgeMask & (1<<e)) === 0) continue;
+          const [a,b] = MC_EDGE_VERTS[e];
+          const va = v[a], vb = v[b];
+          let t = 0.5;
+          if (Math.abs(vb - va) > 1e-12) t = -va / (vb - va);
+          const pa = MC_VERT[a], pb = MC_VERT[b];
+          // grid coords (in units of one cell), then scaled to [0, 2π]
+          const gx = i + pa[0] + t*(pb[0]-pa[0]);
+          const gy = j + pa[1] + t*(pb[1]-pa[1]);
+          const gz = k + pa[2] + t*(pb[2]-pa[2]);
+          verts[e][0] = (gx / N) * TWO_PI;
+          verts[e][1] = (gy / N) * TWO_PI;
+          verts[e][2] = (gz / N) * TWO_PI;
+        }
+        const tris = MC_TRI_TABLE[cubeIdx];
+        for (let t=0; tris[t] !== -1 && t < 16; t += 3) {
+          const a = verts[tris[t]], b = verts[tris[t+1]], c = verts[tris[t+2]];
+          // Use analytic gradient for shading normals.
+          const naG = gradF(a[0],a[1],a[2],r);
+          const nbG = gradF(b[0],b[1],b[2],r);
+          const ncG = gradF(c[0],c[1],c[2],r);
+          // Scale positions to a unit cube centered at origin for rendering.
+          const ax = a[0]/TWO_PI - 0.5, ay = a[1]/TWO_PI - 0.5, az = a[2]/TWO_PI - 0.5;
+          const bx = b[0]/TWO_PI - 0.5, by = b[1]/TWO_PI - 0.5, bz = b[2]/TWO_PI - 0.5;
+          const cx = c[0]/TWO_PI - 0.5, cy = c[1]/TWO_PI - 0.5, cz = c[2]/TWO_PI - 0.5;
+          positions.push(ax,ay,az, bx,by,bz, cx,cy,cz);
+          // Normalize gradients.
+          const ln = (n)=>{ const L=Math.hypot(n[0],n[1],n[2])||1; return [n[0]/L,n[1]/L,n[2]/L]; };
+          const na = ln(naG), nb = ln(nbG), nc = ln(ncG);
+          normals.push(na[0],na[1],na[2], nb[0],nb[1],nb[2], nc[0],nc[1],nc[2]);
+        }
+      }
+    }
+  }
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geom.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+  return geom;
+}
+
+// =====================================================================
+// Three.js scene
+// =====================================================================
+const host = document.getElementById('three-host');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0f1115);
+const camera = new THREE.PerspectiveCamera(45, host.clientWidth / host.clientHeight, 0.01, 100);
+camera.position.set(1.4, 1.0, 1.6);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(host.clientWidth, host.clientHeight);
+host.appendChild(renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+const key = new THREE.DirectionalLight(0xffffff, 0.9);
+key.position.set(2, 3, 2); scene.add(key);
+const fill = new THREE.DirectionalLight(0x88aaff, 0.5);
+fill.position.set(-2, -1, -2); scene.add(fill);
+
+// Wireframe of fundamental cube [-0.5, 0.5]^3.
+{
+  const cubeGeom = new THREE.BoxGeometry(1, 1, 1);
+  const edges = new THREE.EdgesGeometry(cubeGeom);
+  const lines = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x2a313e }));
+  scene.add(lines);
+}
+// Axis labels — make 3 little tickmark-like lines from origin.
+{
+  const matX = new THREE.LineBasicMaterial({ color: 0xff6b6b });
+  const matY = new THREE.LineBasicMaterial({ color: 0x6bdc8a });
+  const matZ = new THREE.LineBasicMaterial({ color: 0x6ea8ff });
+  const make = (a,b,m)=>{ const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a),new THREE.Vector3(...b)]); return new THREE.Line(g,m); };
+  scene.add(make([-0.55,-0.5,-0.5],[ -0.45,-0.5,-0.5],matX));
+  scene.add(make([-0.5,-0.55,-0.5],[ -0.5,-0.45,-0.5],matY));
+  scene.add(make([-0.5,-0.5,-0.55],[ -0.5,-0.5,-0.45],matZ));
+}
+
+// Marker for currently selected point.
+const markerGeom = new THREE.SphereGeometry(0.012, 24, 18);
+const markerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const marker = new THREE.Mesh(markerGeom, markerMat);
+marker.visible = false;
+scene.add(marker);
+
+// Surface mesh (recreated on recompute).
+let surfaceMesh = null;
+const surfaceMat = new THREE.MeshStandardMaterial({
+  color: 0x7eaaff, roughness: 0.45, metalness: 0.05,
+  side: THREE.DoubleSide, flatShading: false,
+  transparent: false, opacity: 1.0, depthWrite: true
+});
+
+// Tattoo: small pentagons drawn in the tangent plane at many points on the
+// surface (a single LineSegments mesh, rebuilt whenever r, the surface, or
+// tattoo controls change).
+let tattooLines = null;
+
+const TATTOO_SIDE_COLORS = [
+  [1.00, 0.42, 0.42],  // r1
+  [1.00, 0.72, 0.42],  // r2
+  [0.95, 0.85, 0.38],  // r3
+  [0.42, 0.86, 0.54],  // r4
+  [0.43, 0.66, 1.00],  // r5
+];
+
+function disposeTattoo() {
+  if (!tattooLines) return;
+  scene.remove(tattooLines);
+  tattooLines.geometry.dispose();
+  tattooLines.material.dispose();
+  tattooLines = null;
+}
+
+function buildTattoo() {
+  disposeTattoo();
+  if (!state.tattoo || !surfaceMesh) return;
+  const surfPos = surfaceMesh.geometry.attributes.position.array;
+  const numTris = surfPos.length / 9;
+  if (numTris === 0) return;
+
+  const SCALE = state.tattooScale;
+  const SING_THRESHOLD = 0.05;       // skip pentagons where |proj_z| < this
+  const NORMAL_LIFT = 0.0015;        // tiny lift along n to avoid z-fighting
+
+  // ----- Spatially regular sampling --------------------------------------
+  // Bin triangle centroids on a 3D grid of cell size h, keep one per cell
+  // (the centroid closest to the cell center). h is sized so the expected
+  // number of surface-occupied cells matches state.tattooCount, using
+  // h ≈ sqrt(area / count) — a 2-manifold has ~area/h² cells in a 3D grid.
+  let totalArea = 0;
+  for (let t = 0; t < numTris; t++) {
+    const o = t * 9;
+    const e1x = surfPos[o+3]-surfPos[o],   e1y = surfPos[o+4]-surfPos[o+1], e1z = surfPos[o+5]-surfPos[o+2];
+    const e2x = surfPos[o+6]-surfPos[o],   e2y = surfPos[o+7]-surfPos[o+1], e2z = surfPos[o+8]-surfPos[o+2];
+    const crx = e1y*e2z - e1z*e2y;
+    const cry = e1z*e2x - e1x*e2z;
+    const crz = e1x*e2y - e1y*e2x;
+    totalArea += 0.5 * Math.hypot(crx, cry, crz);
+  }
+  // Multiplier slightly > 1 keeps pentagons from crowding when count is low.
+  const h = Math.max(1e-3, Math.sqrt(totalArea / Math.max(1, state.tattooCount)));
+
+  const buckets = new Map(); // key "i,j,k" → { cx, cy, cz, d2 }
+  for (let t = 0; t < numTris; t++) {
+    const o = t * 9;
+    const cx = (surfPos[o]   + surfPos[o+3] + surfPos[o+6]) / 3;
+    const cy = (surfPos[o+1] + surfPos[o+4] + surfPos[o+7]) / 3;
+    const cz = (surfPos[o+2] + surfPos[o+5] + surfPos[o+8]) / 3;
+    const bi = Math.floor((cx + 0.5) / h);
+    const bj = Math.floor((cy + 0.5) / h);
+    const bk = Math.floor((cz + 0.5) / h);
+    const key = bi + ',' + bj + ',' + bk;
+    const bcx = (bi + 0.5) * h - 0.5;
+    const bcy = (bj + 0.5) * h - 0.5;
+    const bcz = (bk + 0.5) * h - 0.5;
+    const d2 = (cx-bcx)*(cx-bcx) + (cy-bcy)*(cy-bcy) + (cz-bcz)*(cz-bcz);
+    const cur = buckets.get(key);
+    if (!cur || d2 < cur.d2) buckets.set(key, { cx, cy, cz, d2 });
+  }
+
+  const positions = [];
+  const colors = [];
+
+  for (const { cx, cy, cz } of buckets.values()) {
+    // angles at this point
+    const ax = (cx + 0.5) * TWO_PI;
+    const ay = (cy + 0.5) * TWO_PI;
+    const az = (cz + 0.5) * TWO_PI;
+
+    // surface normal (∇F direction is preserved up to scale under the
+    // uniform world↔angle scaling, so we can just use angle-space ∇F)
+    const [gx, gy, gz] = gradF(ax, ay, az, state.r);
+    const gL = Math.hypot(gx, gy, gz);
+    if (gL < 1e-6) continue;
+    const nx = gx/gL, ny = gy/gL, nz = gz/gL;
+
+    // tangent "up" = ẑ projected to tangent plane = ẑ - n_z·n
+    let ux = -nx*nz, uy = -ny*nz, uz = 1 - nz*nz;
+    const uL = Math.hypot(ux, uy, uz);
+    if (uL < SING_THRESHOLD) continue;   // singular curve
+    ux /= uL; uy /= uL; uz /= uL;
+
+    // tangent "right" = n × up
+    const vx = ny*uz - nz*uy;
+    const vy = nz*ux - nx*uz;
+    const vz = nx*uy - ny*ux;
+
+    // 2D pentagon at this (x,y,z), centered on its centroid
+    const verts = pentagonVertices(state.r, ax, ay, az);
+    let mxv = 0, myv = 0;
+    for (const w of verts) { mxv += w[0]; myv += w[1]; }
+    mxv /= 5; myv /= 5;
+
+    const baseX = cx + NORMAL_LIFT * nx;
+    const baseY = cy + NORMAL_LIFT * ny;
+    const baseZ = cz + NORMAL_LIFT * nz;
+
+    for (let k = 0; k < 5; k++) {
+      const w0 = verts[k], w1 = verts[(k+1) % 5];
+      const a0 = (w0[0] - mxv) * SCALE, b0 = (w0[1] - myv) * SCALE;
+      const a1 = (w1[0] - mxv) * SCALE, b1 = (w1[1] - myv) * SCALE;
+      const p0x = baseX + a0*vx + b0*ux;
+      const p0y = baseY + a0*vy + b0*uy;
+      const p0z = baseZ + a0*vz + b0*uz;
+      const p1x = baseX + a1*vx + b1*ux;
+      const p1y = baseY + a1*vy + b1*uy;
+      const p1z = baseZ + a1*vz + b1*uz;
+      positions.push(p0x, p0y, p0z, p1x, p1y, p1z);
+      const c = TATTOO_SIDE_COLORS[k];
+      colors.push(c[0], c[1], c[2], c[0], c[1], c[2]);
+    }
+  }
+
+  if (positions.length === 0) return;
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  g.setAttribute('color',    new THREE.Float32BufferAttribute(colors, 3));
+  const mat = new THREE.LineBasicMaterial({ vertexColors: true });
+  tattooLines = new THREE.LineSegments(g, mat);
+  scene.add(tattooLines);
+}
+
+function setSurface(r, N) {
+  disposeTattoo();
+  if (surfaceMesh) {
+    scene.remove(surfaceMesh);
+    surfaceMesh.geometry.dispose();
+    surfaceMesh = null;
+  }
+  const geom = buildSurfaceGeometry(r, N);
+  if (geom.attributes.position.count === 0) return false;
+  surfaceMesh = new THREE.Mesh(geom, surfaceMat);
+  scene.add(surfaceMesh);
+  buildTattoo();
+  return true;
+}
+
+// =====================================================================
+// State + UI
+// =====================================================================
+const state = {
+  r: [0.2, 0.2, 0.2, 0.2, 0.2],
+  N: 56,
+  point: null,   // [x,y,z] in [0, 2π]^3 (or null)
+  snap: true,
+  tattoo: true,
+  tattooCount: 900,
+  tattooScale: 0.07
+};
+
+const SLIDER_COLORS = ['--r1','--r2','--r3','--r4','--r5'];
+function buildSliders() {
+  const container = document.getElementById('sliders');
+  container.innerHTML = '';
+  for (let i=0; i<5; i++) {
+    const row = document.createElement('div');
+    row.className = 'row';
+    const sw = document.createElement('div'); sw.className = 'swatch';
+    sw.style.background = `var(${SLIDER_COLORS[i]})`;
+    const lab = document.createElement('label'); lab.textContent = `r${i+1}`;
+    const inp = document.createElement('input');
+    inp.type = 'range'; inp.min = '0.02'; inp.max = '0.5'; inp.step = '0.005';
+    inp.value = state.r[i].toFixed(3);
+    const val = document.createElement('span'); val.className = 'val'; val.textContent = state.r[i].toFixed(3);
+    inp.addEventListener('input', () => {
+      const v = parseFloat(inp.value);
+      // Adjust this index, redistribute remainder among the other 4 proportionally
+      const others = state.r.reduce((s,rj,j)=> s + (j===i?0:rj), 0);
+      const target = 1 - v;
+      if (others > 0 && target > 0) {
+        for (let j=0; j<5; j++) if (j!==i) state.r[j] = state.r[j] / others * target;
+      }
+      state.r[i] = v;
+      // Refresh all displayed values + slider positions
+      for (let j=0; j<5; j++) {
+        const sliders = container.querySelectorAll('input[type="range"]');
+        const vals = container.querySelectorAll('.val');
+        sliders[j].value = state.r[j].toFixed(3);
+        vals[j].textContent = state.r[j].toFixed(3);
+      }
+      drawPentagon();
+      scheduleRecompute();
+    });
+    row.appendChild(sw); row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
+    container.appendChild(row);
+  }
+}
+
+let recomputeTimer = null;
+function scheduleRecompute() {
+  if (recomputeTimer) clearTimeout(recomputeTimer);
+  recomputeTimer = setTimeout(() => {
+    recomputeTimer = null;
+    recomputeSurface();
+  }, 250);
+}
+
+function recomputeSurface() {
+  const status = document.getElementById('status');
+  status.textContent = 'computing surface…';
+  // Validate r4 against pentagon inequality (each r_i < sum of others)
+  const sum = state.r.reduce((a,b)=>a+b, 0);
+  const bad = state.r.some(rr => rr >= sum - rr - 1e-9);
+  if (bad) {
+    status.innerHTML = '<span class="err">no pentagon: some side ≥ sum of others. surface is empty.</span>';
+    if (surfaceMesh) { scene.remove(surfaceMesh); surfaceMesh.geometry.dispose(); surfaceMesh = null; }
+    return;
+  }
+  setTimeout(() => {
+    const t0 = performance.now();
+    const ok = setSurface(state.r, state.N);
+    const dt = performance.now() - t0;
+    status.innerHTML = ok
+      ? `surface built in ${dt.toFixed(0)} ms (N=${state.N}). click on the surface to pick a point.`
+      : '<span class="err">marching cubes returned empty mesh.</span>';
+    // If we already have a selected point, re-snap it onto the new surface.
+    if (state.point && ok) {
+      const a = newtonSnap(state.point.slice());
+      setPointFromAngle(a);
+    }
+  }, 0);
+}
+
+// =====================================================================
+// Pentagon drawing
+// =====================================================================
+function pentagonVertices(r, x, y, z) {
+  const r1=r[0], r2=r[1], r3=r[2], r4=r[3], r5=r[4];
+  const V1 = [0, 0];
+  const V2 = [V1[0] + r1*Math.cos(x), V1[1] + r1*Math.sin(x)];
+  const V3 = [V2[0] + r2*Math.cos(y), V2[1] + r2*Math.sin(y)];
+  const V4 = [V3[0] + r3*Math.cos(z), V3[1] + r3*Math.sin(z)];
+  const V5 = [-r5, 0];
+  // V4 -> V5 has length |V5 - V4|, which equals r4 iff (x,y,z) is on the surface.
+  return [V1, V2, V3, V4, V5];
+}
+
+function drawPentagon() {
+  const cv = document.getElementById('pentagon-canvas');
+  const dpr = window.devicePixelRatio || 1;
+  if (cv.width !== cv.clientWidth*dpr) {
+    cv.width = cv.clientWidth*dpr; cv.height = cv.clientHeight*dpr;
+  }
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  if (!state.point) {
+    ctx.fillStyle = '#5a6478'; ctx.font = `${14*dpr}px ui-monospace, monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Shift+drag on the surface to pick a point.', W/2, H/2);
+    document.getElementById('closure-tag').textContent = '';
+    return;
+  }
+  const [x, y, z] = state.point;
+  const verts = pentagonVertices(state.r, x, y, z);
+  // Closure error
+  const dx = verts[0][0] - verts[4][0] - state.r[4];   // V1 - (V5 + e5) where e5=(r5,0): V1 = (0,0) so check |V5 + e5|
+  // Actually the closure invariant: V4 -> V5 should have length r4. Compute it.
+  const seg45 = Math.hypot(verts[4][0]-verts[3][0], verts[4][1]-verts[3][1]);
+  const closureErr = Math.abs(seg45 - state.r[3]);
+  const tag = document.getElementById('closure-tag');
+  if (closureErr < 1e-3) tag.innerHTML = '<span class="ok">closed (|e₄|=r₄)</span>';
+  else tag.innerHTML = `<span class="err">|e₄|−r₄ = ${(seg45-state.r[3]).toFixed(4)}</span>`;
+  // Find bbox.
+  let xmin=Infinity, ymin=Infinity, xmax=-Infinity, ymax=-Infinity;
+  for (const v of verts) {
+    if (v[0]<xmin) xmin=v[0]; if (v[1]<ymin) ymin=v[1];
+    if (v[0]>xmax) xmax=v[0]; if (v[1]>ymax) ymax=v[1];
+  }
+  const pad = 30*dpr;
+  const sx = (W - 2*pad) / Math.max(0.01, xmax-xmin);
+  const sy = (H - 2*pad) / Math.max(0.01, ymax-ymin);
+  const s = Math.min(sx, sy);
+  const cxC = (W - s*(xmin+xmax))/2;
+  const cyC = (H + s*(ymin+ymax))/2; // flip y
+  const proj = (v)=>[ cxC + s*v[0], cyC - s*v[1] ];
+  const P = verts.map(proj);
+
+  // Draw shaded pentagon (just outline).
+  ctx.fillStyle = 'rgba(110,168,255,0.10)';
+  ctx.beginPath();
+  ctx.moveTo(P[0][0], P[0][1]);
+  for (let i=1; i<5; i++) ctx.lineTo(P[i][0], P[i][1]);
+  ctx.closePath();
+  ctx.fill();
+
+  // Edges, colored per side.
+  const colors = ['#ff6b6b','#ffb86b','#f1d860','#6bdc8a','#6ea8ff'];
+  ctx.lineWidth = 3*dpr;
+  for (let i=0; i<5; i++) {
+    const a = P[i], b = P[(i+1)%5];
+    ctx.strokeStyle = colors[i];
+    ctx.beginPath();
+    ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]);
+    ctx.stroke();
+  }
+  // The fourth edge specifically (V4 -> V5) is "implicit"; if not closed, draw dashed.
+  if (closureErr > 1e-3) {
+    ctx.setLineDash([6*dpr, 4*dpr]);
+    ctx.strokeStyle = colors[3];
+    ctx.beginPath();
+    ctx.moveTo(P[3][0], P[3][1]);
+    // Extend along intended direction toward V5 with length r4
+    const dxv = verts[4][0]-verts[3][0], dyv = verts[4][1]-verts[3][1];
+    const norm = Math.hypot(dxv,dyv) || 1;
+    const tx = verts[3][0] + dxv/norm*state.r[3];
+    const ty = verts[3][1] + dyv/norm*state.r[3];
+    const tp = proj([tx,ty]);
+    ctx.lineTo(tp[0], tp[1]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  // Vertices.
+  ctx.fillStyle = '#e6e8ee';
+  for (let i=0; i<5; i++) {
+    ctx.beginPath();
+    ctx.arc(P[i][0], P[i][1], 4*dpr, 0, Math.PI*2);
+    ctx.fill();
+  }
+  // Vertex labels.
+  ctx.fillStyle = '#8b93a7';
+  ctx.font = `${12*dpr}px ui-monospace, monospace`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  for (let i=0; i<5; i++) {
+    ctx.fillText(`V${i+1}`, P[i][0]+6*dpr, P[i][1]+6*dpr);
+  }
+  // Legend in corner
+  ctx.font = `${11*dpr}px ui-monospace, monospace`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  for (let i=0; i<5; i++) {
+    const lx = 14*dpr, ly = 10*dpr + i*16*dpr;
+    ctx.fillStyle = colors[i]; ctx.fillRect(lx, ly+3*dpr, 10*dpr, 3*dpr);
+    ctx.fillStyle = '#8b93a7';
+    ctx.fillText(`r${i+1} = ${state.r[i].toFixed(3)}`, lx+16*dpr, ly);
+  }
+}
+
+// =====================================================================
+// Interaction: orbit camera vs. shift-drag to slide the point.
+// Drag works in *unwrapped* angle space along a tangent plane to {F=0};
+// the marker shown on the central cube is just the wrapped image, so
+// dragging across a face seamlessly wraps to the opposite face — without
+// needing to render any periodic copies of the surface.
+// =====================================================================
+const raycaster = new THREE.Raycaster();
+const mouseNDC = new THREE.Vector2();
+const wrap = (a) => ((a % TWO_PI) + TWO_PI) % TWO_PI;
+
+function setMouse(e) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+}
+
+// One-click pick: raycast central mesh, return the angle (unwrapped) at the
+// hit, optionally Newton-projected to F=0.
+function pickFromRay(snap) {
+  if (!surfaceMesh) return null;
+  raycaster.setFromCamera(mouseNDC, camera);
+  const hits = raycaster.intersectObject(surfaceMesh, false);
+  if (!hits.length) return null;
+  const P = hits[0].point;
+  const a = [(P.x+0.5)*TWO_PI, (P.y+0.5)*TWO_PI, (P.z+0.5)*TWO_PI];
+  return snap ? newtonSnap(a) : a;
+}
+
+// Newton-project an angle-space point onto {F=0}. Step is capped to avoid
+// blow-up near critical points where |∇F| is small.
+function newtonSnap(angle) {
+  const out = angle.slice();
+  for (let it = 0; it < 6; it++) {
+    const fv = F(out[0], out[1], out[2], state.r);
+    if (Math.abs(fv) < 1e-10) break;
+    const [gx, gy, gz] = gradF(out[0], out[1], out[2], state.r);
+    const g2 = gx*gx + gy*gy + gz*gz;
+    if (g2 < 1e-14) break;
+    let s = -fv / g2;
+    const stepLen = Math.abs(s) * Math.sqrt(g2);
+    const CAP = 0.4;                    // ~22 degrees per iteration, plenty
+    if (stepLen > CAP) s *= CAP / stepLen;
+    out[0] += s*gx; out[1] += s*gy; out[2] += s*gz;
+  }
+  return out;
+}
+
+function setPointFromAngle(angle, opts={}) {
+  const wx = wrap(angle[0]), wy = wrap(angle[1]), wz = wrap(angle[2]);
+  state.point = [wx, wy, wz];
+  marker.position.set(wx/TWO_PI - 0.5, wy/TWO_PI - 0.5, wz/TWO_PI - 0.5);
+  marker.visible = true;
+  drawPentagon();
+  const f = F(wx, wy, wz, state.r);
+  document.getElementById('info').textContent =
+    `x = ${wx.toFixed(4)}\ny = ${wy.toFixed(4)}\nz = ${wz.toFixed(4)}\nF = ${f.toExponential(2)}`;
+}
+
+// During shift-drag we keep the angle *unwrapped* and step along the local
+// tangent plane to the surface. Dragging through a face just runs the
+// unwrapped angle past 2π; setPointFromAngle wraps it for display.
+const drag = {
+  active: false,
+  angle: null,             // [x,y,z] unwrapped
+  worldPos: new THREE.Vector3(),
+  normal: new THREE.Vector3()
+};
+
+function refreshTangentFrame() {
+  const a = drag.angle;
+  drag.worldPos.set(a[0]/TWO_PI - 0.5, a[1]/TWO_PI - 0.5, a[2]/TWO_PI - 0.5);
+  const [gx, gy, gz] = gradF(a[0], a[1], a[2], state.r);
+  const L = Math.hypot(gx, gy, gz) || 1;
+  drag.normal.set(gx/L, gy/L, gz/L);
+}
+
+function startDrag(e) {
+  setMouse(e);
+  const a = pickFromRay(true);
+  if (!a) return false;
+  drag.active = true;
+  drag.angle = a.slice();
+  refreshTangentFrame();
+  setPointFromAngle(a);
+  return true;
+}
+
+function continueDrag(e) {
+  if (!drag.active) return;
+  setMouse(e);
+  raycaster.setFromCamera(mouseNDC, camera);
+  // Intersect the mouse ray with the tangent plane at the previous point.
+  // The plane lives at drag.worldPos with unit normal drag.normal; the
+  // intersection may lie outside [-0.5,0.5]^3 (and that's exactly the
+  // mechanism by which dragging "off the cube" advances unwrapped angles).
+  const dirDotN = raycaster.ray.direction.dot(drag.normal);
+  if (Math.abs(dirDotN) < 1e-6) return; // ray parallel to tangent plane
+  const t = drag.worldPos.clone().sub(raycaster.ray.origin).dot(drag.normal) / dirDotN;
+  if (t <= 0) return;                    // hit behind camera
+  const P = raycaster.ray.origin.clone().addScaledVector(raycaster.ray.direction, t);
+  let a = [(P.x+0.5)*TWO_PI, (P.y+0.5)*TWO_PI, (P.z+0.5)*TWO_PI];
+  if (state.snap) a = newtonSnap(a);
+  drag.angle = a;
+  refreshTangentFrame();
+  setPointFromAngle(a);
+}
+
+function endDrag() {
+  drag.active = false;
+  controls.enabled = true;
+}
+
+renderer.domElement.addEventListener('pointerdown', (e) => {
+  if (e.shiftKey) {
+    controls.enabled = false;
+    if (!startDrag(e)) endDrag();
+  }
+});
+renderer.domElement.addEventListener('pointermove', (e) => {
+  if (drag.active) continueDrag(e);
+});
+renderer.domElement.addEventListener('pointerup', endDrag);
+renderer.domElement.addEventListener('pointerleave', endDrag);
+// Plain click also picks a point (for users who don't read instructions).
+renderer.domElement.addEventListener('click', (e) => {
+  if (e.shiftKey || drag.active) return;
+  setMouse(e);
+  const a = pickFromRay(state.snap);
+  if (a) setPointFromAngle(a);
+});
+
+// =====================================================================
+// Buttons + boot
+// =====================================================================
+document.getElementById('btn-recompute').addEventListener('click', recomputeSurface);
+document.getElementById('btn-equal').addEventListener('click', () => {
+  state.r = [0.2, 0.2, 0.2, 0.2, 0.2];
+  buildSliders(); recomputeSurface(); drawPentagon();
+});
+document.getElementById('btn-random').addEventListener('click', () => {
+  // Sample on the simplex with each component in (0.05, 0.45).
+  let r;
+  do {
+    r = [Math.random(), Math.random(), Math.random(), Math.random(), Math.random()];
+    const s = r.reduce((a,b)=>a+b,0);
+    r = r.map(rj => rj/s);
+  } while (r.some(rj => rj < 0.05 || rj > 0.45));
+  state.r = r;
+  buildSliders(); recomputeSurface(); drawPentagon();
+});
+document.getElementById('snap-newton').addEventListener('change', (e) => {
+  state.snap = e.target.checked;
+});
+document.getElementById('res').addEventListener('change', (e) => {
+  state.N = parseInt(e.target.value, 10);
+  recomputeSurface();
+});
+
+{
+  const oInp = document.getElementById('surface-opacity');
+  const oVal = document.getElementById('surface-opacity-val');
+  oInp.addEventListener('input', () => {
+    const o = parseFloat(oInp.value);
+    oVal.textContent = o.toFixed(2);
+    surfaceMat.opacity = o;
+    // Switching transparent on/off requires a material recompile.
+    const wantTransparent = o < 1.0;
+    if (surfaceMat.transparent !== wantTransparent) {
+      surfaceMat.transparent = wantTransparent;
+      surfaceMat.depthWrite = !wantTransparent;
+      surfaceMat.needsUpdate = true;
+    }
+  });
+}
+
+document.getElementById('tattoo-toggle').addEventListener('change', (e) => {
+  state.tattoo = e.target.checked;
+  buildTattoo();
+});
+{
+  const cInp = document.getElementById('tattoo-count');
+  const cVal = document.getElementById('tattoo-count-val');
+  let timer = null;
+  cInp.addEventListener('input', () => {
+    state.tattooCount = parseInt(cInp.value, 10);
+    cVal.textContent = state.tattooCount;
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(buildTattoo, 80);   // debounce while sliding
+  });
+  const sInp = document.getElementById('tattoo-scale');
+  const sVal = document.getElementById('tattoo-scale-val');
+  sInp.addEventListener('input', () => {
+    state.tattooScale = parseFloat(sInp.value);
+    sVal.textContent = state.tattooScale.toFixed(3);
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(buildTattoo, 80);
+  });
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = host.clientWidth / host.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(host.clientWidth, host.clientHeight);
+  drawPentagon();
+});
+
+function loop() {
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+buildSliders();
+recomputeSurface();
+drawPentagon();
+loop();
+</script>
+</body>
+</html>
