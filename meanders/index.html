@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meandric Systems</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #06060c; color: rgba(255,255,255,0.85);
+                 font-family: system-ui, -apple-system, sans-serif;
+                 min-height: 100%; }
+
+    main { max-width: 880px; margin: 0 auto; padding: 64px 28px 96px; }
+
+    header h1 { font-size: 30px; font-weight: 600; letter-spacing: 0.01em; }
+    header p.tag { color: rgba(255,255,255,0.5); margin-top: 6px; font-size: 14px; }
+
+    section.intro { margin-top: 32px; color: rgba(255,255,255,0.72);
+                    font-size: 15px; line-height: 1.65; }
+    section.intro p + p { margin-top: 12px; }
+    section.intro code { background: rgba(255,255,255,0.06);
+                        padding: 1px 5px; border-radius: 3px;
+                        font-family: ui-monospace, monospace; font-size: 13px; }
+
+    .grid { margin-top: 40px; display: grid; gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+    a.card { display: block; padding: 22px 22px 20px;
+             background: rgba(255,255,255,0.04);
+             border: 1px solid rgba(255,255,255,0.10);
+             border-radius: 12px;
+             text-decoration: none; color: inherit;
+             transition: background 0.15s, border-color 0.15s, transform 0.15s; }
+    a.card:hover { background: rgba(255,255,255,0.07);
+                   border-color: rgba(255,255,255,0.22);
+                   transform: translateY(-2px); }
+    a.card svg { display: block; width: 100%; height: 96px;
+                 margin-bottom: 14px; }
+    a.card h2 { font-size: 16px; font-weight: 600;
+                color: rgba(255,255,255,0.92); }
+    a.card p  { font-size: 13px; color: rgba(255,255,255,0.55);
+                margin-top: 4px; line-height: 1.5; }
+
+    footer { margin-top: 56px; color: rgba(255,255,255,0.36); font-size: 12px; }
+    footer a { color: inherit; text-decoration: underline;
+               text-decoration-color: rgba(255,255,255,0.20); }
+    footer a:hover { color: rgba(255,255,255,0.65); }
+  </style>
+</head>
+<body>
+<main>
+
+<header>
+  <h1>Meandric systems</h1>
+  <p class="tag">three.js visualizations of order-4 meandric systems</p>
+</header>
+
+<section class="intro">
+  <p>A <strong>meandric system of order&nbsp;<em>n</em></strong> is an ordered
+     pair of noncrossing matchings of the marked points
+     <code>{1, 2, …, 2n}</code>. Place the marked points on the equator
+     of a sphere; draw each arc as the half-circle of the chord, going up into
+     the top hemisphere or down into the bottom hemisphere depending on which
+     of the two matchings the arc belongs to. The two matchings together
+     cut the boundary of the sphere into a disjoint union of closed loops,
+     the <em>connected components</em> of the system. Each component
+     gets a glowing ball that races along it.</p>
+  <p>The 14 noncrossing matchings of <code>{1,…,8}</code> give
+     14<sup>2</sup>&nbsp;=&nbsp;196 systems of order&nbsp;4. The pages below
+     are different views of those 196.</p>
+</section>
+
+<div class="grid">
+
+  <a class="card" href="multiplication-table.html">
+    <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g fill="none" stroke="#7be0cb" stroke-width="0.6" opacity="0.85">
+        <!-- a 4x4 grid of small arch-diagram-ish glyphs -->
+        <g transform="translate(8, 8)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 1 6 Q 4 1, 7 6"/>
+          <path d="M 1 6 Q 4 11, 7 6" stroke="#6fa8ff"/>
+        </g>
+        <g transform="translate(28, 8)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 2 6 Q 7 0, 12 6"/>
+          <path d="M 4 6 Q 7 3, 10 6"/>
+          <path d="M 4 6 Q 7 9, 10 6" stroke="#8a5fcc"/>
+        </g>
+        <g transform="translate(48, 8)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 1 6 Q 7 0, 13 6"/>
+          <path d="M 1 6 Q 7 12, 13 6" stroke="#50dd6f"/>
+        </g>
+        <g transform="translate(68, 8)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 2 6 Q 4 2, 6 6"/>
+          <path d="M 8 6 Q 10 2, 12 6"/>
+          <path d="M 2 6 Q 7 12, 12 6" stroke="#6fa8ff"/>
+        </g>
+        <g transform="translate(8, 28)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 2 6 Q 7 0, 12 6"/>
+          <path d="M 2 6 Q 7 12, 12 6" stroke="#7be0cb"/>
+        </g>
+        <g transform="translate(28, 28)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 1 6 Q 4 2, 7 6"/>
+          <path d="M 7 6 Q 10 2, 13 6"/>
+          <path d="M 1 6 Q 7 11, 13 6" stroke="#50dd6f"/>
+        </g>
+        <g transform="translate(48, 28)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 4 6 Q 7 2, 10 6"/>
+          <path d="M 1 6 Q 7 12, 13 6"/>
+          <path d="M 4 6 Q 7 10, 10 6" stroke="#8a5fcc"/>
+        </g>
+        <g transform="translate(68, 28)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 2 6 Q 7 0, 12 6"/>
+          <path d="M 2 6 Q 4 9, 6 6"/>
+          <path d="M 8 6 Q 10 9, 12 6"/>
+        </g>
+        <g transform="translate(8, 48)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 2 6 Q 4 2, 6 6"/>
+          <path d="M 8 6 Q 10 2, 12 6"/>
+          <path d="M 2 6 Q 4 10, 6 6" stroke="#6fa8ff"/>
+          <path d="M 8 6 Q 10 10, 12 6" stroke="#6fa8ff"/>
+        </g>
+        <g transform="translate(28, 48)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 1 6 Q 7 0, 13 6"/>
+          <path d="M 4 6 Q 7 3, 10 6"/>
+          <path d="M 4 6 Q 7 9, 10 6" stroke="#7be0cb"/>
+        </g>
+        <g transform="translate(48, 48)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 2 6 Q 4 2, 6 6"/>
+          <path d="M 8 6 Q 10 2, 12 6"/>
+          <path d="M 2 6 Q 7 11, 12 6" stroke="#50dd6f"/>
+        </g>
+        <g transform="translate(68, 48)">
+          <line x1="0" y1="6" x2="14" y2="6" stroke="#3a4868" stroke-width="0.4"/>
+          <path d="M 1 6 Q 7 0, 13 6"/>
+          <path d="M 4 6 Q 7 12, 10 6" stroke="#8a5fcc"/>
+        </g>
+      </g>
+    </svg>
+    <h2>Multiplication table →</h2>
+    <p>All 196 order-4 systems on a 14&nbsp;×&nbsp;14 grid. Rows index the
+       top matching, columns the bottom.</p>
+  </a>
+
+  <a class="card" href="mobile.html">
+    <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g fill="none" stroke="#9aacd0" stroke-width="0.7">
+        <!-- crude polytope sketch -->
+        <path d="M 30 8 L 50 4 L 70 8 L 76 22 L 60 30 L 40 30 L 24 22 Z"/>
+        <path d="M 30 8 L 40 30"/>
+        <path d="M 70 8 L 60 30"/>
+        <path d="M 50 4 L 50 16"/>
+        <path d="M 50 16 L 24 22"/>
+        <path d="M 50 16 L 76 22"/>
+      </g>
+      <!-- vertices -->
+      <g fill="#d8dbe8">
+        <circle cx="30" cy="8" r="1.4"/>
+        <circle cx="50" cy="4" r="1.4"/>
+        <circle cx="70" cy="8" r="1.4"/>
+        <circle cx="76" cy="22" r="1.4"/>
+        <circle cx="60" cy="30" r="1.4"/>
+        <circle cx="40" cy="30" r="1.4"/>
+        <circle cx="24" cy="22" r="1.4"/>
+        <circle cx="50" cy="16" r="1.4"/>
+      </g>
+      <!-- columns of dots -->
+      <g fill="#7be0cb" opacity="0.9">
+        <circle cx="30" cy="36" r="0.9"/><circle cx="30" cy="42" r="0.9"/>
+        <circle cx="30" cy="48" r="0.9"/><circle cx="30" cy="54" r="0.9"/>
+      </g>
+      <g fill="#6fa8ff" opacity="0.9">
+        <circle cx="40" cy="36" r="0.9"/><circle cx="40" cy="42" r="0.9"/>
+        <circle cx="40" cy="48" r="0.9"/><circle cx="40" cy="54" r="0.9"/>
+      </g>
+      <g fill="#50dd6f" opacity="0.9">
+        <circle cx="50" cy="36" r="0.9"/><circle cx="50" cy="42" r="0.9"/>
+        <circle cx="50" cy="48" r="0.9"/><circle cx="50" cy="54" r="0.9"/>
+      </g>
+      <g fill="#8a5fcc" opacity="0.9">
+        <circle cx="60" cy="36" r="0.9"/><circle cx="60" cy="42" r="0.9"/>
+        <circle cx="60" cy="48" r="0.9"/><circle cx="60" cy="54" r="0.9"/>
+      </g>
+      <g fill="#7be0cb" opacity="0.9">
+        <circle cx="70" cy="36" r="0.9"/><circle cx="70" cy="42" r="0.9"/>
+        <circle cx="70" cy="48" r="0.9"/><circle cx="70" cy="54" r="0.9"/>
+      </g>
+      <g stroke="rgba(255,255,255,0.10)" stroke-width="0.3">
+        <line x1="30" y1="8"  x2="30" y2="56"/>
+        <line x1="40" y1="30" x2="40" y2="56"/>
+        <line x1="50" y1="16" x2="50" y2="56"/>
+        <line x1="60" y1="30" x2="60" y2="56"/>
+        <line x1="70" y1="8"  x2="70" y2="56"/>
+      </g>
+    </svg>
+    <h2>Mobile →</h2>
+    <p>Same 196 systems, rearranged as 14 vertical strands hanging from
+       the 14 vertices of the 3-D Stasheff associahedron K<sub>5</sub>.</p>
+  </a>
+
+  <a class="card" href="single.html">
+    <svg viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g fill="none" stroke-width="1.2">
+        <!-- one big arch diagram with two component colors -->
+        <line x1="10" y1="32" x2="90" y2="32" stroke="#3a4868" stroke-width="0.6"/>
+        <path d="M 14 32 Q 28 12, 42 32" stroke="#7be0cb"/>
+        <path d="M 14 32 Q 28 52, 42 32" stroke="#7be0cb"/>
+        <path d="M 50 32 Q 70 8,  90 32" stroke="#6fa8ff"/>
+        <path d="M 50 32 Q 70 56, 90 32" stroke="#6fa8ff"/>
+        <path d="M 22 32 Q 28 20, 34 32" stroke="#50dd6f"/>
+        <path d="M 22 32 Q 28 44, 34 32" stroke="#50dd6f"/>
+        <path d="M 62 32 Q 70 22, 78 32" stroke="#8a5fcc"/>
+        <path d="M 62 32 Q 70 42, 78 32" stroke="#8a5fcc"/>
+      </g>
+      <!-- racing balls -->
+      <g fill="#7be0cb"><circle cx="32" cy="20" r="1.4"/></g>
+      <g fill="#6fa8ff"><circle cx="68" cy="14" r="1.4"/></g>
+      <g fill="#50dd6f"><circle cx="28" cy="38" r="1.0"/></g>
+      <g fill="#8a5fcc"><circle cx="73" cy="40" r="1.0"/></g>
+    </svg>
+    <h2>Single system →</h2>
+    <p>One system at a time, with controls for <em>n</em> and the two
+       matchings. URL-parameterizable for sharing specific examples.</p>
+  </a>
+
+</div>
+
+<footer>
+  built in three.js · source on
+  <a href="https://github.com/kyleormsby/kyleormsby.github.io/tree/master/meanders">github</a>
+  · drag to orbit · scroll to zoom
+</footer>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Meandric Mobile — Order-4 Mobiles Hanging from K_5</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden;
+               background: #06060c; color: #c8c8d8;
+               font: 12px/1.4 ui-monospace, monospace; }
+  #info { position: absolute; top: 12px; left: 14px; pointer-events: none;
+          text-shadow: 0 1px 2px #000; max-width: 540px; }
+  #info h1 { margin: 0 0 4px 0; font-size: 14px; font-weight: 600;
+             letter-spacing: 0.02em; }
+  #info p { margin: 0; opacity: 0.8; }
+  #status { position: absolute; bottom: 12px; left: 14px; opacity: 0.55;
+            text-shadow: 0 1px 2px #000; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<div id="info">
+  <h1>Meandric mobile, n = 4</h1>
+  <p>3-D associahedron K<sub>5</sub> (Loday realization) with 14 vertices,
+     21 edges. Each vertex is a noncrossing matching of {1,…,8}; below it
+     hang the 14 meandric systems whose top half is that matching, ordered
+     by lex of the bottom half.</p>
+  <p>Drag to orbit. Scroll to zoom.</p>
+</div>
+<div id="status"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+import { allMatchings } from './meanders.js';
+import { createMeanderObject, updateMeanderBalls } from './meander-viz.js';
+import { computeAssociahedron } from './associahedron.js';
+
+// ---------- Configuration ----------
+const n = 4;
+const matchings   = allMatchings(n);
+const M           = matchings.length;          // 14
+const { vertices, edges } = computeAssociahedron(n);
+
+const POLYTOPE_SCALE   = 2.0;     // overall scale of K_5 (25 % larger than 1.6)
+const POLYTOPE_TOP_Y   = 9.0;     // y-coord of the highest vertex
+const MEANDER_RADIUS   = 0.42;
+const COLUMN_SPACING   = 1.15;    // > 2*(MEANDER_RADIUS + tubeRadius)
+const COLUMN_LENGTH    = M * COLUMN_SPACING;
+const POLYTOPE_COLOR   = 0x7a8eb0; // cool steel-blue gray
+const WIRE_COLOR       = 0x52607a;
+
+// Position the polytope so its highest vertex sits at POLYTOPE_TOP_Y.
+const rawY      = vertices.map(v => v[1] * POLYTOPE_SCALE);
+const yShift    = POLYTOPE_TOP_Y - Math.max(...rawY);
+
+const placed = vertices.map(v => [
+  v[0] * POLYTOPE_SCALE,
+  v[1] * POLYTOPE_SCALE + yShift,
+  v[2] * POLYTOPE_SCALE,
+]);
+
+const minVy   = Math.min(...placed.map(v => v[1]));
+const maxVy   = Math.max(...placed.map(v => v[1]));
+const sceneMinY = minVy - COLUMN_LENGTH;
+const sceneMaxY = maxVy;
+const sceneCenterY = (sceneMinY + sceneMaxY) / 2;
+const sceneHeight  = sceneMaxY - sceneMinY;
+
+// ---------- Scene ----------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05050b);
+
+const camera = new THREE.PerspectiveCamera(
+  40, window.innerWidth / window.innerHeight, 0.1, 200
+);
+const initialCamY = sceneCenterY + sceneHeight * 0.05;
+const initialCamZ = Math.max(28, sceneHeight * 1.55);
+camera.position.set(0, initialCamY, initialCamZ);
+camera.lookAt(0, sceneCenterY, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+// ---------- Lights ----------
+scene.add(new THREE.AmbientLight(0xffffff, 0.40));
+const key = new THREE.DirectionalLight(0xffffff, 0.85);
+key.position.set(6, 14, 18);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xa8b8ff, 0.40);
+rim.position.set(-6, -3, 8);
+scene.add(rim);
+
+// ---------- Polytope wireframe (cool steel-blue, lightly self-lit) ----------
+const polytopeMat = new THREE.MeshStandardMaterial({
+  color:             POLYTOPE_COLOR,
+  emissive:          POLYTOPE_COLOR,
+  emissiveIntensity: 0.30,
+  roughness:         0.45,
+  metalness:         0.0,
+  toneMapped:        false,
+});
+
+const polytopeGroup = new THREE.Group();
+const EDGE_TUBE_R = 0.075;
+for (const [i, j] of edges) {
+  const A = placed[i], B = placed[j];
+  const start = new THREE.Vector3(...A);
+  const end   = new THREE.Vector3(...B);
+  const dir   = new THREE.Vector3().subVectors(end, start);
+  const len   = dir.length();
+  const cyl   = new THREE.CylinderGeometry(EDGE_TUBE_R, EDGE_TUBE_R, len, 12, 1, false);
+  const mesh  = new THREE.Mesh(cyl, polytopeMat);
+  mesh.position.copy(start).addScaledVector(dir, 0.5);
+  // Cylinder default axis is +y; aim it along the edge direction.
+  const up   = new THREE.Vector3(0, 1, 0);
+  const axis = dir.clone().normalize();
+  if (Math.abs(up.dot(axis)) < 0.9999) {
+    const q = new THREE.Quaternion().setFromUnitVectors(up, axis);
+    mesh.quaternion.copy(q);
+  }
+  polytopeGroup.add(mesh);
+}
+
+// Vertex markers on K_5 — same cool gray, slightly brighter than the edges
+const vertexMarkerGeom = new THREE.SphereGeometry(0.15, 24, 16);
+const vertexMarkerMat  = new THREE.MeshStandardMaterial({
+  color:             0x96a6c4,
+  emissive:          0x96a6c4,
+  emissiveIntensity: 0.55,
+  roughness:         0.4,
+  metalness:         0.0,
+  toneMapped:        false,
+});
+for (const V of placed) {
+  const m = new THREE.Mesh(vertexMarkerGeom, vertexMarkerMat);
+  m.position.set(...V);
+  polytopeGroup.add(m);
+}
+
+scene.add(polytopeGroup);
+
+// ---------- Hanging meanders ----------
+const sharedBallGeom = new THREE.SphereGeometry(0.022, 12, 10);
+const wireMat = new THREE.LineBasicMaterial({
+  color:      WIRE_COLOR,
+  transparent: true,
+  opacity:    0.45,
+});
+
+const meanderObjects = [];
+const mobileGroup    = new THREE.Group();
+
+for (let vi = 0; vi < M; vi++) {
+  const V   = placed[vi];
+  const top = matchings[vi];
+
+  // Wire from polytope vertex down to bottom of column
+  const wireGeom = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(V[0], V[1] - 0.05,                      V[2]),
+    new THREE.Vector3(V[0], V[1] - COLUMN_LENGTH - MEANDER_RADIUS, V[2]),
+  ]);
+  mobileGroup.add(new THREE.Line(wireGeom, wireMat));
+
+  for (let bi = 0; bi < M; bi++) {
+    const bot = matchings[bi];
+    const obj = createMeanderObject(top, bot, n, {
+      sphereRadius:           MEANDER_RADIUS,
+      tubeRadius:             0.066,
+      tubeOpacity:            0.32,
+      tubeTransmission:       0.55,
+      tubeRoughness:          0.12,
+      tubeIor:                1.45,
+      tubeThickness:          0.5,
+      tubeEmissiveIntensity:  0.32,
+      tubeClearcoat:          0.85,
+      tubeAttenuationDistance: 0.9,
+      ballRadius:             0.022,
+      ballEmissive:           4.5,
+      showHalo:               false,
+      tubularSegments:        18,
+      radialSegments:         6,
+      showPoints:             false,
+      ballGeometry:           sharedBallGeom,
+    });
+    obj.position.set(V[0], V[1] - (bi + 1) * COLUMN_SPACING, V[2]);
+    obj.rotation.x = -Math.PI / 2;
+    obj.userData.vertexIdx = vi;
+    obj.userData.bottomIdx = bi;
+    mobileGroup.add(obj);
+    meanderObjects.push(obj);
+  }
+}
+scene.add(mobileGroup);
+
+// ---------- Postprocessing ----------
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  0.75,   // strength
+  0.55,   // radius
+  0.55    // threshold
+);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// ---------- Controls ----------
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, sceneCenterY, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance   = 4;
+controls.maxDistance   = 200;
+
+// ---------- Status ----------
+document.getElementById('status').textContent =
+  `K_5: ${vertices.length} vertices, ${edges.length} edges    ·    ` +
+  `${meanderObjects.length} meandric systems hanging`;
+
+// ---------- Animate ----------
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  for (const obj of meanderObjects) {
+    updateMeanderBalls(obj, t, { speed: 0.25, mode: 'sync' });
+  }
+  controls.update();
+  composer.render();
+}
+animate();
+
+// ---------- Resize ----------
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

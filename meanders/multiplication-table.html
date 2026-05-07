@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Meandric Systems of Order 4 — 14×14 Multiplication Table</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden;
+               background: #06060c; color: #c8c8d8; font: 12px/1.4 ui-monospace, monospace; }
+  #info { position: absolute; top: 12px; left: 14px; pointer-events: none;
+          text-shadow: 0 1px 2px #000; }
+  #info h1 { margin: 0 0 4px 0; font-size: 14px; font-weight: 600;
+             letter-spacing: 0.02em; }
+  #info p { margin: 0; opacity: 0.8; }
+  #controls { position: absolute; top: 12px; right: 14px; display: flex; gap: 8px; }
+  #controls button { background: rgba(40,40,55,0.7); color: #c8c8d8;
+                     border: 1px solid #444; padding: 4px 8px; cursor: pointer;
+                     font: inherit; border-radius: 3px; }
+  #controls button:hover { background: rgba(70,70,95,0.7); }
+  #status { position: absolute; bottom: 12px; left: 14px; opacity: 0.6;
+            text-shadow: 0 1px 2px #000; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<div id="info">
+  <h1>Meandric Systems of Order 4</h1>
+  <p>14 × 14 = 196 systems. Rows index the top matching; columns index the bottom matching.</p>
+  <p>Drag to rotate. Scroll to zoom. Each connected component carries a glowing ball.</p>
+</div>
+<div id="controls">
+  <button id="btn-mode">speed: synced</button>
+  <button id="btn-reset">reset view</button>
+</div>
+<div id="status"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+import { allMatchings, componentCount } from './meanders.js';
+import { createMeanderObject, updateMeanderBalls } from './meander-viz.js';
+
+const n = 4;
+const matchings = allMatchings(n);   // C_4 = 14 noncrossing matchings
+const M = matchings.length;          // 14
+const cellRadius = 0.90;
+const spacing = 2.45;                // > 2*(cellRadius + tubeRadius + halo) for clean separation
+
+// ---------- Scene ----------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05050b);
+
+const camera = new THREE.PerspectiveCamera(
+  40, window.innerWidth / window.innerHeight, 0.1, 400
+);
+// Camera tilted ~25° below the grid normal so the now-vertical equators
+// read as flattened ellipses (not just edge-on lines) while the 14×14
+// layout stays close to face-on. Orbit/zoom freely with the mouse.
+const initialCam = new THREE.Vector3(0, -M * spacing * 0.62, M * spacing * 1.32);
+camera.position.copy(initialCam);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+// ---------- Lights ----------
+scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+const key = new THREE.DirectionalLight(0xffffff, 0.9);
+key.position.set(8, 12, 18);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xa0b8ff, 0.4);
+rim.position.set(-10, -6, 8);
+scene.add(rim);
+
+// ---------- Build the table ----------
+// Shared geometry for the racing balls (component-specific materials, but
+// every ball is the same sphere — saves a lot of memory).
+const sharedBallGeom  = new THREE.SphereGeometry(0.045, 14, 10);
+
+const tableGroup = new THREE.Group();
+const meanderObjects = [];
+
+for (let i = 0; i < M; i++) {
+  for (let j = 0; j < M; j++) {
+    const top = matchings[i];
+    const bot = matchings[j];
+    const obj = createMeanderObject(top, bot, n, {
+      sphereRadius: cellRadius,
+      tubeRadius: 0.14,             // thicker for visibility at this zoom
+      tubeOpacity: 0.32,
+      tubeTransmission: 0.55,
+      tubeRoughness: 0.12,
+      tubeIor: 1.45,
+      tubeThickness: 0.5,
+      tubeEmissiveIntensity: 0.28,  // a touch lower than the single-view default
+      tubeClearcoat: 0.85,
+      tubeAttenuationDistance: 0.9,
+      ballRadius: 0.045,            // unchanged
+      ballEmissive: 4.5,
+      showHalo: false,
+      tubularSegments: 22,
+      radialSegments: 8,
+      showPoints: false,
+      ballGeometry: sharedBallGeom,
+    });
+    obj.position.set(
+      (j - (M - 1) / 2) * spacing,
+      ((M - 1) / 2 - i) * spacing,
+      0
+    );
+    // (1) Equator perpendicular to the table: rotate so the equator lies in
+    // the xz plane (axis along +y). Top arcs poke up (+y), bottom down (-y),
+    // so each cell looks like a stand-up arch diagram with depth.
+    obj.rotation.x = -Math.PI / 2;
+    obj.userData.row = i;
+    obj.userData.col = j;
+    tableGroup.add(obj);
+    meanderObjects.push(obj);
+  }
+}
+scene.add(tableGroup);
+
+// ---------- Postprocessing (bloom for the glowing balls) ----------
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  0.85,   // strength — stronger bloom helps the in-tube glow read
+  0.65,   // radius
+  0.55    // threshold — let the halo bloom too, not just the ball core
+);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// ---------- Controls ----------
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 3;
+controls.maxDistance = 200;
+
+let ballMode = 'sync'; // 'sync' or 'arclength'
+const btnMode = document.getElementById('btn-mode');
+btnMode.addEventListener('click', () => {
+  ballMode = (ballMode === 'sync') ? 'arclength' : 'sync';
+  btnMode.textContent = `speed: ${ballMode === 'sync' ? 'synced' : 'arc-length'}`;
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  camera.position.copy(initialCam);
+  controls.target.set(0, 0, 0);
+});
+
+// ---------- Status: total component count, mean components per system ----------
+let totalComponents = 0;
+const histogram = {};
+for (const obj of meanderObjects) {
+  const k = obj.userData.components.length;
+  totalComponents += k;
+  histogram[k] = (histogram[k] || 0) + 1;
+}
+const histStr = Object.keys(histogram).sort((a, b) => +a - +b)
+  .map(k => `${k}:${histogram[k]}`).join('  ');
+document.getElementById('status').textContent =
+  `mean components / system = ${(totalComponents / meanderObjects.length).toFixed(3)}    ` +
+  `histogram (components: count) = ${histStr}`;
+
+// ---------- Animate ----------
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  for (const obj of meanderObjects) {
+    updateMeanderBalls(obj, t, { speed: 0.28, mode: ballMode });
+  }
+  controls.update();
+  composer.render();
+}
+animate();
+
+// ---------- Resize ----------
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
