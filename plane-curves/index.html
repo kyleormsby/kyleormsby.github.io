@@ -769,15 +769,75 @@
     // Deduplicate: two candidates within tol of each other (or their antipodes)
     // collapse to one.
     const tol = 0.06;
-    const out = [];
+    const merged = [];
     for (const p of candidates) {
       let dup = false;
-      for (const q of out) {
+      for (const q of merged) {
         const d1 = (p[0]-q[0])**2 + (p[1]-q[1])**2 + (p[2]-q[2])**2;
         const d2 = (p[0]+q[0])**2 + (p[1]+q[1])**2 + (p[2]+q[2])**2;
         if (Math.min(d1, d2) < tol*tol) { dup = true; break; }
       }
-      if (!dup) out.push(p);
+      if (!dup) merged.push(p);
+    }
+
+    // Refine each candidate via gradient descent on f in (u, v), then verify
+    // that the converged location is genuinely singular (f ≈ 0). This rejects
+    // local minima of f that aren't actual zeros — the source of the spurious
+    // markers on curves whose gradient grows slowly away from inflection-like
+    // regions (e.g. high-degree curves with several cusps).
+    function scoreAt(u, v) {
+      const r2 = u*u + v*v;
+      if (r2 >= 1) return Infinity;
+      const w = Math.sqrt(1 - r2);
+      const pv = pFn(u, v, w);
+      const gx = px(u, v, w), gy = py(u, v, w), gz = pz(u, v, w);
+      return pv*pv*Pinv + (gx*gx + gy*gy + gz*gz)*Ginv;
+    }
+    const out = [];
+    const hFD = 1e-4;
+    for (const P of merged) {
+      let u = P[0], v = P[1];
+      if (u*u + v*v >= 0.9999) { out.push(P); continue; } // boundary: trust the equator candidate
+
+      let fCur = scoreAt(u, v);
+      for (let iter = 0; iter < 30; iter++) {
+        const f0  = scoreAt(u, v);
+        const fpu = scoreAt(u + hFD, v),     fmu = scoreAt(u - hFD, v);
+        const fpv = scoreAt(u, v + hFD),     fmv = scoreAt(u, v - hFD);
+        const fpp = scoreAt(u + hFD, v + hFD), fpm = scoreAt(u + hFD, v - hFD);
+        const fmp = scoreAt(u - hFD, v + hFD), fmm = scoreAt(u - hFD, v - hFD);
+        if (![f0, fpu, fmu, fpv, fmv, fpp, fpm, fmp, fmm].every(isFinite)) break;
+
+        const gu  = (fpu - fmu) / (2*hFD);
+        const gv  = (fpv - fmv) / (2*hFD);
+        const Huu = (fpu - 2*f0 + fmu) / (hFD*hFD);
+        const Hvv = (fpv - 2*f0 + fmv) / (hFD*hFD);
+        const Huv = (fpp - fpm - fmp + fmm) / (4*hFD*hFD);
+        const det = Huu*Hvv - Huv*Huv;
+
+        // Newton step (fall back to gradient if Hessian is degenerate).
+        let du, dv;
+        if (Math.abs(det) > 1e-12) {
+          du = ( Hvv*gu - Huv*gv) / det;
+          dv = (-Huv*gu + Huu*gv) / det;
+        } else {
+          du = gu; dv = gv;
+        }
+
+        let alpha = 1.0, moved = false;
+        while (alpha > 1e-10) {
+          const u2 = u - alpha*du, v2 = v - alpha*dv;
+          const f2 = scoreAt(u2, v2);
+          if (f2 < fCur) { u = u2; v = v2; fCur = f2; moved = true; break; }
+          alpha *= 0.5;
+        }
+        if (!moved) break;
+        if (alpha * (Math.abs(du) + Math.abs(dv)) < 1e-12) break;
+      }
+      if (fCur < 1e-8) {
+        const w = Math.sqrt(Math.max(0, 1 - u*u - v*v));
+        out.push([u, v, w]);
+      }
     }
     return out;
   }
@@ -1059,6 +1119,12 @@
     { display: 'Lemniscate — (x²+y²)² − az²(x²−y²)',
       expr: '(x^2 + y^2)^2 - a*z^2*(x^2 - y^2)',
       params: { a: { def: 1, min: 0.3, max: 2.5 } } },
+    { display: 'Cardioid — (x²+y²−2axz)² − 4a²z²(x²+y²)',
+      expr: '(x^2 + y^2 - 2*a*x*z)^2 - 4*a^2*z^2*(x^2 + y^2)',
+      params: { a: { def: 0.5, min: 0.15, max: 1.5 } } },
+    { display: 'Deltoid — (x²+y²)² − 8axz(x²−3y²) + 18a²z²(x²+y²) − 27a⁴z⁴',
+      expr: '(x^2 + y^2)^2 - 8*a*x*z*(x^2 - 3*y^2) + 18*a^2*z^2*(x^2 + y^2) - 27*a^4*z^4',
+      params: { a: { def: 0.3, min: 0.1, max: 0.8 } } },
     { display: 'Quartic (4 ovals) — x⁴+y⁴+z⁴ − a(x²y²+y²z²+x²z²)',
       expr: 'x^4 + y^4 + z^4 - a*(x^2*y^2 + y^2*z^2 + x^2*z^2)',
       params: { a: { def: 2, min: 0, max: 3 } } },
