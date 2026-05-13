@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Curves in the Real Projective Plane</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #efe5cc;
+    --bg-darker: #e2d5b6;
+    --paper:     #faf3df;
+    --ink:       #251c10;
+    --ink-mute:  #6a5a3e;
+    --rule:      #9c8866;
+    --curve:     #1a1209;
+    --accent:    #5c3a1e;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: 'EB Garamond', 'Cormorant Garamond', Garamond, Georgia, serif;
+    font-size: 18px;
+    line-height: 1.55;
+    padding: 2.8em 1em 4em;
+    background-image:
+      radial-gradient(circle at 18% 20%, rgba(255,250,235,0.35) 0%, transparent 55%),
+      radial-gradient(circle at 82% 78%, rgba(155,135,95,0.06) 0%, transparent 55%);
+  }
+  .container { max-width: 1180px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 2.2em; }
+  h1 {
+    font-family: 'Cormorant Garamond', Garamond, serif;
+    font-weight: 500;
+    font-size: 2.5em;
+    margin: 0;
+    letter-spacing: 0.045em;
+  }
+  .subtitle {
+    font-style: italic;
+    color: var(--ink-mute);
+    margin-top: 0.45em;
+    font-size: 1.04em;
+    letter-spacing: 0.02em;
+  }
+  .ornament {
+    text-align: center;
+    color: var(--rule);
+    margin: 1.6em 0 0.4em;
+    font-size: 1.3em;
+    letter-spacing: 0.9em;
+    padding-left: 0.9em;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 2em 0;
+    opacity: 0.4;
+  }
+  hr.thin {
+    margin: 1.2em auto;
+    width: 240px;
+    opacity: 0.3;
+  }
+
+  .equation {
+    text-align: center;
+    font-size: 1.55em;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    margin: 0.4em 0 1.6em;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+    min-height: 1.4em;
+    word-break: break-word;
+  }
+
+  .controls {
+    display: flex; flex-wrap: wrap;
+    align-items: center; justify-content: center;
+    gap: 0.7em 1.2em;
+    margin: 1.4em 0 0.4em;
+  }
+  .control-row {
+    display: flex; align-items: center; gap: 0.55em;
+    flex-wrap: wrap; justify-content: center;
+  }
+  label {
+    font-style: italic;
+    color: var(--ink-mute);
+    font-size: 0.97em;
+  }
+  select, input[type="text"], button {
+    font-family: inherit;
+    font-size: 1em;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    padding: 0.42em 0.85em;
+    outline: none;
+    border-radius: 1px;
+  }
+  select:focus, input[type="text"]:focus { border-color: var(--accent); }
+  select { min-width: 18em; cursor: pointer; }
+  input[type="text"] { width: 24em; max-width: 100%; font-style: italic; }
+  input[type="text"]::placeholder { color: #b09e7e; font-style: italic; }
+  button {
+    cursor: pointer;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.78em;
+    font-weight: 500;
+    padding: 0.6em 1.2em;
+  }
+  button:hover { background: var(--bg-darker); }
+  button:active { transform: translateY(0.5px); }
+
+  .error {
+    color: #8a2c1a;
+    text-align: center;
+    font-style: italic;
+    margin: 0.4em 0;
+    min-height: 1.4em;
+    font-size: 0.95em;
+  }
+
+  .views {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.7em;
+    margin: 1em 0 0;
+  }
+  @media (max-width: 760px) {
+    .views { grid-template-columns: 1fr; }
+  }
+  .view { text-align: center; }
+  canvas.disk {
+    background: transparent;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    display: block;
+  }
+  .view .center-label {
+    font-style: italic;
+    color: var(--ink-mute);
+    margin-top: 0.55em;
+    font-size: 0.96em;
+    letter-spacing: 0.04em;
+  }
+  .hover-coord {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 0.88em;
+    color: var(--accent);
+    margin-top: 0.2em;
+    min-height: 1.45em;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+  canvas.disk { cursor: crosshair; }
+
+  /* Collapsible math primer */
+  .primer {
+    max-width: 720px;
+    margin: 1.2em auto 0;
+    font-size: 0.97em;
+    line-height: 1.7;
+  }
+  .primer summary {
+    cursor: pointer;
+    color: var(--ink-mute);
+    font-style: italic;
+    text-align: center;
+    letter-spacing: 0.05em;
+    list-style: none;
+    user-select: none;
+  }
+  .primer summary::-webkit-details-marker { display: none; }
+  .primer summary::after  { content: ' ▾'; opacity: 0.55; font-size: 0.8em; }
+  .primer[open] summary::after { content: ' ▴'; }
+  .primer-body {
+    margin: 1em auto 0;
+    padding: 1.1em 1.4em;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink);
+    border-color: rgba(156, 132, 100, 0.35);
+  }
+  .primer-body p { margin: 0.55em 0; }
+  .primer-body em { color: var(--accent); font-style: italic; }
+  .primer-body strong { font-weight: 500; }
+
+  .animation {
+    text-align: center;
+    margin: 1.4em auto 0;
+    max-width: 480px;
+  }
+  .anim-label {
+    font-style: italic;
+    color: var(--ink-mute);
+    margin-top: 0.55em;
+    font-size: 0.96em;
+    letter-spacing: 0.04em;
+  }
+  .anim-button {
+    margin-top: 1em;
+    min-width: 8em;
+  }
+
+  /* Parameter sliders */
+  .sliders {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2.2em;
+    margin: 0.6em auto 1.4em;
+    min-height: 2em;
+  }
+  .slider-control {
+    display: flex;
+    align-items: center;
+    gap: 0.55em;
+    transition: opacity 0.3s ease;
+  }
+  .slider-control.inactive {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .slider-control > label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.2em;
+    color: var(--ink);
+    min-width: 2.1em;
+    text-align: right;
+  }
+  .slider-value {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.95em;
+    color: var(--ink-mute);
+    min-width: 3.4em;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    width: 210px;
+    height: 22px;
+    cursor: pointer;
+    outline: none;
+    margin: 0;
+    border: none;
+    padding: 0;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 1px;
+    background: var(--rule);
+    border: none;
+  }
+  input[type="range"]::-moz-range-track {
+    height: 1px;
+    background: var(--rule);
+    border: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 1px solid var(--ink);
+    margin-top: -6px;
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 1px solid var(--ink);
+    cursor: pointer;
+  }
+
+  .info {
+    font-style: italic;
+    color: var(--ink-mute);
+    text-align: center;
+    margin-top: 2.5em;
+    font-size: 0.88em;
+    line-height: 1.75;
+    max-width: 700px;
+    margin-left: auto; margin-right: auto;
+  }
+  code {
+    font-family: 'EB Garamond', serif;
+    background: rgba(155,135,95,0.13);
+    padding: 0.05em 0.32em;
+    border-radius: 2px;
+    font-style: normal;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Curves in the Real Projective Plane</h1>
+      <div class="subtitle">A visual study of zero loci&nbsp; p(x,&nbsp;y,&nbsp;z) = 0 &nbsp;in the disk model of&nbsp;&Ropf;&Popf;²</div>
+    </header>
+
+    <details class="primer">
+      <summary>about this visualization</summary>
+      <div class="primer-body">
+        <p>The <strong>real projective plane</strong> &Ropf;&Popf;² is the set of lines through the origin in &Ropf;³. A projective point [&thinsp;<em>x</em> : <em>y</em> : <em>z</em>&thinsp;] represents the line through the origin and (<em>x</em>, <em>y</em>, <em>z</em>), so [&thinsp;1 : 2 : 3&thinsp;] and [&thinsp;2 : 4 : 6&thinsp;] denote the same point. A homogeneous polynomial <em>p</em>(<em>x</em>, <em>y</em>, <em>z</em>) of degree <em>d</em> has a well-defined zero set in &Ropf;&Popf;² because scaling (<em>x</em>, <em>y</em>, <em>z</em>) by λ scales <em>p</em> by λ<sup><em>d</em></sup>.</p>
+        <p>Each disk shows &Ropf;&Popf;² via the <strong>disk model</strong>: take the closed upper hemisphere of the sphere <em>S</em>² (relative to a chosen pole) and orthogonally project to its equatorial disk. The interior of the disk represents projective points away from the chart's <em>line at infinity</em>; the boundary circle represents that line, with antipodal points identified.</p>
+        <p>The three views correspond to placing the pole at [&thinsp;0:0:1&thinsp;], [&thinsp;0:1:0&thinsp;], or [&thinsp;1:0:0&thinsp;]. A curve that looks like a circle in one view can look like a hyperbola in another — the affine type depends on how the curve meets the line at infinity, but the projective curve is the same. The animation interpolates between the three views by rotating the sphere.</p>
+        <p><strong>Singular points</strong> &mdash; where <em>p</em> and ∇<em>p</em> both vanish (nodes, cusps, isolated double points) &mdash; are marked with small open circles. <strong>Hover</strong> over any disk to read the projective coordinates of the point under your cursor.</p>
+      </div>
+    </details>
+
+    <div class="ornament">·  ·  ·</div>
+
+    <div class="equation" id="eqDisplay">x² + y² − z² = 0</div>
+
+    <div class="controls">
+      <div class="control-row">
+        <label for="polynomial">Curve:</label>
+        <select id="polynomial"></select>
+      </div>
+      <div class="control-row">
+        <label for="customPoly">or:</label>
+        <input type="text" id="customPoly" placeholder="enter your own — e.g.  y^2 z − x^3 − x z^2" />
+      </div>
+      <div class="control-row">
+        <button id="render">Plot</button>
+      </div>
+    </div>
+    <div class="error" id="error"></div>
+
+    <div class="sliders" id="slidersBox">
+      <div class="slider-control" id="aControl">
+        <label for="paramA">a&nbsp;=</label>
+        <input type="range" id="paramA" min="-2" max="2" step="0.05" value="1">
+        <span class="slider-value" id="paramAVal">1.00</span>
+      </div>
+      <div class="slider-control" id="bControl">
+        <label for="paramB">b&nbsp;=</label>
+        <input type="range" id="paramB" min="-2" max="2" step="0.05" value="1">
+        <span class="slider-value" id="paramBVal">1.00</span>
+      </div>
+    </div>
+
+    <hr class="thin">
+
+    <div class="views">
+      <div class="view">
+        <canvas class="disk" id="view1" width="600" height="600"></canvas>
+        <div class="center-label">centered at [&thinsp;0 : 0 : 1&thinsp;]</div>
+        <div class="hover-coord" id="hover1">&nbsp;</div>
+      </div>
+      <div class="view">
+        <canvas class="disk" id="view2" width="600" height="600"></canvas>
+        <div class="center-label">centered at [&thinsp;0 : 1 : 0&thinsp;]</div>
+        <div class="hover-coord" id="hover2">&nbsp;</div>
+      </div>
+      <div class="view">
+        <canvas class="disk" id="view3" width="600" height="600"></canvas>
+        <div class="center-label">centered at [&thinsp;1 : 0 : 0&thinsp;]</div>
+        <div class="hover-coord" id="hover3">&nbsp;</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="animation">
+      <canvas class="disk" id="anim" width="600" height="600"></canvas>
+      <div class="anim-label" id="animStatus">interpolating views</div>
+      <div class="hover-coord" id="hoverAnim">&nbsp;</div>
+      <button id="animate" class="anim-button">Pause</button>
+    </div>
+
+    <div class="ornament">·  ·  ·</div>
+
+    <div class="info">
+      Each disk is the upper hemisphere of S² orthogonally projected to the plane perpendicular
+      to a chosen pole; the pole sits at the disk's center. Antipodal points of the boundary
+      circle are identified to obtain &Ropf;&Popf;². Enter polynomials in <code>x</code>, <code>y</code>,
+      <code>z</code> with operators <code>+ &minus; * / ^</code>; implicit multiplication is
+      accepted. Non-homogeneous inputs are automatically homogenized with <code>z</code>.
+    </div>
+  </div>
+
+<script>
+  // =============================================================
+  //   Polynomial algebra in &Ropf;[x, y, z]
+  // =============================================================
+  function normalize(expr) {
+    return expr
+      .replace(/²/g,'^2').replace(/³/g,'^3').replace(/⁴/g,'^4')
+      .replace(/⁵/g,'^5').replace(/⁶/g,'^6').replace(/⁷/g,'^7')
+      .replace(/⁸/g,'^8').replace(/⁹/g,'^9')
+      .replace(/−/g,'-').replace(/–/g,'-').replace(/—/g,'-')
+      .replace(/·/g,'*').replace(/×/g,'*');
+  }
+
+  // A Polynomial is a sparse Map  (a,b,c) ↦ coefficient
+  class Polynomial {
+    constructor() { this.terms = new Map(); }
+    static fromCoef(c) {
+      const p = new Polynomial();
+      if (Math.abs(c) > 1e-15) p.terms.set('0,0,0', c);
+      return p;
+    }
+    static fromVar(v) {
+      const p = new Polynomial();
+      const key = v === 'x' ? '1,0,0' : v === 'y' ? '0,1,0' : '0,0,1';
+      p.terms.set(key, 1);
+      return p;
+    }
+    _setTerm(k, v) {
+      if (Math.abs(v) < 1e-15) this.terms.delete(k);
+      else this.terms.set(k, v);
+    }
+    add(other) {
+      const r = new Polynomial();
+      for (const [k, v] of this.terms) r.terms.set(k, v);
+      for (const [k, v] of other.terms) r._setTerm(k, (r.terms.get(k) || 0) + v);
+      return r;
+    }
+    negate() {
+      const r = new Polynomial();
+      for (const [k, v] of this.terms) r.terms.set(k, -v);
+      return r;
+    }
+    subtract(other) { return this.add(other.negate()); }
+    multiply(other) {
+      const r = new Polynomial();
+      for (const [k1, v1] of this.terms) {
+        const [a1, b1, c1] = k1.split(',').map(Number);
+        for (const [k2, v2] of other.terms) {
+          const [a2, b2, c2] = k2.split(',').map(Number);
+          const k = `${a1+a2},${b1+b2},${c1+c2}`;
+          r._setTerm(k, (r.terms.get(k) || 0) + v1 * v2);
+        }
+      }
+      return r;
+    }
+    power(n) {
+      if (!Number.isInteger(n) || n < 0) throw new Error('Exponent must be a non-negative integer');
+      let r = Polynomial.fromCoef(1);
+      for (let i = 0; i < n; i++) r = r.multiply(this);
+      return r;
+    }
+    divide(other) {
+      if (other.terms.size === 0) throw new Error('Division by zero');
+      if (other.terms.size === 1 && other.terms.has('0,0,0')) {
+        const c = other.terms.get('0,0,0');
+        const r = new Polynomial();
+        for (const [k, v] of this.terms) r.terms.set(k, v / c);
+        return r;
+      }
+      throw new Error('Division only by a constant (polynomial division not supported)');
+    }
+    degree() {
+      let d = -1;
+      for (const [k, v] of this.terms) {
+        if (Math.abs(v) < 1e-15) continue;
+        const [a, b, c] = k.split(',').map(Number);
+        d = Math.max(d, a + b + c);
+      }
+      return d;
+    }
+    isHomogeneous() {
+      let d = -1;
+      for (const [k, v] of this.terms) {
+        if (Math.abs(v) < 1e-15) continue;
+        const [a, b, c] = k.split(',').map(Number);
+        const td = a + b + c;
+        if (d === -1) d = td;
+        else if (d !== td) return false;
+      }
+      return true;
+    }
+    // Symbolic partial derivative with respect to variable varIdx (0=x, 1=y, 2=z).
+    derivative(varIdx) {
+      const r = new Polynomial();
+      for (const [k, v] of this.terms) {
+        const exps = k.split(',').map(Number);
+        const e = exps[varIdx];
+        if (e === 0) continue;
+        exps[varIdx] = e - 1;
+        r._setTerm(`${exps[0]},${exps[1]},${exps[2]}`, v * e);
+      }
+      return r;
+    }
+    // Multiply every term of total degree d by z^(D-d), where D = total degree.
+    homogenize() {
+      const D = this.degree();
+      if (D < 0) return this;
+      const r = new Polynomial();
+      for (const [k, v] of this.terms) {
+        const [a, b, c] = k.split(',').map(Number);
+        const d = a + b + c;
+        r.terms.set(`${a},${b},${c + D - d}`, v);
+      }
+      return r;
+    }
+    toFunction() {
+      if (this.terms.size === 0) return () => 0;
+      const parts = [];
+      for (const [k, v] of this.terms) {
+        const [a, b, c] = k.split(',').map(Number);
+        let s = '(' + v + ')';
+        if (a === 1) s += '*x'; else if (a > 1) s += '*x**' + a;
+        if (b === 1) s += '*y'; else if (b > 1) s += '*y**' + b;
+        if (c === 1) s += '*z'; else if (c > 1) s += '*z**' + c;
+        parts.push(s);
+      }
+      return new Function('x','y','z', 'return ' + parts.join('+') + ';');
+    }
+    toPretty() {
+      const entries = [];
+      for (const [k, v] of this.terms) {
+        if (Math.abs(v) < 1e-15) continue;
+        const [a, b, c] = k.split(',').map(Number);
+        entries.push({ a, b, c, v, d: a + b + c });
+      }
+      if (entries.length === 0) return '0 = 0';
+      // Sort: high total degree first, then descending x then y then z exponent
+      entries.sort((p, q) => {
+        if (q.d !== p.d) return q.d - p.d;
+        if (q.a !== p.a) return q.a - p.a;
+        if (q.b !== p.b) return q.b - p.b;
+        return q.c - p.c;
+      });
+      const fmtNum = (n) => {
+        if (Number.isInteger(n)) return n.toString();
+        return parseFloat(n.toFixed(4)).toString();
+      };
+      const supDigits = '⁰¹²³⁴⁵⁶⁷⁸⁹';
+      const sup = (n) => {
+        if (n === 1) return '';
+        return n.toString().split('').map(d => supDigits[parseInt(d)]).join('');
+      };
+      let s = '';
+      for (let i = 0; i < entries.length; i++) {
+        const t = entries[i];
+        const hasVar = t.a > 0 || t.b > 0 || t.c > 0;
+        const absV = Math.abs(t.v);
+        if (i === 0) {
+          if (t.v < 0) s += '−';
+        } else {
+          s += t.v < 0 ? ' − ' : ' + ';
+        }
+        if (!hasVar)       s += fmtNum(absV);
+        else if (absV !== 1) s += fmtNum(absV);
+        if (t.a > 0) s += 'x' + sup(t.a);
+        if (t.b > 0) s += 'y' + sup(t.b);
+        if (t.c > 0) s += 'z' + sup(t.c);
+      }
+      return s + ' = 0';
+    }
+  }
+
+  // Recursive-descent parser. Parameters 'a' and 'b' are taken from `params`
+  // (numeric constants supplied by the sliders) and become Polynomial.fromCoef(value).
+  //   expr   := unary ( ('+'|'-') unary )*
+  //   unary  := ('-'|'+') unary | term
+  //   term   := factor ( ('*'|'/') unary | implicit factor )*
+  //   factor := primary ( '^' factor )?      // ^ is right-associative and tighter than * /
+  //   primary:= number | variable | '(' expr ')'
+  function parsePolynomial(str, params) {
+    params = params || {};
+    let i = 0;
+    const skip = () => { while (i < str.length && /\s/.test(str[i])) i++; };
+    const peek = () => { skip(); return str[i]; };
+
+    function parseExpr() {
+      let left = parseUnary();
+      while (true) {
+        const c = peek();
+        if (c === '+') { i++; left = left.add(parseUnary()); }
+        else if (c === '-') { i++; left = left.subtract(parseUnary()); }
+        else break;
+      }
+      return left;
+    }
+    function parseUnary() {
+      const c = peek();
+      if (c === '-') { i++; return parseUnary().negate(); }
+      if (c === '+') { i++; return parseUnary(); }
+      return parseTerm();
+    }
+    function parseTerm() {
+      let left = parseFactor();
+      while (true) {
+        const c = peek();
+        if (c === '*') { i++; left = left.multiply(parseUnary()); }
+        else if (c === '/') { i++; left = left.divide(parseUnary()); }
+        else if (c && /[xyzab(0-9.]/.test(c)) left = left.multiply(parseFactor()); // implicit
+        else break;
+      }
+      return left;
+    }
+    function parseFactor() {
+      const base = parsePrimary();
+      if (peek() === '^') {
+        i++;
+        const exp = parseFactor(); // right-associative; binds tighter than * and /
+        if (exp.terms.size === 1 && exp.terms.has('0,0,0')) {
+          const e = exp.terms.get('0,0,0');
+          if (!Number.isInteger(e) || e < 0)
+            throw new Error('Exponent must be a non-negative integer');
+          return base.power(e);
+        }
+        throw new Error('Exponent must be a non-negative integer constant');
+      }
+      return base;
+    }
+    function parsePrimary() {
+      const c = peek();
+      if (c === '(') {
+        i++;
+        const r = parseExpr();
+        if (peek() !== ')') throw new Error('Expected ")"');
+        i++;
+        return r;
+      }
+      if (c !== undefined && /[0-9.]/.test(c)) {
+        let s = '';
+        while (i < str.length && /[0-9.]/.test(str[i])) s += str[i++];
+        const n = parseFloat(s);
+        if (isNaN(n)) throw new Error('Invalid number: ' + s);
+        return Polynomial.fromCoef(n);
+      }
+      if (c === 'x' || c === 'y' || c === 'z') {
+        i++;
+        return Polynomial.fromVar(c);
+      }
+      if (c === 'a' || c === 'b') {
+        i++;
+        const val = params[c] !== undefined ? params[c] : 0;
+        return Polynomial.fromCoef(val);
+      }
+      throw new Error('Unexpected character: ' + (c === undefined ? 'end of input' : `'${c}'`));
+    }
+
+    const result = parseExpr();
+    skip();
+    if (i < str.length) throw new Error(`Unexpected character: '${str[i]}'`);
+    return result;
+  }
+
+  // Locate singular points of {p = 0} ⊂ RP² by searching the upper hemisphere
+  // for local minima of the "singularity score" |p|²/maxP² + ||∇p||²/maxG with
+  // both terms small. Returns sphere points (x, y, z) with z ≥ 0; each represents
+  // one projective point.
+  function findSingularities(poly) {
+    if (poly.terms.size === 0 || poly.degree() < 1) return [];
+    const px = poly.derivative(0).toFunction();
+    const py = poly.derivative(1).toFunction();
+    const pz = poly.derivative(2).toFunction();
+    const pFn = poly.toFunction();
+    const N = 81; // odd so axis-aligned singularities (e.g. at (0,0)) land on a grid point
+
+    // First pass: typical scales of |p| and ||∇p||² over the hemisphere.
+    let maxP = 0, maxG = 0;
+    for (let i = 0; i < N; i++) {
+      const u = -1 + 2 * i / (N - 1);
+      for (let j = 0; j < N; j++) {
+        const v = -1 + 2 * j / (N - 1);
+        if (u*u + v*v > 1) continue;
+        const w = Math.sqrt(1 - u*u - v*v);
+        const pv = pFn(u, v, w);
+        const gx = px(u, v, w), gy = py(u, v, w), gz = pz(u, v, w);
+        const g2 = gx*gx + gy*gy + gz*gz;
+        if (Math.abs(pv) > maxP) maxP = Math.abs(pv);
+        if (g2 > maxG) maxG = g2;
+      }
+    }
+    if (maxG === 0) return [];
+
+    // Second pass: build normalized score grid.
+    const f = new Array(N);
+    const Pinv = maxP > 0 ? 1 / (maxP * maxP) : 0;
+    const Ginv = 1 / maxG;
+    for (let i = 0; i < N; i++) {
+      f[i] = new Array(N);
+      const u = -1 + 2 * i / (N - 1);
+      for (let j = 0; j < N; j++) {
+        const v = -1 + 2 * j / (N - 1);
+        if (u*u + v*v > 1) { f[i][j] = Infinity; continue; }
+        const w = Math.sqrt(1 - u*u - v*v);
+        const pv = pFn(u, v, w);
+        const gx = px(u, v, w), gy = py(u, v, w), gz = pz(u, v, w);
+        f[i][j] = pv*pv*Pinv + (gx*gx + gy*gy + gz*gz)*Ginv;
+      }
+    }
+
+    // Local minima below threshold are singular point candidates.
+    const candidates = [];
+    const threshold = 1e-3;
+    for (let i = 1; i < N - 1; i++) {
+      for (let j = 1; j < N - 1; j++) {
+        const fij = f[i][j];
+        if (!isFinite(fij) || fij > threshold) continue;
+        let isMin = true;
+        for (let di = -1; di <= 1 && isMin; di++) {
+          for (let dj = -1; dj <= 1 && isMin; dj++) {
+            if (di === 0 && dj === 0) continue;
+            if (f[i + di][j + dj] < fij) isMin = false;
+          }
+        }
+        if (isMin) {
+          // Sub-grid refinement via 1-D parabolic interpolation through the
+          // three samples in u and v separately (vertex of the parabola).
+          const h = 2 / (N - 1);
+          let u = -1 + h * i;
+          let v = -1 + h * j;
+          const fL = f[i-1][j], fR = f[i+1][j], fD = f[i][j-1], fU = f[i][j+1];
+          if (isFinite(fL) && isFinite(fR)) {
+            const denom = fR - 2*fij + fL;
+            if (denom > 1e-15) {
+              const du = -0.5 * h * (fR - fL) / denom;
+              if (Math.abs(du) < h) u += du;
+            }
+          }
+          if (isFinite(fD) && isFinite(fU)) {
+            const denom = fU - 2*fij + fD;
+            if (denom > 1e-15) {
+              const dv = -0.5 * h * (fU - fD) / denom;
+              if (Math.abs(dv) < h) v += dv;
+            }
+          }
+          const w = Math.sqrt(Math.max(0, 1 - u*u - v*v));
+          candidates.push([u, v, w]);
+        }
+      }
+    }
+
+    // Equator pass: singularities on the line at infinity of the z-up frame
+    // (these would be missed by the hemisphere search since z = 0 there).
+    const M = 360;
+    const eq = new Array(M);
+    for (let k = 0; k < M; k++) {
+      const th = Math.PI * k / M; // antipodal points are identified, so θ ∈ [0, π)
+      const x = Math.cos(th), y = Math.sin(th), z = 0;
+      const pv = pFn(x, y, z);
+      const gx = px(x, y, z), gy = py(x, y, z), gz = pz(x, y, z);
+      eq[k] = pv*pv*Pinv + (gx*gx + gy*gy + gz*gz)*Ginv;
+    }
+    for (let k = 0; k < M; k++) {
+      if (eq[k] > threshold) continue;
+      const prev = (k - 1 + M) % M, next = (k + 1) % M;
+      if (eq[k] <= eq[prev] && eq[k] <= eq[next]) {
+        const th = Math.PI * k / M;
+        candidates.push([Math.cos(th), Math.sin(th), 0]);
+      }
+    }
+
+    // Deduplicate: two candidates within tol of each other (or their antipodes)
+    // collapse to one.
+    const tol = 0.06;
+    const out = [];
+    for (const p of candidates) {
+      let dup = false;
+      for (const q of out) {
+        const d1 = (p[0]-q[0])**2 + (p[1]-q[1])**2 + (p[2]-q[2])**2;
+        const d2 = (p[0]+q[0])**2 + (p[1]+q[1])**2 + (p[2]+q[2])**2;
+        if (Math.min(d1, d2) < tol*tol) { dup = true; break; }
+      }
+      if (!dup) out.push(p);
+    }
+    return out;
+  }
+
+  // Parse, homogenize, compile.
+  function processPolynomial(expr, params) {
+    const norm = normalize(expr);
+    if (!/^[0-9xyzabXYZAB+\-*/^.()\s]*$/.test(norm))
+      throw new Error('Polynomial contains invalid characters');
+    const cleaned = norm.toLowerCase();
+    if (!cleaned.trim()) throw new Error('Empty polynomial');
+    const poly = parsePolynomial(cleaned, params);
+    if (poly.terms.size === 0) throw new Error('Polynomial is identically zero');
+    const homogenized = poly.homogenize();
+    return {
+      fn: homogenized.toFunction(),
+      pretty: homogenized.toPretty(),
+      wasHomogenized: !poly.isHomogeneous(),
+      degree: homogenized.degree(),
+      singularities: findSingularities(homogenized)
+    };
+  }
+
+  // =============================================================
+  //   Three discrete views (all in SO(3), continuously SLERPable)
+  //   View i: rotation Q_i takes +z to the chosen pole.
+  //   Disk point (u, v) → 3D point  u·e1 + v·e2 + w·n,  w = √(1−u²−v²)
+  // =============================================================
+  const VIEWS = [
+    { e1:[1,0,0],  e2:[0,1,0],  n:[0,0,1], quat:[1,0,0,0],                                    label:'[0:0:1]' },
+    { e1:[1,0,0],  e2:[0,0,-1], n:[0,1,0], quat:[Math.cos(-Math.PI/4), Math.sin(-Math.PI/4), 0, 0], label:'[0:1:0]' },
+    { e1:[0,0,-1], e2:[0,1,0],  n:[1,0,0], quat:[Math.cos( Math.PI/4), 0, Math.sin( Math.PI/4), 0], label:'[1:0:0]' }
+  ];
+
+  function quatToMatrix(q) {
+    const [w, x, y, z] = q;
+    return [
+      [1 - 2*(y*y + z*z), 2*(x*y - z*w),     2*(x*z + y*w)],
+      [2*(x*y + z*w),     1 - 2*(x*x + z*z), 2*(y*z - x*w)],
+      [2*(x*z - y*w),     2*(y*z + x*w),     1 - 2*(x*x + y*y)]
+    ];
+  }
+  function matrixToBasis(M) {
+    return {
+      e1:[M[0][0], M[1][0], M[2][0]],
+      e2:[M[0][1], M[1][1], M[2][1]],
+      n: [M[0][2], M[1][2], M[2][2]]
+    };
+  }
+  function slerp(q1, q2, t) {
+    let dot = q1[0]*q2[0] + q1[1]*q2[1] + q1[2]*q2[2] + q1[3]*q2[3];
+    let q2c = q2.slice();
+    if (dot < 0) { dot = -dot; q2c = q2c.map(v => -v); }
+    if (dot > 0.9995) {
+      const r = q1.map((v,i) => v + t*(q2c[i] - v));
+      const len = Math.hypot(...r);
+      return r.map(v => v/len);
+    }
+    const th0 = Math.acos(dot);
+    const th  = th0 * t;
+    const s_t  = Math.sin(th);
+    const s_t0 = Math.sin(th0);
+    const a = Math.cos(th) - dot * s_t / s_t0;
+    const b = s_t / s_t0;
+    return q1.map((v,i) => a*v + b*q2c[i]);
+  }
+
+  // =============================================================
+  //   Marching squares
+  //   Cell corners (in (i,j) lattice):
+  //     a = (i,   j)     b = (i+1, j)
+  //     d = (i, j+1)     c = (i+1, j+1)
+  // =============================================================
+  function marchingSquares(grid, N) {
+    const segments = [];
+    for (let i = 0; i < N-1; i++) {
+      const row0 = grid[i], row1 = grid[i+1];
+      for (let j = 0; j < N-1; j++) {
+        const a = row0[j],   b = row1[j];
+        const d = row0[j+1], c = row1[j+1];
+        if (!isFinite(a) || !isFinite(b) || !isFinite(c) || !isFinite(d)) continue;
+        const code = ((a>0)<<3) | ((b>0)<<2) | ((c>0)<<1) | (d>0);
+        if (code === 0 || code === 15) continue;
+        const eAB = () => [i + a/(a-b),   j];
+        const eBC = () => [i + 1,         j + b/(b-c)];
+        const eCD = () => [i + d/(d-c),   j + 1];
+        const eDA = () => [i,             j + a/(a-d)];
+        switch (code) {
+          case 1:  segments.push([...eCD(), ...eDA()]); break;
+          case 2:  segments.push([...eBC(), ...eCD()]); break;
+          case 3:  segments.push([...eBC(), ...eDA()]); break;
+          case 4:  segments.push([...eAB(), ...eBC()]); break;
+          case 5:  segments.push([...eAB(), ...eDA()]);
+                   segments.push([...eBC(), ...eCD()]); break;
+          case 6:  segments.push([...eAB(), ...eCD()]); break;
+          case 7:  segments.push([...eAB(), ...eDA()]); break;
+          case 8:  segments.push([...eAB(), ...eDA()]); break;
+          case 9:  segments.push([...eAB(), ...eCD()]); break;
+          case 10: segments.push([...eAB(), ...eBC()]);
+                   segments.push([...eCD(), ...eDA()]); break;
+          case 11: segments.push([...eAB(), ...eBC()]); break;
+          case 12: segments.push([...eBC(), ...eDA()]); break;
+          case 13: segments.push([...eBC(), ...eCD()]); break;
+          case 14: segments.push([...eCD(), ...eDA()]); break;
+        }
+      }
+    }
+    return segments;
+  }
+
+  // =============================================================
+  //   Rendering
+  // =============================================================
+  function renderDisk(canvas, polyFn, basis, gridN, singularities) {
+    gridN = gridN || 240;
+    singularities = singularities || [];
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W/2, cy = H/2;
+    const R = Math.min(cx, cy) - 10;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Disk paper
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI*2);
+    ctx.fillStyle = '#faf3df';
+    ctx.fill();
+
+    // Faint axes — projections of the world x, y, z axes onto the current
+    // disk plane. The disk-plane direction of world axis e_i is (e1[i], e2[i]);
+    // its in-plane length is √(1 − n[i]²), which collapses to 0 for the pole
+    // axis. In the static views this yields the familiar horizontal + vertical
+    // crosshair; in the animation it rotates with the basis.
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R-0.5, 0, Math.PI*2);
+    ctx.clip();
+    ctx.strokeStyle = '#c2ab85';
+    ctx.lineWidth = 0.6;
+    ctx.setLineDash([3, 5]);
+    ctx.beginPath();
+    for (let k = 0; k < 3; k++) {
+      const dx = basis.e1[k], dy = basis.e2[k];
+      if (dx*dx + dy*dy < 1e-10) continue; // axis perpendicular to the disk
+      ctx.moveTo(cx - dx*R, cy + dy*R);
+      ctx.lineTo(cx + dx*R, cy - dy*R);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // Curve
+    if (polyFn) {
+      const N = gridN;
+      const grid = new Array(N);
+      const e1 = basis.e1, e2 = basis.e2, n = basis.n;
+      // For grid points outside the unit disk we project radially to the equator
+      // (w = 0, |(u,v)| = 1). This keeps every grid corner valid so marching
+      // squares produces continuous curves through the boundary; the canvas clip
+      // then trims the drawn segments back to the disk.
+      for (let i = 0; i < N; i++) {
+        const row = new Array(N);
+        const u = -1 + 2 * i / (N - 1);
+        for (let j = 0; j < N; j++) {
+          const v = -1 + 2 * j / (N - 1);
+          const r2 = u*u + v*v;
+          let ue, ve, we;
+          if (r2 <= 1) {
+            ue = u; ve = v; we = Math.sqrt(1 - r2);
+          } else {
+            const r = Math.sqrt(r2);
+            ue = u / r; ve = v / r; we = 0;
+          }
+          const x = ue*e1[0] + ve*e2[0] + we*n[0];
+          const y = ue*e1[1] + ve*e2[1] + we*n[1];
+          const z = ue*e1[2] + ve*e2[2] + we*n[2];
+          let val;
+          try { val = polyFn(x, y, z); } catch(_) { val = NaN; }
+          row[j] = (typeof val === 'number' && isFinite(val)) ? val : NaN;
+        }
+        grid[i] = row;
+      }
+      const segments = marchingSquares(grid, N);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, R-0.5, 0, Math.PI*2);
+      ctx.clip();
+      ctx.strokeStyle = '#1a1209';
+      ctx.lineWidth = 1.35;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      const s = 2 / (N - 1);
+      for (let k = 0, L = segments.length; k < L; k++) {
+        const seg = segments[k];
+        const u1 = -1 + s * seg[0], v1 = -1 + s * seg[1];
+        const u2 = -1 + s * seg[2], v2 = -1 + s * seg[3];
+        ctx.moveTo(cx + u1 * R, cy - v1 * R);
+        ctx.lineTo(cx + u2 * R, cy - v2 * R);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Singularity markers (small open circles at points where p = ∇p = 0).
+    // For points within the open disk we draw a single marker; for points on
+    // or near the boundary circle we draw the antipode too, since antipodal
+    // boundary points are identified in the disk model.
+    if (singularities.length > 0) {
+      ctx.strokeStyle = '#9a3a1a';
+      ctx.lineWidth = 1.5;
+      const en = basis.e1, em = basis.e2, nn = basis.n;
+      for (const P of singularities) {
+        const s = P[0]*nn[0] + P[1]*nn[1] + P[2]*nn[2];
+        const sign = s < 0 ? -1 : 1;
+        const px = sign * P[0], py = sign * P[1], pz = sign * P[2];
+        const u = px*en[0] + py*en[1] + pz*en[2];
+        const v = px*em[0] + py*em[1] + pz*em[2];
+        const r2 = u*u + v*v;
+        if (r2 > 1.02) continue;
+        ctx.beginPath();
+        ctx.arc(cx + u * R, cy - v * R, 4.5, 0, Math.PI*2);
+        ctx.stroke();
+        if (r2 > 0.97) { // on or near the boundary — draw the antipodal twin
+          ctx.beginPath();
+          ctx.arc(cx - u * R, cy + v * R, 4.5, 0, Math.PI*2);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Disk boundary
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI*2);
+    ctx.strokeStyle = '#3a2e1e';
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+  }
+
+  // =============================================================
+  //   Catalogue of curves. `expr` may use parameters a, b which are
+  //   substituted in from the sliders (see `params`).
+  // =============================================================
+  const CURVES = [
+    { display: 'Real line — x + y + z',
+      expr: 'x + y + z' },
+    { display: 'Three lines — xyz',
+      expr: 'x*y*z' },
+    { display: 'Conic — ax² + by² − z²',
+      expr: 'a*x^2 + b*y^2 - z^2',
+      params: { a: { def: 1, min: -2, max: 2 }, b: { def: 1, min: -2, max: 2 } } },
+    { display: 'Pencil of conics — x² + y² − az²',
+      expr: 'x^2 + y^2 - a*z^2',
+      params: { a: { def: 1, min: -1, max: 2 } } },
+    { display: 'Degenerate conic — xy − az²',
+      expr: 'x*y - a*z^2',
+      params: { a: { def: 0, min: -1, max: 1 } } },
+    { display: 'Cuspidal cubic — y²z − x³',
+      expr: 'y^2*z - x^3' },
+    { display: 'Nodal cubic — y²z − x³ − ax²z',
+      expr: 'y^2*z - x^3 - a*x^2*z',
+      params: { a: { def: 1, min: -2, max: 2 } } },
+    { display: 'Fermat cubic — x³ + y³ + z³',
+      expr: 'x^3 + y^3 + z^3' },
+    { display: 'Folium of Descartes — x³ + y³ − 3axyz',
+      expr: 'x^3 + y^3 - 3*a*x*y*z',
+      params: { a: { def: 1, min: -2, max: 2 } } },
+    { display: 'Witch of Agnesi — x²y + a²yz² − a³z³',
+      expr: 'x^2*y + a^2*y*z^2 - a^3*z^3',
+      params: { a: { def: 1, min: 0.3, max: 2 } } },
+    { display: 'Weierstrass curve — y²z − 4x³ + axz² + bz³',
+      expr: 'y^2*z - 4*x^3 + a*x*z^2 + b*z^3',
+      params: { a: { def: 1, min: -3, max: 3 }, b: { def: 1, min: -3, max: 3 } } },
+    { display: 'Klein quartic — x³y + y³z + z³x',
+      expr: 'x^3*y + y^3*z + z^3*x' },
+    { display: 'Fermat quartic — x⁴ + y⁴ − z⁴',
+      expr: 'x^4 + y^4 - z^4' },
+    { display: 'Lemniscate — (x²+y²)² − az²(x²−y²)',
+      expr: '(x^2 + y^2)^2 - a*z^2*(x^2 - y^2)',
+      params: { a: { def: 1, min: 0.3, max: 2.5 } } },
+    { display: 'Quartic (4 ovals) — x⁴+y⁴+z⁴ − a(x²y²+y²z²+x²z²)',
+      expr: 'x^4 + y^4 + z^4 - a*(x^2*y^2 + y^2*z^2 + x^2*z^2)',
+      params: { a: { def: 2, min: 0, max: 3 } } },
+    { display: 'Fermat quintic — x⁵ + y⁵ + z⁵',
+      expr: 'x^5 + y^5 + z^5' }
+  ];
+  const DEFAULT_CURVE_INDEX = 2; // Conic
+
+  // =============================================================
+  //   Application
+  // =============================================================
+  const canvases = [
+    document.getElementById('view1'),
+    document.getElementById('view2'),
+    document.getElementById('view3')
+  ];
+  const animCanvas    = document.getElementById('anim');
+  const polySelect    = document.getElementById('polynomial');
+  const customInput   = document.getElementById('customPoly');
+  const renderBtn     = document.getElementById('render');
+  const animateBtn    = document.getElementById('animate');
+  const animStatus    = document.getElementById('animStatus');
+  const eqDisplay     = document.getElementById('eqDisplay');
+  const errorDisplay  = document.getElementById('error');
+  const aSlider       = document.getElementById('paramA');
+  const bSlider       = document.getElementById('paramB');
+  const aValDisplay   = document.getElementById('paramAVal');
+  const bValDisplay   = document.getElementById('paramBVal');
+  const aControl      = document.getElementById('aControl');
+  const bControl      = document.getElementById('bControl');
+
+  let currentPoly         = null;
+  let currentSingularities = [];
+  let animating           = true;
+  let animStart           = null;
+  let lastAnimT           = 0;
+  let paramA              = 1.0;
+  let paramB              = 1.0;
+
+  // ---- Populate the dropdown from CURVES ----
+  CURVES.forEach((c, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = c.display;
+    polySelect.appendChild(opt);
+  });
+  polySelect.value = String(DEFAULT_CURVE_INDEX);
+
+  function currentExpr() {
+    const custom = customInput.value.trim();
+    if (custom) return custom;
+    const idx = parseInt(polySelect.value);
+    return (CURVES[idx] || CURVES[0]).expr;
+  }
+  function currentParams() {
+    return { a: paramA, b: paramB };
+  }
+  function exprUses(expr, name) {
+    // 'a' and 'b' are 1-character parameters; in our grammar every occurrence
+    // of the bare letter is a parameter reference (no multi-letter identifiers).
+    return new RegExp(name, 'i').test(normalize(expr));
+  }
+  function updateSliderActivity(expr) {
+    aControl.classList.toggle('inactive', !exprUses(expr, 'a'));
+    bControl.classList.toggle('inactive', !exprUses(expr, 'b'));
+  }
+  function setSliderTo(slider, valDisplay, value, range) {
+    if (range) {
+      slider.min  = range.min;
+      slider.max  = range.max;
+      slider.step = range.step !== undefined ? range.step : 0.05;
+    }
+    slider.value = value;
+    valDisplay.textContent = (+value).toFixed(2);
+  }
+  function applyCurveDefaults(curve) {
+    // Reset slider ranges and values to the curve's declared parameters.
+    if (curve.params && curve.params.a) {
+      paramA = curve.params.a.def;
+      setSliderTo(aSlider, aValDisplay, paramA, curve.params.a);
+    }
+    if (curve.params && curve.params.b) {
+      paramB = curve.params.b.def;
+      setSliderTo(bSlider, bValDisplay, paramB, curve.params.b);
+    }
+  }
+
+  function renderAll() {
+    const expr = currentExpr();
+    updateSliderActivity(expr);
+    errorDisplay.textContent = '';
+    errorDisplay.style.color = '';
+    errorDisplay.style.fontStyle = '';
+    let result;
+    try {
+      result = processPolynomial(expr, currentParams());
+    } catch (e) {
+      errorDisplay.textContent = 'Error: ' + e.message;
+      return;
+    }
+    currentPoly = result.fn;
+    currentSingularities = result.singularities;
+    eqDisplay.textContent = result.pretty;
+    if (result.wasHomogenized) {
+      errorDisplay.textContent = '(input was not homogeneous — homogenized with z to degree ' + result.degree + ')';
+      errorDisplay.style.color = '#6a5a3e';
+      errorDisplay.style.fontStyle = 'italic';
+    }
+    for (let i = 0; i < 3; i++) {
+      renderDisk(canvases[i], currentPoly, VIEWS[i], 260, currentSingularities);
+    }
+    renderAnim(lastAnimT);
+  }
+
+  let currentAnimBasis = null;
+  function renderAnim(t) {
+    lastAnimT = t;
+    if (!currentPoly) return;
+    const segIdx  = Math.floor(t) % 3;
+    const nextIdx = (segIdx + 1) % 3;
+    const s = t - Math.floor(t);
+    const sEased = 0.5 - 0.5 * Math.cos(Math.PI * s);
+    const q = slerp(VIEWS[segIdx].quat, VIEWS[nextIdx].quat, sEased);
+    const M = quatToMatrix(q);
+    const basis = matrixToBasis(M);
+    currentAnimBasis = basis;
+    renderDisk(animCanvas, currentPoly, basis, 210, currentSingularities);
+    animStatus.textContent = 'centered at ' + formatCenter(basis.n);
+  }
+
+  function animLoop(timestamp) {
+    if (!animating) return;
+    if (animStart === null) animStart = timestamp - lastAnimT * 1000 * 2.6;
+    const elapsed = (timestamp - animStart) / 1000;
+    const duration = 2.6;
+    const t = (elapsed / duration) % 3;
+    renderAnim(t);
+    requestAnimationFrame(animLoop);
+  }
+
+  // ---- Event wiring ----
+  renderBtn.addEventListener('click', renderAll);
+  customInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') renderAll();
+  });
+  customInput.addEventListener('input', () => {
+    const text = customInput.value.trim();
+    updateSliderActivity(text || currentExpr());
+    if (!text) return;
+    try {
+      const result = processPolynomial(text, currentParams());
+      eqDisplay.textContent = result.pretty;
+    } catch (_) {
+      eqDisplay.textContent = normalize(text)
+        .replace(/\^2/g,'²').replace(/\^3/g,'³').replace(/\^4/g,'⁴')
+        .replace(/\^5/g,'⁵').replace(/\^6/g,'⁶').replace(/\^7/g,'⁷')
+        .replace(/\^8/g,'⁸').replace(/\^9/g,'⁹')
+        .replace(/\*/g,'').replace(/-/g,'−') + ' = 0';
+    }
+  });
+  polySelect.addEventListener('change', () => {
+    customInput.value = '';
+    const idx = parseInt(polySelect.value);
+    applyCurveDefaults(CURVES[idx]);
+    renderAll();
+  });
+  // Coalesce rapid slider updates to one render per animation frame.
+  let renderPending = false;
+  function scheduleRender() {
+    if (renderPending) return;
+    renderPending = true;
+    requestAnimationFrame(() => { renderPending = false; renderAll(); });
+  }
+  aSlider.addEventListener('input', () => {
+    paramA = parseFloat(aSlider.value);
+    aValDisplay.textContent = paramA.toFixed(2);
+    scheduleRender();
+  });
+  bSlider.addEventListener('input', () => {
+    paramB = parseFloat(bSlider.value);
+    bValDisplay.textContent = paramB.toFixed(2);
+    scheduleRender();
+  });
+  // Format the projective point at the disk's center for display.
+  function formatCenter(n) {
+    const fmt = (x) => {
+      if (Math.abs(x) < 0.005)     return '0';
+      if (Math.abs(x - 1) < 0.005) return '1';
+      if (Math.abs(x + 1) < 0.005) return '−1';
+      return x.toFixed(2).replace('-', '−');
+    };
+    return `[ ${fmt(n[0])} : ${fmt(n[1])} : ${fmt(n[2])} ]`;
+  }
+
+  animateBtn.addEventListener('click', () => {
+    if (animating) {
+      animating = false;
+      animateBtn.textContent = 'Animate';
+      // status stays as last rendered — already shows the center where we paused
+    } else {
+      animating = true;
+      animStart = null;
+      animateBtn.textContent = 'Pause';
+      requestAnimationFrame(animLoop);
+    }
+  });
+
+  // ---- Hover-to-query: map cursor position on a disk to its projective coordinate ----
+  const hoverEls = [
+    document.getElementById('hover1'),
+    document.getElementById('hover2'),
+    document.getElementById('hover3')
+  ];
+  const hoverAnimEl = document.getElementById('hoverAnim');
+
+  function diskToProjective(canvas, e, basis) {
+    const rect = canvas.getBoundingClientRect();
+    const cx_css = rect.width / 2;
+    const cy_css = rect.height / 2;
+    // Disk radius in the canvas's internal pixel space matches renderDisk's:
+    // R = min(W, H)/2 - 10. Scale to CSS px via the canvas-to-rect ratio.
+    const R_css = (Math.min(canvas.width, canvas.height) / 2 - 10) * (rect.width / canvas.width);
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    const u = (px - cx_css) / R_css;
+    const v = (cy_css - py) / R_css; // flip so positive v is up
+    if (u*u + v*v > 1) return null;
+    const w = Math.sqrt(1 - u*u - v*v);
+    return [
+      u*basis.e1[0] + v*basis.e2[0] + w*basis.n[0],
+      u*basis.e1[1] + v*basis.e2[1] + w*basis.n[1],
+      u*basis.e1[2] + v*basis.e2[2] + w*basis.n[2]
+    ];
+  }
+  canvases.forEach((c, i) => {
+    c.addEventListener('mousemove', (e) => {
+      const P = diskToProjective(c, e, VIEWS[i]);
+      hoverEls[i].textContent = P ? formatCenter(P) : ' ';
+    });
+    c.addEventListener('mouseleave', () => { hoverEls[i].innerHTML = '&nbsp;'; });
+  });
+  animCanvas.addEventListener('mousemove', (e) => {
+    if (!currentAnimBasis) return;
+    const P = diskToProjective(animCanvas, e, currentAnimBasis);
+    hoverAnimEl.textContent = P ? formatCenter(P) : ' ';
+  });
+  animCanvas.addEventListener('mouseleave', () => { hoverAnimEl.innerHTML = '&nbsp;'; });
+
+  // ---- Initial setup ----
+  applyCurveDefaults(CURVES[DEFAULT_CURVE_INDEX]);
+  renderAll();
+  requestAnimationFrame(animLoop);
+</script>
+</body>
+</html>
