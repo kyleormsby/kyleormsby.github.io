@@ -375,17 +375,31 @@ function buildSkeletonGeometry(cache) {
 //  only updates a uniform — no buffer rebuilds.
 // ============================================================
 
-function makeLineMaterial(opacity, linewidth) {
+function makeLineMaterial(opacity, linewidth, isFlat) {
+  // In 2D mode the simplex is coplanar, which means many sub-edges on
+  // the symmetry axes through the original vertices are *exactly*
+  // coincident in world space.  Rendered as overlapping translucent
+  // quads, LineMaterial's NDC-space expansion hits a precision quirk
+  // for the perfectly-axis-aligned case (ndcStart.x == ndcEnd.x
+  // exactly) and the entire stack of overlapping segments can fail to
+  // light up any pixels — which manifests as the vertical median
+  // through v0 vanishing at explode=0.  Once explode > 0 the pieces
+  // displace off the axis and the issue goes away.
+  //
+  // Workaround: in 2D, render opaque with depth writes on.  Last
+  // drawn coincident segment wins (no blending interaction), and the
+  // line is unconditionally visible.  3D keeps its translucent
+  // layered look since occlusion would hide interior structure.
   const mat = new LineMaterial({
     color: 0xffffff,
     linewidth,           // pixel-space width
     vertexColors: true,
-    transparent: true,
-    opacity,
+    transparent: !isFlat,
+    opacity: isFlat ? 1.0 : opacity,
     worldUnits: false,
     dashed: false,
     fog: true,
-    depthWrite: false,
+    depthWrite: isFlat,
   });
   mat.resolution.set(window.innerWidth, window.innerHeight);
 
@@ -487,9 +501,11 @@ function getCache(mode, n) {
 
 // Tuned by hand for visual density: thicker strokes at low n where
 // there are few edges, thinner as the subdivision packs the volume.
-const LINE_WIDTHS = [2.6, 2.1, 1.7, 1.3, 0.95];
-const OPACITIES_2D = [0.95, 0.95, 0.92, 0.88, 0.82];
-const OPACITIES_3D = [0.95, 0.90, 0.75, 0.55, 0.42];
+// 2D widths run a bit heavier than 3D since the planar case never has
+// to share screen space with occluded interior lines.
+const LINE_WIDTHS_2D = [3.0, 2.4, 1.9, 1.5, 1.2];
+const LINE_WIDTHS_3D = [2.6, 2.1, 1.7, 1.3, 0.95];
+const OPACITIES_3D   = [0.95, 0.90, 0.75, 0.55, 0.42];
 
 function rebuildScene() {
   if (currentObject) {
@@ -500,12 +516,13 @@ function rebuildScene() {
     currentMaterial = null;
   }
 
+  const isFlat = state.mode === 2;
   const cached = getCache(state.mode, state.n);
-  const opacity   = (state.mode === 2 ? OPACITIES_2D : OPACITIES_3D)[state.n];
-  const linewidth = LINE_WIDTHS[state.n];
+  const opacity   = isFlat ? 1.0 : OPACITIES_3D[state.n];
+  const linewidth = (isFlat ? LINE_WIDTHS_2D : LINE_WIDTHS_3D)[state.n];
 
   const geom = buildSkeletonGeometry(cached);
-  currentMaterial = makeLineMaterial(opacity, linewidth);
+  currentMaterial = makeLineMaterial(opacity, linewidth, isFlat);
   currentObject = new LineSegments2(geom, currentMaterial);
   root.add(currentObject);
 
