@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Barycentric Subdivision</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body {
+    margin: 0; height: 100%;
+    background: radial-gradient(ellipse at center, #13111e 0%, #07060c 70%);
+    color: #eee;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  #canvas-container { position: fixed; inset: 0; }
+
+  #panel {
+    position: fixed; top: 16px; left: 16px;
+    background: rgba(15, 15, 30, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 14px;
+    padding: 18px 20px 16px;
+    width: 300px;
+    z-index: 10;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  }
+  h1 {
+    font-size: 13px; font-weight: 600; margin: 0 0 2px 0;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: #e8e2ff;
+  }
+  .sub {
+    font-size: 11px; color: #888;
+    margin: 0 0 14px 0;
+  }
+
+  .seg-group {
+    display: flex; gap: 4px;
+    background: rgba(0,0,0,0.30);
+    padding: 3px; border-radius: 8px;
+    margin: 8px 0;
+  }
+  .seg-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #b8b8d0;
+    font: inherit; font-size: 12px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .seg-btn:hover { color: #fff; }
+  .seg-btn.active {
+    background: linear-gradient(180deg, rgba(183,144,255,0.35), rgba(183,144,255,0.20));
+    color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+  }
+
+  .control-row {
+    margin: 12px 0 4px 0;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ctrl-label {
+    font-size: 11px; color: #888;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    min-width: 54px;
+  }
+  input[type=range] {
+    flex: 1;
+    accent-color: #b790ff;
+    height: 18px;
+  }
+  .value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600; color: #d4b9ff;
+    min-width: 36px; text-align: right;
+    font-size: 13px;
+  }
+
+  .checkbox-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 10px; font-size: 12px; color: #b8b8d0;
+  }
+  .checkbox-row input { accent-color: #b790ff; }
+
+  .stats {
+    font-size: 11px; color: #888;
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    line-height: 1.7;
+    font-variant-numeric: tabular-nums;
+  }
+  .stats b { color: #d4b9ff; font-weight: 600; }
+
+  #loading {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.78);
+    padding: 14px 24px; border-radius: 10px;
+    font-size: 13px; display: none; z-index: 20;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .hint {
+    position: fixed; bottom: 14px; right: 18px;
+    font-size: 11px; color: #555;
+    letter-spacing: 0.03em;
+  }
+</style>
+</head>
+<body>
+<div id="canvas-container"></div>
+
+<div id="panel">
+  <h1>Barycentric Subdivision</h1>
+  <p class="sub">Iterated subdivision of an <i>n</i>-simplex</p>
+
+  <div class="seg-group" id="mode-group">
+    <button class="seg-btn" data-mode="2">2D · Triangle</button>
+    <button class="seg-btn active" data-mode="3">3D · Tetrahedron</button>
+  </div>
+
+  <div class="control-row">
+    <span class="ctrl-label">n</span>
+    <input type="range" id="n-slider" min="0" max="4" value="0" step="1">
+    <span class="value" id="n-display">0</span>
+  </div>
+
+  <div class="control-row">
+    <span class="ctrl-label">explode</span>
+    <input type="range" id="explode-slider" min="0" max="500" value="0" step="1">
+    <span class="value" id="explode-display">0.00</span>
+  </div>
+
+  <div class="checkbox-row">
+    <input type="checkbox" id="rotate-checkbox">
+    <label for="rotate-checkbox">Auto-rotate</label>
+  </div>
+
+  <div class="stats" id="stats"></div>
+</div>
+
+<div id="loading">Computing subdivision…</div>
+<div class="hint">drag to rotate · scroll to zoom</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls }         from 'three/addons/controls/OrbitControls.js';
+import { LineSegmentsGeometry }  from 'three/addons/lines/LineSegmentsGeometry.js';
+import { LineSegments2 }         from 'three/addons/lines/LineSegments2.js';
+import { LineMaterial }          from 'three/addons/lines/LineMaterial.js';
+import { EffectComposer }        from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass }            from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass }       from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+// ============================================================
+//  Barycentric subdivision
+// ============================================================
+//
+// Given an (m)-simplex with vertices v_0, ..., v_m, its barycentric
+// subdivision has top-dimensional simplices in bijection with the
+// permutations (a_0, a_1, ..., a_m) of (0, ..., m).  For each
+// permutation, the corresponding sub-simplex has vertices:
+//
+//   w_k = (v_{a_0} + v_{a_1} + ... + v_{a_k}) / (k+1),   k = 0,...,m
+//
+// That is, w_0 is a vertex, w_1 a midpoint of an edge, w_2 the centroid
+// of a triangle face containing that edge, and so on.  Iterating n
+// times produces (m+1)!^n sub-simplices.
+
+function genPerms(items) {
+  const out = [];
+  const arr = items.slice();
+  function rec(k) {
+    if (k === arr.length) { out.push(arr.slice()); return; }
+    for (let i = k; i < arr.length; i++) {
+      [arr[i], arr[k]] = [arr[k], arr[i]];
+      rec(k + 1);
+      [arr[i], arr[k]] = [arr[k], arr[i]];
+    }
+  }
+  rec(0);
+  return out;
+}
+const PERMS_2D = genPerms([0,1,2]);    //  6 permutations
+const PERMS_3D = genPerms([0,1,2,3]);  // 24 permutations
+
+// Initial 2-simplex (equilateral triangle in the xy-plane, radius 1.6).
+const R2 = 1.6;
+const INITIAL_2D = [
+  [R2 * Math.cos(Math.PI/2),                 R2 * Math.sin(Math.PI/2),                 0],
+  [R2 * Math.cos(Math.PI/2 + 2*Math.PI/3),   R2 * Math.sin(Math.PI/2 + 2*Math.PI/3),   0],
+  [R2 * Math.cos(Math.PI/2 + 4*Math.PI/3),   R2 * Math.sin(Math.PI/2 + 4*Math.PI/3),   0]
+];
+
+// Initial 3-simplex (regular tetrahedron, vertices on cube corners).
+const INITIAL_3D = [
+  [ 1,  1,  1],
+  [ 1, -1, -1],
+  [-1,  1, -1],
+  [-1, -1,  1]
+];
+
+// Topology within a single sub-simplex.
+const EDGES_2D = [[0,1],[1,2],[2,0]];
+const EDGES_3D = [[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]];
+
+// Compute the n-th barycentric subdivision and pack into flat arrays.
+//
+//   piecesArr:    Float32Array of length numPieces * (m+1) * 3
+//                 (m+1 vertices per piece, 3 coords each)
+//   centroidsArr: Float32Array of length numPieces * 3
+//                 (centroid of each piece — used both as the explode
+//                  direction and as the per-piece color seed)
+function computePieces(mode, n) {
+  const numVerts = mode + 1;
+  const perms = mode === 2 ? PERMS_2D : PERMS_3D;
+  const initial = mode === 2 ? INITIAL_2D : INITIAL_3D;
+  const numPieces = Math.pow(perms.length, n);
+
+  const piecesArr    = new Float32Array(numPieces * numVerts * 3);
+  const centroidsArr = new Float32Array(numPieces * 3);
+
+  let pieceIdx = 0;
+
+  function recurse(simp, depth) {
+    if (depth === n) {
+      let cx = 0, cy = 0, cz = 0;
+      for (let v = 0; v < numVerts; v++) {
+        const sv = simp[v];
+        const off = (pieceIdx * numVerts + v) * 3;
+        piecesArr[off]     = sv[0];
+        piecesArr[off + 1] = sv[1];
+        piecesArr[off + 2] = sv[2];
+        cx += sv[0]; cy += sv[1]; cz += sv[2];
+      }
+      centroidsArr[pieceIdx * 3]     = cx / numVerts;
+      centroidsArr[pieceIdx * 3 + 1] = cy / numVerts;
+      centroidsArr[pieceIdx * 3 + 2] = cz / numVerts;
+      pieceIdx++;
+      return;
+    }
+    for (let p = 0; p < perms.length; p++) {
+      const perm = perms[p];
+      const child = new Array(numVerts);
+      for (let k = 0; k < numVerts; k++) {
+        let sx = 0, sy = 0, sz = 0;
+        for (let m = 0; m <= k; m++) {
+          const vp = simp[perm[m]];
+          sx += vp[0]; sy += vp[1]; sz += vp[2];
+        }
+        const d = k + 1;
+        child[k] = [sx/d, sy/d, sz/d];
+      }
+      recurse(child, depth + 1);
+    }
+  }
+
+  recurse(initial, 0);
+  return { piecesArr, centroidsArr, numPieces, numVerts, mode };
+}
+
+// ============================================================
+//  Coloring
+// ============================================================
+
+function hslToRgb(h, s, l) {
+  if (s === 0) return [l, l, l];
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const f = (t) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1/6) return p + (q - p) * 6 * t;
+    if (t < 1/2) return q;
+    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
+  return [f(h + 1/3), f(h), f(h - 1/3)];
+}
+
+// Per-piece color based on centroid position. Adapts to dimension.
+function pieceColor(cx, cy, cz, mode) {
+  if (mode === 2) {
+    const angle = Math.atan2(cy, cx);
+    const h = (angle / (2*Math.PI) + 1.25) % 1;
+    const dist = Math.sqrt(cx*cx + cy*cy);
+    const l = 0.42 + 0.22 * Math.min(dist / R2, 1);
+    return hslToRgb(h, 0.62, l);
+  } else {
+    const nx = cx, ny = cy, nz = cz; // already in [-1, 1]
+    return [
+      Math.max(0.18, Math.min(1.0, 0.55 + 0.45 * nx)),
+      Math.max(0.18, Math.min(1.0, 0.55 + 0.45 * ny)),
+      Math.max(0.18, Math.min(1.0, 0.55 + 0.45 * nz))
+    ];
+  }
+}
+
+// ============================================================
+//  Geometry construction
+// ============================================================
+
+// 1-skeleton geometry, packed for LineSegments2.
+//
+// LineSegmentsGeometry stores per-segment data as instance attributes —
+// each "instance" is a screen-space quad expanded around one edge.
+// We pass the piece's centroid as an extra instance attribute so the
+// explode displacement can be done in the vertex shader (free uniform
+// updates on the slider).
+function buildSkeletonGeometry(cache) {
+  const { piecesArr, centroidsArr, numPieces, numVerts, mode } = cache;
+  const edges = mode === 2 ? EDGES_2D : EDGES_3D;
+  const edgesPerPiece = edges.length;
+  const numEdges = numPieces * edgesPerPiece;
+
+  // setPositions/setColors expect a flat array where each pair of
+  // (x,y,z) triplets forms one segment's two endpoints.
+  const positionsFlat = new Float32Array(numEdges * 6);
+  const colorsFlat    = new Float32Array(numEdges * 6);
+  // One centroid per segment (both endpoints share it).
+  const centroidsFlat = new Float32Array(numEdges * 3);
+
+  let oi = 0, oc = 0;
+  for (let p = 0; p < numPieces; p++) {
+    const cx = centroidsArr[p*3], cy = centroidsArr[p*3+1], cz = centroidsArr[p*3+2];
+    const col = pieceColor(cx, cy, cz, mode);
+    for (let e = 0; e < edgesPerPiece; e++) {
+      const [i, j] = edges[e];
+      const bi = (p * numVerts + i) * 3;
+      const bj = (p * numVerts + j) * 3;
+      positionsFlat[oi]     = piecesArr[bi];
+      positionsFlat[oi + 1] = piecesArr[bi + 1];
+      positionsFlat[oi + 2] = piecesArr[bi + 2];
+      positionsFlat[oi + 3] = piecesArr[bj];
+      positionsFlat[oi + 4] = piecesArr[bj + 1];
+      positionsFlat[oi + 5] = piecesArr[bj + 2];
+      colorsFlat[oi]     = col[0]; colorsFlat[oi + 1] = col[1]; colorsFlat[oi + 2] = col[2];
+      colorsFlat[oi + 3] = col[0]; colorsFlat[oi + 4] = col[1]; colorsFlat[oi + 5] = col[2];
+      centroidsFlat[oc]     = cx;
+      centroidsFlat[oc + 1] = cy;
+      centroidsFlat[oc + 2] = cz;
+      oi += 6;
+      oc += 3;
+    }
+  }
+
+  const geom = new LineSegmentsGeometry();
+  geom.setPositions(positionsFlat);
+  geom.setColors(colorsFlat);
+  geom.setAttribute('instanceCentroid',
+    new THREE.InstancedBufferAttribute(centroidsFlat, 3));
+  return geom;
+}
+
+// ============================================================
+//  Material factory
+//
+//  Built on Three.js LineMaterial (instanced thick lines, antialiased
+//  in screen space).  We splice the explode displacement into its
+//  built-in vertex shader via onBeforeCompile so dragging the slider
+//  only updates a uniform — no buffer rebuilds.
+// ============================================================
+
+function makeLineMaterial(opacity, linewidth) {
+  const mat = new LineMaterial({
+    color: 0xffffff,
+    linewidth,           // pixel-space width
+    vertexColors: true,
+    transparent: true,
+    opacity,
+    worldUnits: false,
+    dashed: false,
+    fog: true,
+    depthWrite: false,
+  });
+  mat.resolution.set(window.innerWidth, window.innerHeight);
+
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uExplode = { value: state.explode };
+    mat.userData.shader = shader;
+
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        '#include <common>',
+        '#include <common>\nuniform float uExplode;\nattribute vec3 instanceCentroid;'
+      )
+      .replace(
+        'vec4 start = modelViewMatrix * vec4( instanceStart, 1.0 );',
+        'vec4 start = modelViewMatrix * vec4( instanceStart + uExplode * instanceCentroid, 1.0 );'
+      )
+      .replace(
+        'vec4 end = modelViewMatrix * vec4( instanceEnd, 1.0 );',
+        'vec4 end = modelViewMatrix * vec4( instanceEnd + uExplode * instanceCentroid, 1.0 );'
+      );
+  };
+
+  return mat;
+}
+
+// Radial vignette background painted into a CanvasTexture.  At non-1:1
+// aspect ratios the gradient becomes slightly elliptical, but the
+// soft-edge feel still reads as a vignette.
+function makeBgTexture() {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 1024;
+  const ctx = c.getContext('2d');
+  const grd = ctx.createRadialGradient(512, 512, 60, 512, 512, 700);
+  grd.addColorStop(0.0, '#1d1a2c');
+  grd.addColorStop(0.45, '#13111e');
+  grd.addColorStop(1.0, '#07060c');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, 1024, 1024);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// ============================================================
+//  State + UI
+// ============================================================
+
+const state = {
+  mode: 3,
+  n: 0,
+  explode: 0,
+  autoRotate: false,
+};
+
+const container = document.getElementById('canvas-container');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+container.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = makeBgTexture();
+scene.fog = new THREE.FogExp2(0x07060c, 0.06);
+
+const camera = new THREE.PerspectiveCamera(42, window.innerWidth/window.innerHeight, 0.01, 200);
+camera.position.set(5.5, 4.0, 6.0);
+camera.lookAt(0, 0, 0);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.rotateSpeed = 0.85;
+controls.minDistance = 0.8;
+controls.maxDistance = 60;
+
+const root = new THREE.Group();
+scene.add(root);
+
+// --- post-processing -----------------------------------------------
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloomPass = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  0.75,  // strength
+  0.80,  // radius — soft halo
+  0.18   // threshold — keeps the dark vignette from blooming
+);
+composer.addPass(bloomPass);
+
+let currentObject = null;
+let currentMaterial = null;
+
+const cache = new Map();
+function getCache(mode, n) {
+  const key = mode + '-' + n;
+  if (!cache.has(key)) cache.set(key, computePieces(mode, n));
+  return cache.get(key);
+}
+
+// Tuned by hand for visual density: thicker strokes at low n where
+// there are few edges, thinner as the subdivision packs the volume.
+const LINE_WIDTHS = [2.6, 2.1, 1.7, 1.3, 0.95];
+const OPACITIES_2D = [0.95, 0.95, 0.92, 0.88, 0.82];
+const OPACITIES_3D = [0.95, 0.90, 0.75, 0.55, 0.42];
+
+function rebuildScene() {
+  if (currentObject) {
+    root.remove(currentObject);
+    currentObject.geometry.dispose();
+    currentMaterial.dispose();
+    currentObject = null;
+    currentMaterial = null;
+  }
+
+  const cached = getCache(state.mode, state.n);
+  const opacity   = (state.mode === 2 ? OPACITIES_2D : OPACITIES_3D)[state.n];
+  const linewidth = LINE_WIDTHS[state.n];
+
+  const geom = buildSkeletonGeometry(cached);
+  currentMaterial = makeLineMaterial(opacity, linewidth);
+  currentObject = new LineSegments2(geom, currentMaterial);
+  root.add(currentObject);
+
+  refreshStats(cached);
+}
+
+function refreshStats(cached) {
+  const { numPieces, mode } = cached;
+  const piecesLabel = mode === 2 ? 'sub-triangles' : 'sub-tetrahedra';
+  const epp = mode === 2 ? 3 : 6;
+  const elemCount = numPieces * epp;
+  document.getElementById('stats').innerHTML =
+    piecesLabel + ': <b>' + numPieces.toLocaleString() + '</b><br>' +
+    'edges (drawn): <b>' + elemCount.toLocaleString() + '</b>';
+}
+
+function setExplode(v) {
+  state.explode = v;
+  // The uniform lives on the shader object that onBeforeCompile gave us;
+  // updating it there propagates per-frame without recompiling.
+  if (currentMaterial && currentMaterial.userData.shader) {
+    currentMaterial.userData.shader.uniforms.uExplode.value = v;
+  }
+}
+
+// ---------------- UI wiring ----------------
+
+const nSlider = document.getElementById('n-slider');
+const nDisplay = document.getElementById('n-display');
+const explodeSlider = document.getElementById('explode-slider');
+const explodeDisplay = document.getElementById('explode-display');
+const rotateCheckbox = document.getElementById('rotate-checkbox');
+const loadingDiv = document.getElementById('loading');
+
+function refresh() {
+  const cacheKey = state.mode + '-' + state.n;
+  const isHeavy = state.n >= 3 && !cache.has(cacheKey);
+  if (isHeavy) loadingDiv.style.display = 'block';
+  // Two RAFs so the loader has a chance to paint before we block.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    rebuildScene();
+    loadingDiv.style.display = 'none';
+  }));
+}
+
+nSlider.addEventListener('input', () => {
+  state.n = parseInt(nSlider.value, 10);
+  nDisplay.textContent = state.n;
+  refresh();
+});
+
+explodeSlider.addEventListener('input', () => {
+  const v = parseFloat(explodeSlider.value) / 100;
+  explodeDisplay.textContent = v.toFixed(2);
+  setExplode(v);
+});
+
+function applyDefaultView() {
+  // Snap the camera onto the simplex's natural "face-on" axis:
+  //   2D — look straight down +z so the triangle's plane is orthogonal
+  //        to the line of sight.
+  //   3D — three-quarter tilt that reads the tetrahedron's depth.
+  if (state.mode === 2) {
+    camera.position.set(0, 0, 6);
+  } else {
+    camera.position.set(5.5, 4.0, 6.0);
+  }
+  controls.target.set(0, 0, 0);
+  controls.update();
+}
+
+document.querySelectorAll('#mode-group .seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.classList.contains('active')) return;
+    document.querySelectorAll('#mode-group .seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.mode = parseInt(btn.dataset.mode, 10);
+    // Reset the rotated container to a sensible angle for the new mode.
+    root.rotation.set(0, 0, 0);
+    applyDefaultView();
+    refresh();
+  });
+});
+
+rotateCheckbox.addEventListener('change', () => {
+  state.autoRotate = rotateCheckbox.checked;
+});
+
+refresh();
+
+// ---------------- Animation ----------------
+
+window.addEventListener('resize', () => {
+  const w = window.innerWidth, h = window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  composer.setSize(w, h);
+  bloomPass.setSize(w, h);
+  if (currentMaterial) currentMaterial.resolution.set(w, h);
+});
+
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  if (state.autoRotate) {
+    if (state.mode === 2) root.rotation.z += dt * 0.18;
+    else                  root.rotation.y += dt * 0.18;
+  }
+  controls.update();
+  composer.render();
+}
+animate();
+</script>
+</body>
+</html>
