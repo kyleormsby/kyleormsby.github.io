@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Temperley–Lieb Markov Trace Explorer</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #fafafa;
+    color: #1f2937;
+    display: flex;
+    overflow: hidden;
+  }
+  #main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow: hidden;
+    min-width: 0;
+  }
+  #canvas {
+    width: 100%;
+    height: 100%;
+    max-width: calc(100vh - 32px);
+    max-height: calc(100vh - 32px);
+  }
+  #controls {
+    width: 380px;
+    background: white;
+    border-left: 1px solid #e5e7eb;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  h1 { margin: 0; font-size: 17px; font-weight: 600; }
+  h2 {
+    margin: 0 0 6px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .stats {
+    background: linear-gradient(135deg, #eff6ff 0%, #ede9fe 100%);
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .stats .label { font-size: 13px; color: #475569; }
+  .stats .big { font-size: 28px; font-weight: 700; color: #1e40af; line-height: 1; }
+  .control-row { display: flex; flex-direction: column; gap: 4px; }
+  .control-row label {
+    font-size: 12px;
+    color: #6b7280;
+    display: flex;
+    justify-content: space-between;
+  }
+  .control-row label span { color: #1f2937; font-weight: 500; font-family: 'SF Mono', Menlo, monospace; }
+  input[type=range] { width: 100%; }
+  button {
+    padding: 7px 12px;
+    border: 1px solid #d1d5db;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.12s, border-color 0.12s;
+  }
+  button:hover { background: #f3f4f6; }
+  button.primary { background: #2563eb; color: white; border-color: #2563eb; }
+  button.primary:hover { background: #1d4ed8; }
+  .mode-buttons { display: flex; gap: 8px; }
+  .mode-buttons button { flex: 1; padding: 7px; }
+  .mode-buttons button.active { background: #2563eb; color: white; border-color: #2563eb; }
+  .tile-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+  }
+  .tile-preview {
+    aspect-ratio: 1;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.08s, background 0.12s, border-color 0.12s;
+    position: relative;
+    overflow: hidden;
+  }
+  .tile-preview:hover { background: #f3f4f6; border-color: #6b7280; }
+  .tile-preview:active { transform: scale(0.94); }
+  .tile-preview svg { width: 100%; height: 100%; display: block; }
+  .tile-preview .label {
+    position: absolute;
+    top: 1px; right: 3px;
+    font-size: 9px;
+    color: #9ca3af;
+    pointer-events: none;
+    font-family: 'SF Mono', Menlo, monospace;
+  }
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    user-select: none;
+    cursor: pointer;
+  }
+  .sequence-display {
+    font-size: 11px;
+    color: #4b5563;
+    font-family: 'SF Mono', Menlo, monospace;
+    word-break: break-all;
+    padding: 8px;
+    background: #f9fafb;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+  }
+  .small-note { font-size: 11px; color: #6b7280; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 4px 0; }
+</style>
+</head>
+<body>
+<div id="main">
+  <svg id="canvas" preserveAspectRatio="xMidYMid meet"></svg>
+</div>
+<div id="controls">
+  <h1>Temperley&ndash;Lieb Markov Trace</h1>
+
+  <div class="stats">
+    <div>
+      <div class="label">Loops in closure</div>
+      <div class="small-note" style="margin-top: 3px;">Markov trace of the product</div>
+    </div>
+    <div class="big" id="loop-count">&mdash;</div>
+  </div>
+
+  <div class="control-row">
+    <label>Number of tiles N <span id="n-value">8</span></label>
+    <input type="range" id="n-slider" min="2" max="24" value="8" step="1">
+  </div>
+
+  <div class="control-row">
+    <label>Inner radius r (R = 2) <span id="r-value">1.00</span></label>
+    <input type="range" id="r-slider" min="0.20" max="1.90" value="1.00" step="0.02">
+  </div>
+
+  <div class="control-row">
+    <label>Strand thickness <span id="thickness-value">0.060</span></label>
+    <input type="range" id="thickness-slider" min="0.005" max="0.18" value="0.06" step="0.005">
+  </div>
+
+  <label class="toggle">
+    <input type="checkbox" id="outline-toggle">
+    Show sector outlines
+  </label>
+
+  <hr>
+
+  <div>
+    <h2>Mode</h2>
+    <div class="mode-buttons">
+      <button id="mode-manual" class="active">Manual</button>
+      <button id="mode-random">Random</button>
+    </div>
+  </div>
+
+  <div id="random-panel" style="display: none;">
+    <button class="primary" id="randomize-btn" style="width: 100%;">Randomize</button>
+  </div>
+
+  <div id="manual-panel">
+    <h2>Generators of TL<sub>4</sub> (click to place)</h2>
+    <div class="tile-grid" id="tile-grid"></div>
+    <div class="small-note" style="margin-top: 8px;">
+      Click a tile to fill sector <strong id="current-sector">0</strong>, then advance to the next.
+      Click any sector in the annulus to jump to it.
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 10px;">
+      <button id="reset-btn" style="flex: 1;">Reset to identity</button>
+    </div>
+  </div>
+
+  <div>
+    <h2>Sequence</h2>
+    <div class="sequence-display" id="sequence-display"></div>
+  </div>
+</div>
+
+<script>
+// ====================================================================
+// Generate all non-crossing perfect matchings of 2n points.
+// For n=4 this yields C_4 = 14 matchings, the basis of TL_4.
+// ====================================================================
+function generateNCM(n) {
+  if (n === 0) return [[]];
+  const result = [];
+  for (let k = 0; k < n; k++) {
+    const inners = generateNCM(k);
+    const outers = generateNCM(n - 1 - k);
+    for (const im of inners) {
+      for (const om of outers) {
+        const m = [[0, 2*k+1]];
+        for (const [a, b] of im) m.push([a+1, b+1]);
+        for (const [a, b] of om) m.push([a+2*k+2, b+2*k+2]);
+        result.push(m);
+      }
+    }
+  }
+  return result;
+}
+
+const TILES = generateNCM(4);
+console.assert(TILES.length === 14, 'Expected C_4 = 14 tiles, got ' + TILES.length);
+
+// ====================================================================
+// Coordinates within a single tile (parameter rectangle [0,1] x [0,1])
+//   s in [0,1] is radial:  rho = r + s * (R - r)
+//   t in [0,1] is angular: theta = thetaMin + t * (thetaMax - thetaMin)
+// 8 boundary points in cyclic (CCW) order:
+//   indices 0..3 on t=0 (left radial edge):  inner -> outer
+//   indices 4..7 on t=1 (right radial edge): outer -> inner
+// ====================================================================
+const S_POS = [0.15, 0.38, 0.62, 0.85];
+const REC_POINTS = [
+  {s: S_POS[0], t: 0}, // 0
+  {s: S_POS[1], t: 0}, // 1
+  {s: S_POS[2], t: 0}, // 2
+  {s: S_POS[3], t: 0}, // 3
+  {s: S_POS[3], t: 1}, // 4
+  {s: S_POS[2], t: 1}, // 5
+  {s: S_POS[1], t: 1}, // 6
+  {s: S_POS[0], t: 1}, // 7
+];
+
+// Sample points along the strand inside the parameter rectangle.
+// Cups (both endpoints on the same edge) are drawn as semicircles;
+// strands (endpoints on opposite edges) are cubic Beziers.
+function strandPathRect(i, j, numSamples) {
+  numSamples = numSamples || 48;
+  const A = REC_POINTS[i], B = REC_POINTS[j];
+  const out = [];
+  if (A.t === B.t) {
+    const cx = (A.s + B.s) / 2;
+    const cy = A.t;
+    const rad = Math.abs(B.s - A.s) / 2;
+    const direction = (A.t === 0) ? 1 : -1;
+    const phiStart = (A.s < cx) ? Math.PI : 0;
+    const phiEnd   = (B.s < cx) ? Math.PI : 0;
+    for (let k = 0; k <= numSamples; k++) {
+      const tau = k / numSamples;
+      const phi = phiStart * (1 - tau) + phiEnd * tau;
+      out.push({
+        s: cx + rad * Math.cos(phi),
+        t: cy + direction * rad * Math.sin(phi),
+      });
+    }
+  } else {
+    const P0 = (A.t === 0) ? A : B;
+    const P3 = (A.t === 0) ? B : A;
+    const P1 = {s: P0.s, t: 0.5};
+    const P2 = {s: P3.s, t: 0.5};
+    for (let k = 0; k <= numSamples; k++) {
+      const tau = k / numSamples;
+      const u = 1 - tau;
+      out.push({
+        s: u*u*u*P0.s + 3*u*u*tau*P1.s + 3*u*tau*tau*P2.s + tau*tau*tau*P3.s,
+        t: u*u*u*P0.t + 3*u*u*tau*P1.t + 3*u*tau*tau*P2.t + tau*tau*tau*P3.t,
+      });
+    }
+  }
+  return out;
+}
+
+function rectToCartesian(s, t, rIn, rOut, thMin, thMax) {
+  const rho = rIn + s * (rOut - rIn);
+  const th = thMin + t * (thMax - thMin);
+  return [rho * Math.cos(th), rho * Math.sin(th)];
+}
+
+// ====================================================================
+// Markov trace via union-find on the closed annular diagram
+// ====================================================================
+function computeLoops(sequence) {
+  const N = sequence.length;
+  const total = N * 8;
+  const parent = new Int32Array(total);
+  for (let i = 0; i < total; i++) parent[i] = i;
+  function find(x) {
+    let r = x;
+    while (parent[r] !== r) r = parent[r];
+    while (parent[x] !== r) { const nx = parent[x]; parent[x] = r; x = nx; }
+    return r;
+  }
+  function union(a, b) {
+    const fa = find(a), fb = find(b);
+    if (fa !== fb) parent[fa] = fb;
+  }
+  // Internal pairs
+  for (let i = 0; i < N; i++) {
+    const tile = TILES[sequence[i]];
+    for (const [a, b] of tile) union(i*8 + a, i*8 + b);
+  }
+  // Identify shared edges between adjacent sectors
+  // tile_i[4..7] (right edge, outer->inner) <-> tile_{i+1}[3..0] (left edge, outer->inner)
+  for (let i = 0; i < N; i++) {
+    const j = (i + 1) % N;
+    union(i*8 + 4, j*8 + 3);
+    union(i*8 + 5, j*8 + 2);
+    union(i*8 + 6, j*8 + 1);
+    union(i*8 + 7, j*8 + 0);
+  }
+  const reps = new Set();
+  for (let i = 0; i < total; i++) reps.add(find(i));
+  return reps.size;
+}
+
+// ====================================================================
+// State
+// ====================================================================
+function findTileByPairs(pairs) {
+  const key = (m) => m.map(p => p.slice().sort((a,b)=>a-b))
+                       .sort((a,b)=>a[0]-b[0])
+                       .map(p=>p.join(','))
+                       .join('|');
+  const target = key(pairs);
+  for (let i = 0; i < TILES.length; i++) if (key(TILES[i]) === target) return i;
+  return 0;
+}
+const IDENTITY_TILE = findTileByPairs([[0,7],[1,6],[2,5],[3,4]]);
+
+const state = {
+  N: 8,
+  r: 1.0,
+  R: 2.0,
+  thickness: 0.06,
+  showOutlines: false,
+  mode: 'manual',
+  sequence: [],
+  currentSector: 0,
+};
+
+function initSequence() {
+  state.sequence = Array(state.N).fill(IDENTITY_TILE);
+  state.currentSector = 0;
+}
+
+function randomizeSequence() {
+  state.sequence = Array.from({length: state.N}, () => Math.floor(Math.random() * 14));
+  state.currentSector = 0;
+}
+
+function resizeSequence(newN) {
+  while (state.sequence.length < newN) state.sequence.push(IDENTITY_TILE);
+  state.sequence.length = newN;
+  state.N = newN;
+  if (state.currentSector >= newN) state.currentSector = 0;
+}
+
+// ====================================================================
+// SVG helpers
+// ====================================================================
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function svgEl(name, attrs) {
+  const el = document.createElementNS(SVG_NS, name);
+  if (attrs) for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+function sectorOutlinePath(rIn, rOut, thMin, thMax) {
+  const x1 = rIn * Math.cos(thMin),  y1 = rIn * Math.sin(thMin);
+  const x2 = rOut * Math.cos(thMin), y2 = rOut * Math.sin(thMin);
+  const x3 = rOut * Math.cos(thMax), y3 = rOut * Math.sin(thMax);
+  const x4 = rIn * Math.cos(thMax),  y4 = rIn * Math.sin(thMax);
+  const dth = thMax - thMin;
+  const large = dth > Math.PI ? 1 : 0;
+  return `M ${x1} ${y1} L ${x2} ${y2} A ${rOut} ${rOut} 0 ${large} 1 ${x3} ${y3} L ${x4} ${y4} A ${rIn} ${rIn} 0 ${large} 0 ${x1} ${y1} Z`;
+}
+
+const STRAND_COLOR = '#1f2937';
+
+// ====================================================================
+// Render the main annulus
+// ====================================================================
+function renderAnnulus() {
+  const svg = document.getElementById('canvas');
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const N = state.N;
+  const numLoops = computeLoops(state.sequence);
+
+  document.getElementById('loop-count').textContent = numLoops;
+  document.getElementById('current-sector').textContent = state.currentSector;
+
+  const rIn = state.r;
+  const rOut = state.R;
+  const thickness = state.thickness;
+
+  const pad = 0.1;
+  const half = rOut + pad;
+  svg.setAttribute('viewBox', `${-half} ${-half} ${2*half} ${2*half}`);
+
+  for (let i = 0; i < N; i++) {
+    const thMin = -Math.PI/2 + 2*Math.PI*i/N;
+    const thMax = -Math.PI/2 + 2*Math.PI*(i+1)/N;
+    const outlinePath = sectorOutlinePath(rIn, rOut, thMin, thMax);
+
+    // Highlight current sector (manual mode)
+    if (state.mode === 'manual' && i === state.currentSector) {
+      svg.appendChild(svgEl('path', {
+        d: outlinePath,
+        fill: '#dbeafe',
+        opacity: '0.5',
+        stroke: 'none',
+      }));
+    }
+
+    // Optional sector outline
+    if (state.showOutlines) {
+      svg.appendChild(svgEl('path', {
+        d: outlinePath,
+        fill: 'none',
+        stroke: '#9ca3af',
+        'stroke-width': '0.008',
+      }));
+    }
+
+    // Strands
+    const tile = TILES[state.sequence[i]];
+    for (const [a, b] of tile) {
+      const rectPath = strandPathRect(a, b);
+      const pts = rectPath.map(({s, t}) => rectToCartesian(s, t, rIn, rOut, thMin, thMax));
+      const d = pts.map((pt, k) => (k === 0 ? 'M' : 'L') + pt[0].toFixed(4) + ' ' + pt[1].toFixed(4)).join(' ');
+      svg.appendChild(svgEl('path', {
+        d,
+        fill: 'none',
+        stroke: STRAND_COLOR,
+        'stroke-width': thickness,
+        'stroke-linecap': 'round',
+      }));
+    }
+
+    // Click target for jumping to this sector
+    if (state.mode === 'manual') {
+      const overlay = svgEl('path', {
+        d: outlinePath,
+        fill: 'transparent',
+        stroke: 'transparent',
+        style: 'cursor: pointer; pointer-events: all;',
+      });
+      overlay.addEventListener('click', () => {
+        state.currentSector = i;
+        renderAnnulus();
+      });
+      svg.appendChild(overlay);
+    }
+  }
+}
+
+// ====================================================================
+// Tile preview grid (2 x 7)
+// Preview SVG uses x = t, y = s so left edge is at x=0, right at x=1
+// (matches the conventional TL diagram look).
+// ====================================================================
+function tilePreviewSvg(tileIdx) {
+  const tile = TILES[tileIdx];
+  let content = '<svg viewBox="-0.08 -0.08 1.16 1.16" xmlns="http://www.w3.org/2000/svg">';
+  content += '<rect x="0" y="0" width="1" height="1" fill="#fdfdfd" stroke="#d1d5db" stroke-width="0.02"/>';
+  for (const [a, b] of tile) {
+    const path = strandPathRect(a, b, 32);
+    const d = path.map((p, k) => (k === 0 ? 'M' : 'L') + p.t.toFixed(3) + ' ' + p.s.toFixed(3)).join(' ');
+    content += `<path d="${d}" fill="none" stroke="#1f2937" stroke-width="0.055" stroke-linecap="round"/>`;
+  }
+  for (const pt of REC_POINTS) {
+    content += `<circle cx="${pt.t}" cy="${pt.s}" r="0.028" fill="#1f2937"/>`;
+  }
+  content += '</svg>';
+  return content;
+}
+
+function renderTileGrid() {
+  const grid = document.getElementById('tile-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 14; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'tile-preview';
+    cell.dataset.tile = i;
+    cell.innerHTML = '<span class="label">' + (i+1) + '</span>' + tilePreviewSvg(i);
+    cell.addEventListener('click', () => {
+      state.sequence[state.currentSector] = i;
+      state.currentSector = (state.currentSector + 1) % state.N;
+      renderAnnulus();
+      updateSequenceDisplay();
+    });
+    grid.appendChild(cell);
+  }
+}
+
+function updateSequenceDisplay() {
+  document.getElementById('sequence-display').textContent =
+    '[' + state.sequence.map(i => i+1).join(', ') + ']';
+  document.getElementById('current-sector').textContent = state.currentSector;
+}
+
+// ====================================================================
+// UI wiring
+// ====================================================================
+document.getElementById('n-slider').addEventListener('input', e => {
+  const newN = parseInt(e.target.value);
+  document.getElementById('n-value').textContent = newN;
+  resizeSequence(newN);
+  if (state.mode === 'random') randomizeSequence();
+  renderAnnulus();
+  updateSequenceDisplay();
+});
+
+document.getElementById('r-slider').addEventListener('input', e => {
+  state.r = parseFloat(e.target.value);
+  document.getElementById('r-value').textContent = state.r.toFixed(2);
+  renderAnnulus();
+});
+
+document.getElementById('thickness-slider').addEventListener('input', e => {
+  state.thickness = parseFloat(e.target.value);
+  document.getElementById('thickness-value').textContent = state.thickness.toFixed(3);
+  renderAnnulus();
+});
+
+document.getElementById('outline-toggle').addEventListener('change', e => {
+  state.showOutlines = e.target.checked;
+  renderAnnulus();
+});
+
+document.getElementById('mode-manual').addEventListener('click', () => {
+  state.mode = 'manual';
+  document.getElementById('mode-manual').classList.add('active');
+  document.getElementById('mode-random').classList.remove('active');
+  document.getElementById('manual-panel').style.display = '';
+  document.getElementById('random-panel').style.display = 'none';
+  renderAnnulus();
+});
+
+document.getElementById('mode-random').addEventListener('click', () => {
+  state.mode = 'random';
+  document.getElementById('mode-random').classList.add('active');
+  document.getElementById('mode-manual').classList.remove('active');
+  document.getElementById('manual-panel').style.display = 'none';
+  document.getElementById('random-panel').style.display = '';
+  randomizeSequence();
+  renderAnnulus();
+  updateSequenceDisplay();
+});
+
+document.getElementById('randomize-btn').addEventListener('click', () => {
+  randomizeSequence();
+  renderAnnulus();
+  updateSequenceDisplay();
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  initSequence();
+  renderAnnulus();
+  updateSequenceDisplay();
+});
+
+// Init
+initSequence();
+renderTileGrid();
+renderAnnulus();
+updateSequenceDisplay();
+</script>
+</body>
+</html>
