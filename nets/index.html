@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nets of 4D Polytopes</title>
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --panel-bg: rgba(255,255,255,0.92);
+    --text: #1f1f1f;
+    --muted: #6b6b6b;
+    --accent: #2a4d8f;
+    --border: rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    overflow: hidden;
+  }
+  #canvas-container { position: fixed; inset: 0; }
+  canvas { display: block; }
+
+  #panel {
+    position: fixed;
+    top: 18px; left: 18px;
+    width: 320px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+    padding: 16px 18px 14px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    user-select: none;
+  }
+  #panel h1 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 2px;
+    letter-spacing: 0.2px;
+  }
+  #panel .sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+  .row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+  .row label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    min-width: 66px;
+  }
+  .row select, .row input[type=range] { flex: 1; min-width: 0; }
+  select {
+    font: inherit;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: white;
+  }
+  input[type=range] { accent-color: var(--accent); }
+  .value-readout {
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+    color: var(--muted);
+    min-width: 30px;
+    text-align: right;
+  }
+  #description {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #444;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  #hover-label {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+    min-height: 14px;
+  }
+  #help {
+    position: fixed;
+    bottom: 14px; left: 18px;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--panel-bg);
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+<div id="canvas-container"></div>
+
+<div id="panel">
+  <h1>Nets of 4D Polytopes</h1>
+  <div class="sub">Unfold 3D cells of a 4-polytope into 3-space.</div>
+
+  <div class="row">
+    <label>Polytope</label>
+    <select id="polytope-select" autocomplete="off">
+      <optgroup label="Regular 4-polytopes">
+        <option value="5-cell">5-cell (4-simplex)</option>
+        <option value="8-cell">8-cell (tesseract)</option>
+        <option value="16-cell" selected>16-cell</option>
+        <option value="24-cell">24-cell</option>
+        <option value="120-cell">120-cell</option>
+        <option value="600-cell">600-cell</option>
+      </optgroup>
+      <optgroup label="Other 4-polytopes">
+        <option value="rectified-5-cell">Rectified 5-cell</option>
+        <option value="bitruncated-24-cell">Bitruncated 24-cell</option>
+        <option value="snub-24-cell">Snub 24-cell</option>
+        <option value="grand-antiprism">Grand antiprism</option>
+        <option value="rectified-24-cell">Rectified 24-cell</option>
+        <option value="associahedron">Associahedron K₆</option>
+        <option value="permutohedron">Permutohedron P₅</option>
+        <option value="dodec-prism">Dodecahedral prism</option>
+        <option value="duoprism-55">(5,5)-duoprism</option>
+      </optgroup>
+      <optgroup label="3-polytopes (Platonic)">
+        <option value="tetrahedron">Tetrahedron</option>
+        <option value="cube">Cube</option>
+        <option value="octahedron">Octahedron</option>
+        <option value="dodecahedron">Dodecahedron</option>
+        <option value="icosahedron">Icosahedron</option>
+      </optgroup>
+      <optgroup label="3-polytopes (combinatorial)">
+        <option value="loday-k5">3D associahedron K₅ (Loday)</option>
+        <option value="permutohedron-p4">3D permutohedron P₄</option>
+      </optgroup>
+      <optgroup label="3-polytopes (overlap demo)">
+        <option value="stretched-icosahedron">Stretched icosahedron (z × 5)</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <div class="row">
+    <label>Unfold</label>
+    <input id="unfold-slider" type="range" min="0" max="1" step="0.001" value="1" autocomplete="off">
+    <span id="unfold-value" class="value-readout">1.00</span>
+  </div>
+
+  <div class="row">
+    <label>Opacity</label>
+    <input id="opacity-slider" type="range" min="0" max="1" step="0.01" value="0.25" autocomplete="off">
+    <span id="opacity-value" class="value-readout">0.25</span>
+  </div>
+
+  <div class="row">
+    <label>Overlaps</label>
+    <input id="highlight-overlaps" type="checkbox" style="flex: 0 0 auto;" autocomplete="off">
+    <span id="overlap-status" style="flex: 1; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums;"></span>
+  </div>
+
+  <div id="description"></div>
+  <div id="hover-label"></div>
+</div>
+
+<div id="help">drag to orbit · scroll to zoom · hover a cell to highlight</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
