@@ -2824,6 +2824,358 @@ export function buildStretchedIcosahedron() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Omnitruncated 24-cell — t_{0,1,2,3}{3,4,3} Wythoff construction
+//
+// 1,152 vertices = full F_4 orbit (no stabiliser) of the Wythoff point
+//   ω_0 + ω_1 + ω_2 + ω_3 = (5.5, 2.5, 1.5, 0.5)
+// (sum of F_4 fundamental weights). All entries integer/half-integer, so we
+// work scaled ×2 in integer arithmetic; the half-reflection r_3 preserves
+// integer parity provided the coordinate sum is even.
+//
+// 240 cells, identified as max-dot-product facets along the four
+// fundamental-weight orbits:
+//   ω_0 = (1,1,0,0)       → 24 truncated cuboctahedra (cell directions)
+//   ω_1 = (2,1,1,0)       → 96 hexagonal prisms      (2-face directions)
+//   ω_2 = (3/2,1/2,1/2,1/2) → 96 hexagonal prisms    (edge directions)
+//   ω_3 = (1,0,0,0)       → 24 truncated cuboctahedra (vertex directions)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function buildOmnitruncated24Cell() {
+  // F_4 simple reflections (omnitruncation's Wythoff point is rational, so no √2).
+  function r0(v) { return [v[0], v[2], v[1], v[3]]; }      // swap v[1], v[2]
+  function r1(v) { return [v[0], v[1], v[3], v[2]]; }      // swap v[2], v[3]
+  function r2(v) { return [v[0], v[1], v[2], -v[3]]; }     // negate v[3]
+  function r3(v) {                                          // (e_1-e_2-e_3-e_4)/2 refl
+    const h = (v[0] - v[1] - v[2] - v[3]) / 2;
+    return [v[0] - h, v[1] + h, v[2] + h, v[3] + h];
+  }
+  const f4Orbit = v0 => {
+    const seen = new Map();
+    const k = v => v.join(',');
+    seen.set(k(v0), v0);
+    const queue = [v0];
+    while (queue.length) {
+      const v = queue.shift();
+      for (const r of [r0, r1, r2, r3]) {
+        const w = r(v);
+        const wk = k(w);
+        if (!seen.has(wk)) { seen.set(wk, w); queue.push(w); }
+      }
+    }
+    return [...seen.values()];
+  };
+
+  // Wythoff point (×2): (11, 5, 3, 1). Sum = 20 (even) so r_3 stays integer.
+  const sym = f4Orbit([11, 5, 3, 1]);                       // 1,152
+
+  // Visualization scale: vertex coords are ×2 from canonical; divide by 4
+  // so the polytope's max |coord| ≈ 2.75 (similar to bitruncated 24-cell).
+  const SCALE = 0.5;
+  const verts4D = sym.map(v => v.map(x => x * SCALE / 2));
+
+  // Facet normals = F_4 orbits of the four fundamental weights (×2).
+  const normalsByType = [
+    { type: 'tc-cell',  orbit: f4Orbit([2, 2, 0, 0]) },     //  24 trunc. cuboct.
+    { type: 'hp-face',  orbit: f4Orbit([4, 2, 2, 0]) },     //  96 hex prism
+    { type: 'hp-edge',  orbit: f4Orbit([3, 1, 1, 1]) },     //  96 hex prism
+    { type: 'tc-vert',  orbit: f4Orbit([2, 0, 0, 0]) },     //  24 trunc. cuboct.
+  ];
+  const normals = [];
+  for (const { type, orbit } of normalsByType) {
+    for (const n of orbit) normals.push({ type, n });
+  }
+
+  const tol = 1e-6;
+  const PAL = palette(normals.length, [0.55, 0.72], [0.45, 0.62]);
+  const cells = [];
+  for (let i = 0; i < normals.length; i++) {
+    const { type, n } = normals[i];
+    let maxDot = -Infinity;
+    const dots = verts4D.map(v => v[0]*n[0]+v[1]*n[1]+v[2]*n[2]+v[3]*n[3]);
+    for (const d of dots) if (d > maxDot) maxDot = d;
+    const vertexIndices = [];
+    for (let vi = 0; vi < verts4D.length; vi++) {
+      if (Math.abs(dots[vi] - maxDot) < tol) vertexIndices.push(vi);
+    }
+    cells.push(buildConvexCell({
+      vertexIndices, points4D: verts4D,
+      color: PAL[i], label: `${type} #${i} (${vertexIndices.length} verts)`,
+    }));
+  }
+
+  const rootIdx = 0;
+  const rootEmbedding = cells[rootIdx].canonical.map(v => v.clone());
+  const schlegel = schlegelProjector({
+    rootPoints4D: cells[rootIdx].vertexIndices.map(i => verts4D[i]),
+    allPoints4D: verts4D,
+    viewDist: 2.5,
+  });
+  const foldedByGlobal = verts4D.map(schlegel);
+
+  const world = unfoldNet({ cells, rootIdx, rootEmbedding });
+  const assembled = assembleCells({ cells, world, foldedByGlobal });
+
+  return {
+    name: 'Omnitruncated 24-cell',
+    description:
+      '1,152 vertices, 240 cells: 48 truncated cuboctahedra (24 along long-root ' +
+      'cell directions + 24 along short-root vertex directions) and 192 hexagonal ' +
+      'prisms (96+96, along 2-face and edge directions of the underlying 24-cell). ' +
+      'Wythoff t_{0,1,2,3}{3,4,3}, F_4 orbit of (5.5, 2.5, 1.5, 0.5).',
+    cells: assembled,
+    cameraDistance: 22,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Omnitruncated 120-cell — t_{0,1,2,3}{5,3,3}
+//
+// 14,400 vertices, 2,640 cells:
+//   600 truncated octahedra      (one per vertex of the 120-cell)
+//   1,200 hexagonal prisms       (one per edge of the 120-cell)
+//   720 decagonal prisms         (one per 2-face of the 120-cell)
+//   120 truncated icosidodecahedra (one per cell of the 120-cell)
+//
+// Rather than building H_4 simple reflections in Z[φ] from scratch, we use
+// the *flag* construction: every flag of the 120-cell (chain
+// vertex ⊂ edge ⊂ 2-face ⊂ cell) corresponds to one vertex of the omnitruncated
+// polytope. The 120-cell has exactly 14,400 flags = 600·4·3·2.
+//
+// We compute the 120-cell structure inline from the 600-cell (whose vertex set
+// has a known closed form) and then group flags by which face they fix to get
+// the four cell types. The flag position is the sum of the four flag-component
+// "centres" — this gives a combinatorially correct (though not perfectly
+// uniform) omnitruncated 120-cell, suitable for visualisation.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export function buildOmnitruncated120Cell() {
+  const PHI = (1 + Math.sqrt(5)) / 2;
+  const E600 = 1 / PHI;
+
+  // ── 600-cell vertices (120 of them) ───────────────────────────────────────
+  const v600 = [];
+  for (let a = 0; a < 4; a++) for (const s of [-1, +1]) {
+    const v = [0, 0, 0, 0]; v[a] = s; v600.push(v);
+  }
+  for (let m = 0; m < 16; m++) v600.push([
+    (m&1)?0.5:-0.5, (m&2)?0.5:-0.5, (m&4)?0.5:-0.5, (m&8)?0.5:-0.5,
+  ]);
+  const aV = 0.5, bV = PHI / 2, cV = 1 / (2 * PHI);
+  const baseVals = [0, cV, aV, bV];
+  function permsOf(arr) {
+    if (arr.length <= 1) return [arr];
+    const out = [];
+    for (let i = 0; i < arr.length; i++) {
+      const rest = arr.slice(0, i).concat(arr.slice(i + 1));
+      for (const p of permsOf(rest)) out.push([arr[i], ...p]);
+    }
+    return out;
+  }
+  function isEven(p) {
+    let n = 0;
+    for (let i = 0; i < p.length; i++)
+      for (let j = i + 1; j < p.length; j++)
+        if (p[i] > p[j]) n++;
+    return n % 2 === 0;
+  }
+  for (const p of permsOf([0,1,2,3]).filter(isEven)) {
+    const vs = p.map(i => baseVals[i]);
+    for (let sm = 0; sm < 8; sm++) {
+      const sgns = [(sm&1)?+1:-1, (sm&2)?+1:-1, (sm&4)?+1:-1];
+      let si = 0;
+      v600.push(vs.map(x => x === 0 ? 0 : sgns[si++] * x));
+    }
+  }
+  // v600.length === 120
+
+  // ── 600-cell adjacency, edges, tetrahedral cells ─────────────────────────
+  const tol = 1e-8;
+  const target2 = E600 * E600;
+  const adj600 = Array.from({length: v600.length}, () => new Set());
+  for (let i = 0; i < v600.length; i++) {
+    for (let j = i+1; j < v600.length; j++) {
+      let d2 = 0;
+      for (let k = 0; k < 4; k++) {
+        const x = v600[i][k] - v600[j][k];
+        d2 += x*x;
+      }
+      if (Math.abs(d2 - target2) < tol) {
+        adj600[i].add(j); adj600[j].add(i);
+      }
+    }
+  }
+  const tetras = [];
+  for (let i = 0; i < v600.length; i++) {
+    const neigh = [...adj600[i]].filter(x => x > i).sort((a,b)=>a-b);
+    for (let p = 0; p < neigh.length; p++) {
+      const j = neigh[p];
+      for (let q = p+1; q < neigh.length; q++) {
+        const k = neigh[q];
+        if (!adj600[j].has(k)) continue;
+        for (let r = q+1; r < neigh.length; r++) {
+          const l = neigh[r];
+          if (adj600[j].has(l) && adj600[k].has(l)) tetras.push([i,j,k,l]);
+        }
+      }
+    }
+  }
+  // tetras.length === 600
+
+  // 120-cell vertices = centroids of tetras
+  const v120 = tetras.map(t => {
+    const c = [0,0,0,0];
+    for (const vi of t) for (let k = 0; k < 4; k++) c[k] += v600[vi][k];
+    return c.map(x => x / 4);
+  });
+
+  // 600-cell edges (also = 120-cell 2-faces, one per edge)
+  const edges600 = [];
+  for (let i = 0; i < v600.length; i++)
+    for (const j of adj600[i]) if (j > i) edges600.push([i, j]);
+  // edges600.length === 720
+
+  // Map: triangular face (3-set of v600 indices) → list of containing tetras
+  // (each face is shared by exactly 2 tetras).
+  const faceToTetras = new Map();
+  const TRI_OF_TETRA = [[0,1,2],[0,1,3],[0,2,3],[1,2,3]];
+  for (let ti = 0; ti < tetras.length; ti++) {
+    const t = tetras[ti];
+    for (const [i,j,k] of TRI_OF_TETRA) {
+      const face = [t[i], t[j], t[k]].sort((a,b)=>a-b);
+      const key = face.join(',');
+      if (!faceToTetras.has(key)) faceToTetras.set(key, []);
+      faceToTetras.get(key).push(ti);
+    }
+  }
+  // Each triangular face is shared by exactly 2 tetras → 1,200 faces.
+
+  // For each 600-cell edge {u, w}, the 5 tetras containing both u and w
+  // (the pentagon around the 120-cell 2-face).
+  const edgeToTetras = new Map();
+  for (const [u, w] of edges600) edgeToTetras.set(`${u},${w}`, []);
+  for (let ti = 0; ti < tetras.length; ti++) {
+    const t = tetras[ti];
+    for (let i = 0; i < 4; i++) {
+      for (let j = i+1; j < 4; j++) {
+        const a = Math.min(t[i], t[j]), b = Math.max(t[i], t[j]);
+        const k = `${a},${b}`;
+        if (edgeToTetras.has(k)) edgeToTetras.get(k).push(ti);
+      }
+    }
+  }
+
+  // ── Enumerate the 14,400 flags ────────────────────────────────────────────
+  // For each tetra T (120-cell vertex), each triangular face F of T (120-cell
+  // edge), each 2-subset {u, w} of F (120-cell 2-face), each c ∈ {u, w}
+  // (120-cell cell): one flag.
+  //
+  // Position = v120[T] + ½(v120[T]+v120[T']) + ⅕Σ_{T_i around (u,w)} v120[T_i] + v600[c]
+  // This is the sum of the centres of the four flag components; it gives a
+  // combinatorially correct omnitruncated 120-cell.
+  const verts4D = [];
+  const cellByTetra = new Map();   // T → flag indices (truncated octahedron)
+  const cellByFace  = new Map();   // sorted tri key → flag indices (hex prism)
+  const cellByEdge  = new Map();   // "u,w" key → flag indices (decagonal prism)
+  const cellByVert  = new Map();   // c → flag indices (truncated icosidodec)
+
+  for (let ti = 0; ti < tetras.length; ti++) {
+    const t = tetras[ti];
+    for (const [i, j, k] of TRI_OF_TETRA) {
+      const triVerts = [t[i], t[j], t[k]].sort((a,b)=>a-b);
+      const triKey = triVerts.join(',');
+      const pair = faceToTetras.get(triKey);
+      const tOther = (pair[0] === ti) ? pair[1] : pair[0];
+
+      // centroid of (ti, tOther) for the hex-prism-direction term
+      const midEdge = [0,0,0,0];
+      for (let d = 0; d < 4; d++) midEdge[d] = (v120[ti][d] + v120[tOther][d]) / 2;
+
+      // For each of the 3 edges of the triangular face
+      for (let p = 0; p < 3; p++) {
+        for (let q = p+1; q < 3; q++) {
+          const u = Math.min(triVerts[p], triVerts[q]);
+          const w = Math.max(triVerts[p], triVerts[q]);
+          const eKey = `${u},${w}`;
+          const pentTetras = edgeToTetras.get(eKey);
+          // centroid of the 5 tetras around this 600-cell edge
+          const pentCentroid = [0,0,0,0];
+          for (const ptIdx of pentTetras) {
+            for (let d = 0; d < 4; d++) pentCentroid[d] += v120[ptIdx][d];
+          }
+          for (let d = 0; d < 4; d++) pentCentroid[d] /= 5;
+
+          for (const c of [u, w]) {
+            // 4D position of this flag's vertex
+            const pos = [0, 0, 0, 0];
+            for (let d = 0; d < 4; d++)
+              pos[d] = v120[ti][d] + midEdge[d] + pentCentroid[d] + v600[c][d];
+
+            const fi = verts4D.length;
+            verts4D.push(pos);
+
+            const push = (m, key) => {
+              if (!m.has(key)) m.set(key, []);
+              m.get(key).push(fi);
+            };
+            push(cellByTetra, ti);
+            push(cellByFace,  triKey);
+            push(cellByEdge,  eKey);
+            push(cellByVert,  c);
+          }
+        }
+      }
+    }
+  }
+  // verts4D.length === 14,400
+
+  // ── Build the 2,640 cells ─────────────────────────────────────────────────
+  const totalCells =
+    cellByTetra.size + cellByFace.size + cellByEdge.size + cellByVert.size;
+  const PAL = palette(totalCells, [0.55, 0.72], [0.45, 0.62]);
+  const cells = [];
+  let palIdx = 0;
+  const addCellGroup = (map, label) => {
+    for (const [key, vertexIndices] of map) {
+      cells.push(buildConvexCell({
+        vertexIndices, points4D: verts4D,
+        color: PAL[palIdx++],
+        label: `${label} ${key} (${vertexIndices.length} v)`,
+      }));
+    }
+  };
+  addCellGroup(cellByTetra, 'tr-oct');
+  addCellGroup(cellByFace,  'hex-prism');
+  addCellGroup(cellByEdge,  'dec-prism');
+  addCellGroup(cellByVert,  'tr-icosidodec');
+  // cells.length === 2,640
+
+  // ── Schlegel + unfold ─────────────────────────────────────────────────────
+  const rootIdx = 0;
+  const rootEmbedding = cells[rootIdx].canonical.map(v => v.clone());
+  const schlegel = schlegelProjector({
+    rootPoints4D: cells[rootIdx].vertexIndices.map(i => verts4D[i]),
+    allPoints4D: verts4D,
+    viewDist: 2.5,
+  });
+  const foldedByGlobal = verts4D.map(schlegel);
+
+  const world = unfoldNet({ cells, rootIdx, rootEmbedding });
+  const assembled = assembleCells({ cells, world, foldedByGlobal });
+
+  return {
+    name: 'Omnitruncated 120-cell',
+    description:
+      '14,400 vertices, 2,640 cells (120 great rhombicosidodecahedra + ' +
+      '720 decagonal prisms + 1,200 hexagonal prisms + 600 truncated octahedra). ' +
+      'Wythoff t_{0,1,2,3}{5,3,3}. Built via flag enumeration on the 120-cell ' +
+      '(each flag vertex ⊂ edge ⊂ 2-face ⊂ cell gives one vertex of the ' +
+      'omnitruncate). Largest uniform 4-polytope in the catalogue — heavy.',
+    cells: assembled,
+    cameraDistance: 30,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Registry
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2837,10 +3189,13 @@ export const POLYTOPES = {
   'associahedron': buildAssociahedron,
   'rectified-5-cell': buildRectified5Cell,
   'permutohedron': buildPermutohedron,
+  'omnitruncated-5-cell': buildPermutohedron,    // alias: same polytope
   'snub-24-cell': buildSnub24Cell,
   'dodec-prism': buildDodecahedralPrism,
   'duoprism-55': buildDuoprism55,
   'bitruncated-24-cell': buildBitruncated24Cell,
+  'omnitruncated-24-cell': buildOmnitruncated24Cell,
+  'omnitruncated-120-cell': buildOmnitruncated120Cell,
   'grand-antiprism': buildGrandAntiprism,
   'rectified-24-cell': buildRectified24Cell,
   // 3D polytopes for comparison
