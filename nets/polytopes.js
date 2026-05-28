@@ -477,6 +477,136 @@ export const OCTA_FACES = [
 //   face from the parent's interior).
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Given an explicit spanning tree (parentOf[cell] = -1 for root, parent index
+// otherwise), unfold each cell into 3-space via successive rigid motions
+// across shared 2-faces. This is the engine behind unfoldNet — exposed so
+// that callers can pre-compute custom spanning trees (e.g. priority-BFS to
+// avoid overlaps in dense polytopes like the omnitruncated 120-cell).
+export function unfoldByTree({ cells, parentOf, rootIdx, rootEmbedding }) {
+  const N = cells.length;
+  const world = new Array(N).fill(null);
+  world[rootIdx] = rootEmbedding.map(v => v.clone());
+
+  // BFS through the given tree to ensure parents are placed before children.
+  const children = Array.from({length: N}, () => []);
+  for (let i = 0; i < N; i++) if (parentOf[i] !== -1) children[parentOf[i]].push(i);
+  const order = [];
+  const visited = new Array(N).fill(false);
+  visited[rootIdx] = true;
+  const q = [rootIdx];
+  while (q.length) {
+    const p = q.shift(); order.push(p);
+    for (const c of children[p]) if (!visited[c]) { visited[c] = true; q.push(c); }
+  }
+
+  for (let oi = 1; oi < order.length; oi++) {
+    const childIdx = order[oi];
+    const parentIdx = parentOf[childIdx];
+    const child = cells[childIdx];
+    const parent = cells[parentIdx];
+    const parentWorld = world[parentIdx];
+
+    const parentLocalOf = new Map();
+    parent.vertexIndices.forEach((g, l) => parentLocalOf.set(g, l));
+    const childLocalOf = new Map();
+    child.vertexIndices.forEach((g, l) => childLocalOf.set(g, l));
+
+    const shared = child.vertexIndices.filter(g => parentLocalOf.has(g));
+    if (shared.length < 3) {
+      throw new Error(`unfoldByTree: cell ${childIdx} not adjacent to ${parentIdx}`);
+    }
+
+    const hingeGlobals = shared.slice(0, 3);
+    const src0 = child.canonical[childLocalOf.get(hingeGlobals[0])];
+    const src1 = child.canonical[childLocalOf.get(hingeGlobals[1])];
+    const src2 = child.canonical[childLocalOf.get(hingeGlobals[2])];
+    const tgt0 = parentWorld[parentLocalOf.get(hingeGlobals[0])];
+    const tgt1 = parentWorld[parentLocalOf.get(hingeGlobals[1])];
+    const tgt2 = parentWorld[parentLocalOf.get(hingeGlobals[2])];
+
+    const u1 = src1.clone().sub(src0).normalize();
+    const tmp1 = src2.clone().sub(src0);
+    const n1 = new THREE.Vector3().crossVectors(u1, tmp1).normalize();
+    const v1 = new THREE.Vector3().crossVectors(n1, u1).normalize();
+    const u2 = tgt1.clone().sub(tgt0).normalize();
+    const tmp2 = tgt2.clone().sub(tgt0);
+    const n2 = new THREE.Vector3().crossVectors(u2, tmp2).normalize();
+    const v2 = new THREE.Vector3().crossVectors(n2, u2).normalize();
+
+    const sharedSet = new Set(shared);
+    const parentNonShared = parent.vertexIndices.filter(g => !sharedSet.has(g));
+    let parentSide = 0;
+    for (const g of parentNonShared)
+      parentSide += parentWorld[parentLocalOf.get(g)].clone().sub(tgt0).dot(n2);
+    const childNonShared = child.vertexIndices.filter(g => !sharedSet.has(g));
+    let childSide = 0;
+    for (const g of childNonShared)
+      childSide += child.canonical[childLocalOf.get(g)].clone().sub(src0).dot(n1);
+    const nSign = (Math.sign(childSide) * Math.sign(parentSide) > 0) ? -1 : +1;
+
+    const childEmb = new Array(child.vertexIndices.length);
+    for (let l = 0; l < child.vertexIndices.length; l++) {
+      const g = child.vertexIndices[l];
+      if (parentLocalOf.has(g) && sharedSet.has(g)) {
+        childEmb[l] = parentWorld[parentLocalOf.get(g)].clone();
+      } else {
+        const d = child.canonical[l].clone().sub(src0);
+        const lu = d.dot(u1), lv = d.dot(v1), ln = d.dot(n1);
+        childEmb[l] = new THREE.Vector3()
+          .addScaledVector(u2, lu)
+          .addScaledVector(v2, lv)
+          .addScaledVector(n2, ln * nSign)
+          .add(tgt0);
+      }
+    }
+    world[childIdx] = childEmb;
+  }
+
+  return world;
+}
+
+// Build the cell-adjacency graph: cells share a 2-face iff they share ≥ 3
+// vertex indices.
+function cellAdjacency(cells) {
+  const N = cells.length;
+  const adj = Array.from({length: N}, () => []);
+  const vSets = cells.map(c => new Set(c.vertexIndices));
+  for (let i = 0; i < N; i++) {
+    for (let j = i + 1; j < N; j++) {
+      let count = 0;
+      for (const v of cells[j].vertexIndices) {
+        if (vSets[i].has(v)) { count++; if (count >= 3) break; }
+      }
+      if (count >= 3) { adj[i].push(j); adj[j].push(i); }
+    }
+  }
+  return adj;
+}
+
+// Priority-BFS spanning tree: at each step, dequeue the cell with the highest
+// adjacency-graph degree first. For polytopes with mixed cell types (e.g. the
+// omnitruncated 120-cell), this routes most edges through the highest-degree
+// "hub" cells, producing a fan-shaped unfolding that avoids overlaps the
+// vanilla BFS tree creates.
+export function priorityBfsSpanningTree(cells, rootIdx) {
+  const N = cells.length;
+  const adj = cellAdjacency(cells);
+  const parent = new Array(N).fill(-1);
+  const visited = new Array(N).fill(false);
+  visited[rootIdx] = true;
+  const queue = [rootIdx];
+  while (queue.length) {
+    queue.sort((a, b) => adj[b].length - adj[a].length);
+    const p = queue.shift();
+    for (const c of adj[p]) if (!visited[c]) {
+      visited[c] = true;
+      parent[c] = p;
+      queue.push(c);
+    }
+  }
+  return parent;
+}
+
 export function unfoldNet({ cells, rootIdx, rootEmbedding }) {
   const N = cells.length;
   const world = new Array(N).fill(null);
@@ -3058,7 +3188,14 @@ export function buildOmnitruncated120Cell() {
   });
   const foldedByGlobal = verts4D.map(schlegel);
 
-  const world = unfoldNet({ cells, rootIdx, rootEmbedding });
+  // The vanilla BFS unfolding produces 12 overlapping cell-pairs (24 cells in
+  // a single H_4 orbit, all tr-oct ↔ dec-prism at centroid distance ≈1.015).
+  // A priority-BFS spanning tree — visit the highest-degree cell next — uses
+  // the 62-neighbour truncated-icosidodecahedra as hubs and routes nearly
+  // every non-hub cell directly off one of them, giving an overlap-free
+  // fan-shaped net (verified: 0 overlapping pairs from multiple roots).
+  const tree = priorityBfsSpanningTree(cells, rootIdx);
+  const world = unfoldByTree({ cells, parentOf: tree, rootIdx, rootEmbedding });
   const assembled = assembleCells({ cells, world, foldedByGlobal });
 
   return {
@@ -3068,7 +3205,10 @@ export function buildOmnitruncated120Cell() {
       '720 decagonal prisms + 1,200 hexagonal prisms + 600 truncated octahedra). ' +
       'Wythoff t_{0,1,2,3}{5,3,3}: H_4 orbit of the Wythoff point Σ ω_i. Cells ' +
       'identified by max-dot-product against the four fundamental-weight orbits. ' +
-      'Largest uniform 4-polytope in the catalogue — heavy to build and render.',
+      'Largest uniform 4-polytope in the catalogue. The default BFS unfolding ' +
+      'produces 12 overlapping pairs; we use a priority-BFS spanning tree (visit ' +
+      'highest-degree cells first) which routes through the 120 tr-icosidodec hubs ' +
+      'and produces an overlap-free net.',
     cells: assembled,
     cameraDistance: 30,
   };
