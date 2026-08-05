@@ -1,0 +1,217 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 201: Linear Algebra\\ Homework due Friday Week 2}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Make sure to review the homework instructions in the syllabus before writing your solutions. In particular, show your work and write in complete sentences (but also aim for concise explanations).
+
+\begin{prob}
+For each of the following systems of linear equations, do the following:
+\begin{itemize}
+\item Find the associated augmented matrix~$M$.
+\item Compute the reduced row echelon form~$E$ for~$M$. {\bf Show your work as in class, specifying your row operations.}
+\item From~$E$ determine whether there are solutions to the system.  If there is a unique solution, state it.  If there are infinitely many solutions, express the set of solutions in two ways: (i) parametrically, as in examples 2.4 and 2.5 in Chapter One, Section I.2, and (ii) in vector form as in Chapter One, Section I.3.
+\end{itemize}
+\begin{enumerate}[(a)]
+\item 
+\begin{align*}
+  x-2y+z&=1\\
+  -4x+2y-z&=0\\
+  3x+3y-z&=1.
+\end{align*}
+\item 
+\begin{align*}
+  x+y+3z&=3\\
+  -x+y+z&=-1\\
+  2x+3y+8z&=4.
+\end{align*}
+\item 
+\begin{align*}
+  x-2y+2z&=5\\
+  x-y&=-1\\
+  -x+y+z&=5.
+\end{align*}
+\item 
+\begin{align*}
+  2x-2y-3z&=-2\\
+  3x-3y-2z+5w&=7\\
+  x-y-2z-w&=-3.
+\end{align*}
+  \item
+\begin{align*}
+  x+y+3z&=4\\
+  x+2y+4z&=5.
+\end{align*}
+\end{enumerate}
+\end{prob}
+% uncomment the following and use the below proof environment to write your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Some questions about conics.
+\begin{enumerate}[(a)]
+\item Let $y=px^2+qx+r$ be the equation of a general parabola.  By solving a system of equations, find the constants $p$, $q$, and $r$ so that the resulting parabola passes through the points~$(-2,15)$,~$(1,3)$, and~$(2,11)$.
+\item A (real) plane conic is a set of points of the form \[   C=\{(x,y)\in\RR^2:ax^2+bxy+cy^2+dx+ey+f=0\} \] for some constants $a,b,c,d,e,f\in\RR$, not all zero. For example, the unit circle centered at the origin is the conic specified by taking~$a=c=1$,~$b=d=e=0$, and~$f=-1$ to get the defining equation,~$x^2+y^2-1=0$.  Note that defining equation of a conic is only determined up to a scalar multiple: for instance, $2x^2+2y^2-2=0$, the conic with~$a=c=2$,~$b=d=e=0$, and~$f=-2$, also determines the unit circle centered at the origin. The parabola specified by $y=px^2+qx+r$ is a plane conic with parameters $a=p$,~$b=c=0$,~$d=q$,~$e=-1$, and~$f=r$.  Above, we saw an example where three points determined a parabola.  How many points in the plane do you think must be specified to determine a conic, in general? Why? (Note: You probably don't have the tools yet to rigorously answer this question. Make a conjecture and explain your intuition.)
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Consider the following network of one-way roads in which the labels on roads indicate the number of cars.
+% https://q.uiver.app/#q=WzAsNyxbMiwxLCJcXGJ1bGxldCJdLFsxLDIsIlxcYnVsbGV0Il0sWzIsMywiXFxidWxsZXQiXSxbMywyLCJcXGJ1bGxldCJdLFswLDIsInhfNCJdLFsyLDQsInhfNSJdLFsyLDAsIjIwMCJdLFswLDEsInhfMSIsMl0sWzAsMywieF8yIl0sWzMsMiwieF8zIl0sWzEsMiwiNTAiLDJdLFsxLDMsIjc1Il0sWzQsMV0sWzIsNV0sWzYsMF1d
+\[\begin{tikzcd}
+  && 200 \\
+  && \bullet \\
+  {x_4} & \bullet && \bullet \\
+  && \bullet \\
+  && {x_5}
+  \arrow[from=1-3, to=2-3]
+  \arrow["{x_1}"', from=2-3, to=3-2]
+  \arrow["{x_2}", from=2-3, to=3-4]
+  \arrow[from=3-1, to=3-2]
+  \arrow["75", from=3-2, to=3-4]
+  \arrow["50"', from=3-2, to=4-3]
+  \arrow["{x_3}", from=3-4, to=4-3]
+  \arrow[from=4-3, to=5-3]
+\end{tikzcd}\]
+\begin{enumerate}[(a)]
+\item Using the assumptions that (i) the flow into any node (intersection) equals the flow out of that intersection and (ii) the total flow into the network equals the total flow out, set up a system of equations modeling this road network.
+\item Solve the constraints of (a) by writing them as an augmented matrix and finding the reduced row echelon form. (You may give your answer in parametric or vector form.)
+\item Observing that flow rates must be nonnegative (these are one-way streets), determine bounds on the value of $x_5$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Review the syllabus and use this space to ask any questions you have about course policies (or write ``I have reviewed the syllabus and have no questions'' if that's true).
+\end{prob}
+
+% \begin{prob}
+% Prove that the the following sets and operations do not form vectors spaces.  As usual, to disprove something, you need to provide a concrete counterexample, ideally as simple as possible.   
+% \begin{enumerate}[(a)]
+% \item $V=\RR^2$, with 
+% \[\begin{pmatrix}
+% x_1\\
+% y_1
+% \end{pmatrix}
+% +
+% \begin{pmatrix}
+% x_2\\
+% y_2
+% \end{pmatrix}
+% =
+% \begin{pmatrix}
+% x_1+x_2\\
+% y_1y_2
+% \end{pmatrix}\quad \mbox{and} \quad
+% r\cdot\begin{pmatrix}
+% x_1\\
+% y_1
+% \end{pmatrix}
+% =
+% \begin{pmatrix}
+% rx_1\\
+% y_1
+% \end{pmatrix}.
+% \]
+% \item $V=\RR^2$, with 
+% \[\begin{pmatrix}
+% x_1\\
+% y_1
+% \end{pmatrix}
+% +
+% \begin{pmatrix}
+% x_2\\
+% y_2
+% \end{pmatrix}
+% =
+% \begin{pmatrix}
+% x_1+x_2\\
+% y_1+y_2
+% \end{pmatrix}\quad \mbox{and} \quad
+% r\cdot\begin{pmatrix}
+% x_1\\
+% y_1
+% \end{pmatrix}
+% =
+% \begin{pmatrix}
+% rx_1\\
+% 0
+% \end{pmatrix}.
+% \]
+% \item $V = \{(x,y)\in\RR^2:x+2y=3\}$ with the usual addition and scalar multiplication for vectors in~$\RR^2$.
+% \end{enumerate}
+% \end{prob}
+
+% \begin{prob}
+% Let $V$ be a vector space over a field $F$, and let $r,s\in F$ and $\vec{v}\in V$.  In preparation for this problem, review the statement and proof of Lemma 1.16,~p.~92, from your reading.  (Note that the proof given there could be improved by adding implication arrows between the displayed equations and providing reasons for the implications.)  You may use this lemma in your solution.
+% \begin{enumerate}[(a)]
+% \item Prove that $r\cdot \vec{v}=\vec{0}$ if and only if $r=0$ or $\vec{v}=\vec{0}$.  (Note: this is an ``if and only if'' proof.)
+% \item Prove that if $\vec{v}\neq \vec{0}$, then $r\cdot \vec{v}=s\cdot \vec{v}$ if and only if $r=s$.
+% \item If $F=\RR$, prove that any nontrivial vector space is infinite.
+% \end{enumerate}
+% \end{prob}
+
+% \begin{prob}
+% Here are two templates for showing a subset~$W$ of a vector space~$V$ over a field~$F$ is a subspace:
+% \medskip
+
+% {\bf Proof 1.} First note that~$0\in W$ since \underline{\hspace{2cm}}. Hence, $W\neq\emptyset$. Next, suppose that~$u,v\in W$. Then \underline{\hspace{2cm}}. Hence,~$u+v\in W$.  Now suppose~$\lambda\in F$ and~$w\in W$.  Then \underline{\hspace{2cm}}.  Therefore,~$\lambda w\in W$.   \hfill$\Box$
+% \medskip
+
+% {\bf Proof 2.} First note that~$0\in W$ since \underline{\hspace{2cm}}. Hence, $W\neq\emptyset$. Next, suppose that~$\lambda\in F$ and~$u,v\in W$. Then \underline{\hspace{2cm}}. Hence,~$\lambda u+v\in W$. \hfill$\Box$
+
+% Use one of these two templates for each of the following exercises.
+% \begin{enumerate}[(a)]
+% \item Show that~$W=\{(x,y,z)\in\RR^3:3x+2y-z=0\}$ is a subspace of~$\RR^3$.
+% \item Show that the set $W=\left\{ f\colon\RR\to\RR: f(t)=f(-t) \text{ for all~$t\in \RR$} \right\}$ is a subspace of the vector space of real-valued functions of one variable. (Hint: you will need to carefully use the definitions given in Example~1.12, p.~90, of the text.)
+% \end{enumerate}
+% \end{prob}
+
+\end{document}

@@ -1,0 +1,127 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 15}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Wednesday, March 4 at 10pm.
+\bigskip
+
+\noindent
+This is homework on the content covered Monday of Week 6.  
+\bigskip
+
+\begin{prob}
+  How many graphs are there with vertex set~$\left\{ 1,\dots,50 \right\}$?
+  Graphs are considered to be equal if they have the same edge sets.  For
+  instance, consider the case of graphs on the vertex set~$\left\{ 1,\dots,4
+  \right\}$.  The following two graphs are different (e.g., the first has
+  edge~$\left\{ 1,4 \right\}$ and the second does not):
+  \begin{center}
+    \begin{tikzpicture}[scale=0.5]
+      \node[ball,label={below left:$1$}] at (0,0) (1) {};
+      \node[ball,label={below right:$2$}] at (2,0) (2) {};
+      \node[ball,label={above right:$3$}] at (2,2) (3) {};
+      \node[ball,label={above left:$4$}] at (0,2) (4) {};
+      \draw (1)--(2)--(3)--(4)--(1);
+      \begin{scope}[xshift=8cm]
+	\node[ball,label={below left:$1$}] at (0,0) (1) {};
+	\node[ball,label={below right:$2$}] at (2,0) (2) {};
+	\node[ball,label={above right:$4$}] at (2,2) (3) {};
+	\node[ball,label={above left:$3$}] at (0,2) (4) {};
+	\draw (1)--(2)--(3)--(4)--(1);
+      \end{scope}
+    \end{tikzpicture}
+  \end{center}
+  and the following are the same:
+  \begin{center}
+    \begin{tikzpicture}[scale=0.5]
+      \node[ball,label={below left:$1$}] at (0,0) (1) {};
+      \node[ball,label={below right:$2$}] at (2,0) (2) {};
+      \node[ball,label={above right:$3$}] at (2,2) (3) {};
+      \node[ball,label={above left:$4$}] at (0,2) (4) {};
+      \draw (1)--(2)--(3)--(4)--(1);
+      \begin{scope}[xshift=8cm]
+	\node[ball,label={below left:$4$}] at (0,0) (1) {};
+	\node[ball,label={below right:$1$}] at (2,0) (4) {};
+	\node[ball,label={above right:$2$}] at (2,2) (3) {};
+	\node[ball,label={above left:$3$}] at (0,2) (2) {};
+	\draw (1)--(2)--(3)--(4)--(1);
+      \end{scope}
+      \node at (12,0) {.};
+    \end{tikzpicture}
+  \end{center}
+  For this problem, we assume our graphs have no loops or multiple edges (i.e., each edge contains
+  exactly two vertices).  Also, note that the graph with no edges (consisting solely of isolated
+  vertices) counts as a graph.
+\end{prob}
+
+\begin{prob} At every party, one can find two people who know the same number of
+  other people at the party.  (The property of ``knowing'' someone is assumed to
+  be a symmetric relation but not reflexive.)  Restate this assertion as a
+  question about graphs,
+  and prove it. [Hint: if there are~$n$ vertices in a graph, what is the list of
+  possible vertex degrees?]
+\end{prob}
+\end{document}

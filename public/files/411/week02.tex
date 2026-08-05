@@ -1,0 +1,132 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 411: Topics in Advanced Analysis\\ Homework due Wednesday Week 2}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Make sure to review the homework instructions in the syllabus before writing your solutions. In particular, show your work and write in complete sentences (but also aim for concise explanations).
+
+\begin{prob}
+A function $f\colon \RR\to \CC$ is \textbf{1-periodic} when for all $x\in \RR$, $f(x+1)=f(x)$. Given a real number $\kappa$, define
+\[
+\begin{aligned}
+  e_\kappa\colon \RR&\longrightarrow \CC\\
+  x&\longmapsto e^{2\pi i\kappa x}.
+\end{aligned}
+\]
+For which values of $\kappa$ is $e_\kappa$ 1-periodic, and for which is it not? Prove your assertion.
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+For this question only, do \emph{not} worry about whether infinite sums converge.
+\begin{enumerate}[(a)]
+\item Given $c\colon \ZZ\to \CC$ and $c_k := c(k)$, show that
+\[
+  \sum_{k\in \ZZ} c_k e_k(x) = \frac{a_0}{2}+\sum_{n\ge 1}a_n\cos(2\pi nx) + \sum_{n\ge 1}b_n\sin(2\pi nx)
+\]
+for some $a\colon \NN\to \CC$ and $b\colon \ZZ_{\ge 1}\to \CC$. Your answer should include an expression for $c_k$ in terms of $a_n$'s and $b_n$'s.
+\item Suppose $f\colon \RR\to \CC$ is 1-periodic and integrable over $[0,1]$. For $k\in \ZZ$, set
+\[
+  c_k := \int_0^1 f(x)e_{-k}(x)\,dx
+\]
+and for $n\in \NN$, set
+\[
+\begin{aligned}
+  a_n &:= 2\int_0^1 f(x)\cos(2\pi nx)\,dx\\
+  b_n &:= 2\int_0^1 f(x)\sin(2\pi nx)\,dx.
+\end{aligned}
+\]
+Show that $a,b,c$ satisfy the equations from part (a).
+\end{enumerate}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Prove that for all $m,n\in \ZZ$,
+\[
+  \int_0^1 e_m(x)\overline{e_n(x)}\,dx =
+  \begin{cases}
+    1&\text{if }m=n,\\
+    0&\text{otherwise}.
+  \end{cases}
+\]
+What does this say about the set $\{e_n\mid n\in\ZZ\}$ in the language of inner product spaces?
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Show that there is no continuous function $\delta\colon [-1/2,1/2]\to \RR$ with the following property: for all continuous functions $f\colon [-1/2,1/2]\to \RR$,
+\[
+  \int_{-1/2}^{1/2}f(x)\delta(x)\,dx = f(0).
+\]
+\emph{Instructor's note}: This shows that a continuous `delta function' does not exist, and indicates we may need to broaden our notion of function in order to access such behavior. This leads to the notion of a \emph{distribution}.
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Show that the standard sesquilinear form $\langle ~,~\rangle$ is \emph{not} positive definite on the $\CC$-vector space of Riemann integrable functions $[0,1]\to \CC$.
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\end{document}

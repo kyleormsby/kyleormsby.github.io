@@ -1,0 +1,133 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+\newcommand{\eval}{\operatorname{eval}}
+\newcommand{\colim}{\operatorname{colim}}
+
+\title{Math 411: Topics in Advanced Analysis\\ Homework due Wednesday Week 9}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Suppose that $A$ is an LCA group. Recall that the topology on $\hat A$ has subbasis consisting of sets
+\[
+  P(K,U) = \{\chi\in \hat A\mid \chi(K)\subseteq U\}
+\]
+where $K\subseteq A$ is compact and $U\subseteq S^1$ is open. Let $U = e^{2\pi i(-1/4,1/4)}$ and show that for $K$ any compact neighborhood of $e\in A$, the set $\overline{P(K,U)}$ is a compact neighborhood of $1\in\hat A$. (It follows that $\hat A$ is locally compact, but you don't need to prove this here.)
+\end{prob}
+
+\begin{prob}
+Fix a prime $p$ and give the Pr\"ufer $p$-group
+\[
+  \mu_{p^\infty} := \{z\in S^1\mid z^{p^n}=1\text{ for some }n\in \NN\}
+\]
+the subspace topology induced by the standard topology on $S^1$. We will write $\mu_{p^\infty}^{\text{sub}}$ for this topological group to remind ourselves that this not the discrete topology with which we normally endow $\mu_{p^\infty}$.
+\begin{enumerate}[(a)]
+\item Prove that $\mu_{p^\infty}^{\text{sub}}$ is a dense subspace of $S^1$.
+\item Use (a) to prove that $\widehat{\mu_{p^\infty}^{\text{sub}}}\cong \ZZ$.
+\item We have observed that $\hat \ZZ\cong S^1$, so we now know that
+\[
+  \widehat{\widehat{\mu_{p^\infty}^{\text{sub}}}}\cong S^1
+\]
+which is not isomorphic to $\mu_{p^\infty}^{\text{sub}}$. Why does this not contradict Pontryagin duality?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+For $j\in \NN$, let $A_j$ be a nontrivial compact Abelian group, and let $A = \prod_{j\in \NN}A_j$. Suppose the topology on $A_j$ is induced a metric $d_j$ such that $A_j$ has diameter $1$. Define
+\[
+\begin{aligned}
+  d\colon A\times A&\longrightarrow \RR_{\ge 0}\\
+  (x,y)&\longmapsto \sum_{j\in \NN}\frac{d_j(x_j,y_j)}{2^j}.
+\end{aligned}
+\]
+\begin{enumerate}[(a)]
+\item Show that $d(x,y)$ defines a metric on $A$ that makes $A$ a compact LCA group.
+\item Show that for each $j\in \NN$, the projection $A\to A_j$ is a continuous group homomorphism.
+\item Show that if each $A_j$ is finite, then every continuous group homomorphism $\RR\to A$ is trivial.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+For $j\in \NN$, let $A_j$ be a compact Abelian group. Suppose that for $i<j$ there is a continuous group homomorphism $\varphi_i^j\colon A_j\to A_i$. Suppose that for $i<k<j$,
+\[
+  \varphi_i^k\circ \varphi_k^j = \varphi_i^j.
+\]
+Let $\lim_j A_j$ be the set of all $x\in \prod_j A_j$ such that for all $i<j$, $\varphi_i^j(x_j)=x_i$.
+\begin{enumerate}[(a)]
+\item Show that $\lim A_j$ is a closed subgroup of $\prod_j A_j$. This group is called the \emph{limit} of the $A_j$.
+\item Show that the projections induce continuous group homomorphisms
+\[
+  p_i\colon \lim A_j\longrightarrow A_i
+\]
+for $i\in \NN$ that satisfy $\varphi_i^k\circ p_k = p_i$ whenever $k>i$.
+\item Suppose there is a compact Abelian group $A$ and a sequence of continuous group homomorphism $q_i\colon A\to A_i$ such that $\varphi_i^k\circ q_k=q_i$ for all $k>i$. Show there is a unique continuous group homomorphism $\alpha\colon A\to \lim_j A_j$ such that for each $i$,
+\[
+  p_i\circ \alpha = q_i.
+\]
+This is the \emph{universal property} of $\lim_j A_j$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Read Exercise 5.22 from Deitmar's book or Section 3.1 of Riehl's \emph{Category theory in context} to familiarize yourself with \emph{colimits} (which Deitmar calls \emph{direct limits} and denotes $\varinjlim$). Let $(A_j,\varphi_i^j)$ be a directed system of compact Abelian groups, and let $(B_j,\psi_i^j)$ be a codirected system of discrete Abelian groups. Prove one (or both) of the following statements.
+\begin{enumerate}[(a)]
+\item
+\[
+  \widehat{\lim A_j} \cong \colim \widehat{A_j}
+\]
+\item
+\[
+  \widehat{\colim B_j}\cong \lim_j \widehat{B_j}
+\]
+\end{enumerate}
+\end{prob}
+
+
+
+
+
+\end{document}

@@ -1,0 +1,117 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+\DeclareRobustCommand{\stir}{\genfrac\{\}{0pt}{}}
+
+% For solutions.
+\newenvironment{sol}{
+  \medskip
+
+  \noindent\textsc{Solution:}
+}
+{
+  \medskip
+
+}
+
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 35}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+
+
+\begin{prob}
+  Find, with proof, the remainder of~$3^{1260126012601260129}$ upon division
+  by~$14$.
+\end{prob}
+
+\begin{prob}\
+  \begin{enumerate}[(a)]
+    \item For~$n=10,11,$ and~$12$. List the fractions
+      \[
+	\frac{1}{n},\frac{2}{n},\dots,\frac{n}{n}
+      \]
+      after reducing each to lowest terms (canceling common factors in the
+      numerator and denominator).
+    \item Let $n$ be a natural number and consider the quantity
+\[
+  \psi(n)=\sum_{d\mid n}\varphi(d)
+\]
+which is the sum of the values $\varphi(d)$ where $d$ ranges through all the
+positive divisors of $n$.  What is $\psi(n)$?  (Experiment, formulate a
+conjecture, and prove it.) Your solution should consist of a precise statement
+of your conjecture and a proof. The proof does not need to be elaborate.  It can
+just be a statement of the general relevant phenomenon you observe in part~(a).
+  \end{enumerate}
+\end{prob}
+
+\begin{prob} There are integers~$n$ such that~$-1$ has a square root in~$\ZZ/n\ZZ$.  To test this
+  out, for each~$n\in\left\{ 2,3,\dots,13 \right\}$, find all solutions
+  $x\in\left\{ 0,1,\dots,n-1 \right\}$ to the equation
+  \[
+    x^2\equiv -1\pmod{n}.
+  \]
+  You do not need to show your work.  It may help to note that~$-1\equiv n-1\pmod{n}$.
+\end{prob}
+
+
+
+\end{document}

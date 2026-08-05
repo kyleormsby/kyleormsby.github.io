@@ -1,0 +1,111 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 08}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Monday, February 16 at 10pm.
+\bigskip
+
+\begin{prob} 
+Suppose that $f\colon A\to B$ is a surjective function.  Define a relation $\asymp_f$
+on $A$ so that $a\asymp_f b$ if and only if $f(a)=f(b)$.
+\begin{enumerate}[(a)]
+  \item Prove that $\asymp_f$ is an equivalence relation.
+  \item Determine the number of equivalence classes under $\asymp_f$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Suppose that we are playing a game in which we roll three six-sided dice (with
+sides labeled $1,2,\ldots,6$).  Declare two rolls equivalent if their sums
+match.  (Formally, a roll can be thought of as an ordered 3-tuple~$(a,b,c)$
+  where~$a,b,c\in\left\{ 1,\dots,6 \right\}$, and our relation
+is~$(a,b,c)\sim(a',b',c')$ if and only if~$a+b+c=a'+b'+c')$.)
+\begin{enumerate}[(a)]
+  \item Prove that this is indeed an equivalence relation.
+  \item Determine the number of equivalence classes. 
+  \item Are all of the equivalence classes of the same size?
+\end{enumerate}
+\end{prob}
+
+\noindent{\bf Template for proving a relation is an equivalence relation.}
+\medskip
+
+\noindent{\bf Theorem.} Define a relation~$\sim$ on a set~$A$ by blah, blah,
+blah.  Then~$\sim$ is an equivalence relation.
+\smallskip
+
+\noindent{\bf Proof.} {\em Reflexivity.} For each~$a\in A$, we have~$a\sim
+a$ since blah, blah, blah.  Therefore,~$\sim$ is reflexive.
+
+\noindent{\em Symmetry.}  Suppose that~$a\sim b$.  Then, blah, blah, blah. It
+follows that~$b\sim a$.  Therefore~$\sim$ is symmetric.
+
+\noindent{\em Transitivity.}  Suppose that~$a\sim b$ and~$b\sim c$.
+Since blah, blah, blah, it follows that~$a\sim c$.  Therefore,~$\sim$ is
+transitive.
+
+\noindent  Since~$\sim$ is reflexive, symmetric, and transitive, it follows
+that~$\sim$ is an equivalence relation.
+\hfill$\Box$
+
+\end{document}

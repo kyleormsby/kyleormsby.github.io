@@ -1,0 +1,191 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem*{thm*}{Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+\newcommand{\spn}{\operatorname{span}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\ev}{\operatorname{ev}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\rank}{\operatorname{rank}}
+
+
+\title{Math 201: Linear Algebra\\ Homework due Friday Week 11}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Consider the {\em cycle graph} $C_4$:
+\begin{center}
+  \begin{tikzpicture}
+    \node[ball,label={below left:{$v_1$}}] (1) at (0,0) {};
+  \node[ball,label={below right:{$v_2$}}]  (2) at (1,0) {};
+  \node[ball,label={above right:{$v_3$}}] (3) at (1,1) {};
+  \node[ball,label={above left:{$v_4$}}] (4) at (0,1) {};
+  \draw (1)--(2)--(3)--(4)--(1);
+  \end{tikzpicture}
+\end{center}
+\begin{enumerate}[(a)]
+ \item Find the adjacency matrix $A=A(G)$.
+ \item Compute $A^4$ and use it to determine the number of walks from~$v_1$
+   to~$v_3$ of length~$4$.  List all of these walks (these will be ordered lists
+   of~$5$ vertices).
+ \item What is the total number of {\em closed} walks of length~$4$?
+\item Compute and factor the characteristic polynomial for~$A$.  
+  
+\item What are the algebraic multiplicities of each of the eigenvalues?
+
+ \item Diagonalize~$A$ using our algorithm: compute bases for the eigenspaces of
+   each of the eigenvalues you just found, and use them to construct a
+   matrix~$P$ such that~$P^{-1}AP$ is a diagonal matrix with the eigenvalues along the diagonal.
+ \item Use part (f) to find a closed expression
+   for~$A^{\ell}$ for each~$\ell\geq 1$.  Use this expression to then give
+   separate expressions for the cases where~$\ell$ is even and where~$\ell$ is
+   odd.
+ \item Use part (g) to take the trace of~$A^{\ell}$ to get a formula for the number of closed
+   walks of length~$\ell$ for each~$\ell\geq 1$.
+\end{enumerate}
+\end{prob}
+% uncomment the following and use the below proof environment to write your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+In this exercise we will prove the theorem from class: 
+
+\begin{quote}
+Let $A$ be the adjacency matrix for a graph $G$ with vertices $v_1, \dots , v_n$, and let $\ell \in \NN$. Then then number of walks of length $\ell$ from $v_i$ to $v_j$ is $(A^\ell)_{ij}$.
+\end{quote}
+
+\begin{enumerate}[(a)]
+ \item Let $p(i,j,\ell)$ denote the number of walks of length $\ell$ in $G$ from $v_i$ to $v_j$. Prove that for all $i,j=1,\dots, n$ and $\ell \geq 1$,
+  \[p(i,j,\ell)=\sum _{k=1}^n p(i,k,\ell -1) p(k,j,1).\]
+  (\emph{Hint:} Part of the trick is to parse this formula appropriately.)
+  \item Prove the theorem by induction on $\ell$, using the result from part (a).
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+A {\em rhombus} is a parallelogram with all sides of equal length.
+    Using the standard inner product in $\R^2$, prove that a parallelogram is a
+    rhombus if and only if its diagonals meet perpendicularly. Hint: take two
+    arbitrary vectors $x,y\in \R^2$ and consider the parallelogram determined by
+    $x$ and $y$:
+    \begin{center}
+      \begin{tikzpicture}[scale=0.8]
+  \draw[->] (0,0)--(3,0.8);
+  \draw[->] (0,0)--(0.8,1.8);
+  \draw[dashed] (0.8,1.8)--(3.8,2.6);
+  \draw[dashed] (3,0.8)--(3.8,2.6);
+  \node at (1.6,0.1) {$x$};
+  \node at (0.1,1) {$y$};
+      \end{tikzpicture}
+    \end{center}
+    (Another hint: avoid coordinates. I.e., you should use abstract properties of
+    the inner product and definitions of length and angle rather than formulas
+    involving~$x_1,x_2,y_1,y_2$.)
+\end{prob}
+% uncomment the following and use the below proof environment to write your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Let $V$ be an $n$-dimensional vector space over $F=\R$ or $\C$, and let
+  $\langle \, , \, \rangle$ be an inner product on $V$. Let $\alpha=\{ v_1,
+  \dots, v_n \}$ be an ordered basis for $V$ (not necessarily orthogonal). Let
+  $A$ be the $n\times n$ matrix given by 
+  \[
+    A_{ij}=\langle v_i,v_j\rangle.
+  \]
+  For $x\in V$, let $[x]_\alpha\in F^n$ denote the coordinate vector for
+  $x$ with respect to the basis $\alpha$.  So if~$x=\sum_{i=1}^na_iv_i$,
+  then~$[x]_{\alpha}=(a_1,\dots,a_n)$.  (We have denoted this $\mathrm{Rep}_\alpha(x)$ in the past.)  As usual, we will think of this
+  vector in $F^n$ as an $n \times 1$ matrix.
+\begin{enumerate}[(a)]
+ \item Prove that for all $x,y\in V$, 
+ \[
+   \langle x,y \rangle = \left([x]_\alpha\right)^\top A\left(
+ \overline{[y]_\alpha}\right).
+ \] 
+ (Recall that for a matrix $C$,  we define~$\overline{C}$
+   by~$\overline{C}_{ij}=\overline{C_{ij}}$, and then we define the conjugate
+   transpose by $C^\ast = \overline{C^\top}$. \emph{Hint}: compute both sides using
+   sum notation.  On the right-hand side, you will be computing the~$1,1$-entry
+ of a~$1\times 1$ matrix.)
+ \item Prove that the matrix $A$ satisfies $A=A^*$.
+ \item If the basis $\alpha$ is orthonormal, what is the matrix $A$?
+ \item (Extra credit) Let $\mathcal{D}$ be another ordered basis for $V$, and
+   let $C$ be the associated $n\times n$ matrix. How are $A$ and $C$ related
+   (with proof)?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Let~$V$ be the vector space of all continuous functions $[0,1]\to\R$ with
+  inner product~$\langle f,g\rangle=\int_0^1f(t)g(t)\,dt$.  Let~$W$ be the
+  subspace spanned by~$\left\{ t,\sqrt{t} \right\}$. (Warning: to get this
+  problem right, you will need to be very careful with your calculations and
+double-check your solutions.)  
+\begin{enumerate}[(a)]
+    \item Apply Gram-Schmidt to~$\left\{ t,\sqrt{t} \right\}$ to compute an orthonormal basis
+      $\left\{ u_1,u_2 \right\}$ for~$W$. (Hint: the coefficient of~$t$
+      in~$u_2$ should be~$-6\sqrt{2}$.)
+    \item Find the closest function in~$W$ to~$f(t)=t^2$.  Express your solution
+      in two forms: (i) as a linear combination of~$u_1$ and~$u_2$, and (ii) as
+      a linear combination of~$t$ and~$\sqrt{t}$.
+    \item Graph~$f$ and its projection onto~$W$ (which you just calculated).
+  \end{enumerate}
+\end{prob}
+
+\end{document}

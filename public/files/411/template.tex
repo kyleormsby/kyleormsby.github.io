@@ -1,0 +1,156 @@
+\documentclass[12pt]{amsart}
+\usepackage{mathptmx,microtype,libertine}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amscd, amsthm} 
+\usepackage{amssymb, amsfonts} 
+\usepackage{stmaryrd}
+\usepackage{enumerate}
+\usepackage[svgnames]{xcolor} 
+\usepackage{color}
+\usepackage[margin=1.5in]{geometry}
+\usepackage{mathrsfs}
+\usepackage{booktabs}
+\usepackage{aliascnt}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+\setcounter{secnumdepth}{2}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+\usepackage{mathrsfs}
+%todonotes
+\usepackage[
+textwidth=3cm,
+textsize=small,
+colorinlistoftodos]
+{todonotes}
+
+% macros
+\usepackage{xargs}
+
+% figs
+\usepackage{float}
+\usepackage{tikz-cd}
+
+% add macros here; I'll give you a couple for free:
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\ZZ}{\mathbb{Z}}
+
+% Now to set up theorem environments and numbering:
+
+\numberwithin{equation}{section} %Fiddles with numbering system of the following.
+ 
+%% The below commands set up \autoref which makes \autoref{thm:name} produce a link to "Theorem x.y" as opposed to \ref{thm:name} which just links "x.y".
+\theoremstyle{plain}
+
+\newaliascnt{theorem}{equation}  
+\newtheorem{theorem}[theorem]{Theorem}  
+\aliascntresetthe{theorem}  
+\providecommand*{\theoremautorefname}{Theorem}
+
+\newaliascnt{dodeca}{equation}  
+\newtheorem{dodeca}[dodeca]{Dodecatheorem}  
+\aliascntresetthe{dodeca}  
+\providecommand*{\dodecaautorefname}{Dodecatheorem}    
+
+\theoremstyle{definition}
+
+\newaliascnt{prop}{equation}  
+\newtheorem{prop}[prop]{Proposition}
+\aliascntresetthe{prop}  
+\providecommand*{\propautorefname}{Proposition}  
+ 
+
+\newaliascnt{lemma}{equation}  
+\newtheorem{lemma}[lemma]{Lemma}
+\aliascntresetthe{lemma}  
+\providecommand*{\lemmaautorefname}{Lemma}  
+
+\newaliascnt{corollary}{equation}  
+\newtheorem{corollary}[corollary]{Corollary}
+\aliascntresetthe{corollary}  
+\providecommand*{\corollaryautorefname}{Corollary}  
+
+\newaliascnt{claim}{equation}  
+\newtheorem{claim}[claim]{Claim}
+\aliascntresetthe{claim}  
+\providecommand*{\claimautorefname}{Claim}  
+
+\newaliascnt{conjecture}{equation}  
+\newtheorem{conjecture}[conjecture]{Conjecture}
+\aliascntresetthe{conjecture}  
+\providecommand*{\conjectureautorefname}{Conjecture}  
+
+
+\newaliascnt{question}{equation}  
+\newtheorem{question}[question]{Question}
+\aliascntresetthe{question}  
+\providecommand*{\questionautorefname}{Question}  
+
+
+\newaliascnt{defn}{equation}  
+\newtheorem{defn}[defn]{Definition}
+\aliascntresetthe{defn}  
+\providecommand*{\defnautorefname}{Definition}
+
+\newaliascnt{example}{equation}  
+\newtheorem{example}[example]{Example}
+\aliascntresetthe{example}  
+\providecommand*{\exampleautorefname}{Example}
+
+\theoremstyle{remark}
+
+\newaliascnt{remark}{equation}  
+\newtheorem{remark}[remark]{Remark}
+\aliascntresetthe{remark}  
+\providecommand*{\remarkautorefname}{Remark}
+
+\newaliascnt{convention}{equation}  
+\newtheorem{convention}[convention]{Convention}
+\aliascntresetthe{convention}  
+\providecommand*{\remarkautorefname}{Convention}
+
+\theoremstyle{plain}
+\newtheorem*{mainthm}{Main Theorem}
+
+\renewcommand*{\sectionautorefname}{Section}
+\renewcommand*{\subsectionautorefname}{Section}
+
+\begin{document}
+\title{Your Title}
+\author{Your Name}
+
+
+\begin{abstract}
+Here are some tips on what to include in your abstract: \url{https://mathcomm.org/a-student-guide-to-writing-an-abstract/}
+\end{abstract}
+
+\maketitle
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+\section{Introduction}\label{sec:intro} % <-- The section is labeled!
+
+This section, \autoref{sec:intro}, is where we will begin the discussion.
+
+\begin{theorem}\label{thm:fun}
+Fourier analysis is fun.
+\end{theorem}
+\begin{proof}
+It's in the pudding.
+\end{proof}
+
+Didn't you enjoy the proof of \autoref{thm:fun}?
+
+% uncomment the below part to make you BibTeX bibliography
+% use the \cite{} command to cite references
+
+% \bibliographystyle{alpha}
+% \bibliography{mybib} % replace mybib with the name of your .bib file
+
+\end{document}
+

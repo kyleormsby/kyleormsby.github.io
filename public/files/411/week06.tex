@@ -1,0 +1,94 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 411: Topics in Advanced Analysis\\ Homework due Wednesday Week 6}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Prove that if $(f_n\colon [a,b]\to\CC)_{n\in \NN}$ is a sequence of Riemann integrable functions converging uniformly to $f\colon [a,b]\to \CC$, then
+\[
+  \lim_{n\to \infty} \int_a^b f_n(x)\,dx = \int_a^b f(x)\,dx.
+\]
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Prove or disprove:
+\[
+  \lim_{n\to \infty}\lim_{k\to \infty} \frac{n/k}{n/k+1} = \lim_{k\to \infty}\lim_{n\to \infty} \frac{n/k}{n/k+1}.
+\]
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Let $a<b$ be real numbers. Compute the Fourier transform of the characteristic function $\chi_{[a,b]}$ of the closed interval $[a,b]$.
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Compute the convolution
+\[
+  e^{-x^2}*e^{-x^2}.
+\]
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+
+\end{document}

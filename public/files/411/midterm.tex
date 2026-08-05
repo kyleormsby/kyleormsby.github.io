@@ -1,0 +1,147 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, hyperref, fullpage,tikz,microtype}
+\usetikzlibrary{decorations.markings}
+\tikzset{-|-/.style={decoration={markings, mark=at position #1 with
+  {\arrow{stealth}}},postaction={decorate}}}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs,linearb}
+\usepackage{systeme}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{refl}{Reflection}
+\newtheorem{question}[prop]{Question}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\R}{\RR}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+\newcommand{\Bb}{\mathscr{B}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\ul}[1]{\underline{#1}}
+
+\title{Math 411: Midterm Exam}
+
+\begin{document}
+\maketitle
+
+\subsection*{Instructions}
+This is an open book, open notes, open Internet, closed collaboration, closed ``AI'' take-home exam. It is distributed Monday 10 March at 7\textsc{a.m.}~and is due Wednesday 12 March at 10\textsc{p.m.}~via Gradescope. The recommended exam period is 180 minutes, but this is only a suggestion. You are welcome --- even encouraged --- to read the problems early and then sit down to `properly' write solutions later. The work that you turn in may be handwritten or typed, and all of it must be your own. You may use a computer and/or the Internet only for the following purposes:
+\begin{itemize}
+\item Accessing course materials from the course website or Zulip;
+\item Looking at reference texts or your own notes;
+\item Typesetting or looking up how to typeset something in \LaTeX;
+\item Checking arithmetic and other computations with a calculator or computer algebra system.
+\end{itemize}
+\textbf{The Honor Principle prevails.}
+
+\bigskip
+
+\noindent Keep the following in mind as you work on the exam:
+\begin{itemize}
+    \setlength{\itemsep}{0.3\baselineskip}
+  \item \textbf{Unless explicitly instructed otherwise, you must show your work and
+justify your claims in order to receive full credit.} 
+  \item The solutions you submit should not contain scratch work. Do your
+    scratch work on separate sheets of paper which you do not submit.
+\end{itemize}
+\bigskip
+
+\noindent Your completed exam must be uploaded to Gradescope as a PDF by
+10\textsc{p.m.}~Pacific time on Wednesday 12 March.  \textbf{Given the flexibility of this exam format, I reserve the right to not accept late submissions.}  If something might prevent you from turning the exam in on time, please contact me ASAP.
+
+\bigskip
+\noindent Problems will be scored in a manner approximately proportional to the amount of work each requires.  Exams will be returned via Gradescope, and I will supply exam solutions after all exams are graded upon request.
+
+\bigskip
+
+\begin{prob}
+Suppose $f\colon \RR\to \CC$ is $1/2$-periodic, so that $f(x+1/2) = f(x)$ for all $x\in \RR$. Show that $\hat f(n) = 0$ for all odd $n$.
+\end{prob}
+
+\begin{prob}
+Let $f\colon [a,b]\to \CC$ be a continuous function. Show that for any $\varepsilon>0$ there exists a polynomial $P\in \CC[x]$ such that
+\[
+  \sup_{x\in [a,b]}|f(x)-P(x)|<\varepsilon
+\]
+This is called the \emph{Weierstrass approximation theorem}. [\emph{Hint}: A corollary from the lecture of 5 February implies that continuous functions on $S^1$ may be uniformly approximated by trigonometric polynomials. You may want to also show that that $e^{2\pi ix}$ can be uniformly approximated by polynomials on any interval.]
+\end{prob}
+
+\begin{prob}
+Recall that for $s>1$,
+\[
+  \zeta(s) := \sum_{n\ge 1} \frac{1}{n^s}.
+\]
+\begin{enumerate}[(a)]
+\item Fix a real number $t>0$ and let
+\[
+  f_t(x) = \frac{t}{\pi(x^2+t^2)}.
+\]
+Prove that
+\[
+  \widehat{f_t}(\gamma) = e^{-2\pi t|\gamma|}.
+\]
+\item Prove that
+\[
+  \frac 1\pi \sum_{n\in \ZZ} \frac{t}{t^2+n^2} = \sum_{n\in \ZZ} e^{-2\pi t|n|}.
+\]
+\item Prove that the following identity holds for $0<t<1$:
+\[
+  \frac 1\pi \sum_{n\in \ZZ}\frac{t}{t^2+n^2} = \frac{1}{\pi t} + \frac{2}{\pi}\sum_{m\ge 1} (-1)^{m+1}\zeta(2m)t^{2m-1}.
+\]
+\item Prove that
+\[
+  \sum_{n\in \ZZ}e^{-2\pi t|n|} = \frac{2}{1-e^{-2\pi t}}-1.
+\]
+\item The \emph{Bernoulli numbers} $B_k$ are defined by the Taylor series for $z/(e^z-1)$ in the sense that
+\[
+  \frac{z}{e^z-1} = 1-\frac z2 + \sum_{m\ge 1}\frac{B_{2m}}{(2m)!}z^{2m}.
+\]
+Use the above work to deduce that
+\[
+  2\zeta(2m) = (-1)^{m+1}\frac{(2\pi)^{2m}}{(2m)!}B_{2m}.
+\]
+(You may \emph{not} cite or use the results about $\zeta$ we proved in class or in homework.)
+\end{enumerate}
+\end{prob}
+
+\end{document}

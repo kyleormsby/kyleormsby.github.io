@@ -1,0 +1,115 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd,hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 111: Calculus\\ Homework due Wednesday Week 10}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Evaluate the following definite integrals using FTC2 and basic properties of integrals:
+\begin{enumerate}[(a)]
+\item $\int_{-1}^2 (x^2-3x)\,dx$
+\item $\int_{1}^2 \frac{2}{x^3}\,dx$
+\item $\int_0^{\pi/4}\sec^2\theta\,d\theta$
+\item $\int_0^{\pi/2}(x-\sin x)\,dx$
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+A horizontal cylindrical tank has cross-sectional area $A(x) = 4(6x-x^2)$ m$^2$ at height $x$ meters above the bottom when $x\le 3$.
+\begin{enumerate}[(a)]
+\item The volume $V$ of the tank between heights $a$ and $b$ is $\int_a^b A(x)\,dx$. Find the volume between heights $2$ m and $3$ m.
+\item Suppose that oil is being pumped into the tank at a rate of $50$ L/min. Using the chain rule, at how many meters per minute is the height of the oil in the tank changing, expressed in terms of $x$, when the height is at $x$ meters?
+\item How long does it take to fill the tank to $3$ m when you start from a fill level of $2$ m?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+A motor vehicle has a maximum efficiency of 33 mpg at a cruising speed of 40 mph. The efficiency drops at a rate of 0.1 mpg/mph between 40 mph and 50 mph, and at a rate of 0.4 mpg/mph between 50 mph and 80 mph. What is the efficiency in miles per gallon if the car is cruising at 50 mph? What is the efficiency in miles per gallon if the car is cruising at 80 mph? If gasoline costs \$3.50/gal, what is the cost of fuel to drive 50 mi at 40 mph, at 50 mph, and at 80 mph?
+\end{prob}
+
+\begin{prob}
+Evaluate the following indefinite integrals using the indicated substitution:
+\begin{enumerate}[(a)]
+\item $\int (x-1)^5\,dx$; $u=x-1$
+\item $\int (x^2-2x)(x^3-3x^2)^2$; $u=x^3-3x^2$
+\item $\int \sin^3\theta\,d\theta$; $u=\cos\theta$ (hint: $\sin^2\theta = 1-\cos^2\theta$)
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Use suitable substitutions to evaluate the following indefinite integrals:
+\begin{enumerate}[(a)]
+\item $\int t(1-t)^{10}\,dt$
+\item $\int t^2\cos^2(t^3)\sin(t^3)\,dt$
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Use suitable substitutions to evaluate the following definite integrals:
+\begin{enumerate}[(a)]
+\item $\int_0^{\pi/4} \sec^2\theta\tan\theta\,d\theta$
+\item $\int_0^1 x\sqrt{1-x^2}\,dx$
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Use substitution to show that the average value of $f(x)$ over $[a,b]$ is the same as the average value of $f(cx)$ over the interval $[a/c,b/c]$ for $c>0$.
+\end{prob}
+
+
+\end{document}

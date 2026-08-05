@@ -1,0 +1,100 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+\newcommand{\dd}{\mathsf{d}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\SU}{\mathrm{SU}}
+\newcommand{\SO}{\mathrm{SO}}
+\renewcommand{\O}{\mathrm{O}}
+\newcommand{\U}{\mathrm{U}}
+\newcommand{\GL}{\mathrm{GL}}
+\newcommand{\gl}{\mathfrak{gl}}
+\newcommand{\Lie}{\operatorname{Lie}}
+\newcommand{\dR}{\mathrm{dR}}
+\newcommand{\PD}{\mathrm{PD}}
+
+
+
+\title{Math 546: Manifolds\\ Homework due Friday Week 9}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ISM 18--7, \textsc{The Poincar\'e Duality Theorem}]
+Let $M$ be an oriented smooth $n$-manifold. Define a map $\PD\colon \Omega^p(M)\to \Omega^{n-p}_c(M)^*$ by
+\[
+  \PD(\omega)(\eta) = \int_M \omega\wedge \eta.
+\]
+\begin{enumerate}[(a)]
+\item Show that $\PD$ descends to a linear map (still denoted by the same symbols) $\PD\colon H_{\dR}^p(M)\to H^{n-p}_c(M)^*$.
+\item Show that $\PD$ is an isomorphism for each $p$ [\emph{Hint}: Imitate the proof of the de Rham theorem. You will need Lemma 17.27 and you may assume that compactly supported de Rham cohomology has a Mayer--Vietoris sequence as in Problem 18--6 without proof.]
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ISM 18--8]
+Let $M$ be a compact smooth $n$-manfiold.
+\begin{enumerate}[(a)]
+\item Show that all de Rham groups of $M$ are finite-dimensional. [\emph{Hint}: for the orientable case, use Poincar\'e duality to show that $H^p_{\dR}(M)\cong H^p_{\dR}(M)^{**}$. (You may use the fact that an infinite-dimensional vector space is not isomorphic to its double dual.) For the nonorientable case, use Lemma 17.33.]
+\item Show that if $M$ is orientable, then $\dim H^p_{\dR}(M) = \dim H^{n-p}_{\dR}(M)$ for all $p$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ISM 18--9]
+Let $M$ be a smooth $n$-manifold, all of whose de Rham groups are finite-dimensional. The \emph{Euler characteristic} of $M$ is the number
+\[
+  \chi(M) := \sum_{p=0}^n (-1)^p\dim H^p_{\dR}(M).
+\]
+Show that $\chi(M)$ is a homotopy invariant of $M$, and $\chi(M)=0$ when $M$ is compact, orientable, and odd-dimensional.
+\end{prob}
+\end{document}

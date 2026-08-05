@@ -1,0 +1,174 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,xcolor}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage[normalem]{ulem}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+\title{Math 546: Topology \& Geometry of Manifolds\\ Course Information \& Syllabus}
+\author[Math 546:  Manifolds]{Spring 2023}
+
+\begin{document}
+\maketitle
+
+%\vspace{-5mm}
+\thispagestyle{empty}
+
+\vspace{-.5cm}
+
+\begin{center}
+\fbox{
+\begin{minipage}{4.5in}
+\begin{tabular}{rl}
+Place: &PDL C--038\\
+Time: &MWF, 13:30--14:20\\
+Instructor: &Kyle Ormsby (\href{mailto:ormsbyk@uw.edu}{\nolinkurl{ormsbyk@uw.edu}}), PDL C--442\\
+TA: &Alex Waugh (\href{mailto:ajw48@uw.edu}{\nolinkurl{ajw48@uw.edu}}), PDL C--132\\
+Problem Session: &TBD in the lounge\\
+Drop-in Hours: & TBD with Alex in C--132\\
+&TBD with Kyle in C--442\\
+Textbook: &\href{https://link-springer-com.offcampus.lib.washington.edu/book/10.1007/978-1-4419-9982-5}{\emph{Introduction to Smooth Manifolds}}, 2nd ed.\\
+&by John M.~Lee\\
+Website: &\url{kyleormsby.github.io/546/}
+\end{tabular}
+\end{minipage}
+}
+\end{center}
+
+\smallskip
+
+\subsection*{Course description}
+The Math 544--545--546 sequence is a rigorous, graduate-level exploration of topology (the study of mathematical phenomena that are invariant under continuous deformations) and differential geometry (the geometry of smooth shapes) with a special emphasis on manifolds (a flavor of smooth shape which is locally Euclidean and glued together with $C^\infty$ maps). Math 546 will focus on Chapters 7--12 and 14--18 of Lee's textbook, with the de Rham theorem comparing singular and de Rham cohomology on smooth manifolds as its capstone result. Upon completing this course, students will be ready to apply the concepts of differential geometry and de Rham cohomology in their future mathematical, scientific, and technological work.
+
+\subsection*{Learning outcomes}
+By the end of this course, students should be able to:
+\begin{itemize}
+\item converse in the languages of smooth manifolds, vector bundles, differential forms, and de Rham cohomology;
+\item understand and utilize theorems and concepts from topology and geometry such as Lie groups; vector fields; and the Lie algebra of a Lie group; integral curves and flows; vector bundles (especially the cotangent bundle); differential forms; orientations; integration on manifolds and the generalized Stokes' Theorem; de Rham cohomology; and the de Rham theorem;
+\item \textbf{understand and produce proofs related to the above topics};
+\item apply the above topics in relevant examples and applications; and
+\item \textbf{communicate mathematical ideas verbally and in writing}.
+\end{itemize}
+
+\subsection*{In-person and remote participation}
+I will deliver interactive lectures in PDL C--038.  Interactive components and student-teacher feedback are valuable components of the course, and students are encouraged to participate in-person if able and healthy. Lectures will be recorded and posted online for asynchronous viewing and review.  If you attend in-person, you are expected to engage with peers and me in the interactive components of the lecture; if you are participating remotely, then you are expected to engage with a small prompt in our Zulip workspace (see below). Math 546 does not have a formal attendance policy, but I will use your in-person and Zulip engagement to assess your participation in the course.
+
+\subsection*{Texts}
+This course will use Jack Lee's \emph{Introduction to Smooth Manifolds} as its primary reference. UW students can download a free PDF of the texts from the UW Libraries website (see links on the course website or top of the syllabus).
+
+Each class meeting will be paired with suggested reading. Lectures and readings are intended to complement each other, and you are strongly encouraged to engage with each reading. In particular, some topics and proofs will only be covered in the reading.
+
+\subsection*{Homework}
+Homework is due via Gradescope\footnote{Gradescope is an online homework submission and evaluation platform. You will receive a link to register for our class's Gradescope page during the first week of classes.} every Friday by 13:00. Homework due Friday of week $N$ covers topics through Monday of week $N$, and you are strongly encouraged to start homework early so that you can take advantage of problem sessions, drop-in hours, and study groups.  Excellent solutions take many forms, but they all have the following characteristics:
+
+\begin{itemize}
+\item they are written as explanations for other students in the course; in particular, they fully explain all of their reasoning and do not assume that the reader will fill in details;
+\item when graphical reasoning is called for, they include large, carefully drawn and labeled diagrams;
+\item they are neatly written or typeset;\footnote{Students are strongly 
+encouraged to prepare solutions in the \LaTeX~document preparation 
+system.  Nearly all of the \texttt{.pdf} files on the course website are produced by \LaTeX; you can find their associated source files by changing the \texttt{.pdf} suffix to \texttt{.tex} in the file's URL.}
+\item they use complete sentences (that do not begin with notation), even when formul\ae~or symbols are involved; and
+\item they include the statement of the problem.\footnote{This will be particularly easy if you use the \texttt{.tex} source from the course website!}
+\end{itemize}
+
+Your solutions should only use material from the textbook or lectures that is within or precedes the section where a problem is asked.
+
+\textbf{I will be flexible with deadlines as long as you communicate with me about extensions.} If health, family, or emergent local/national/global crises might impede the timely completion of your homework, please contact me as early as possible.
+
+\subsection*{Collaboration}
+You are permitted and encouraged to work with your peers on homework problems.  \textbf{You must cite those with whom you worked}, and you must write up solutions independently.  \textbf{Duplicated solutions will not be accepted.}
+
+\subsection*{Feedback}
+You will receive timely feedback on your homework via Gradescope.  Some problems will be graded for completion (two points) and others will be fully assessed and can earn up to five points for mathematical content, and two points for the quality of writing.  If your answer is incorrect, this will be reflected in the score, and there will also be a comment indicating where things went wrong with your solution.
+
+\subsection*{Revision}
+You are strongly encouraged to revise homework solutions which are incorrect, incomplete, or poorly written. Revisions should be submitted within one week of receiving initial feedback on an assignment (but again, I'll be flexible as long as there is good communication). This will give you the opportunity to revisit challenging material, respond to feedback, and consolidate your knowledge on important course topics. Important policy points:
+\begin{itemize}
+\item You may only revise problems which were submitted and evaluated.
+\item Submit revisions via Gradescope within one week of receiving feedback on the initial assignment.
+\item \emph{Do not} copy the work of other students, but it's OK to ask peers, the TA, and the instructor for hints.
+\item In order to limit logistical chaos, you may not submit revisions to revisions, but you are still encouraged to discuss feedback from revisions.
+\item Your final score on homework problems will be a (proprietary) weighted average of your initial and revised scores.
+\end{itemize}
+
+\subsection*{Exams}
+We will have one midterm exam and one final exam. The midterm wil be open book, open notes, and take-home. It will have suggested time constraints and a firm due date. Calculators, computers, phones, collaboration, books other than the textbook, and the Internet are prohibited during the midterm exam. The midterm exam \emph{is} eligible for revision, just like homework assignments.
+
+The final exam is a 30-minute oral exam with the course instructor. You will be expected to respond at the board to prompts/questions in dialogue with the instructor.
+
+\begin{itemize}
+\item Midterm Exam: distributed Monday 1 May, due Friday 5 May. (No homework due this week.)
+\item Final Exam: by appointment during finals week, 5--9 June.
+\end{itemize}
+
+\subsection*{Assessment}% and self-assessment}
+Students will be assessed based on their demonstrated competence with the learning objectives of the class. The weekly homework (and revisions), midterm exam (and revisions), and final oral exam will provide the primary bases for assessment. While the points provided on homework and exams are important feedback, they are not the totality of the assessment process.
+
+Students are welcome to suggest alternative/supplemental assignments (\emph{e.g.}~a paper or presentation) if they believe it would better demonstrate their learning. Note that such projects must be approved in advance by the instructor and completed before the end of the term.
+
+Final grades will be distributed according to the following scale approved by the Graduate Program Coordinator:
+\begin{itemize}
+\item 4.0: outstanding performance,
+\item 3.8: clear prelim pass,
+\item 3.5: solid performance, potential prelim pass,
+\item 3.0: student should continue studying subject to improve their understanding.
+\end{itemize}
+
+
+\subsection*{Joint expectations}
+Within our shared classroom, problem session, and online collaboration spaces, we expect the following of each other:
+\begin{itemize}
+\item Make space for all to contribute.
+\item Recognize that there are differences in how we approach mathematics.
+\item Listen to peers.
+\item Engage in compassionate communication.
+\item Check in with partners and peers.
+\item Respect everyone.
+\item Make our best attempt to be present and ready to collaborate.
+\item Encourage mathematical risk-taking and vulnerability.
+\item Recognize mistakes as an integral part of the mathematical process.
+\end{itemize}
+
+\subsection*{Problem session}
+Every Tuesday, the TA and I will host a problem session (time TBD) in the graduate lounge. This is an excellent opportunity to get a head start on the week's homework assignment in a collaborative, supportive environment. As needed, the instructor or TA will present additional examples to reinforce course material. Participation is \emph{strongly encouraged} but not required.
+
+\subsection*{Drop-in hours}
+The instructor and TA each hold weekly drop-in hours, times TBD. You are also welcome to contact the instructor to arrange for additional office hours.
+
+\subsection*{Zulip}
+Our class has a shared Zulip workspace (the same as last term) which you can use to ask questions (of the instructor, TA, or peers), collaborate on problems, respond to remote lecture prompts, and share resources. The Zulip workspace is an extension of our classroom and the above joint expectations extend to this setting.
+
+If you are not already a member of the Zulip workspace, please contact me. Please use streams, topics, and threads to keep conversations organized. You can write \LaTeX~code in Zulip by placing inline formul\ae~in \emph{double} dollar signs; see \href{https://zulip.com/help/format-your-message-using-markdown#latex}{this link} for more formatting information.
+
+\subsection*{The Internet}
+You are welcome to use Internet resources to supplement content we cover in this course, with the exception of solutions to homework problems.
+
+\subsection*{Religious accommodations}
+In line with Washington state law, this course accommodates student absences to allow students to take holidays for reasons of faith or conscience or for organized activities conducted under the auspices of a religious denomination, church, or religious organization, so that students’ grades are not adversely impacted by the absences. See \url{https://registrar.washington.edu/staffandfaculty/religious-accommodations-policy/} for further information.
+
+\subsection*{Access and accommodations}
+Your experience in this class is important to me. It is the policy and practice of the University of Washington to create inclusive and accessible learning environments consistent with federal and state law. If you have already established accommodations with Disability Resources for Students (DRS), please activate your accommodations via myDRS so we can discuss how they will be implemented in this course.
+
+If you have not yet established services through DRS, but have a temporary health condition or permanent disability that requires accommodations (conditions include but not limited to: mental health, attention-related, learning, vision, hearing, physical or health impacts), contact DRS directly to set up an Access Plan. DRS facilitates the interactive process that establishes reasonable accommodations. Contact DRS at \url{disability.uw.edu}.
+
+\bigskip \bigskip
+\hrulefill
+\bigskip \bigskip
+
+\begin{center}
+Remember: \emph{Math is hard, but we're going to get through this together!}
+\end{center}
+
+
+
+\end{document}

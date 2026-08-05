@@ -1,0 +1,87 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\title{Math 544: Topology\\ Homework due Friday Week 7}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Topological Manifolds} are marked ITM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ITM 6--2]
+Note that both a disk and a M\"obius band are manifolds with boundary, and both boundaries are homeomorphic to $S^1$. Show that $\RR\PP^2$ is homeomorphic to a space obtained by attaching a disk to a M\"obius band along their boundaries.
+\end{prob}
+
+\begin{prob}[ITM 6--3]
+Show that the Klein bottle is homeomorphic to a quotient obtained by attaching two M\"obius bands together along their boundaries.
+\end{prob}
+
+\begin{prob}[ITM 6--6]
+For each of the following surface presentations, compute the Euler characteristic and determine which of the standard surfaces it represents:
+\begin{enumerate}[(a)]
+\item $\langle a,b,c\mid abacb^{-1}c^{-1}\rangle$,
+\item $\langle a,b,c\mid abca^{-1}b^{-1}c^{-1}\rangle$,
+\item $\langle a,b,c,d,e,f\mid abc,~bde,~c^{-1}df,~e^{-1}fa\rangle$,
+\item $\langle a,b,c,d,e,f,g,h,i,j,k,\ell,m,n,o\mid \\ \phantom{a}abc,~bde,~dfg,~fhi,~haj,~c^{-1}k\ell,~e^{-1}mn,~g^{-1}ok^{-1},~i^{-1}\ell^{-1}m^{-1},~j^{-1}n^{-1}o^{-1}\rangle$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ITM 7--3]
+Let $X$ be a path-connected topological space, and let $p,q\in X$. Show that all paths from $p$ to $q$ give the same isomorphism of $\pi_1(X,p)$ with $\pi_1(X,q)$ if and only if $\pi_1(X,p)$ is Abelian.
+\end{prob}
+
+\begin{prob}[ITM 7--5]
+Let $G$ be a topological group.
+\begin{enumerate}[(a)]
+\item Prove that up to isomorphism, $\pi_1(G,g)$ is independent of the choice of base point $g\in G$.
+\item Prove that $\pi_1(G,g)$ is Abelian. [\emph{Hint}: if $f,g$ are loops based at $1\in G$, apply the square lemma to $F\colon I\times I\to G$ given by $F(s,t) = f(s)g(t)$.]
+\end{enumerate}
+\end{prob}
+
+
+
+\end{document}

@@ -1,0 +1,188 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+\newcommand{\spn}{\operatorname{span}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\im}{\operatorname{im}}
+
+
+\title{Math 201: Linear Algebra\\ Homework due Friday Week 5}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+
+\begin{prob}
+Find the coordinates of each given vector~$v$ with respect to the
+    ordered list of linearly independent vectors~$B=\langle
+      \beta_1,\dots,\beta_n \rangle$.  Show
+      your work.
+    \begin{enumerate}[(a)]
+      \item $v=(11,-6)$, \ $B=\langle (1,2),(-2,3)\rangle$.
+      \item $v=(11,-6)$, \  $B=\langle (1,0),(0,1)\rangle$.
+      \item $v=x^2+7x-5$, \ $B=\langle 1, (x-1), (x-1)^2\rangle$.
+      \item $v=x^2+7x-5$, \ $B=\langle 1, x, x^2, x^3 \rangle$. (Note:
+    $x^3\in B$).
+      \item
+  \[
+    v =\left(\begin{array}{cc}
+        3&7\\
+        8&11
+    \end{array} \right),\qquad
+    B = \left\langle
+    \left(\begin{array}{cc}
+        1&1\\
+        2&1
+    \end{array} \right),
+    \left(\begin{array}{rr}
+        -1&1\\
+        -1&3
+    \end{array} \right)
+    \right\rangle.
+  \]
+    \end{enumerate}
+\end{prob}
+% uncomment the following and use the below proof environment to write your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Let~$A$ be an~$m\times n$ matrix with~$i,j$-th entry~$A_{ij}$.
+    The {\em transpose} of~$A$, denoted~$A^{T}$, is the~$n\times m$ matrix
+    with~$i,j$-th entry~$A_{ji}$: the~$i$-th row of~$A^{T}$ is the~$i$-th column
+    of~$A$.  Thus, for example,
+    \[
+      \left(\begin{array}{cc}
+    a&b\\
+    c&d\\
+    e&f
+      \end{array} \right)^{T}
+=
+\left(\begin{array}{ccc}
+    a&c&e\\
+    b&d&f
+\end{array} \right).
+    \]
+    A matrix~$A$ is {\em symmetric} if~$A^{T}=A$.  A matrix~$A$ is {\em skew-symmetric} if~$A^{T}=-A$.  A~$3\times 3$ skew-symmetric matrix has the form:
+    \[
+      \left(\begin{array}{rrr}
+    0&a&b\\
+    -a&0&c\\
+    -b&-c&0
+      \end{array} \right).
+    \]
+    Let~$W$ be the set of~$3\times 3$ skew-symmetric matrices over a
+    field~$F$.
+    \begin{enumerate}[(a)]
+      \item Prove that~$W$ is a subspace of the vector space of all~$3\times 3$ matrices
+  over~$F$.
+      \item Give a basis for~$W$.
+      \item What is~$\dim(W)$?
+    \end{enumerate}
+\end{prob}
+
+\begin{prob}
+Define the following matrix over the real numbers:
+    \[
+      M = 
+      \left(\begin{array}{rrrr}
+    -14 & 56 & 40 & 92 \\
+    8 & -32 & -23 & -53 \\
+    6 & -24 & -17 & -39 \\
+    -1 & 4 & 3 & 7
+      \end{array}\right).
+    \]
+    \begin{enumerate}[(a)]
+      \item What is the reduced echelon form for~$M$? (You do not need to show
+  your work for this.  Thinking a bit about your choices will save work.)
+  \item Compute (i) a basis for the row space of~$M$ and (ii) a basis for
+    the column space of~$M$ using the algorithm presented in class on
+    Monday of Week~$4$. (Make sure you follow the algorithm precisely. The
+    solution is then unique.)
+    \end{enumerate}
+\end{prob}
+
+\begin{prob}
+\begin{enumerate}[(a)]
+     \item Prove that there exists a linear transformation $f\colon \R^2 \to \R^3$ such that $f(1,1)=(1,0,2)$ and $f(2,3)=(1,-1,4)$. What is $f(8,11)$?
+     \item Is there a linear transformation $f\colon \R^3 \to \R^2$ such that $f(1,2,1)=(2,3)$, $f(3,1,4)=(6,2)$ and $f(7,-1,10)=(10,1)$? Explain your reasoning.
+    \end{enumerate}
+\end{prob}
+
+\begin{prob}
+Recall that $\Hom(V,W)$ denotes the vector space of linear transformations $V\to W$ under pointwise addition and scalar multiplication.\footnote{\emph{I.e.}, $(f+g)(v) = f(v)+g(v)$ and $(\lambda f)(v) = \lambda f(v)$ for all $f,g\in \Hom(V,W)$ and $\lambda\in F$.} When $W = F = F^1$, the vector space $V^* := \Hom(V,F)$ is the called the \emph{dual} of $V$. Suppose that $V$ has ordered basis $\langle v_1,\ldots,v_n\rangle$. Prove that $V^*$ has basis $\langle v_1^*,\ldots,v_n^*\rangle$ where $v_i^*$ satisfies
+\[
+  v_i^*(v_j) =
+  \begin{cases}
+    1&\text{if }i=j,\\
+    0&\text{if }i\ne j.
+  \end{cases}
+\]
+(Your solution should include a justification of why $v_i^*$ is a well-defined element of $V^*$.)
+\end{prob}
+
+\begin{prob}
+For the following functions $f$:
+   \begin{enumerate}[(i)]
+    \item prove that $f$ is a linear transformation,
+    \item find bases for $\ker(f)$ and $\im(f)$, and
+    \item compute the nullity and the rank.
+   \end{enumerate}
+   \begin{enumerate}[(a)]
+    \item $f\colon \R^3 \to \R^2$ defined by $f(x,y,z)=(x-y,2z)$. 
+    \item $f \colon \R^2 \to \R^3$ defined by $f(x,y)=(x+y, 0, 2x-y)$. 
+    \item $f\colon \RR[x]_{\le 2} \to \RR[x]_{\le 3}$ defined by $f(p(x))=x\cdot p(x)+p'(x)$.
+  Here, $p'(x)$ denotes the usual derivative from one-variable calculus.
+   \end{enumerate}
+    (Recall that $F[x]_{\le n}$ denotes the vector space of polynomials with
+    coefficients in $F$ of degree less than or equal to $n$.  One basis for it is
+  $\left\{ 1,x,x^2,\dots,x^n \right\}$, and hence, it has dimension~$n+1$.)
+\end{prob}
+
+\end{document}

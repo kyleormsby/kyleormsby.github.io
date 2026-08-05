@@ -1,0 +1,112 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+\newcommand{\dd}{\mathsf{d}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\SU}{\mathrm{SU}}
+\newcommand{\SO}{\mathrm{SO}}
+\renewcommand{\O}{\mathrm{O}}
+\newcommand{\U}{\mathrm{U}}
+\newcommand{\GL}{\mathrm{GL}}
+\newcommand{\gl}{\mathfrak{gl}}
+\newcommand{\Lie}{\operatorname{Lie}}
+
+
+
+\title{Math 546: Manifolds\\ Homework due Friday Week 7}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[14--4]
+Let $V$ be a finite-dimensional vector space.
+\begin{enumerate}[(a)]
+\item Show that an ordered $k$-tuple $(v_1,\ldots,v_k)$ of elements of $V$ is linearly dependent if and only if $v_1\wedge\cdots v_k=0$.
+\item Show that two linearly independent ordered $k$-tuples $(v_1,\ldots,v_k)$ and $(w_1,\ldots,w_k)$ of elements of $V$ have the same span if and only if
+\[
+  v_1\wedge\cdots\wedge v_k = cw_1\wedge\cdots\wedge w_k
+\]
+for some nonzero scalar $c$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[14--5, \textsc{Cartan's Lemma}]
+Let $M$ be a smooth $n$-manifold with or without boundary, and let $(\omega^1,\ldots,\omega^k)$ be an ordered $k$-tuple of smooth $1$-forms on an open subset $U\subseteq M$ such that $(\omega^1|_p,\ldots,\omega^k|_p)$ is linearly independent for each $p\in U$. Given smooth $1$-forms $\alpha^1,\ldots,\alpha^k$ on $U$ such that
+\[
+  \sum_{i=1}^k \alpha^i\wedge \omega^i = 0
+\]
+show that each $\alpha^i$ can be written as a linear combination of $\omega^1,\ldots,\omega^k$ with smooth coefficients.
+\end{prob}
+
+\begin{prob}[ISM 15--1]
+Suppose $M$ is a smooth manifold that is the union of two orientable open submanifolds with connected intersection. Show that $M$ is orientable. Use this to give another proof that $S^n$ is orientable.
+\end{prob}
+
+\begin{prob}[ISM 16--3(a)]
+Suppose $E$ and $M$ are oriented smooth $n$-manifolds with or without boundary, and $\pi\colon E\to M$ is a smooth orientation-preserving $k$-sheeted covering map or generalized covering map. Show that
+\[
+  \int_E \pi^*\omega = k\int_M \omega
+\]
+for any compactly supported $n$-form $\omega$ on $M$.
+\end{prob}
+
+\begin{prob}
+Let $M$ be an oriented smooth $n$ manifold, $f\in C^\infty(M)$, and $\omega\in \Omega^{n-1}_c(M)$. Use Stokes' theorem to prove the following generalization of integration by parts:
+\[
+  \int_M f\, \dd\omega = \int_{\partial M}f\omega - \int_M \dd f\wedge \omega.
+\]
+\end{prob}
+
+
+\end{document}

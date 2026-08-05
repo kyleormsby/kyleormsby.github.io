@@ -1,0 +1,121 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd,hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 111: Calculus\\ Homework due Friday Week 3}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Make sure to review the homework instructions in the syllabus before writing your solutions. In particular, show your work and write in complete sentences (but also aim for concise explanations).
+
+\begin{prob}
+Consider the function
+\[
+  g(x) = |x| =
+  \begin{cases}
+    x&\text{if }x\ge 0,\\
+    -x&\text{if }x<0,
+  \end{cases}
+\]
+commonly referred to as the \emph{absolute value} function.
+\begin{enumerate}[(a)]
+\item Use the central difference approximation 
+\[
+  g'(0)\approx \frac{g(0+h)-g(0-h)}{2h}
+\]
+to approximate $g'(0)$. Do we get different approximations for different values of $h$?
+\item Now approximate $g'(0)$ using the backward and forward differences
+\[
+  \frac{g(0)-g(0-h)}{h},\qquad \frac{g(0+h)-g(0)}{h}
+\]
+for some (any?) small positive $h$.
+\item Explain why the limit definition of differentiation implies that $g'(0)$ does not exist. Explain how this is possible despite your answer to (a).
+\item (Optional, but worthwhile.) Fix a positive real number $m$. Find a function $f(x)$ for which central difference approximation to $f'(0)$ always equals $m$, yet $f'(0)$ does not exist.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Consider the function
+\[
+  h(x) = \frac{\sin x}{x}.
+\]
+\begin{enumerate}[(a)]
+\item Use \href{https://www.desmos.com/calculator}{desmos} to sketch the graph of $y=h(x)$.
+\item What does your graph indicate about the values of
+\[
+  \lim_{x\to \infty}h(x)\qquad\text{and}\qquad\lim_{x\to -\infty}h(x)\text?
+\]
+\item What does your graph indicate about the value of
+\[
+  \lim_{x\to 0}h(x)\text?
+\]
+\item Based on (c), what should the value of $\sin'(0)$ be, and what is the equation of the tangent line to $y=\sin(x)$ at $x=0$?
+\item Use your answer to (d) to approximate the value of $\sin(0.001)$ without using a calculator.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+The value (in US dollars), $V$, of a particular car depends on the number of miles $m$, the car has been driven, according to the function $V=d(m)$.
+\begin{enumerate}[(a)]
+\item Suppose that $d(40000)=15500$ and $d(55000)=13200$. What is the average rate of change of $d$ on the interval $[40000,55000]$, and what are the units of this value?
+\item In addition to the information given in (a), say that $d(70000)=11100$. Determine the best possible estimate of $d'(55000)$ and write one sentence to explain the meaning of your result, including units on your answer.
+\item Which value do you expect to be greater: $d'(30000)$ or $d'(80000)$? Why?
+\item There's an old adage that a car loses 10\% of its value when you drive it off the lot (\emph{i.e.}, immediately after purchase). If you purchase the car when $m=100$, what does this tell you about $d'(100)$?
+\item Draw a plausible sketch of $V=d(m)$ incorporating all of the above information and assuming the purchase price of the car is \$25000. Write a sentence to describe the long-term behavior of $V=d(m)$, plus another sentence to descrie the long-term behavior of $d'(m)$. Your discussion should be in practical terms regarding the value of the car and the rate at which the value is changing.
+\end{enumerate}
+\end{prob}
+
+
+\end{document}

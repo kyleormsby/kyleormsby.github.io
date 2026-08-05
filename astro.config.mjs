@@ -12,9 +12,9 @@ import rehypeKatex from 'rehype-katex';
  *    directory to its index.html, so /lattice-flow/ 404s in dev even though it
  *    works in the built site. Every visualization is a directory like that.
  *
- * 2. The PDFs, notes, and recordings live in the old repo's files/ directory —
- *    2 GB of them, too much to commit here. Point FILES_DIR at that folder and
- *    /files/* resolves locally without the repo carrying the weight.
+ * 2. Most of files/ is committed under public/files, but the 54x lecture notes
+ *    and the two videos were pruned to fit under the GitHub Pages 1 GB limit.
+ *    Point FILES_DIR at the old repo and those still resolve in dev.
  */
 const FILES_DIR = resolve(process.env.FILES_DIR ?? '../kyleormsby.github.io/files');
 
@@ -39,10 +39,16 @@ function devStatics() {
       server.middlewares.use((req, res, next) => {
         const path = decodeURIComponent((req.url ?? '/').split('?')[0]);
 
+        // Most of files/ is committed under public/. Let Vite serve those so
+        // dev matches production exactly; only fall back to FILES_DIR for the
+        // material that was pruned (the 54x lecture notes, the videos).
         if (path.startsWith('/files/')) {
-          const file = join(FILES_DIR, path.slice('/files/'.length));
-          if (file.startsWith(FILES_DIR) && existsSync(file) && statSync(file).isFile()) {
-            return send(res, file);
+          const committed = join(process.cwd(), 'public', path);
+          if (!existsSync(committed)) {
+            const file = join(FILES_DIR, path.slice('/files/'.length));
+            if (file.startsWith(FILES_DIR) && existsSync(file) && statSync(file).isFile()) {
+              return send(res, file);
+            }
           }
         }
 

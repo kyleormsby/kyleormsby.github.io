@@ -1,0 +1,117 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\usepackage{eucal}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathcal{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\dR}{\mathrm{dR}}
+
+\newcommand{\contract}{\mathbin{\lrcorner}}
+\newcommand{\Hom}{\operatorname{Hom}}
+
+
+\title{Math 546: Manifolds\\ Final Exam Practice Problems}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Use these problems to prepare for your final oral exam. You are welcome to collaborate on them. I will ask you about at least one of these problems during your oral exam. These problems are focused on material covered since the midterm exam, but content from the entire course is fair game for the final.
+
+\begin{prob}
+Let $M$ be a smooth manifold with or without boundary and $p$ be a point of $M$. Let $\mathcal I_p$ denote the subspace of $C^\infty(M)$ consisting of smooth functions that vanish at $p$, and let $\mathcal I_p^2$ be subspace of $\mathcal I_p$ spanned by functions of the form $fg$ for some $f,g\in \mathcal I_p$. [\emph{Note}: $\mathcal I_p$ is an ideal of the commutative $\RR$-algebra $C^\infty(M)$ and $\mathcal I_p^2$ is its square in the ideal-theoretic sense.]
+\begin{enumerate}[(a)]
+\item Show that $f\in \mathcal I_p^2$ if and only if in any smooth local coordinates, its first-order Taylor polynomial at $p$ is zero.
+\item Define a map
+\[
+\begin{aligned}
+  \Phi\colon \mathcal I_p&\longrightarrow T_p^*M\\
+  f&\longmapsto df_p.
+\end{aligned}
+\]
+Prove that $\Phi$ descends to a vector space isomorphism $\mathcal I_p/\mathcal I_p^2\cong T_p^*M$.
+\end{enumerate}
+(See the remark on p.300 of ISM for additional commentary on this result.)
+\end{prob}
+
+\begin{prob}
+Let $M$ and $N$ be smooth manifolds, and suppose $\pi\colon M\to N$ is a surjective smooth submersion with connected fibers. We say that a tangent vector $v\in T_pM$ is \emph{vertical} when $d\pi_p(v)=0$. Suppose $\omega\in \Omega^k(M)$. Show that there exists $\eta\in \Omega^k(N)$ such that $\omega = \pi^*\eta$ if and only if for every $p\in M$ and every vertical $v\in T_pM$,
+\[
+  v\contract \omega_p=0 \qquad\text{and}\qquad v\contract d\omega_p=0.
+\]
+[\emph{Hint}: First do the case in which $\pi \colon \RR^{n+m}\to \RR^n$ is projection onto the first $n$ coordinates.]
+\end{prob}
+
+\begin{prob}
+Let $M$ be a smooth $n$-manifold and suppose $\omega,\eta\in \Omega^n(M)$ are compactly supported. Prove that
+\[
+  \int_{M\times M} \pi_1^*\omega\wedge \pi_2^*\eta = \left(\int_M\omega\right)\left(\int_M\eta\right)
+\]
+where $\pi_i\colon M\times M\to M$ is the projection map onto the $i$-th factor.
+\end{prob}
+
+\begin{prob}
+Let $M\subseteq \RR^3$ be a compact, 3-dimensional smooth manifold with boundary, and assume that the origin is in the interior of $M$. Give the boundary $\partial M$ of $M$ the induced (Stokes) orientation. Compute $\int_{\partial M}\omega$, where $\omega$ is the form
+\[
+  \omega = \frac{x\,dy\wedge dz + y\, dz\wedge dx + z\, dx\wedge dy}{(x^2+y^2+z^2)^{3/2}}.
+\]
+\end{prob}
+
+\begin{prob}
+Suppose $M$ is a connected smooth manifold and $q\in M$.  Use the de Rham theorem and the Hurewicz theorem for singular homology to prove that
+\[
+  H^1_{\dR}(M)\cong \Hom(\pi_1(M,q),\RR).
+\]
+\end{prob}
+
+\begin{prob}
+Let $\TT^2 = S^1\times S^1$ be the $2$-torus. Consider the two maps $f,g\colon \TT^2\to\TT^2$ given by $f(z,w) = (z,w)$ and $g(z,w) = (w,\overline z)$. Use $H^1_{\dR}$ to show that $f$ and $g$ have the same degree, but are not homotopic. (Use the de Rham theorem to prove that )
+\end{prob}
+
+
+\end{document}

@@ -1,0 +1,391 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem*{thm*}{Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+\newcommand{\spn}{\operatorname{span}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\ev}{\operatorname{ev}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\rank}{\operatorname{rank}}
+
+
+\title{Math 201: Linear Algebra\\ Homework due Friday Week 8}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Let
+\[
+  A = \begin{pmatrix} 1 & -2 & 1 & 2\\ 2 & -4 & 1 & 0 \\ 0 & 0 & -1 &
+      0\\ 0& 0 & 0 & 5 \end{pmatrix}.
+\]
+\begin{enumerate}[(a)]
+\item Find elementary matrices~$E_1,\dots,E_{\ell}$ such
+    that~$E_{\ell}\cdots E_2 E_1 A$ is the reduced echelon form of~$A$. (Check
+      your work.)
+\item Compute $\det A$ via row operations.
+\item Compute $\det A$ via permutation expansion.\footnote{Many of the entries in this matrix are $0$. You are free to compute fewer than the standard $4!=24$ terms in the permutation expansion as long as you clearly explain which permutations need not be included.}
+\item Compute $\det A$ via Laplace expansion (along a row or column of your choosing).
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+   In this exercise, we will prove that the determinant is multiplicative, that is, that for $n\times n$ matrices $A$ and $B$, 
+  \[
+      \det(AB)=\det(A)\det(B).
+  \]    
+  We break the problem into two parts, depending on whether~$\det(B)$ is zero or
+  nonzero.  
+  
+  \begin{enumerate}[(a)]
+  \item First, let $B$ be a fixed $n\times n$ matrix over $F$ such that
+  $\det(B)\neq 0$. Consider the function
+  \[
+    d\colon M_{n\times n}(F) \longrightarrow F
+  \] 
+  defined by $d(A)=\det(AB)/\det(B)$. (Hint: the answer to the following set of
+    questions should follow trivially from associativity of matrix
+  multiplication.  Make sure to mention why in your solution.)
+  \begin{enumerate}[(i)]
+    \item Let~$E$ be the~$n\times n$ elementary matrix obtained from the
+      identity matrix by swapping two rows.  Show that~$d(EA)=-d(A)$.
+    \item Let~$E$ be the~$n\times n$ elementary matrix obtained from the
+      identity matrix by scaling a row by a scalar~$\lambda$.  Show
+      that~$d(EA)=\lambda d(A)$.
+    \item Let~$E$ be the~$n\times n$ elementary matrix obtained from the
+      identity matrix by adding a scalar multiple of one row to another.  Show
+      that~$d(EA)= d(A)$.
+    \item Show that~$d(I_n)=1$.
+  \end{enumerate}
+\item It remains to be shown that~$\det(AB)=\det(A)\det(B)$ when~$\det(B)=0$.
+  Fix any $n\times n$ matrix~$B$ such that~$\det(B)=0$.  Our goal is to
+  show~$\det(AB)=\det(A)\det(B)=0$.
+    Recall that the kernel (nullity) of a linear function~$f\colon V\to W$ is the
+    subspace of~$V$ defined by
+    \[
+      \ker(f) := \left\{ v\in V: f(v)=0 \right\},
+    \]
+    and that the image (range) of~$f$ is the subspace of~$W$ defined by
+  \[
+    \im(f):=\left\{ f(v):v\in V \right\}.
+  \]
+The {\em rank} of~$f$ is the dimension of~$\im(f)$.  If~$A$ is any matrix
+  representing~$f$ (with respect to some choice of bases for~$V$ and~$W$), then
+  we have seen that
+    the rank of~$A$, defined as the dimension of its row or column space, equals
+     the rank of~$f$.
+  
+  \begin{enumerate}[(i)]
+    \item Let $f\colon V \to W$ and $g\colon W \to U$ be linear transformations of finite dimensional vector spaces over $F$. Show that 
+  \[
+    \ker(f) \subseteq \ker(g\circ f) \qquad \text{and} \qquad \im(g\circ f)
+    \subseteq \im(g).
+\]
+(Recall that to show an inclusion of sets~$A\subseteq B$, we start with:
+  ``Let~$a\in A$'', do some math, and conclude with ``Thus, $a\in B$.'')
+  \item Use part (a) to prove that $\rank(g\circ f)\leq \rank(f)$ and $\rank(g\circ f)\leq \rank(g)$. 
+  
+  (\emph{Hint:} For one of them you might need to use the rank-nullity theorem.)
+  \item Let $A$ be an $m\times n$ matrix over $F$, and $B$ an $n\times p$ matrix
+    over $F$. Use what you have already shown to prove that $\rank(AB)\leq \rank(A)$ and $\rank(AB)\leq \rank(B)$.
+  \item Using the previous parts of this problem, prove that if $A$ and $B$ are $n\times n$ matrices such that either $\det(A)=0$ or $\det(B)=0$, then $\det(AB)=0$.
+  \end{enumerate}
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Read the attached exposition on Cramer's rule before attempting this
+problem.
+\begin{enumerate}[(a)]
+ \item Consider the~$3\times 3$ system of equations over the real numbers:
+\[
+\left(\begin{array}{ccc}
+   1&2&3\\
+   2&0&2\\
+   0&1&2
+\end{array} \right)
+\left(\begin{array}{c}
+   x_1\\x_2\\x_3
+\end{array} \right)
+=
+\left(\begin{array}{c}
+   4\\0\\2
+\end{array} \right).
+\]
+Use Cramer's rule to compute~$x_2$. (You may assume the system is
+consistent.)
+\item Consider the following matrix over the complex numbers:
+\[
+A=
+\left(\begin{array}{ccc}
+  1+i & 0 & 0 \\
+  0     & 1 & 0 \\
+  i     & 0 & 1-i
+\end{array}\right).
+\]
+Compute each entry of~$\mathrm{adj}(A)$ by hand, and then use
+the formula coming from Cramer's rule to compute~$A^{-1}$.
+\end{enumerate}
+\end{prob}
+
+\newpage
+\section*{Cramer's rule}
+
+Let~$A$ be an invertible~$n\times n$ matrix, and let~$b\in F^n$.  Consider
+the~$n\times n$ system of linear equations~$Ax=b$ where~$x$ is the column vector
+with entries~$(x_1,\dots,x_n)$.  For each~$j=1,\dots,n$, 
+let~$M_j$ be the~$n\times n$ matrix formed by replacing the~$j$-th column of
+of~$A$ by~$b$.  {\em Cramer's rule} says that the solution to the system is
+given by
+\[
+  x_j=\frac{\det(M_j)}{\det(A)},
+\]
+for~$j=1,\dots,n$.
+
+\begin{ex}
+Consider the system of equation
+\begin{align*}
+  ax+by&=s\\
+  cx+dy&=t.
+\end{align*}
+In matrix form, we write the system as
+\[
+  \left(\begin{array}{cc}
+      a&b\\c&d
+  \end{array} \right)
+  \left(\begin{array}{c}
+      x\\y
+  \end{array} \right)
+  =
+  \left(\begin{array}{c}
+      s\\t
+  \end{array} \right).
+\]
+Assume the determinant of $\left(\begin{array}{cc}
+    a&b\\c&d
+\end{array} \right)$ is nonzero, and apply Cramer's rule:
+\begin{align*}
+  \det(M_1) 
+  &= \det\left(\begin{array}{cc}
+      s&b\\
+      t&d
+  \end{array} \right)=sd-bt,\\[12pt]
+  \det(M_2)
+  &= \det\left(\begin{array}{cc}
+      a&s\\
+      c&t
+  \end{array} \right)=at-sc.
+\end{align*}
+By Cramer's rule, the solution to the system is
+\begin{align*}
+  x&=\frac{\det(M_1)}{\det(A)}=\frac{sd-bt}{ad-bc}\\[12pt]
+  y&=\frac{\det(M_2)}{\det(A)}=\frac{at-sc}{ad-bc}.
+\end{align*}
+Let's check this solution:
+\[
+  \left(\begin{array}{cc}
+      a&b\\c&d
+  \end{array} \right)
+  \left(\begin{array}{c}
+      x\\y
+  \end{array} \right)
+  =
+  \left(\begin{array}{c}
+      s\\t
+  \end{array} \right)
+  \quad\Longrightarrow\quad
+  \left(\begin{array}{c}
+      x\\y
+  \end{array} \right)
+  =
+  \left(\begin{array}{cc}
+      a&b\\c&d
+  \end{array} \right)^{-1}
+  \left(\begin{array}{c}
+      s\\t
+  \end{array} \right).
+\]
+It is easy to check that 
+\[
+  \left(\begin{array}{cc}
+      a&b\\c&d
+  \end{array} \right)^{-1}
+  =
+  \frac{1}{ad-bc}
+  \left(\begin{array}{rr}
+      d&-b\\
+      -c&a
+  \end{array} \right).
+\]
+Hence, the solution is
+\begin{align*}
+  \left(\begin{array}{c}
+      x\\y
+  \end{array} \right)
+  &=
+  \left(\begin{array}{cc}
+      a&b\\c&d
+  \end{array} \right)^{-1}
+  \left(\begin{array}{c}
+      s\\t
+  \end{array} \right)\\[12pt]
+  &=
+  \frac{1}{ad-bc}
+  \left(\begin{array}{rr}
+      d&-b\\
+      -c&a
+  \end{array} \right)
+  \left(\begin{array}{c}
+      s\\t
+  \end{array} \right)\\[12pt]
+  &=
+  \frac{1}{ad-bc}
+  \left(\begin{array}{c}
+      ds-bt\\
+      -cs+ta
+  \end{array} \right).
+\end{align*}
+This agrees with the solution we calculated using Cramer's rule.
+\end{ex}
+
+\subsection*{Cramer's rule and inverses.}  Suppose that~$A$ is an invertible~$n\times n$
+matrix.  To find the inverse of~$A$, we need to find a matrix~$X$ such
+that~$AX=I_n$. Finding the~$j$-th column of~$X$ is the same as solving the
+system~$Ax=e_j$, where~$e_j$ is the~$j$-th standard basis vector. We can then
+solve for~$x$ using Cramer's rule~$n$ times---once for each column.  We now
+describe the resulting formula for the inverse of~$A$.  First, some notation:
+for each~$i,j\in\left\{ 1,\dots,n \right\}$ let~$A^{ji}$ be
+the~$(n-1)\times(n-1)$ matrix formed by removing the~$j$-th row and~$i$-th
+column of~$A$.  Next, define the {\em adjugate} of~$A$,
+denoted~$\mathrm{adj}(A)$ by
+\[
+  (\mathrm{adj}(A))_{ij}=(-1)^{i+j}\det(A^{ji}).
+\]
+The scalar $(-1)^{i+j}\det(A^{ji})$ is called the {\em $ji$-th cofactor
+of~$A$}.  Note that we are defining the~$ij$-th entry of the adjugate using
+the~$ji$-th cofactor---the indices reverse order.
+
+Cramer's rule applied to the problem of finding the inverse then gives the
+following important formula:
+\[
+  A^{-1}=\frac{1}{\det(A)}\mathrm{adj}(A).
+\]
+
+\begin{ex}
+As a simple example of Cramer's formula for the inverse, let
+\[
+A=
+\left(\begin{array}{cc}
+    a&b\\
+    c&d
+\end{array} \right).
+\]
+In this case, each~$A^{ji}$ is a~$1\times 1$ matrix. We get
+\begin{align*}
+  (\mathrm{adj}(A))_{11}&=(-1)^{1+1}\det(A^{11})=\det([d])=d\\
+  (\mathrm{adj}(A))_{12}&=(-1)^{1+2}\det(A^{21})=-\det([b])=-b\\
+  (\mathrm{adj}(A))_{21}&=(-1)^{2+1}\det(A^{12})=-\det([c])=-c\\
+  (\mathrm{adj}(A))_{22}&=(-1)^{2+2}\det(A^{22})=\det([a])=a.
+\end{align*}
+Thus, Cramer's formula gives the formula for the inverse of~$A$ we used earlier:
+\[
+  A^{-1}=\frac{1}{\det(A)}\mathrm{adj}(A)
+  =\frac{1}{ad-bc}\left(\begin{array}{rr}
+      d&-b\\
+      -c&a
+  \end{array} \right).
+\]
+\end{ex}
+
+\subsection*{Cramer's rule: continuity of solutions and of the inverse} 
+In general, Cramer's rule is not a time-efficient or numerically stable way to
+compute the solution to a system of equations.  However, it is theoretically
+useful as we see from the following immediate corollaries of the rule:
+\medskip
+
+\begin{thm*}
+Let~$F$ be~$\R$ or~$\C$, and let~$\mathrm{GL}_n(F)$ denote the
+set of invertible~$n\times n$ matrices over~$F$.
+\begin{enumerate}[(1)]
+  \item The function
+\begin{align*}
+  \mathrm{GL}_n(F)&\longrightarrow F\\
+  A&\longmapsto A^{-1}
+\end{align*}
+is a continuous function.  In other words, the inverse of~$A$ is a continuous
+function of the entries of~$A$.
+\item The solution ~$x$ to the system~$Ax=b$ is a continuous function of
+  the entries of~$A$ and~$b$.
+\end{enumerate}
+\end{thm*}
+
+\begin{proof}
+For part (1), it suffices to show that the entries of~$A^{-1}$ are
+rational functions (i.e., quotients of polynomials) in the entries of~$A$ (with
+denominators that do not vanish for invertible~$A$).  But this follow's
+immediately from Cramer's rule:
+\[
+  A^{-1}=\frac{1}{\det(A)}\mathrm{adj}(A).
+\]
+The function~$A\mapsto\det(A)\in F$ is a polynomial in the entries of~$A$
+(consider the permutation or Laplace expansion of the determinant), hence
+continuous.  Hence, restricted to invertible matrices, the function~$A\mapsto
+1/\det(A)$, which gives the denominators of the entries of~$A^{-1}$, is
+continuous.  Similarly, the entries of~$\mathrm{adj}(A)$ are polynomials in the
+entries of~$A$.  The result follows.
+
+Part (2) follows since~$Ax=b$ implies~$x=A^{-1}b$.  We've just seen
+that the entries of~$A^{-1}$ are quotients of polynomials in the entries
+of~$A$, hence the components of~$x$ are quotients of polynomials in the entries
+af~$A$ on~$b$.
+\end{proof}
+
+\end{document}

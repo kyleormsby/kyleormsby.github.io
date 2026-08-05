@@ -1,0 +1,111 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem*{thm*}{Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+\newcommand{\spn}{\operatorname{span}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\ev}{\operatorname{ev}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\rank}{\operatorname{rank}}
+
+
+\title{Math 201: Linear Algebra\\ Homework due Friday Week 9}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+For each of the following matrices $A\in M_{n\times n}(F)$
+  \begin{enumerate}[(i)]
+   \item Determine all eigenvalues of $A$.
+   \item For each eigenvalue $\lambda$ of $A$, find the set of eigenvectors corresponding to $\lambda$.
+   \item If possible, find a basis for $F^n$ consisting of eigenvectors of $A$.
+   \item If successful in finding such a basis, determine an invertible matrix $P$ and a diagonal matrix $D$ such that $A=PDP^{-1}$.
+  \end{enumerate}
+  \begin{enumerate}[(a)]
+   \item $A=\begin{pmatrix} 1 & 2 \\ 3 & 2\end{pmatrix}$ for $F = \R$.
+   \item $A=\begin{pmatrix} 0 & -2 & -3\\ -1 & 1 & -1\\ 2 & 2 & 5\end{pmatrix}$ for $F = \R$.
+   \item $A=\begin{pmatrix} 7 & -5\\ 10 & -7\end{pmatrix}$ for $F = \R$.
+   \item $A=\begin{pmatrix} 7 & -5\\ 10 & -7\end{pmatrix}$ for $F = \C$.
+   \item $A=\begin{pmatrix} 2 & 0 & -1\\ 4 & 1 & -4\\ 2& 0 & -1\end{pmatrix}$ for $F = \R$.
+  \end{enumerate}
+\end{prob}
+% uncomment the following and use the below proof environment to write your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Let $V = \RR[x]_{\le 3}$, the vector space of polynomials of degree at most $3$ with real coefficients.  Let $L$ denote the linear endomorphism
+\[
+\begin{aligned}
+  L\colon V&\longrightarrow V\\
+  p(x)&\longmapsto xp'(x)+p'(x).
+\end{aligned}
+\]
+(You do not need to prove that $L$ is linear, but you should know how to.)  Find the eigenvalues of $L$ and determine if $V$ has a basis of eigenvectors of $L$.  If $L$ has such a basis, provide one (written as a set of polynomials), and if not, explain why not.
+\end{prob}
+
+\begin{prob}
+Let $f\colon V \to V$ be a linear transformation. For a positive integer $m$, we define $f^m$ inductively as $f\circ f^{m-1}$. Prove that if $\lambda$ is an eigenvalue for $f$, then $\lambda^m$ is an eigenvalue for $f^m$.
+\end{prob}
+
+\begin{prob}
+Define $T\colon \Mat_{n\times n}(\R) \to \Mat_{n\times n}(\R)$ by $T(A)=A^\top$ (the transpose of $A$).
+   \begin{enumerate}[(a)]
+    \item Show that the only eigenvalues of $T$ are 1 and -1. (\emph{Hint:} Problem 3 might help.)
+    \item For $n=2$, describe the eigenvectors corresponding to each eigenvalue. 
+    \item Find an ordered basis $\alpha$ for $\Mat_{2\times 2}(\R)$ such that the matrix that represents $T$ with respect to $\alpha$ is diagonal.
+    \item Repeat part (b) for an arbitrary $n>2$.
+    \item Repeat part (c) for $\Mat_{n\times n}(\R)$.
+   \end{enumerate}
+\end{prob}
+
+\end{document}

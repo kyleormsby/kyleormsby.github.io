@@ -1,0 +1,116 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+\DeclareRobustCommand{\stir}{\genfrac\{\}{0pt}{}}
+
+% For solutions.
+\newenvironment{sol}{
+  \medskip
+
+  \noindent\textsc{Solution:}
+}
+{
+  \medskip
+
+}
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 33}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+
+
+
+\begin{prob}  Use the Euclidean algorithm to compute the following (showing your work):
+\[
+  \text{(a)}\quad
+  \gcd(28,63)\qquad\qquad\text{(b)}\quad\gcd(234,286)\qquad\qquad\text{(c)}\quad\gcd(51,894).
+\]
+\end{prob}
+\medskip
+
+\begin{prob}
+Use the Euclidean algorithm to compute the $\gcd$ of $204$ and $168$ and then
+use back-substitution to find
+integers $m$ and~$n$ such that
+\[
+  \gcd(204,168) = 204m+168n.
+\]
+Show your work.  Remember to use back-substitution and not the extended
+Euclidean algorithm.
+\end{prob}
+\medskip
+
+\begin{prob} 
+  \ 
+  \begin{enumerate}[(a)]
+    \item Show that if~$n$ is positive integer of the form~$4k+3$ for some
+      integer~$k$, then~$n$ is not a perfect square. (Hint: Suppose~$n=m^2$.  We
+      can then write~$m=4q+r$ for some~$r\in\left\{ 0,1,2,3 \right\}$.  Consider
+    the remainders of the quantities~$(4q)^2$, $(4q+1)^2$,
+    $(4q+2)^2$, and $(4q+3)^2$ upon division by~$4$.)
+  \item Show that no integer in the sequence
+    \[
+      11,\quad 111,\quad 1111,\quad 11111,\quad \dots
+    \]
+    is a perfect square. 
+  \end{enumerate}
+\end{prob}
+\end{document}

@@ -1,0 +1,95 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+
+
+\title{Math 545: Manifolds\\ Homework due Friday Week 7}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ISM 2--14]
+Suppose $A$ and $B$ are disjoint closed subsets of a smooth manifold $M$. Show that there exists $f\in C^\infty(M)$ such that $0\le f(x)\le 1$ for all $x\in M$, $f^{-1}\{0\} = A$, and $f^{-1}\{1\} = B$.
+\end{prob}
+
+\begin{prob}[ISM 3--2]
+Prove Proposition 3.14: Let $M_1,\ldots,M_k$ be smooth manifolds, and for each $j$, let $\pi_j\colon M_1\times \cdots \times M_k\to M_j$ be the projection onto the $M_j$ factor. For any point $p=(p_1,\ldots,p_k)\in M_1\times \cdots \times M_k$, the map
+\[
+\begin{aligned}
+  \alpha \colon T_p(M_1\times \cdots \times M_k)&\longrightarrow T_{p_1}M_1\oplus \cdots \oplus T_{p_k}M_k\\
+  v&\longmapsto (d(\pi_1)_p(v),\ldots,d(\pi_k)_p(v))
+\end{aligned}
+\]
+is a linear isomorphism. (The same is true if one of the spaces $M_i$ is a smooth manifold with boundary, but you are not asked to prove that case.)
+\end{prob}
+
+\begin{prob}[ISM 3--4]
+Show that $TS^1$ is diffeomorphic to $S^1\times \RR$.
+\end{prob}
+
+\begin{prob}[ISM 3--5]
+Let $S^1\subseteq \RR^2$ be the unit circle, and let $K\subseteq \RR^2$ be the boundary of the square of side length $2$ centered at the origin. Show that there is a homeomorphism $F\colon \RR^2\to \RR^2$ such that $F(S^1) = K$, but there is no \emph{diffeomorphism} with the same property. [\emph{Hint}: Let $\gamma$ be a smooth curve whose image lies in $S^1$, and consider the action of $dF(\gamma'(t))$ on the coordinate functions $x$ and $y$.] Why does this prove that the Cartesian product of manifolds with boundary is not necessarily a manifold with boundary?
+\end{prob}
+
+\begin{prob}[ISM 4--2]
+Suppose $M$ is a smooth manifold (without boundary), $N$ is a smooth manifold with boundary, and $F\colon M\to N$ is smooth. Show that if $p\in M$ is a point such that $dF_p$ is nonsingular, then $F(p)\in N^\circ$.
+\end{prob}
+
+
+
+
+
+
+
+
+\end{document}

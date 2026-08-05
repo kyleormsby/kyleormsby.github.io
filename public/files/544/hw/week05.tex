@@ -1,0 +1,82 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\title{Math 544: Topology\\ Homework due Friday Week 5}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Topological Manifolds} are marked ITM $x$--$y$. Please review the syllabus for expectations and policies regarding homework. It is recommended that you work out ITM 5--3 as well, but you don't need to turn anything in for this problem.
+
+\begin{prob}[ITM 4--27]
+Suppose $X$ and $Y$ are locally compact Hausdorff spaces. Show that a continuous map $f\colon X\to Y$ is proper if and only if it extends to a continuous map $f^*\colon X^*\to Y^*$ taking $\infty\in X^*$ to $\infty\in Y^*$. (Here $X^*$ is the one-point compactification of $X$, introduced in last week's homework.)
+\end{prob}
+
+\begin{prob}[ITM 5--1]
+Suppose $D$ and $D'$ are closed cells (not necessarily of the same dimension).
+\begin{enumerate}[(a)]
+\item Show that every continuous map $f\colon \partial D\to \partial D'$ extends to a continuous map $F\colon D\to D'$ with $F(D^\circ)\subseteq (D')^\circ$.
+\item Given points $p\in D^\circ$ and $p'\in (D')^\circ$, show that $F$ from (a) can be chosen so that $F(p)=p'$.
+\item Show that if $f$ is a homeomorphism, then $F$ can also be chosen to be a homeomorphism.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ITM 5--8]
+Prove Proposition 5.7: If $X$ is any CW complex, the topology of $X$ is coherent with the collection of subspaces $\{X_n \mid n\in \NN\}$.
+\end{prob}
+
+\begin{prob}[ITM 5-11]
+Prove Proposition 5.16: A CW complex is locally compact if and only if it is locally finite.
+\end{prob}
+
+\begin{prob}[ITM 5--12]
+Let $\mathbb{RP}^n$ be $n$-dimensional real projective space. The usual inclusion $\RR^{k+1}\subseteq \RR^{n+1}$ for $k<n$ allows us to consider $\mathbb{RP}^k$ as a subspace of $\mathbb{RP}^n$. Show that $\mathbb{RP}^n$ has a CW decomposition with one cell in each dimension $0,\ldots,n$ such that the $k$-skeleton is $\mathbb{RP}^k$ for $0<k<n$. [\emph{Hint}: You might use the hint in the book, or do things a different way.]
+\end{prob}
+
+
+
+\end{document}

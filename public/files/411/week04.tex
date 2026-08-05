@@ -1,0 +1,151 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 411: Topics in Advanced Analysis\\ Homework due Wednesday Week 4}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Suppose that a sequence $(a_n)$ of real numbers is equidistributed mod 1, and that $c$ is a real number. Show that $(a_n+c)$ is equidistributed mod 1.
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Let $\phi = (1+\sqrt 5)/2$ and $\bar\phi = (1-\sqrt 5)/2$. Set $a_n = \phi^n+\bar\phi^n$.
+\begin{enumerate}[(a)]
+\item Prove that for $a_0 = 2$, $a_1 = 1$, and for $n\ge 1$,
+\[
+  a_{n+1} = a_n+a_{n-1}.
+\]
+Deduce that $a_n\in \ZZ$ for all $n\in \NN$.
+\item Prove that
+\[
+  \langle \bar\phi^{2r+1}\rangle\to 0\text{ as }\NN\ni r\to \infty
+\]
+and
+\[
+  \langle \bar\phi^{2r}\rangle\to 0\text{ as }\NN\ni r\to \infty.
+\]
+\item Deduce that
+\[
+  \lim_{n\to \infty}\frac{1}{n}\left|\{r\in \{1,\ldots,n\}\mid \langle \phi^r\rangle \in [1/4,3/4]\}\right|\to 0\text{ as }n\to \infty
+\]
+and thus $(\phi^r)$ is not equidistributed mod 1.
+\end{enumerate}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Let $B_\ell(x)$ denote the $\ell$-th Bernoulli polynomial we defined in class.\footnote{Beware that many authors choose a different normalization of Bernoulli polynomials, for instance with $B_k'(x) = kB_{k-1}(x)$.}
+\begin{enumerate}[(a)]
+\item Prove that $B_\ell(x)$ satisfies
+\[
+  B_\ell(1-x) = (-1)^\ell B_\ell(x).
+\]
+In other words, $B_\ell$ is symmetric about $x=1/2$ for $\ell$ even, and skew-symmetric about $x=1/2$ for $\ell$ odd.
+\item Suppose that $B_{\ell-1}(x) = \sum_n c_n (x-1/2)^n$. Prove that
+\[
+  B_\ell(x) =
+  \begin{cases}
+    \sum_n \frac{c_n}{n+1}(x-1/2)^{n+1} - \sum_n \frac{c_n}{(n+1)(n+2)}\cdot \frac{1}{2^{n+1}}&\text{if $\ell$ is even},\\
+    \sum_n \frac{c_n}{n+1}(x-1/2)^{n+1}&\text{if $\ell$ is odd}.
+  \end{cases}
+\]
+\end{enumerate}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}[continuation of Problem 3]
+We now connect $B_{2\ell}(1/2)$ to $\zeta$-values.
+\begin{enumerate}[(a)]
+\item Making the same assumptions as we made in class, prove that
+\[
+  B_{2\ell}(1/2) = \frac{(-1)^\ell}{2^{\ell-1}\pi^{2\ell}}\sum_{n\ge 1} \frac{(-1)^{n+1}}{n^{2\ell}}.
+\]
+\item Prove that for $s\ge 2$ an integer,
+\[
+  \sum_{n\ge 1}\frac{(-1)^{n+1}}{n^s} = \zeta(s)-\frac{1}{2^{s-1}}\zeta(s)
+\]
+and thus
+\[
+  B_{2\ell}(1/2) = \frac{(-1)^\ell}{2^{2\ell-1}\pi^{2\ell}}\left(1-\frac{1}{2^{2\ell-1}}\right)\zeta(2\ell).
+\]
+\item Compute $B_3(x)$ as a polynomial in $(x-1/2)$ and use Problem 3(b) to deduce the value of $B_4(1/2)$. Use this to compute $\zeta(4)$.
+\end{enumerate}
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Let $\mathscr H$ and $\mathscr H'$ be Hilbert spaces, let $V\le \mathscr H$ be a subspace of $\mathscr H$, and suppose that $T\colon V\to \mathscr H'$ is linear. Consider the following properties:
+\begin{itemize}
+\item[(UC)] The operator $T$ is uniformly continuous on $V$.
+\item[(C0)] The operator $T$ is continuous at $0\in V$.
+\item[(B)] The operator $T$ is \emph{bounded}, \emph{i.e.}, there exists $M>0$ such that for all $f\in V$,
+\[
+  \| T(f) \| \le M\| f \|.
+\]
+\end{itemize}
+Note that condition (UC) implies (C0) \emph{a fortiori}. Prove that all three conditions are equivalent by showing (C0) $\implies$ (B) $\implies$ (UC).
+\end{prob}
+% uncomment the following lines and add your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\end{document}

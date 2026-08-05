@@ -1,0 +1,107 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\SU}{\mathrm{SU}}
+\newcommand{\SO}{\mathrm{SO}}
+\renewcommand{\O}{\mathrm{O}}
+\newcommand{\U}{\mathrm{U}}
+\newcommand{\GL}{\mathrm{GL}}
+\newcommand{\gl}{\mathfrak{gl}}
+\newcommand{\Lie}{\operatorname{Lie}}
+
+
+
+\title{Math 546: Manifolds\\ Homework due Friday Week 5}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ISM 11--5]
+For any smooth manifold $M$, show that $T^*M$ is a trivial vector bundle if and only if $TM$ is trivial.
+\end{prob}
+
+\begin{prob}[ISM 11--13]
+The \emph{length} of a smooth curve segment $\gamma\colon [a,b]\to \RR^n$ is defined to be the value of the (ordinary) integral
+\[
+  L(\gamma) = \int_a^b |\gamma'(t)|]\,dt.
+\]
+Show that there is no smooth covector field $\omega\in \mathfrak X^*(\RR^n)$ with the property that $\int_\gamma \omega = L(\gamma)$ for every smooth curve $\gamma$.
+\end{prob}
+
+\begin{prob}[ISM 11--14]
+Consider the following two covector fields on $\RR^3$:
+\[
+\begin{aligned}
+  \omega &= -\frac{4z\,dx}{(x^2+1)^2}+\frac{2y\,dy}{y^2+1}+\frac{2x\,dz}{x^2+1},\\
+  \eta &= -\frac{4xz\,dx}{(x^2+1)^2}+\frac{2y\,dy}{y^2+1}+\frac{2\,dz}{x^2+1}.
+\end{aligned}
+\]
+\begin{enumerate}[(a)]
+\item Set up and evaluate the line integral of each covector field along the straight line segment from $(0,0,0)$ to $(1,1,1)$.
+\item Determine whether either of these covector fields is exact.
+\item For each one that is exact, find a potential function and use it to recompute the line integral.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ISM 11--16]
+Let $M$ be a compact smooth manifold of positive dimension. Show that every exact covector field on $M$ vanishes at least at two points in each component of $M$.
+\end{prob}
+
+\begin{prob}[ISM 12--7]
+Let $(e^1,e^2,e^3)$ be the standard dual basis for $(\RR^3)^*$. Show that $e^1\otimes e^2\otimes e^3$ is not equal to a sum of an alternating tensor and a symmetric tensor.
+\end{prob}
+
+
+\end{document}

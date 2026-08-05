@@ -1,0 +1,137 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+\newcommand{\spn}{\operatorname{span}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\ev}{\operatorname{ev}}
+
+
+\title{Math 201: Linear Algebra\\ Homework due Friday Week 5}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Let $V$ and $W$ be vector spaces over $F$, and let $f\colon V \to W$ be a linear transformation.
+    \begin{enumerate}[(a)]
+     \item Prove that $f$ is injective if and only if $f$ carries linearly independent subsets of $V$ to linearly independent subsets of $W$.
+     \item Suppose that $f$ is injective and that $S$ is a subset of $V$. Prove
+       that~$S$ is linearly independent if and only if $f(S)$ is linearly
+       independent. 
+    \end{enumerate}
+\end{prob}
+% uncomment the following and use the below proof environment to write your solution
+% \begin{proof}[Solution]
+
+% \end{proof}
+
+\begin{prob}
+Fix an $F$-vector space $V$. Recall from Problem 5 of the Week 5 homework that $V^* = \Hom(V,F)$ is the \emph{dual} of $V$. We write $V^{**} := (V^*)^*$ for the \emph{double dual} of $V$; its elements are linear transformations from $V^*$ to $F$.  The \emph{evaluation} map $\ev\colon V\to V^{**}$ is the function taking $v\in V$ to $(\ev_v\colon V^*\to F)\in V^{**}$ where $\ev_v(f) = f(v)$.
+\begin{enumerate}[(a)]
+\item Prove that $\ev$ is a linear transformation.
+\item It is a fact that for any nonzero $v\in V$, there exists $f\in V^*$ such that $f(v)\ne 0$. (\emph{Challenge}: Prove it. If $V$ is infinite dimensional, you will need to invoke the axiom of choice.) Use this to prove that $\ev$ is injective.
+\item Use Problem 5 of Week 5 to show that $V\cong V^*\cong V^{**}$ when $V$ is finite dimensional.\footnote{When $V$ is infinite dimensional, this no longer holds.  Also note that $V\cong V^*$ depends on the choice of a basis while the definition of $\ev$ does not depend on a basis; it is \emph{canonical}.}
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Let 
+  \[A=\begin{pmatrix} 1 & 3\\ 2& -1\end{pmatrix}, \quad B=\begin{pmatrix} 1 & 0 & -3\\ 4 & 1 & 2\end{pmatrix}, \quad C=\begin{pmatrix} 1 & 1 & 4\\ -1 & -2 & 0\end{pmatrix}, \quad D=\begin{pmatrix} 2 \\ -2 \\ 3\end{pmatrix}.\]
+  Compute, if possible, the following. If it is not possible, explain why.
+  \[
+  \begin{array}{lll}
+\text{(a) }AB,\qquad &\text{(b) } A(2B+C),\qquad &\text{(c) } A+C,\\
+\text{(d) }(AB)D,\qquad &\text{(e) }A(BD),\qquad &\text{(f) }AD.
+  \end{array}\]
+\end{prob}
+
+\begin{prob}
+Let $A$ and $B$ be $m\times n$ matrices over $F$, and $C$ an $n\times p$
+    matrix over $F$. Prove that $(A+B)C=AC+BC$. (This is called the {\em right
+    distributivity} property.)
+\end{prob}
+
+\begin{prob}
+Let~$\R[x]_{\leq n}$ be the vector space of polynomials in~$x$ of degree at
+    most~$n$ with coefficients in~$\R$. Define
+    \begin{align*}
+      f\colon\R[x]_{\leq 2}&\to\R[x]_{\leq 3}\\[8pt]
+      p(x)&\mapsto \int_{0}^x p(t)\,dt.
+    \end{align*}
+    Find the matrix representing~$f$ with respect to the bases~$\left\{ 1,x,x^2
+    \right\}$ for~$\R[x]_{\leq 2}$ and $\left\{ 1,x,x^2,x^3 \right\}$
+    for~$\R[x]_{\leq 3}$.
+\end{prob}
+
+\begin{prob}
+Let $V$ be a vector space over a field $F$. Recall that the {\em identity function} is
+  the linear function $\id_V \colon V \to V$ by $\id_V(v)=v$ for all $v\in V$.
+  \begin{enumerate}[(a)]
+   \item Let $V$ be a vector space of dimension $n$ and let $\alpha$ be an
+     ordered basis for $V$. Show that the matrix representing $\id_V$ with
+     respect to the basis $\alpha$ for both the domain and the codomain is
+     $I_n$ (the $n\times n$ identity matrix).
+   \item Let $V$ and $W$ be vector spaces of dimension $n$ and let $f\colon V
+     \to W$ be an isomorphism with inverse $f^{-1} \colon W \to V$. Let
+     $\alpha$ and $\beta$ be ordered bases for $V$ and $W$,
+     respectively. If $A$ is the matrix representing $f$ with respect to the
+     bases $\alpha$ and $\beta$, what is the matrix for $f^{-1}$ with
+     respect to the bases $\beta$ and $\alpha$?
+   \item Consider the linear transformation
+     \begin{align*}
+       f\colon\R^2&\to\R^2\\
+       (x,y)&\mapsto (3x+y,-x+4y).
+     \end{align*}
+     Using part (b), prove that $f$ is an isomorphism by
+     exhibiting its inverse using matrix calculations.  Write the inverse in the
+     form~$g(x,y) = (\text{blah},\text{blah})$.
+  \end{enumerate}
+\end{prob}
+
+\end{document}

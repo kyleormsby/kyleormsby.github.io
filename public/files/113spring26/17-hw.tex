@@ -1,0 +1,305 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\usepackage{tkz-graph}
+\usetikzlibrary{positioning}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+
+\newcommand{\defeq}{:=}
+
+% For solutions.
+\newenvironment{sol}{
+  \medskip
+
+  \noindent\textsc{Solution:}
+}
+{
+  \medskip
+
+}
+
+\title{Math 113: Discrete Structures\\ Homework 17}
+%\author{Your name} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Monday, March 9 at 10pm.
+\bigskip
+
+A {\em spanning tree} of a connected graph~$G$ is a subgraph~$T$ such that~$T$ is
+a tree and every vertex of~$G$ is on some edge of~$T$.  For instance,
+if~$G$ is the triangle with vertices~$1,2,3$, then its spanning trees are:
+\begin{center}
+  \begin{tikzpicture}[scale=0.7]
+    \node[ball, label={below left:$1$}] at (-1,0) (1) {};
+    \node[ball, label={below right:$2$}] at (1,0) (2) {};
+    \node[ball, label={above:$3$}] at (0,1.732) (3) {};
+    \draw (1)--(3)--(2);
+    \begin{scope}[xshift=4cm]
+      \node[ball, label={below left:$1$}] at (-1,0) (1) {};
+      \node[ball, label={below right:$2$}] at (1,0) (2) {};
+      \node[ball, label={above:$3$}] at (0,1.732) (3) {};
+      \draw (1)--(2)--(3);
+    \end{scope}
+    \begin{scope}[xshift=8cm]
+      \node[ball, label={below left:$1$}] at (-1,0) (1) {};
+      \node[ball, label={below right:$2$}] at (1,0) (2) {};
+      \node[ball, label={above:$3$}] at (0,1.732) (3) {};
+      \draw (2)--(1)--(3);
+    \end{scope}
+  \end{tikzpicture}
+\end{center}
+Recall that a {\em multigraph} is a graph in which multiple edges are
+allowed.  For instance, the following graph has two edges connecting the
+vertices~$1$ and~$3$:
+\begin{center}
+  \begin{tikzpicture}[scale=0.7]
+    \node[ball, label={below left:$1$}] at (-1,0) (1) {};
+    \node[ball, label={below right:$2$}] at (1,0) (2) {};
+    \node[ball, label={above:$3$}] at (0,1.732) (3) {};
+    \draw (1)--(2)--(3);
+    \draw (1) edge[bend left] (3);
+    \draw (1) edge[bend right] (3);
+  \end{tikzpicture}
+\end{center}
+It has five spanning trees:
+\begin{center}
+  \begin{tikzpicture}[scale=0.7]
+    \node[ball, label={below left:$1$}] at (-1,0) (1) {};
+    \node[ball, label={below right:$2$}] at (1,0) (2) {};
+    \node[ball, label={above:$3$}] at (0,1.732) (3) {};
+    \draw (3)--(2);
+    \draw (1) edge[bend left] (3);
+    \begin{scope}[xshift=4cm]
+      \node[ball, label={below left:$1$}] at (-1,0) (1) {};
+      \node[ball, label={below right:$2$}] at (1,0) (2) {};
+      \node[ball, label={above:$3$}] at (0,1.732) (3) {};
+      \draw (3)--(2);
+      \draw (1) edge[bend right] (3);
+    \end{scope}
+    \begin{scope}[xshift=8cm]
+      \node[ball, label={below left:$1$}] at (-1,0) (1) {};
+      \node[ball, label={below right:$2$}] at (1,0) (2) {};
+      \node[ball, label={above:$3$}] at (0,1.732) (3) {};
+      \draw (1)--(2)--(3);
+    \end{scope}
+    \begin{scope}[xshift=12cm]
+      \node[ball, label={below left:$1$}] at (-1,0) (1) {};
+      \node[ball, label={below right:$2$}] at (1,0) (2) {};
+      \node[ball, label={above:$3$}] at (0,1.732) (3) {};
+      \draw (2)--(1);
+      \draw (1) edge[bend left] (3);
+    \end{scope}
+    \begin{scope}[xshift=16cm]
+      \node[ball, label={below left:$1$}] at (-1,0) (1) {};
+      \node[ball, label={below right:$2$}] at (1,0) (2) {};
+      \node[ball, label={above:$3$}] at (0,1.732) (3) {};
+      \draw (2)--(1);
+      \draw (1) edge[bend right] (3);
+    \end{scope}
+  \end{tikzpicture}
+\end{center}
+\begin{prob}\label{prob: spanning trees}
+  Draw all spanning trees of the following graph:
+  \begin{center}
+    \begin{tikzpicture}[scale=0.7]
+      \node[ball, label={left:$1$}] at (-1,0) (1) {};
+      \node[ball, label={right:$2$}] at (1,0) (2) {};
+      \node[ball, label={above:$3$}] at (0,1.732) (3) {};
+      \node[ball, label={below:$4$}] at (0,-1.732) (4) {};
+      \draw (1)--(2)--(3)--(1)--(4)--(2);
+    \end{tikzpicture}
+  \end{center}
+\end{prob}
+
+
+\begin{prob}[deletion and contraction]\label{prob: deletion/contraction}
+  Let~$G$ be a multigraph, and let~$e$ be an edge of~$G$.  Define~$G-e$ to be
+  the graph obtained from~$G$ by removing the edge~$e$ (but retaining the
+  endpoints of~$e$).  Let~$G/e$ be the graph obtained from~$G$ by
+  ``contracting'' the edge~$e$.  To contract~$e$, remove~$e$ from~$G$ and then
+  glue the endpoints of~$e$ together to make a single vertex from the two
+  vertices.  If there were multiple edges between the endpoints of~$e$, loops
+  will be formed, but for our purposes, we remove these loops as in the following:
+  \begin{center}
+    \begin{tikzpicture}[scale=0.7]
+      \node[ball] at (-1,0) (1) {};
+      \node[ball] at (1,0) (2) {};
+      \node[ball] at (0,1.732) (3) {};
+      %\node[ball, label={below left:$1$}] at (-1,0) (1) {};
+      %\node[ball, label={below right:$2$}] at (1,0) (2) {};
+      %\node[ball, label={above:$3$}] at (0,1.732) (3) {};
+      \draw (1)--(2)--(3);
+      \draw (1) edge[bend left] node[xshift=3,yshift=3,label={left:$e$}] {} (3);
+      \draw (1) edge[bend right] (3);
+      \draw[->] (2,1)--(3,1);
+      \node at (0,-1.1) {$G$};
+      \begin{scope}[xshift=6cm]
+	\node[ball] at (-1,1) (1) {};
+	\node[ball] at (1,1) (2) {};
+	%\node[ball, label={below:$1$}] at (-1,1) (1) {};
+	%\node[ball, label={below right:$2$}] at (1,1) (2) {};
+        \draw (1) edge[bend right] (2);
+        \draw (1) edge[bend left] (2);
+	\draw (1) edge[loop above,looseness=30,in=120,out=60] node {} (1);
+	\draw[->] (2.5,1)--(3.5,1);
+      \end{scope}
+      \begin{scope}[xshift=12cm]
+	\node[ball] at (-1,1) (1) {};
+	\node[ball] at (1,1) (2) {};
+	%\node[ball, label={below:$1$}] at (-1,1) (1) {};
+	%\node[ball, label={below right:$2$}] at (1,1) (2) {};
+        \draw (1) edge[bend right] (2);
+        \draw (1) edge[bend left] (2);
+	\node at (0,-0.5) {$G/e$};
+      \end{scope}
+    \end{tikzpicture}
+  \end{center}
+  \begin{enumerate}[(a)]
+    \item For an arbitrary connected multigraph~$G$, choose an edge~$e$ such
+      that~$G-e$ is connected. Let~$T(G)$, $T(G-e)$, and~$T(G/e)$ denote the
+      number of spanning trees of~$G$,~$G-e$, and~$G/e$, respectively.  The
+      spanning trees of~$G$ come in two types: those that contain~$e$ and those
+      that do not.  Use that idea to prove
+      \[
+       T(G) = T(G-e)+T(G/e).
+      \]
+    \item We can use the previous problem iteratively to count spanning trees.
+      This is illustrated in the diagram below (at each stage, the edge chosen
+	to delete and contract is dotted):
+      \begin{center}
+	\begin{tikzpicture}[scale=0.6]
+	  \node[ball] at (-1,0) (1) {};
+	  \node[ball] at (1,0) (2) {};
+	  \node[ball] at (0,1.732) (3) {};
+	  \draw (1)--(2)--(3);
+	  \draw[very thick, dotted] (1) edge[bend left] (3);
+	  \draw (1) edge[bend right] (3);
+	  \draw (-2,-0.6) edge node[rectangle, fill=white, pos=0.5] {deletion}(-4.7,-2.9);
+	  \draw (2,-0.6) edge node[rectangle, fill=white, pos=0.5] {contraction}(4.7,-2.9);
+	  \begin{scope}[xshift=-6cm,yshift=-5cm]
+	    \node[ball] at (-1,0) (1) {};
+	    \node[ball] at (1,0) (2) {};
+	    \node[ball] at (0,1.732) (3) {};
+	    \draw (1)--(2)--(3);
+	    \draw[very thick, dotted] (1) edge[bend right] (3);
+	    \draw (-1.1,-0.6) edge node[rectangle, fill=white, pos=0.5] {deletion}(-3.4,-2.7);
+	    \draw (1,-0.6) edge node[rectangle, fill=white, pos=0.5] {contraction}(2.5,-2.9);
+	  \end{scope}
+	  \begin{scope}[xshift=6cm,yshift=-5cm]
+	    \node[ball] at (-1,0) (1) {};
+	    \node[ball] at (1,0) (2) {};
+	    \draw[very thick, dotted] (1) edge[bend left] (2);
+	    \draw (1) edge[bend right] (2);
+	    \draw (-1.1,-0.6) edge node[rectangle, fill=white, pos=0.5]
+	    {deletion}(-2.8,-3.5);
+	    \draw (1,-0.6) edge node[rectangle, fill=white, pos=0.5]
+	    {contraction}(2.5,-3.5);
+	  \end{scope}
+	  \begin{scope}[xshift=-10cm,yshift=-10cm]
+	    \node[ball] at (-1,0) (1) {};
+	    \node[ball] at (1,0) (2) {};
+	    \node[ball] at (0,1.732) (3) {};
+	    \draw (1)--(2)--(3);
+	  \end{scope}
+	  \begin{scope}[xshift=-3cm,yshift=-10cm]
+	    \node[ball] at (-1,0) (1) {};
+	    \node[ball] at (1,0) (2) {};
+	    \draw[very thick, dotted] (1) edge[bend left] (2);
+	    \draw (1) edge[bend right] (2);
+	    \draw (-0.8,-0.8) edge node[rectangle, fill=white, pos=0.5]
+	    {deletion}(-2.2,-3.7);
+	    \draw (1,-0.8) edge node[rectangle, fill=white, pos=0.5]
+	    {contraction}(2.5,-3.7);
+	  \end{scope}
+	  \begin{scope}[xshift=3cm,yshift=-10cm]
+	    \node[ball] at (-1,0) (1) {};
+	    \node[ball] at (1,0) (2) {};
+	    \draw (1) edge[bend right] (2);
+	  \end{scope}
+	  \begin{scope}[xshift=10cm,yshift=-10cm]
+	    \node[ball] at (-1,0) (1) {};
+	  \end{scope}
+	  \begin{scope}[xshift=-5.4cm,yshift=-14.8cm]
+	    \node[ball] at (-1,0) (1) {};
+	    \node[ball] at (1,0) (2) {};
+	    \draw (1) edge[bend right] (2);
+	  \end{scope}
+	  \begin{scope}[xshift=1cm,yshift=-14.8cm]
+	    \node[ball] at (-1,0) (1) {};
+	  \end{scope}
+	\end{tikzpicture}
+      \end{center}
+  \end{enumerate}
+  \medskip
+
+  We stop in this deletion-contraction process when there are no edges left
+  whose removal would leave a connected graph.
+  Along the bottom, there are~$5$ trees (a single isolated vertex is considered
+  to be a tree, too).  The previous part of this problem implies there
+  are~$5$ spanning trees of the original graph.  These are the~$5$ spanning
+  trees we saw earlier.  
+  
+  Make a similar diagram for the graph in
+  Problem~\ref{prob: spanning trees}.  (This diagram should verify the number of
+  spanning trees you found earlier.)\footnote{The first part of
+    Problem~\ref{prob: deletion/contraction} implies the amazing fact that
+    number of trees at the bottom of the diagram is independent of the choices
+    of edges made in constructing the diagram!}
+\end{prob}
+\end{document}
+ 

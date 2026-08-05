@@ -1,0 +1,82 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+
+
+\title{Math 544: Topology\\ Homework due Friday Week 8}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Topological Manifolds} are marked ITM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ITM 7--8]
+Prove that a retract of a Hausdorff space is a closed subset.
+\end{prob}
+
+\begin{prob}[ITM 7--14]
+Let $M$ be a compact connected surface. Show that there is a point $p\in M$ such that $M\smallsetminus \{p\}$ is homotopy equivalent to a bouquet of circles. (By convention, a bouquet of zero circles is a single point.)
+\end{prob}
+
+\begin{prob}[ITM 7--17]
+Show that the wedge sum of two pointed spaces is their coproduct in the category $\Top_*$.
+\end{prob}
+
+\begin{prob}[ITM 7--18]
+Show that the direct sum of two Abelian groups is both their product and coproduct in the category $\Ab$. Show that the infinite direct sum of Abelian groups\footnote{Given a family of Abelian groups $\{G_\alpha\mid \alpha\in A\}$, their \emph{direct sum} is the subset $\bigoplus_{\alpha\in A}G_\alpha\subseteq \prod_{\alpha\in A}G_\alpha$ consisting of those $A$-tuples $(g_\alpha)_{\alpha\in A}$ such that $g_\alpha=0$ for all but finitely many $\alpha$.} is the coproduct in $\Ab$, while their Cartesian product is the product in $\Ab$.
+\end{prob}
+
+\begin{prob}[ITM 7--19]
+Show that direct sum does not yield the coproduct in $\Grp$. (You can follow the strategy in the text or invent your own.)
+\end{prob}
+
+
+
+\end{document}

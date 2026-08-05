@@ -1,0 +1,89 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+
+
+\title{Math 544: Topology\\ Final Exam Practice Problems}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Use these problems to prepare for your final oral exam. You are welcome to collaborate on them. I will ask you about at least one of these problems during your oral exam.
+
+\begin{prob}
+A topological space is called \emph{$\sigma$-compact} if it can be expressed as a union of countably many compact subspaces. Show that a locally Euclidean Hausdorff space is a topological manifold if and only if it is $\sigma$-compact.
+\end{prob}
+
+\begin{prob}
+Prove that the surfaces with polygonal presentations
+\[
+  \langle a,b,c,d\mid ad^{-1}cdc^{-1}ba^{-1}b^{-1}\rangle
+\]
+and
+\[
+  \langle e,f,g,h\mid ehgfe^{-1}h^{-1}g^{-1}f^{-1}\rangle
+\]
+are homeomorphic.
+\end{prob}
+
+\begin{prob}
+Recall that $\pi_1(X,p)$ may be regarded as the collection of based homotopy classes of pointed maps $(S^1,1)\to (X,p)$. Let $[S^1,X]$ denote the set of homotopy classes of maps $S^1\to X$ (with no conditions on basepoints). Let $\Phi\colon \pi_1(X,p)\to [S^1,X]$ denote the function that forgets basepoints. Show that $\Phi([f]) = \Phi([g])$ if and only if $[f]$ and $[g]$ are conjugate in $\pi_1(X,p)$. Conclude that when $X$ is path connected, $\Phi$ induces a bijection between $[S^1,X]$ and conjugacy classes in $\pi_1(X,p)$.
+\end{prob}
+
+\begin{prob}
+Let $X$ denote the union of $n$ lines through the origin in $\RR^3$. Compute $\pi_1(\RR^3\smallsetminus X)$.
+\end{prob}
+
+\begin{prob}
+Let $n,s\in S^2$ denote the north and south poles of $S^2$ and let $X := S^2/\{n,s\}$. Give $X$ the structure of a CW-complex and use this to compute $\pi_1X$.
+\end{prob}
+
+
+\end{document}

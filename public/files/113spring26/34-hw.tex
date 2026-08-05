@@ -1,0 +1,89 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{mathdots}
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}[prop]{Problem}
+\newtheorem{q}[prop]{Question}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+
+\newcommand{\Aut}{\operatorname{Aut}}
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 34}
+
+\begin{document}
+\maketitle
+
+
+
+\begin{prob}\ 
+  \begin{enumerate}[(a)]
+    \item Find the smallest positive integer~$n$ such that~$7^n\equiv 1
+      \pmod{100}$.
+
+    \item Use your solution to part~(a) to find the last two digits
+      of~$7^{2022}$. (You can use a computer to check your answer, but show how
+	the solution can be derived easily by hand using part~(a).)
+
+    \item (BONUS) 
+      What are the last two digits of
+      \[
+	7^{7^{7^{\iddots^{\vspace{-5pt}7}}}}
+      \]
+      in which the number of~$7$s appearing is~$2022$?  Note~$7^7=823543$
+      (or~$43\pmod{100}$, and~$7^{7^{7}}=7^{823543}\neq (7^7)^7=823543^7$.
+  \end{enumerate}
+\end{prob}
+
+\begin{prob}
+Prove that if $a,b,c,m\in \ZZ$, $c\ne 0$, and $ac\equiv bc\pmod{mc}$, then $a\equiv b\pmod{m}$.
+\end{prob}
+
+\end{document}

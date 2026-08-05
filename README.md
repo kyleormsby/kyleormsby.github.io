@@ -11,18 +11,20 @@ npm run preview      # serve dist/ exactly as a static host would
 
 ### The files/ directory
 
-Course PDFs, lecture notes, and slides live in the old repo's `files/` folder —
-2.0 GB across 523 files, which is too much to commit here (GitHub Pages caps a
-published site at 1 GB). The dev server mounts them from wherever they already
-are:
+Syllabi, worksheets, homework, notes, and slides are committed under
+`public/files/` — 407 files, 668 MB. See "What is in files/" below for what was
+pruned and why.
+
+The 54x lecture notes and the two videos are *not* committed. To see them in dev
+anyway, point `FILES_DIR` at the old repo:
 
 ```bash
 FILES_DIR=~/Dropbox/GitHub/kyleormsby.github.io/files npm run dev
 ```
 
-The default is `../kyleormsby.github.io/files`, so if the two repos are siblings
-it just works. **Deployment still needs a decision** — see "Hosting files/" at
-the bottom.
+The default is `../kyleormsby.github.io/files`, so with the repos as siblings it
+just works. Committed files always win, so dev matches production for everything
+that ships.
 
 `astro dev` also does not resolve a directory to its `index.html` inside
 `public/`, so `/lattice-flow/` would 404 in dev while working in the built site.
@@ -243,33 +245,43 @@ can be re-imported losslessly.
 `configuration.space` as the custom domain in the repository settings; GitHub
 then redirects `kyleormsby.github.io` to it, which keeps old links working.
 
-## Hosting files/
+## What is in files/
 
-2.0 GB: 376 PDFs (1.82 GB), 2 MP4s (104 MB), and assorted sources. GitHub Pages
-publishes at most 1 GB, so this cannot ride along with the site.
+`public/files/` is 668 MB across 407 files, down from 1,970 MB. GitHub Pages
+publishes at most 1 GB, so the archive had to come down; here is exactly what
+happened to it.
 
-**Compression was measured on all 376 PDFs, not sampled.** Ghostscript
-`-dPDFSETTINGS=/ebook`:
+**Pruned** (still in the old repo, nothing deleted):
 
-| | |
+| | size |
 |---|---|
-| before | 1861 MB |
-| after | 1257 MB |
-| ratio | **1.48x** |
-| files ghostscript made *larger* | 5 (+10 MB) |
+| `544/notes`, `545/notes`, `546/notes` — 94 handwritten lecture notes | 859 MB |
+| two `.mp4` recordings | 103 MB |
+| LaTeX/OS build artifacts (`.aux`, `.log`, `.out`, `.DS_Store`) | 8 files |
 
-That is not enough. With the videos and other assets, a fully compressed
-`files/` is still about **1.4 GB** — over the ceiling.
+The 54x *homework* survives — `hw/` is only 1–2 MB per course.
 
-The reason is what the bulk of it is: handwritten lecture notes (544, 545, 546,
-201, 411, 111fall24 alone are 1.1 GB after compression). Those are already
-image-compressed, so `/ebook` only finds ~1.4x. LaTeX-generated documents behave
-completely differently — `113spring26/` goes 46 MB -> 7 MB, and the textbook
-alone is 10.6x. Pushing harder (`/screen`, grayscale downsampling) would start
-degrading handwriting students actually have to read.
+**Compressed**: the 90 remaining PDFs over 5 MB, via Ghostscript `/ebook`
+(1,007 MB -> 668 MB). The 291 smaller PDFs and all 99 `.tex` sources are
+byte-identical copies.
 
-So the realistic options are object storage (Cloudflare R2: 10 GB free, no
-egress fees) behind `files.configuration.space`, or pruning — dropping the UW
-lecture-note archives would take the remainder well under the limit.
+Compression is verified rather than assumed. A PDF keeps its compressed form
+only if Ghostscript exited cleanly, printed no error, produced a smaller file,
+**and** the page count still matches the original; otherwise the original is
+copied through. One file took that path (`MRC/CatStrClosureOps.pdf`, which
+Ghostscript inflated from 5.8 MB to 12.8 MB). A separate pass re-checked every
+compressed PDF with `pdfinfo`; all 291 open and match their source page counts.
 
-Raw per-file measurements: `tools/pdf_audit.csv`.
+This matters because Ghostscript emitted `rangecheck` errors with
+"output may be incorrect" on several images during the first run — silently
+shipping those would have meant corrupted course notes.
+
+Re-run with `tools/sync_files.sh` (see the header there for the manifest rules).
+
+### Headroom
+
+Published site is about 690 MB against the 1 GB ceiling. Roughly 330 MB spare —
+a few years of new courses, but keep an eye on it. If it gets tight, the next
+easy win is `201/lectures` (305 MB) and `111fall24/lectures` (184 MB), both past
+courses.
+

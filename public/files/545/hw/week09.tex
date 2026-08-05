@@ -1,0 +1,95 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\TT}{\mathbb{T}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+\newcommand{\Aut}{\operatorname{Aut}}
+
+
+\title{Math 545: Manifolds\\ Homework due Friday Week 9}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Smooth Manifolds} are marked ISM $x$--$y$. Please review the syllabus for expectations and policies regarding homework.
+
+\begin{prob}[ISM 5--10]
+For each $a\in \RR$, let $M_a$ be the subset of $\RR^2$ defined by
+\[
+  M_a := \{(x,y)\mid y^2=x(x-1)(x-a)\}.
+\]
+For which values of $a$ is $M_a$ an embedded submanifold of $\RR^2$? For which values can $M_a$ be given a topology and smooth structure making it into an immersed submanifold?
+\end{prob}
+
+\begin{prob}[ISM 5--6]
+Suppose $M\subseteq \RR^n$ is an embedded $m$-dimensional submanifold, and let $UM\subseteq T\RR^n$ be the set of unit tangent vectors to $M$:
+\[
+  UM := \{(x,v)\in T\RR^n\mid x\in M, v\in T_xM, |v|=1\}.
+\]
+Prove that $UM$ is an embedded $(2m-1)$-dimensional submanifold of $T\RR^n\approx \RR^n\times \RR^n$.
+\end{prob}
+
+\begin{prob}[ISM 5--14]
+Prove ISM Theorem 5.32 (uniqueness of the smooth structure on an immersed submanifold once the topology is given).
+\end{prob}
+
+\begin{prob}
+Recall from the first day of Math 544 that the space of (labeled) equilaterial $n$-gons is
+\[
+  M_n = \{(z_1,\ldots,z_{n-1})\in \TT^{n-1}\mid 1+z_1+\cdots+z_{n-1}=0\}.
+\]
+Prove that $M_n$ is a codimension $2$ embedded smooth submanifold of $\TT^{n-1}$ for $n\ge 3$ odd. (\emph{Bonus}: Prove that $M_n$ is not smooth for $n\ge 4$ even.)
+\end{prob}
+
+\begin{prob}[ISM 6--2]
+Suppose $M$ is an embedded $n$-dimensional submanifold of $\RR^{2n+1}$. Let $UM
+\subseteq T\RR^{2n+1}$ be the unit tangent bundle of $M$, and let $G\colon UM\to \RR\PP^{2n}$ be the map $G(x,v) = [v]$. Use Sard's theorem to conclude that there is some $v\in \RR^{2n+1}\smallsetminus \RR^{2n}$ such that $[v]$ is not in the image of $G$, and show that the projection from $\RR^{2n+1}$ to $\RR^{2n}$ with kernel $\RR v$ restricts to an immersion of $M$ into $\RR^{2n}$. (This proves the Whitney immersion theorem assuming the Whitney embedding theorem.)
+\end{prob}
+
+\end{document}

@@ -1,0 +1,131 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+
+\newcommand{\Aut}{\operatorname{Aut}}
+
+\newcommand{\defeq}{:=}
+
+% tikz
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.13}
+\usetikzlibrary{positioning}
+\usetikzlibrary{trees}
+\usetikzlibrary{decorations.pathmorphing}    
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{arrows.meta,calc}
+\usetikzlibrary{bending}
+\usetikzlibrary{decorations.markings,shapes.geometric}
+\tikzset{->-/.style={decoration={markings, mark=at position #1 with
+  {\arrow{>}}},postaction={decorate}}}
+\tikzset{-|-/.style={decoration={markings, mark=at position #1 with
+  {\arrow{stealth}}},postaction={decorate}}}
+\tikzset{movearrow/.style 2 args ={
+        decoration={markings,
+	  mark= at position {#1} with {\arrow{#2}} ,
+        },
+        postaction={decorate}
+    }
+}
+\tikzset{<--/.style={decoration={markings, mark=at position #1 with
+  {\arrow{<}}},postaction={decorate}}}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+\tikzstyle{bball} = [circle,shading=ball, ball color=blue,
+    minimum size=1mm,inner sep=1.3pt]
+\tikzstyle{miniball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=0.5pt]
+\tikzstyle{redminiball} = [circle,shading=ball, ball color=red,
+    minimum size=1mm,inner sep=0.5pt]
+\tikzstyle{mminiball} = [circle,shading=ball, ball color=black,
+    minimum size=0.6mm,inner sep=0.1pt]
+
+
+\title{Math 113: Discrete Structures\\ Homework 1}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\textbf{Due:} Friday January 30 by 10pm.
+\bigskip
+
+THIS HOMEWORK WILL NOT BE GRADED FOR CONTENT (only for completion). We will practice submitting assignments to Gradescope. The rest of the assignments will be graded for content.
+\bigskip
+
+\begin{rmk}
+This is homework on the content covered Monday of Week 1.  In general,
+homework on content delivered during course meeting $n$ will be due by 10pm on the day
+of course meeting $n+2$.  You are encouraged to start working on the homework
+shortly after course meeting $n$ in order to have time to ask questions during
+office hours and tutoring.
+\end{rmk}
+
+\begin{rmk}
+Make sure to review the \emph{Homework} portion of the syllabus before writing
+up your solutions!  For instance: \textbf{you will only receive full credit if
+you provide full explanations}.  Also, your \textbf{solutions should consist
+\emph{solely} of complete sentences}.  Simply providing the correct numerical
+solution does not suffice.  See the \emph{Mathematical Writing} appendix of the
+textbook for more tips.
+\end{rmk}
+\bigskip
+
+\begin{prob}
+  \begin{enumerate}[(a)]
+    \item   There are 12 students in this class. If you all decided to shake hands with each other, how many handshakes would that be?
+\item Again, there are 12 students. How many ways can I pair you up? This means breaking up the whole class into groups of two. How many ways can I form groups of three? 
+  \end{enumerate}
+\end{prob}
+
+\end{document}

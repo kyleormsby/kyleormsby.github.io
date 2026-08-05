@@ -1,0 +1,103 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref,tikz,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+\newcommand{\sU}{\mathscr{U}}
+\newcommand{\ol}{\overline}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Int}{\operatorname{Int}}
+\newcommand{\cs}{\mathbin{\#}}
+\newcommand{\Ab}{\mathsf{Ab}}
+\newcommand{\Top}{\mathsf{Top}}
+\newcommand{\Grp}{\mathsf{Grp}}
+
+
+\title{Math 544: Topology\\ Homework due Friday Week 10}
+%\author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Problems taken from \emph{Introduction to Topological Manifolds} are marked ITM $x$--$y$. Please review the syllabus for expectations and policies regarding homework. I also \textbf{strongly recommend} that you think about how to do problems 8--5, 8--11, and 9--5.
+
+\begin{prob}[ITM 8--1]
+\begin{enumerate}[(a)]
+\item Suppose $U\subseteq \RR^2$ is an open subset and $x\in U$. Show that $U\smallsetminus\{x\}$ is not simply connected.
+\item Show that if $n>2$, then $\RR^n$ is not homeomorphic to any open subset of $\RR^2$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}[ITM 8--2, \textsc{Invariance of Dimension, 2-Dimensional Case}]
+Prove that a nonempty topological space cannot be both a 2-manifold and an $n$-manifold for some $n>2$.
+\end{prob}
+
+\begin{prob}[ITM 8--3, \textsc{Invariance of Boundary, 2-Dimensional Case}]
+Suppose $M$ is a 2-dimensional manifold with boundary. Show that a point of $M$ cannot be both a boundary point and an interior point.
+\end{prob}
+
+\begin{prob}[ITM 9--2]
+The \emph{center} of a group $G$ is the subgroup
+\[
+  ZG := \{g\in G\mid gh=hg\text{ for all }h\in G\}
+\]
+of elements of $G$ commuting with every element of $G$. (Moral exercise: check that $ZG$ really is a subgroup.) Show that a free group on two or more generators has trivial center.
+\end{prob}
+
+\begin{prob}[ITM 9--4]
+Let $G_1,G_2,H_1,H_2$ be groups and let $f_i\colon G_i\to H_i$ be homomorphisms for $i=1,2$.
+\begin{enumerate}[(a)]
+\item Show that there exists a unique homomorphism $f_1*f_2\colon G_1*G_2\to H_1*H_2$ such that the following diagram commutes for $i=1,2$:
+% https://q.uiver.app/?q=WzAsNCxbMCwwLCJHXzEqR18yIl0sWzIsMCwiSF8xKkhfMiJdLFswLDEsIkdfaSJdLFsyLDEsIkhfaSJdLFswLDEsImZfMSpmXzIiXSxbMiwzLCJmX2kiLDJdLFsyLDAsIlxcaW90YV9pIl0sWzMsMSwiXFxpb3RhX2knIiwyXV0=
+\[\begin{tikzcd}
+	{G_1*G_2} && {H_1*H_2} \\
+	{G_i} && {H_i,}
+	\arrow["{f_1*f_2}", from=1-1, to=1-3]
+	\arrow["{f_i}"', from=2-1, to=2-3]
+	\arrow["{\iota_i}", from=2-1, to=1-1]
+	\arrow["{\iota_i'}"', from=2-3, to=1-3]
+\end{tikzcd}\]
+where $\iota_i\colon G_i\to G_1*G_2$ and $\iota_i'\colon H_i\to H_1*H_2$ are the canonical injections.
+\item Let $S_1,S_2$ be disjoint sets, and let $R_i$ be a subset of the free group $F(S_i)$ for $i=1,2$. Prove that $\langle S_1\cup S_2\mid R_1\cup R_2\rangle$ is a presentation of the free product group $\langle S_1\mid R_1\rangle * \langle S_2\mid R_2\rangle$.
+\end{enumerate}
+\end{prob}
+
+
+
+\end{document}

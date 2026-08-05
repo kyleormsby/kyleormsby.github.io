@@ -1,0 +1,88 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+\newcommand{\eval}{\operatorname{eval}}
+\newcommand{\colim}{\operatorname{colim}}
+
+\title{Math 411: Topics in Advanced Analysis\\ Homework due Wednesday Week 11}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Suppose $A$ is an LCA group and $f\in L^1_{bc}(A)$. Recall that for $s\in A$, $L_sf\in L^1_{bc}(A)$ is the function given by
+\[
+  L_sf(x) = f(s^{-1}x).
+\]
+Find a nice formula for $\widehat{L_sf}$ and prove that it is true.
+\end{prob}
+
+\begin{prob}
+Let $S = [a_1,b_1]\times\cdots\times[a_d,b_d]\subseteq \RR^d$ and let $1_S$ denote its characteristic function. Compute $\widehat{1_S}$.
+\end{prob}
+
+\begin{prob}
+Suppose $M\colon \RR^d\to \RR^d$ is a linear transformation, and $f\in L^1(\RR^d)$. Prove that $\widehat{f\circ M}$ is given by
+\[
+  \widehat{f\circ M}(\xi) = \frac{1}{|\det M|}\hat f(M^{-\top}\xi)
+\]
+where $M^{-\top}$ denotes the inverse transpose of $M$.
+\end{prob}
+
+\begin{prob}
+Suppose $\Delta\subseteq \RR^2$ is a (solid) triangle with vertices in $\ZZ^2$. Show that the following properties are equivalent:
+\begin{enumerate}[(a)]
+\item $\Delta$ contains no other points of $\ZZ^2$ (in its interior or boundary),
+\item the area of $\Delta$ is $1/2$,
+\item $\Delta$ is \textbf{unimodular}, \emph{i.e.}, $v_3-v_1$ and $v_2-v_1$ form a basis for $\ZZ^2$.
+\end{enumerate}
+\emph{Hint}: You might want to ``double'' the triangle to form a parallelogram.
+\end{prob}
+
+
+
+
+
+\end{document}

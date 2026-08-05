@@ -1,0 +1,168 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+\usetikzlibrary{shapes}
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+\DeclareRobustCommand{\stir}{\genfrac\{\}{0pt}{}}
+
+% For solutions.
+\newenvironment{sol}{
+  \medskip
+
+  \noindent\textsc{Solution:}
+}
+{
+  \medskip
+
+}
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework 22}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Monday, March 30 at 10pm.
+\bigskip
+
+\begin{prob}
+  Let~$h_n$ be the number of hexagons in a central packing of hexagons with~$n+1$
+  layers.  The first few values are pictured below:
+  \medskip 
+
+  \begin{center}
+    \begin{tikzpicture} [scale=0.5,hexa/.style= {shape=regular polygon,regular polygon
+      sides=6,minimum size=0.5cm, draw,inner sep=0,anchor=south,fill=blue!10,rotate=30}] 
+      \node[hexa] at (0,0) {};
+      \node at (0,-3.5) {$h_0=1$};
+      \begin{scope}[xshift=5cm]
+        \node[hexa] at (0,0) {};
+	\foreach \j in {0,...,5} {
+	  \node[hexa] at (\j*60:0.866) {};
+	}
+        \node at (0,-3.5) {$h_1=7$};
+      \end{scope}
+      \begin{scope}[xshift=12cm]
+        \node[hexa] at (0,0) {};
+	\foreach \j in {0,...,5} {
+	  \node[hexa] at (\j*60:0.866) {};
+	  \node[hexa] at (\j*60:2*0.866) {};
+	  \node[hexa] at (\j*60+30:1.5) {};
+	}
+	\node at (0,-3.5) {$h_2=19$};
+      \end{scope}
+      \begin{scope}[xshift=20cm]
+        \node[hexa] at (0,0) {};
+	\foreach \j in {0,...,5} {
+	  \node[hexa] at (\j*60:0.866) {};
+	  \node[hexa] at (\j*60:2*0.866) {};
+	  \node[hexa] at (\j*60:3*0.866) {};
+	  \node[hexa] at (\j*60+30:1.5) {};
+	}
+	\node[hexa] at (0.866*0.5,0.866*3*0.866) {};
+	\node[hexa] at (-0.866*0.5,0.866*3*0.866) {};
+	\node[hexa] at (0.866*0.5,-0.866*3*0.866) {};
+	\node[hexa] at (-0.866*0.5,-0.866*3*0.866) {};
+	\node at (0,-3.5) {$h_3=37$};
+      \end{scope}
+      \begin{scope}[xshift=20cm,rotate=60]
+	\node[hexa] at (0.866*0.5,0.866*3*0.866) {};
+	\node[hexa] at (-0.866*0.5,0.866*3*0.866) {};
+	\node[hexa] at (0.866*0.5,-0.866*3*0.866) {};
+	\node[hexa] at (-0.866*0.5,-0.866*3*0.866) {};
+      \end{scope}
+      \begin{scope}[xshift=20cm,rotate=-60]
+	\node[hexa] at (0.866*0.5,0.866*3*0.866) {};
+	\node[hexa] at (-0.866*0.5,0.866*3*0.866) {};
+	\node[hexa] at (0.866*0.5,-0.866*3*0.866) {};
+	\node[hexa] at (-0.866*0.5,-0.866*3*0.866) {};
+      \end{scope}
+    \end{tikzpicture}
+  \end{center}
+
+  Recall the first difference operator~$\Delta[h]_n=h_{n+1}-h_n$.
+  \begin{enumerate}[(a)]
+    \item Notice that the pictures above nest in each other about the origin.
+      Use that fact to draw pictures for the first differences~$\Delta[h]$ and
+      use the pictures to determine the sequence of second differences~$\Delta^2[h]$. Make sure you do prove indeed your formula for the second difference.
+    \item \textbf{Using the theory of difference operators from the text} and the results
+      above, compute a polynomial~$p(n)$ such that~$p(n)=h_n$ for all~$n\geq0$.
+  \end{enumerate}
+\end{prob}
+
+\begin{prob} Let~$F_n$ be the~$n$-th Fibonacci number.
+Our text uses induction to show that
+\begin{equation}\label{eqn: Fib square identity}
+  F_{2n+1}=F_n^2+F_{n+1}^2.
+\end{equation}
+You are now asked to give a combinatorial proof using tilings of checkerboards.
+Let~$a_n$ be the number of ways of tiling a~$2\times n$ checkerboard
+with~$2\times 1$ dominoes.  At the end of the section on induction, our text
+shows that $a_n=F_{n+1}$. 
+
+Rewrite equation~\eqref{eqn: Fib square identity} in terms of appropriate~$a_i$
+and prove the resulting (equivalent) formula by counting tilings of a~$2\times
+2n$ checkerboard.  (Hint: Our checkboard has two halves, each of size~$2\times
+  n$. Consider how dominoes in a tiling behave at the middle where these two
+  halves meet. There are only two possibilities: there is a pair of dominoes
+  straddling the two halves, or no domino straddles the center.  Given that each
+  half of our chessboard contains an even number of dominoes, it is impossible
+for only one domino to straddle the center.)
+\end{prob}
+
+\end{document}

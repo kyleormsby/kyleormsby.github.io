@@ -1,0 +1,158 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, hyperref,xcolor,booktabs,longtable,microtype}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage[normalem]{ulem}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+\title{Math 201 F02: Linear Algebra\\ Course Information \& Syllabus}
+\author[Math 201 F02:  Linear Algebra]{Fall 2024}
+
+\begin{document}
+\maketitle
+
+%\vspace{-5mm}
+\thispagestyle{empty}
+
+\vspace{-.5cm}
+
+\begin{center}
+\fbox{
+\begin{minipage}{4.5in}
+\begin{tabular}{rl}
+Place: &Lib 340\\
+Time: &MWF, 9:00--9:50\\
+Instructor: &Kyle Ormsby (\href{mailto:ormsbyk@reed.edu}{ormsbyk@reed.edu})\\
+Drop-in Hours: &TBD in Lib 306\\
+Course Assistant: &Pranay Pingali (\href{mailto:pranayp@reed.edu}{pranayp@reed.edu})\\
+Problem Sessions: &TBD\\
+Textbook: &\href{https://hefferon.net/linearalgebra/}{\emph{Linear Algebra}} (4th ed.) by Hefferon\\
+Website: &\href{https://kyleormsby.github.io/201/}{kyleormsby.github.io/201/}
+\end{tabular}
+\end{minipage}
+}
+\end{center}
+
+\smallskip
+
+\subsection*{Course description}
+This course is a rigorous introduction to linear algebra, the study of linear systems of equations, vector spaces, and linear transformations.  
+
+\subsection*{Learning outcomes}
+By the end of this course, you should be able to:
+\begin{itemize}
+\item solve systems of linear equations;
+\item determine bases and dimensions of vector spaces;
+\item express linear transformations as matrices and \emph{vice versa};
+\item compute rank and apply the rank-nullity theorem;
+\item manipulate determinants and understand their universal and geometric properties;
+\item find eigenvalues and eigenvectors of linear transformations;
+\item diagonalize matrices;
+\item understand the geometry of inner product spaces;
+\item engage with selected additional topics in linear algebra;
+\item \textbf{understand and produce proofs related to the above topics};
+\item apply the above topics in relevant examples and applications; and
+\item \textbf{communicate mathematical ideas verbally and in writing}.
+\end{itemize}
+
+\subsection*{Distribution requirements}
+This course can be used towards your Group III, ``Natural, Mathematical, and Psychological Science,'' requirement.  It accomplishes the following goals for the group:
+\begin{itemize}
+\item Use and evaluate quantitative data or modeling, or use logical/mathematical reasoning to evaluate, test, or prove statements.
+\item Given a problem or question, formulate a hypothesis or conjecture, and design an experiment, collect data or use mathematical reasoning to test or validate it.
+\end{itemize}
+This course \textbf{does not} satisfy the ``primary data collection and analysis'' requirement.
+
+\subsection*{Participation}
+I will deliver interactive in-person lectures. This course does not have a formal attendance policy, but I will use your engagement to assess the participation portion of your grade. If you miss a class, it is your responsibility to catch up with the material via the course notes, textbook, and discussions with peers.
+
+All students are encouraged --- but not required --- to engage in \sout{office} drop-in hours and problem sessions (see below).
+
+\subsection*{Text}
+The fourth edition of \emph{Linear Algebra} by Jim Hefferon is required for the course.  A free PDF of the text is available at \href{https://hefferon.net/linearalgebra/}{hefferon.net/linearalgebra/}, and inexpensive physical copies are available at the Reed bookstore.  Each lecture will be paired with a suggested reading.  Lectures and readings are intended to be complementary, and you are strongly encouraged to engage with each reading.
+
+\subsection*{Homework}
+Homework is due via Gradescope\footnote{Gradescope is an online homework submission and evaluation platform. You will receive a link to register via email and on Zulip.} every Friday by 11:00. Homework due Friday of week $N$ covers topics through Monday of week $N$, and you are strongly encouraged to start homework early so that you can take advantage of office hours and problem sessions.  Excellent solutions take many forms, but they all have the following characteristics:
+
+\begin{itemize}
+\item they are written as explanations for other students in the course; in particular, they fully explain all of their reasoning and do not assume that the reader will fill in details;
+\item when graphical reasoning is called for, they include large, carefully drawn and labeled diagrams;
+\item they are neatly written or typeset;\footnote{Interested students are 
+encouraged to prepare solutions in the \LaTeX~document preparation 
+system.  A guide to \LaTeX~resources is available on the course 
+website.  Nearly all of the \texttt{.pdf} files on the course website are produced by \LaTeX; you can find their associated source files by changing the \texttt{.pdf} suffix to \texttt{.tex} in the file's URL.} and
+\item they use complete sentences, even when formulas or symbols are involved.
+\end{itemize}
+
+\textbf{Given the exigencies of contemporary existence, I will be flexible with deadlines as long as you communicate with me about extensions.} If health, family, or emergent national crises might impede the timely completion of your homework, please contact me as early as possible.
+
+\subsection*{Collaboration}
+You are permitted and encouraged to work with your peers on homework problems.  You must cite those with whom you worked, and you must write up solutions independently.  \textbf{Duplicated solutions will not be accepted and constitute a violation of the Honor Principle.}
+
+Expect an announcement in the first week of class regarding a system by which you can coordinate study sessions with peers.
+
+\subsection*{Feedback}
+You will receive timely feedback on your homework via Gradescope, either from me or the course grader (a mathematics undergraduate).  Each homework problem can earn up to five points for mathematical content, and two points for the quality of writing.  If your answer is incorrect, this will be reflected in the score, and there will also be a comment indicating where things went wrong with your solution.  You are strongly encouraged to engage with this comment, understand your error, and try to come up with a correct solution.  You are very welcome to post questions about old homework problems to the Zulip workspace (see below) and talk about them with me in office hours (see the Help section).
+
+\subsection*{Tests}
+We will have two midterm exams and a final exam. All exams will be open book, open notes, and take-home.  They will have suggested time constraints and firm due dates, but you will be permitted to spend an arbitrary amount of time on the problems between when the exam is distributed and collected.  Calculators, computers, phones, collaboration, books other than the textbook and course notes, and the Internet are prohibited during exams. 
+
+\begin{itemize}
+\item Exam 1: distributed Monday 23 September, due Wednesday 25 September.
+\item Exam 2: distributed Monday 11 October, due Wednesday 13 October.
+\item Final Exam: distributed Monday 16 December, due Wednesday 18 December.
+\end{itemize}
+
+\subsection*{Joint expectations}
+As members of a communal learning environment, we should all expect consideration, fairness, patience, and curiosity from each other.  Our aim is to all learn more through cooperation and genuine listening and sharing, not to compete or show off.  I expect diligence and academic and intellectual honesty from each of you.  You should expect that I will do my best to focus the course on interesting, pertinent topics, and that I will provide feedback and guidance that will help you excel as a student.
+
+\subsection*{Help}
+There are a number of resources you can access for help with this course's content.  Everyone is welcome and encouraged to attend my \sout{office} drop-in hours. These will be held ??.  I am also happy to arrange student hours by appointment.  Student hours are an opportunity to clarify difficult material and also delve deeper into topics that interest you.  Please reach out to me if there are barriers preventing you from effectively utilizing this opportunity.
+
+Additionally, Math 201 F02 has a problem session ??.  The problem sessions will provide a structured, facilitated environment in which you can collaborate on homework.  All students are encouraged to attend.
+
+The math department also hosts drop-in tutoring on Sunday, Monday, Tuesday, Wednesday, and Thursday 19:00--21:00 in Lib 204. Upperclass tutors will be available to clarify concepts and help you with homework problems.
+
+Finally, every Reed student is entitled to one hour of free individual tutoring per week.  Use the tutoring app in IRIS to arrange to work with a student tutor.
+
+\subsection*{Zulip}
+Our section of Math 201 has a Zulip workspace.  Use the Zulip wprkspace to ask questions (of me or the class), collaborate on problems, and share resources. The Zulip workspace is an extension of our classroom and the above joint expectations extend to this setting.
+
+You will receive an email invitation to join our Zulip workspace during the first week of classes. Please use channels and threads to keep conversations organized.
+
+\subsection*{Technology}
+The use of electronic devices (cell phones, computers, tablets, 
+calculators, \emph{etc}.) is prohibited in the classroom without prior 
+authorization from the instructor.  That said, legitimate uses 
+of technology (\emph{e.g.}, note-taking) will be accommodated --- 
+just talk to me first.
+
+Students are not permitted to consult or utilize chatbot / large language model / ``AI'' utilities in their work.
+
+\subsection*{The Internet}
+You are welcome to use Internet resources to supplement content we cover in this course, with the exception of solutions to homework problems.  \textbf{Copying solutions from the Internet is an Honor Principle violation and will result in an academic misconduct report. The same goes for ``AI''-generated ``solutions''.}
+
+\subsection*{Academic accommodations}
+If you have a documented disability requiring academic accommodation, please have  Disability \& Accessibility Resources (DAR)  provide a letter during the first week of classes.  I will then contact you to schedule a meeting during which we can discuss your accommodations.  If you believe you have an undocumented disability and that accommodations would ensure equal access to your Reed education, I would be happy to help you contact DAR.
+
+\subsection*{Grades}
+Your grade will reflect a composite assessment of the work you produce for the class, weighted in the following fashion:  35\% homework, 25\% final exam, 20\% exam 2, 15\% exam 1, 5\% class participation.
+
+\bigskip \bigskip
+
+\begin{center}
+Remember: \emph{Math is hard, but we'll get through this together!}
+\end{center}
+
+
+\end{document}

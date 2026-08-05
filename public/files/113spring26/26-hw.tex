@@ -1,0 +1,106 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\usepackage{tikz}
+\tikzstyle{ball} = [circle,shading=ball, ball color=black,
+    minimum size=1mm,inner sep=1.3pt]
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+
+\newcommand{\cC}{\mathscr{C}}
+\newcommand{\Ob}{\operatorname{Ob}}
+\newcommand{\Mor}{\operatorname{Mor}}
+
+\newcommand{\Set}{\operatorname{Set}}
+\newcommand{\FinSet}{\operatorname{FinSet}}
+\newcommand{\Vect}{\operatorname{Vect}}
+\newcommand{\FinVect}{\operatorname{FinVect}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\Gp}{\operatorname{Gp}}
+\newcommand{\FinGp}{\operatorname{FinGp}}
+\newcommand{\AbGp}{\operatorname{AbGp}}
+\newcommand{\Ring}{\operatorname{Ring}}
+\newcommand{\CommRing}{\operatorname{CommRing}}
+\newcommand{\Field}{\operatorname{Field}}
+\newcommand{\Top}{\operatorname{Top}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\id}{\operatorname{id}}
+\DeclareRobustCommand{\stir}{\genfrac\{\}{0pt}{}}
+
+
+\newcommand{\defeq}{:=}
+
+\title{Math 113: Discrete Structures\\ Homework due Wednesday Week 10}
+%\author{} %Remove the leading % and put your name here if using this .tex file as a template for your homework.
+
+\begin{document}
+\maketitle
+
+\noindent
+\textbf{Due:} Wednesday, April 8 at 10pm.
+\bigskip
+
+\begin{prob}
+  You have three coins.  Two of the coins are fair: when flipped they are
+  equally likely to land heads or tails. One coin, however, is weighted somehow
+  so that its probability of landing heads is~$2/3$.
+  \begin{enumerate}[(a)]
+    \item Choose one of the three coins uniformly at random and flip it. What is
+      the probability the result is heads?  For your solution, number the
+      coins~$1,2,3$ with coin~$3$ being the weighted one, and let~$A_i$ denote
+      the event that coin~$i$ was chosen. Apply the generalized law of total
+      probability.
+    \item Choose one of the three coins at random and flip it.  It lands heads.
+      What is the probability that you chose the weighted coin? (Hint: Bayes'
+      law.)
+     \item Choose one of the three coins at random and flip it twice.  Let $E$ be the event that you get heads on the first flip and $F$ be the even that you get heads in the second flip. Are $E $ and $F$ independent? Prove your answer.
+  \end{enumerate}
+\end{prob}
+
+\begin{prob}
+  (We reconsider one of the challenge problems from an in-class worksheet.)
+
+ Your friend invites you to play a game: they write ten distinct real numbers on
+ten blank cards.  The cards are shuffled randomly and placed face down on the
+table.  You start at the top of the deck and start revealing cards.  At any
+point you may choose to stop turning over cards and select the most recently
+revealed card.  You win if your selection is the largest of all ten numbers
+(both those previously revealed and those still unrevealed). 
+
+It is beyond the scope of this class to prove that the best strategy is given by the \emph{stopping rule}. For the stopping rule, we fix a number $r$ such that $1\leq r \leq 10$. We look at the first $r-1$ cards and note the maximal value among them, $M$.  For the subsequent $10-(r-1)$ cards, select the first one larger than $M$. We will compute the probability of winning when using this strategy. For the remainder of the problem, we will assume $r>1$ (the case $r=1$ can be analyzed directly). 
+\begin{enumerate}[(a)]
+ \item For $1\leq a \leq 10$, assume that the number in position $a$ is the largest in the deck. What is the probability that we select $a$ with this strategy? (Note that your answer will depend on whether or not $a<r$.)
+ \item Use the law of total probability and your answer to (a) to compute the probability that you win using this strategy.
+ \item Use a calculator or computer to compute the probabilities of winning with this strategy for all $2\leq r \leq 10$. Which $r$ gives you the best chances of winning?
+\end{enumerate}
+\end{prob}
+\end{document}

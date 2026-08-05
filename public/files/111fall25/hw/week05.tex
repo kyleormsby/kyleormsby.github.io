@@ -1,0 +1,122 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd,hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 111: Calculus\\ Homework due Friday Week 5}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+
+\begin{document}
+\maketitle
+
+\noindent Make sure to review the homework instructions in the syllabus before writing your solutions. In particular, show your work and write in complete sentences (but also aim for concise explanations).
+
+\begin{prob}
+Let $d$ denote the day of the year (with $d=0$ corresponding to January 1, $d=31$ corresponding to February 1, \emph{etc}.), and write $SR(d)$ and $SS(d)$ for the time of sunrise and sunset in Portland on day $d$, measured in hours after midnight. For instance, $SR(0) = 7.567$ and $SS(0) = 17$ mean that on January 1, sunrise is at 7:34\textsc{a.m.}~and sunset is at 5:00\textsc{p.m.} For simplicity, assume that all times are Pacific Standard Time (no daylight savings).
+\begin{enumerate}[(a)]
+\item Let $DL(d)$ denote the amount of daylight on day $d$. Express $DL(d)$ as a linear combination\footnote{A \emph{linear combination} of quantities $A,B$ is an expression of the form $aA+bB$ for some real numbers $a,b$.} of $SR(d)$ and $SS(d)$.
+\item Find an equation involving $SR'(d)$ and $SS'(d)$ that is equivalent to $DL'(d)=0$.
+\item Later in the course, we will observe that a differentiable function's largest and smallest values occur  at the endpoints of its domain or where its derivative equals 0. Given that the longest day of the year occurs on Summer Solstice (June 20, $d = 170$), what has to be true about $SR'(170)$ and $SS'(170)$?
+\item When is the amount of daylight changing (either decreasing or increasing) most quickly? What should be true about $SR''(d)$ and $SS''(d)$ on these days?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Let $a>0$ be an arbitrary but fixed positive real number, and define
+\[
+  f(x) = a^x.
+\]
+The goal of this problem is to justify our formula for the derivative of $f$,
+\[
+  f'(x) = \ln(a)\cdot a^x.
+\]
+As such, you \textbf{may not} assume this formula here.
+\begin{enumerate}[(a)]
+\item Use the limit definition of differentiation to demonstrate that
+\[
+\begin{aligned}
+  f'(x) &= a^x\cdot \lim_{h\to 0}\frac{a^h-1}{h}\\
+  &= f'(0)\cdot a^x.
+\end{aligned}
+\]
+\item Use desmos or another graphing utility to plot the line $y=\ln(a)$ and $y=\frac{a^h-1}{h}$ as functions of $h$ for several values of $a$ (\emph{e.g.}, $a=1/2,2,3$). Draw or screenshot the plots and use them to conjecture the value of $f'(0)$.
+\item Based on your answers to (a) and (b), what should the formula for $f'(x)$ be?
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Explain what's wrong with the following argument:
+\begin{quote}
+  For $x\ne 0$, we have
+  \[
+    1 = x\cdot \frac 1x.
+  \]
+  Differentiating both sides of the equation, we see that
+  \[
+  \begin{aligned}
+    (1)' &= \left(x\cdot\frac 1x\right)'\\
+    \implies 0 &= x'\cdot \left(\frac 1x\right)'\\
+    \implies 0 &= 1\cdot (x^{-1})'\\
+    \implies 0 &= -x^{-2}\\
+    \implies 0 &= \frac{-1}{x^2}.
+  \end{aligned}
+  \]
+  Multiplying both sides by $x^2$, we deduce that $0=-1$.
+\end{quote}
+\end{prob}
+
+\begin{prob}
+Find all real numbers $x$ for which the graph of $f(x) = x+2\sin x$ has a horizontal tangent line. (Remember that you need to explain your reasoning and show your work!)
+\end{prob}
+
+
+\end{document}

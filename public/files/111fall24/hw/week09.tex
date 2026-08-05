@@ -1,0 +1,132 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, microtype, hyperref,tikz-cd,hyperref}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\usepackage{mathrsfs}
+\usepackage{phaistos}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}%[section]
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem{bonus}[prop]{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\kk}{\mathsf{k}}
+\newcommand{\FF}{\mathbb{F}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\ssC}{\mathsf{C}}
+
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\Mat}{\mathsf{Mat}}
+
+\title{Math 111: Calculus\\ Homework due Wednesday Week 9}
+% uncomment the following line and add your name if you are using this as a template for solutions
+% \author{Your Name}
+% 5.1 13, 22, 44 6.1 15, 16, 17
+
+\begin{document}
+\maketitle
+
+\begin{prob}
+Let $L_n$ denote the left-endpoint Riemann sum using $n$ subintervals and let $R_n$ denote the corresponding right-endpoint Riemann sum. Compute the indicated left and right Riemann sums for the given functions on the indicated interval.
+\begin{enumerate}[(a)]
+\item $R_4$ for $g(x) = \cos(\pi x)$ on $[0,1]$
+\item $L_8$ for $x^2-2x+1$ on $[0,2]$
+\end{enumerate}
+\end{prob}
+
+
+\begin{prob}
+Estimate the area under the depicted curve by using the left Riemann sum $L_8$.
+\begin{center}
+\includegraphics[width=3in]{left_riemann.jpeg}
+\end{center}
+\end{prob}
+
+\begin{prob}
+Suppose $f\colon [a,b]\to \RR$ is an integrable function.
+\begin{enumerate}[(a)]
+\item Explain why $R_n-L_n = (f(b)-f(a))\cdot \frac{b-a}{n}$.
+\item Suppose further that $f$ is increasing on $[a,b]$. Explain why, in this case, the error betweeen either $L_n$ or $R_n$ and $\int_a^b f(x)\,dx$ is at most $(f(b)-f(a))\cdot \frac{b-a}{n}$.
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Use the information presented in the below graph of $y=h(x)$ to compute $\int_0^{12}h(x)\,dx$ geometrically.
+\begin{center}
+\includegraphics[width=3in]{geom_int.jpeg}
+\end{center}
+\end{prob}
+
+\begin{prob}
+Suppose that
+\[
+  A = \int_0^{2\pi} \sin^2t\,dt\qquad\text{and}\qquad B = \int_0^{2\pi} \cos^2t\,dt.
+\]
+Show that $A+B=2\pi$ and $A=B$.
+\end{prob}
+
+\begin{prob}
+Suppose $f\colon [0,2]\to \RR$ is given by $f(x) = \sqrt{4-x^2}$.
+\begin{enumerate}[(a)]
+\item Use a geometric argument to compute the average value $f_{ave}$ of $f$ over $[0,2]$.
+\item Find a point $c$ in $[0,2]$ such that $f(c) = f_{ave}$. 
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+Use FTC1 to compute the following integrals:
+\begin{enumerate}[(a)]
+\item $\frac{d}{dx} \int_1^x e^{-t^2}\,dt$
+\item $\frac{d}{dx} \int_1^{\sqrt{x}} \frac{t^2}{1+t^4}\,dt$
+\end{enumerate}
+\end{prob}
+
+\begin{prob}
+The graph of $y = \int_0^x f(t)\,dt$, where $f$ is a piecewise constant function, is shown here.
+
+\begin{center}
+\includegraphics[width=3in]{accum_graph.jpeg}
+\end{center}
+
+\begin{enumerate}[(a)]
+\item Over what intervals is $f$ positive? negative? Over which intervals, if any, is $f$ equal to $0$?
+\item What are the maximum and minimum values of $f$?
+\item What is the average value of $f$?
+\end{enumerate}
+\end{prob}
+
+
+\end{document}
