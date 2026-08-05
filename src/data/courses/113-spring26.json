@@ -6,19 +6,13 @@
   "schedule": "113-spring26.csv",
   "filesBase": "/files/113spring26/",
   "panoptoBase": "https://reedcollege.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=",
+  "current": true,
   "blurb": "Counting, graphs, recursion, and number theory — a first course in reading and writing mathematics.",
+  "preamble": "- review session Th 1:30-2:20pm in Lib 389 - usual office hours (Tu 1-2pm & Th 2:30-3:30pm)",
   "facts": [
     {
-      "label": "meetings",
-      "value": "S01 MWF 10–10:50, Lib 389\nS02 MWF 12–12:50, Chem 301"
-    },
-    {
-      "label": "office hours",
-      "value": "Tu 13–14, Th 14:30–15:30 in Lib 306 — [book a slot](https://calendar.notion.so/meet/kyleormsby/lib306)"
-    },
-    {
       "label": "syllabus",
-      "value": "[113_syllabus.pdf](/files/113spring26/113_syllabus.pdf)"
+      "value": "[Syllabus](/files/113spring26/113_syllabus.pdf)"
     },
     {
       "label": "textbook",
@@ -33,20 +27,82 @@
       "value": "[Gradescope](https://www.gradescope.com/courses/1238533)"
     },
     {
+      "label": "meetings",
+      "value": "S01: MWF 10-10:50 in Lib 389\nS02: MWF 12-12:50 in Chem 301"
+    },
+    {
+      "label": "office hours",
+      "value": "Tu 13-14, Th 14:30-15:30 in Lib 306"
+    },
+    {
+      "label": "scheduling",
+      "value": "[Scheduling link](https://calendar.notion.so/meet/kyleormsby/lib306)"
+    },
+    {
       "label": "course assistant",
       "value": "Vivek Malik"
     },
     {
       "label": "problem session",
-      "value": "TuTh 18–19 in Lib 204"
+      "value": "TuTh 18-19 in Lib 204"
     },
     {
       "label": "drop-in tutoring",
-      "value": "SuMWTh 19–21 in Lib 204"
+      "value": "SuMWTh 19-21 in Lib 204"
     },
     {
-      "label": "forms",
-      "value": "[absence](https://forms.gle/6yjCebd8Pm6eVrVf9) ❦ [homework extension](https://forms.gle/hpqvZmojzPJSJekw9)"
+      "label": "absence form",
+      "value": "[Absence form](https://forms.gle/6yjCebd8Pm6eVrVf9)"
+    },
+    {
+      "label": "homework extension form",
+      "value": "[Homework extension form](https://forms.gle/hpqvZmojzPJSJekw9)"
+    }
+  ],
+  "render": [
+    {
+      "col": "reading",
+      "kind": "text",
+      "label": "reading",
+      "pages": "pages"
+    },
+    {
+      "col": "lecture",
+      "kind": "panopto",
+      "label": "lecture",
+      "text": "lecture and quiz",
+      "note": "before class"
+    },
+    {
+      "col": "worksheet",
+      "kind": "pdf",
+      "label": "in class",
+      "text": "worksheet",
+      "also": [
+        {
+          "col": "solutions",
+          "text": "solutions"
+        }
+      ]
+    },
+    {
+      "col": "hw",
+      "kind": "pdf",
+      "label": "assigned",
+      "text": "homework",
+      "due": "hw_due"
+    },
+    {
+      "col": "submit",
+      "kind": "pdf",
+      "label": "due",
+      "text": "homework",
+      "by": "submit_by"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
     }
   ]
 }

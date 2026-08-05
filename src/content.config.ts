@@ -14,12 +14,14 @@ const viz = defineCollection({
 });
 
 const writing = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/writing' }),
+  // files beginning with "_" are staging (e.g. the imported About page)
+  loader: glob({ pattern: '**/[!_]*.md', base: './src/content/writing' }),
   schema: z.object({
     title: z.string(),
     date: z.date(),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
+    source: z.string().url().optional(),
   }),
 });
 

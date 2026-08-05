@@ -19,47 +19,63 @@ const fmt = (iso: string) => {
 
 const kindWord: Record<string, string> = {
   exam: 'exam',
+  final: 'final',
   review: 'review',
   cancelled: 'no class',
+  break: 'break',
 };
+
+const meetings = weeks.reduce((n, w) => n + w.meetings.length, 0);
 ---
 
 <Base title={`${meta.number} · ${meta.title}`} description={meta.blurb} wide>
-  <div class="prose" style="padding:0;width:100%;max-width:var(--measure);margin-inline:0">
+  <div style="max-width:var(--measure)">
     <p class="label">{meta.term}</p>
     <h1>{meta.number}<span class="dim"> · </span>{meta.title}</h1>
     {meta.blurb && <p class="lede dim" style="margin-top:var(--s4)">{meta.blurb}</p>}
 
-    <dl class="facts">
-      {meta.facts.map((f) => (
-        <>
-          <dt class="label">{f.label}</dt>
-          <dd set:html={inline(f.value)} />
-        </>
-      ))}
-    </dl>
+    {meta.facts.length > 0 && (
+      <dl class="facts">
+        {meta.facts.map((f) => (
+          <>
+            <dt class="label">{f.label}</dt>
+            <dd set:html={inline(f.value)} />
+          </>
+        ))}
+      </dl>
+    )}
 
-    <p style="margin-top:var(--s6)">
+    {meta.preamble && (
+      <p class="dim" style="margin-top:var(--s5);font-size:0.95rem" set:html={inline(meta.preamble)} />
+    )}
+
+    <p style="margin-top:var(--s6);display:flex;gap:var(--s5);align-items:baseline">
       <a class="label" href="#now" id="jump-now">jump to this week ↓</a>
+      <span class="label">{meetings} meetings</span>
     </p>
   </div>
 
   <section style="margin-top:var(--s7)">
     {weeks.map((w) => (
       <div class="week">
-        <span class="label">{w.label}</span>
+        <span class="label">
+          {w.label}
+          {w.subtitle && <span class="dim" style="margin-left:var(--s3)">{w.subtitle}</span>}
+        </span>
         {w.meetings.map((m) => {
-          const { day, date } = fmt(m.date);
+          const when = m.date ? fmt(m.date) : null;
           return (
             <div class="meeting" data-type={m.type} data-date={m.date}>
               <div class="when label">
-                <span class="day">{day} {date}</span>
+                {when
+                  ? <span class="day">{when.day} {when.date}</span>
+                  : <span class="day">{m.display}</span>}
                 {kindWord[m.type] && <span class="kind">{kindWord[m.type]}</span>}
               </div>
               <ul>
                 {m.items.map((it) => (
                   <li>
-                    <span class="label">{it.label}</span>
+                    {it.label && <span class="label">{it.label}</span>}
                     <span set:html={it.html} />
                   </li>
                 ))}
@@ -77,7 +93,8 @@ const kindWord: Record<string, string> = {
   // Mark past meetings and anchor "this week" at read time rather than build
   // time, so the page stays honest between deploys.
   const today = new Date().toISOString().slice(0, 10);
-  const meetings = [...document.querySelectorAll<HTMLElement>('.meeting[data-date]')];
+  const meetings = [...document.querySelectorAll<HTMLElement>('.meeting[data-date]')]
+    .filter((m) => m.dataset.date);
   const next = meetings.find((m) => (m.dataset.date ?? '') >= today);
 
   for (const m of meetings) {

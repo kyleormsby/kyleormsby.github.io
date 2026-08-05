@@ -1,0 +1,31 @@
+week,week_dates,date,display,type,topic,reading,pages,supplemental,notes,recording,handout,homework,note
+1,4 January - 6 January,2023-01-04,,class,Welcome & warmup,[Syllabus](/files/545/545syllabus.pdf),,,notes/day01,a8b0711a-9210-4e71-a7b5-af800162b193,notes/handout01W,,
+1,4 January - 6 January,2023-01-06,,class,Covering maps,ITM 277-282,,,notes/day02,a19fe4fb-05c9-47a2-b1ff-af82016255e3,,,Homework due: none
+2,9 January - 13 January,2023-01-09,,class,Lifting & monodromy,ITM 283-293,,,notes/day03,7ad7cd17-8851-4906-8096-af8501626fcf,,,
+2,9 January - 13 January,2023-01-11,,class,Covering homomorphisms & universal covering space,ITM 294-301,,,notes/day04,c5618f3e-8c6f-4494-8a96-af87016378cc,,,
+2,9 January - 13 January,2023-01-13,,class,Automorphisms of coverings,ITM 307-317,,,notes/day05,,,hw/week02,
+3,16 January - 20 January,2023-01-16,,cancelled,"Martin Luther King Jr. Day, **no class**",,,,,,,,
+3,16 January - 20 January,2023-01-18,,class,Classification theorem and examples,ITM 318-333,,,notes/day06,306e3f03-12cd-46bc-809d-af8e0162dbb8,,,
+3,16 January - 20 January,2023-01-20,,class,Homology,ITM 339-346,,,notes/day07,1babed0c-6eb0-4d2f-8ea6-af900178db8c,,hw/week03,
+4,23 January - 27 January,2023-01-23,,class,Homology & $\pi_1$,ITM 347-354,,,notes/day08,927d5e72-407e-4dca-8d05-af930162ba0d,,,
+4,23 January - 27 January,2023-01-25,,class,Mayer-Vietoris,ITM 355-368,,,notes/day09,1ad9a34b-a0c6-4dd1-90ef-af9501630222,,,
+4,23 January - 27 January,2023-01-27,,class,Homology & cohomology,ITM 364-378,,,notes/day10,001b0578-820a-4316-9390-af97016275d9,,hw/week04,
+5,30 January - 3 February,2023-01-30,,class,Smooth manifolds,ISM 1-29,,,notes/day11,d4234f27-5685-4779-bec5-af9a01635df5,,,
+5,30 January - 3 February,2023-02-01,,class,Smooth functions and smooth maps,ISM 32-40,,,notes/day12,05a5a9f4-8faa-474a-a5c0-af9c0162ffc0,,,
+5,30 January - 3 February,2023-02-03,,class,Partitions of unity,ISM 40-47,,,notes/day13,d65af006-869d-47dc-8a1b-af9e0163ebc7,,hw/week05,
+6,6 February - 10 February,2023-02-06,,class,Tangent vectors,ISM 50-59,,,notes/day14,7cf5c8f2-8b5d-44b4-ab3f-afa200d456c8,,,
+6,6 February - 10 February,2023-02-08,,class,Tangent bundle,ISM 60-67,,,notes/day15,2ef4e52b-b8bb-4f49-b026-afa30162abbd,,,Midterm exam distributed
+6,6 February - 10 February,2023-02-10,,class,Velocity,ISM 68-74,,,notes/day16,b6e7fa6c-0aeb-43e2-83a6-afa5016289e6,,,Midterm exam due; no homework
+7,13 February - 17 February,2023-02-13,,class,Maps of constant rank,ISM 77-84,,,notes/day17,87164525-1575-4cda-ab60-afa8016299c2,,,
+7,13 February - 17 February,2023-02-15,,class,Embeddings,ISM 85-90,,,notes/day18,18fb4c82-9a9f-437c-9109-afaa0162fd04,,,
+7,13 February - 17 February,2023-02-17,,class,Submersions and smooth covering maps,ISM 90-95,,,notes/day19,2f5d1641-af62-4407-87a7-afac0162d371,,hw/week07,
+8,20 February - 24 February,2023-02-20,,cancelled,"Presidents' Day, **no class**",,,,,,,,
+8,20 February - 24 February,2023-02-22,,class,Embedded submanifolds,ISM 98-107,,,notes/day20,090d70d0-ea7f-439a-be47-afb30177a0e4,,,
+8,20 February - 24 February,2023-02-24,,class,More submanifolds,ISM 108-119,,,notes/day21,aa007396-2ccb-4f2f-9410-afb3017111be,,hw/week08,
+9,27 February - 3 March,2023-02-27,,class,Sard's theorem,ISM 125-135,,,notes/day22,15d3de6b-fce0-41a6-af6d-afb60162b2d3,,,
+9,27 February - 3 March,2023-03-01,,class,Whitney embedding,ISM 131-137,,,notes/day23,1505b6e7-9653-420a-b6f2-afb801626f0d,,,
+9,27 February - 3 March,2023-03-03,,class,Tubular neighborhoods,137-143,,,notes/day24,7fbb6f0f-3e60-4a32-9d31-afba0162c21b,,hw/week09,
+10,6 March - 10 March,2023-03-06,,class,Transversality,143-147,,,notes/day25,f6f19d3d-ada6-4406-8a45-afbd01627dc2,,,
+10,6 March - 10 March,2023-03-08,,class,Activities / review,,,,notes/day26,,notes/handout10W,,
+10,6 March - 10 March,2023-03-10,,review,Review,,,,notes/day27,9042845b-74bf-4fd8-9a76-afc10163533c,,hw/week10,
+finals week,13 March - 17 March,,,note,,,,,,,,,- [Practice problems](/files/545/hw/final_practice.pdf). - [Sign up](https://calendar.app.google/26R2LNErfLLig11o6). (Slots are 45 minutes but the exam will only take place during the first 30 minutes of your appointment.)

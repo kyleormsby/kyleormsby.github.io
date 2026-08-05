@@ -1,0 +1,48 @@
+{
+  "slug": "342",
+  "number": "math 342",
+  "title": "topology",
+  "term": "spring 2026",
+  "schedule": "342-spring26.csv",
+  "filesBase": "/files/342spring26/",
+  "current": true,
+  "blurb": "Point-set topology. The schedule is a skeleton for now — one row per meeting, waiting to be filled in.",
+  "facts": [
+    {
+      "label": "syllabus",
+      "value": "[Syllabus](/files/342spring26/342_syllabus.pdf)"
+    },
+    {
+      "label": "discussion",
+      "value": "[Zulip](https://math342s26.zulipchat.com)"
+    },
+    {
+      "label": "meetings",
+      "value": "MWF 14:40-15:30 in Eliot 207"
+    },
+    {
+      "label": "office hours",
+      "value": "TBD in Lib 306"
+    },
+    {
+      "label": "scheduling",
+      "value": "[Scheduling link](https://calendar.notion.so/meet/kyleormsby/office)"
+    }
+  ],
+  "render": [
+    {
+      "col": "topic",
+      "kind": "md"
+    },
+    {
+      "col": "resources",
+      "kind": "md",
+      "label": "links"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
+    }
+  ]
+}

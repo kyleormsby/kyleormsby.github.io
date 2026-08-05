@@ -1,0 +1,80 @@
+{
+  "slug": "544",
+  "number": "math 544",
+  "title": "topology",
+  "term": "fall 2022",
+  "schedule": "544-fall22.csv",
+  "filesBase": "/files/544/",
+  "panoptoBase": "https://uw.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=",
+  "current": false,
+  "blurb": "Topological spaces, manifolds, connectedness and compactness, and the fundamental group.",
+  "preamble": "Students are strongly encouraged to typeset their work in $\\LaTeX$. You can get started easily with [Overleaf](https://www.overleaf.com/learn/latex/Tutorials). To facilitate your typesetting, for (nearly) all URL's on this site ending in .pdf, you can change the suffix to .tex to access the source code.",
+  "facts": [
+    {
+      "label": "teaching assistant",
+      "value": "[Alex Waugh](https://math.washington.edu/people/alexander-waugh)"
+    },
+    {
+      "label": "textbook",
+      "value": "[Introduction to Topological Manifolds](https://link-springer-com.offcampus.lib.washington.edu/book/10.1007/978-1-4419-7940-7) (2nd ed.) by Lee"
+    },
+    {
+      "label": "syllabus",
+      "value": "[Course Information & Syllabus](/files/544/544syllabus.pdf)"
+    },
+    {
+      "label": "problem session",
+      "value": "Tuesdays 13:00-14:00 in the graduate lounge"
+    },
+    {
+      "label": "office hours",
+      "value": "W 12:30--13:30 with Alex in C-132, Th 15:00--16:00 (and by appointment) with Kyle in C-442"
+    }
+  ],
+  "render": [
+    {
+      "col": "topic",
+      "kind": "md"
+    },
+    {
+      "col": "reading",
+      "kind": "md",
+      "label": "reading",
+      "pages": "pages"
+    },
+    {
+      "col": "supplemental",
+      "kind": "text",
+      "label": "supplemental"
+    },
+    {
+      "col": "notes",
+      "kind": "pdf",
+      "label": "notes",
+      "text": "notes",
+      "also": [
+        {
+          "col": "handout",
+          "text": "handout"
+        }
+      ]
+    },
+    {
+      "col": "recording",
+      "kind": "panopto",
+      "label": "recording",
+      "text": "recording"
+    },
+    {
+      "col": "homework",
+      "kind": "pdf",
+      "label": "homework due",
+      "text": "problem set"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
+    }
+  ]
+}

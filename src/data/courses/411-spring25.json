@@ -1,0 +1,48 @@
+{
+  "slug": "411",
+  "number": "math 411",
+  "title": "topics in advanced analysis",
+  "term": "spring 2025",
+  "schedule": "411-spring25.csv",
+  "filesBase": "/files/411/",
+  "current": false,
+  "blurb": "Fourier series and Hilbert spaces, with side trips to Weyl equidistribution and values of the Riemann zeta function.",
+  "facts": [
+    {
+      "label": "syllabus",
+      "value": "[Syllabus](/files/411/411syllabus.pdf)"
+    },
+    {
+      "label": "meetings",
+      "value": "MWF 9-9:50 in Lib 389"
+    },
+    {
+      "label": "office hours",
+      "value": "Tu 14-15, Th 11-12 in Lib 306"
+    },
+    {
+      "label": "discussion",
+      "value": "[Zulip workspace](https://math411-2025.zulipchat.com/)"
+    },
+    {
+      "label": "submissions",
+      "value": "[Gradescope](https://www.gradescope.com/courses/966524)"
+    }
+  ],
+  "render": [
+    {
+      "col": "topic",
+      "kind": "md"
+    },
+    {
+      "col": "resources",
+      "kind": "md",
+      "label": "links"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
+    }
+  ]
+}

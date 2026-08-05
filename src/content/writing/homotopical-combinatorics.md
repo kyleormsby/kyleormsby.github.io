@@ -2,7 +2,7 @@
 title: "Homotopical combinatorics – an introduction for combinatorialists"
 date: 2021-09-20
 tags:
-  - math
+  - mathematics
 ---
 I'm happy to announce two new preprints, the first with  with [Angélica Osorno](https://people.reed.edu/~aosorno/) and our students Usman Hafeez and Peter Marcus, and the second with [Scott Balchin](http://bifibrant.com/), Angélica, and [Constanze Roitzheim](https://www.kent.ac.uk/smsas/personal/csrr/):
 

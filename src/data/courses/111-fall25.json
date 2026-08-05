@@ -1,0 +1,72 @@
+{
+  "slug": "111",
+  "number": "math 111",
+  "title": "calculus",
+  "term": "fall 2025",
+  "schedule": "111-fall25.csv",
+  "filesBase": "/files/111fall25/",
+  "current": false,
+  "blurb": "Limits, derivatives, integrals, and a first glimpse of Taylor series, taught from Active Calculus.",
+  "facts": [
+    {
+      "label": "syllabus",
+      "value": "[Syllabus](/files/111fall25/111F01F02_syllabus.pdf)"
+    },
+    {
+      "label": "textbook",
+      "value": "[Active Calculus](https://activecalculus.org/acs2e/)"
+    },
+    {
+      "label": "video",
+      "value": "[Chapters 1-4](https://www.youtube.com/playlist?list=PL9bIjQJDwfGuXQHuS5Jkmum_CFILoCZX-), [Chapters 5-6](https://www.youtube.com/playlist?list=PL9bIjQJDwfGtewW75Nw7PnGNSkfqwAm3v)"
+    },
+    {
+      "label": "reading reflections",
+      "value": "[Reading reflections](https://docs.google.com/forms/d/e/1FAIpQLSd96ciBCGuT8PwRP9BCgPyGX9RjLKlX3jA72CQhwt1rdRaRDg/viewform)"
+    },
+    {
+      "label": "discussion",
+      "value": "[Zulip](https://math111f01f02-2025.zulipchat.com)"
+    },
+    {
+      "label": "meetings",
+      "value": "F01: MWF 13:40-14:30 in Lib 204\nF02: MWF 14:40-15:30 in Lib 204"
+    },
+    {
+      "label": "office hours",
+      "value": "W 15:30-16:30, Th 13:00-14:00 in Lib 306"
+    },
+    {
+      "label": "scheduling",
+      "value": "[Scheduling link](https://calendar.notion.so/meet/kyleormsby/office)"
+    },
+    {
+      "label": "course assistant",
+      "value": "Acadia MacDonald"
+    },
+    {
+      "label": "problem session",
+      "value": "TuW 17-18 in Lib 204"
+    },
+    {
+      "label": "drop-in tutoring",
+      "value": "SuMTuWTh 19-21 in Lib 204"
+    }
+  ],
+  "render": [
+    {
+      "col": "topic",
+      "kind": "md"
+    },
+    {
+      "col": "resources",
+      "kind": "md",
+      "label": "links"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
+    }
+  ]
+}

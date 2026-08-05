@@ -1,0 +1,32 @@
+week,week_dates,date,display,type,topic,reading,pages,supplemental,notes,recording,handout,homework,note
+1,27 March - 31 March,2023-03-27,,class,Welcome & warmup,[Syllabus](/files/546/546syllabus.pdf),,,,b9974409-fd44-4908-bf31-afd201523c95,notes/handout01M,,
+1,27 March - 31 March,2023-03-29,,class,Lie groups,,150–160,,notes/day02,12d90aee-ba66-4321-ae9a-afd401522f1e,,,
+1,27 March - 31 March,2023-03-31,,class,Group actions and equivariance,,161–170,,notes/day03,5e1bc5be-5986-4d3e-863c-afd601524f89,,,Homework due: none
+2,3 April - 7 April,2023-04-03,,class,Vector fields,,174–180,,notes/day04,3e8654d7-20ba-40ce-992c-afd90152474e,,,
+2,3 April - 7 April,2023-04-05,,class,Lie brackets,,181–188,,notes/day05,e6898d21-f4ab-48c6-ad40-afdb015247c6,,,
+2,3 April - 7 April,2023-04-07,,class,Lie algebras,,189–198,,notes/day06,3b872246-f78c-44f4-b85e-afdd015281d2,,hw/week02,
+3,10 April - 14 April,2023-04-10,,class,Integral curves and flows,,205–216,,notes/day07,53faf39b-0cb2-4a0c-8e3d-afe0015227aa,,,
+3,10 April - 14 April,2023-04-12,,class,Lie derivatives,,217–230,,notes/day08,a0c87e99-d164-4659-9e6c-afe20162c980,,,
+3,10 April - 14 April,2023-04-14,,class,Vector bundles,,249–267,,notes/day09,7cedf016-1638-4d25-9dc3-afe40151af60,,hw/week03,
+4,17 April - 21 April,2023-04-17,,class,More vector bundles,,249–267,,notes/day10,f77b1546-534f-42dc-8ef8-afe7015226f1,,,
+4,17 April - 21 April,2023-04-19,,class,Cotangent bundle,,272–286,,notes/day11,f0d97cab-9ab5-4906-a5e8-afe90151f8f7,,,
+4,17 April - 21 April,2023-04-21,,class,Line integrals and conservative covector fields,,287–298,,notes/day12,0d1b56be-3519-4508-8833-afeb01522fa3,,hw/week04,
+5,24 April - 28 April,2023-04-24,,class,Tensors,,304–315,,notes/day13,dd3bf6e4-d758-4ee9-8e29-afee0162f99f,,,
+5,24 April - 28 April,2023-04-26,,class,Tensor fields,,316–323,,notes/day14,b90554e0-5ce4-4ea8-a113-aff00152148e,,,
+5,24 April - 28 April,2023-04-28,,class,Differential forms,,349–372,,notes/day15,ae1e7abd-38cb-42ca-b244-aff201606ddd,,hw/week05,
+6,1 May - 5 May,2023-05-01,,class,Orientations,,377–387,,notes/day16,d8989a3a-c904-422f-8110-aff501520146,,,Take-home exam distributed
+6,1 May - 5 May,2023-05-03,,class,Orientations and covering maps,,392–396,,notes/day17,ca7c2782-480d-4bb7-a212-aff701521497,,,
+6,1 May - 5 May,2023-05-05,,class,Integration of differential forms,,400–410,,notes/day18,bbe4abfb-fe9d-4e60-bd46-aff901525019,,,Take-home exam due
+7,8 May - 12 May,2023-05-08,,class,Stokes' theorem,,411–420,,notes/day19,3b7477e7-bde7-4129-8fdb-affc01520208,,,
+7,8 May - 12 May,2023-05-10,,class,de Rham cohomology,,440–442,,notes/day20,5176cde2-2dc1-4e21-8fea-affe0153684f,,,
+7,8 May - 12 May,2023-05-12,,class,Homotopy invariance and Mayer-Vietoris,,443–456,,notes/day21,81b1fd44-1857-4b82-b1bc-b0000151f4c4,,hw/week07,
+8,15 May - 19 May,2023-05-15,,class,Degree theory,,457–463,,notes/day22,3362693c-9784-40bd-8620-b0030152cf99,,,
+8,15 May - 19 May,2023-05-17,,class,Singular cohomology,,467–472,,notes/day23,30462f2d-978c-4f00-9c94-b005015269bf,,,
+8,15 May - 19 May,2023-05-19,,class,The de Rham theorem,,480–486,,notes/day24,427be8b6-cee4-4cef-8771-b0070151f5eb,,hw/week08,
+9,22 May - 26 May,2023-05-22,,class,Riemannian manifolds,,327–336,,notes/day25,6cfd0981-1a4d-431c-a917-b00a01527b27,,,
+9,22 May - 26 May,2023-05-24,,class,The tangent-cotangent isomorphism,,337–343,,,,,,
+9,22 May - 26 May,2023-05-26,,class,Quotient manifolds,,540–559,,notes/day26,db0093d4-d148-4f9f-ac40-b00e01521711,,hw/week09,
+10,29 May - 2 June,2023-05-29,,cancelled,"Memorial Day, no class",,,,,,,,
+10,29 May - 2 June,2023-05-31,,review,Review,,,,,05432be0-abd0-4218-a439-b013017d8a9f,,,
+10,29 May - 2 June,2023-06-02,,review,Review,,,,,e75b7454-5842-4bf3-b360-b0150152c48e,,,Homework due: none.
+finals week,5 June - 9 June,,,note,,,,,,,,,- See Zulip for sign-up link. - [Practice problems](/files/546/final_practice.pdf)

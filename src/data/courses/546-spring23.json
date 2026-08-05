@@ -1,0 +1,80 @@
+{
+  "slug": "546",
+  "number": "math 546",
+  "title": "manifolds",
+  "term": "spring 2023",
+  "schedule": "546-spring23.csv",
+  "filesBase": "/files/546/",
+  "panoptoBase": "https://uw.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=",
+  "current": false,
+  "blurb": "Lie groups and Lie algebras, vector fields, flows, and the Lie derivative.",
+  "preamble": "Students are strongly encouraged to typeset their work in $\\LaTeX$. You can get started easily with [Overleaf](https://www.overleaf.com/learn/latex/Tutorials). To facilitate your typesetting, for (nearly) all URL's on this site ending in .pdf, you can change the suffix to .tex to access the source code.",
+  "facts": [
+    {
+      "label": "teaching assistant",
+      "value": "[Alex Waugh](https://math.washington.edu/people/alexander-waugh)"
+    },
+    {
+      "label": "textbook",
+      "value": "[Introduction to Smooth Manifolds](https://link-springer-com.offcampus.lib.washington.edu/book/10.1007/978-1-4419-9982-5)"
+    },
+    {
+      "label": "syllabus",
+      "value": "[Course Information & Syllabus](/files/546/546syllabus.pdf)"
+    },
+    {
+      "label": "problem session",
+      "value": "Tu 13:30-14:20 in THO 217"
+    },
+    {
+      "label": "office hours",
+      "value": "W 12:30-13:30 with Alex in C-132, Th 15-16 (and by appointment) with Kyle in C-442"
+    }
+  ],
+  "render": [
+    {
+      "col": "topic",
+      "kind": "md"
+    },
+    {
+      "col": "reading",
+      "kind": "md",
+      "label": "reading",
+      "pages": "pages"
+    },
+    {
+      "col": "supplemental",
+      "kind": "text",
+      "label": "supplemental"
+    },
+    {
+      "col": "notes",
+      "kind": "pdf",
+      "label": "notes",
+      "text": "notes",
+      "also": [
+        {
+          "col": "handout",
+          "text": "handout"
+        }
+      ]
+    },
+    {
+      "col": "recording",
+      "kind": "panopto",
+      "label": "recording",
+      "text": "recording"
+    },
+    {
+      "col": "homework",
+      "kind": "pdf",
+      "label": "homework due",
+      "text": "problem set"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
+    }
+  ]
+}

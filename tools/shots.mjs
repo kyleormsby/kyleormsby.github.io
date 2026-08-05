@@ -25,12 +25,18 @@ const server = createServer(async (req, res) => {
 });
 
 const targets = [
-  ['home',      '/',                                   1440, 'full'],
-  ['gallery',   '/viz/',                               1440, 'full'],
-  ['course',    '/113/',                               1440, 2100],
-  ['post',      '/writing/homotopical-combinatorics/', 1440, 1500],
-  ['home-dark', '/',                                   1440, 1400],
-  ['course-mobile', '/113/',                            420, 1400],
+  ['home',        '/',           1440, 'full'],
+  ['gallery',     '/viz/',       1440, 'full'],
+  ['course',      '/113/',       1440, 2100],
+  ['course-544',  '/544/',       1440, 1700],
+  ['course-111',  '/111/',       1440, 1500],
+  ['course-342',  '/342/',       1440, 1300],
+  ['teaching',    '/teaching/',  1440, 'full'],
+  ['writing',     '/writing/',   1440, 'full'],
+  ['post',        '/writing/homotopical-combinatorics/', 1440, 1500],
+  ['post-wp',     '/writing/the-homogeneous-spectrum-of-milnor-witt-k-theory/', 1440, 1500],
+  ['home-dark',   '/',           1440, 1400],
+  ['course-mobile', '/113/',      420, 1400],
 ];
 
 await mkdir(OUT, { recursive: true });

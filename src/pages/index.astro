@@ -2,13 +2,13 @@
 import Base from '../layouts/Base.astro';
 import Motif from '../components/Motif.astro';
 import { getCollection } from 'astro:content';
-import { allCourses } from '../lib/courses';
+import { currentCourses } from '../lib/courses';
 
 const viz = (await getCollection('viz'))
   .sort((a, b) => b.data.year - a.data.year)
   .slice(0, 3);
 
-const courses = allCourses();
+const courses = currentCourses();
 
 let writing: any[] = [];
 try {

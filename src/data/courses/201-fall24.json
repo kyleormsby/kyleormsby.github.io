@@ -1,0 +1,60 @@
+{
+  "slug": "201",
+  "number": "math 201",
+  "title": "linear algebra",
+  "term": "fall 2024",
+  "schedule": "201-fall24.csv",
+  "filesBase": "/files/201/",
+  "current": false,
+  "blurb": "Linear systems, vector spaces, bases and dimension, and the maps between them.",
+  "facts": [
+    {
+      "label": "syllabus",
+      "value": "[Syllabus](/files/201/201F02_syllabus.pdf)"
+    },
+    {
+      "label": "meetings",
+      "value": "MWF 9-9:50 in Lib 340"
+    },
+    {
+      "label": "office hours",
+      "value": "M 15-16 & Th 13-14 in Lib 306"
+    },
+    {
+      "label": "discussion",
+      "value": "[Zulip channel](https://math201f02-2024.zulipchat.com/)"
+    },
+    {
+      "label": "submissions",
+      "value": "[Gradescope](https://www.gradescope.com/courses/851196)"
+    },
+    {
+      "label": "course assistant",
+      "value": "Pranay Pingali"
+    },
+    {
+      "label": "problem session",
+      "value": "MTh 6-7pm in Lib 204"
+    },
+    {
+      "label": "drop-in tutoring",
+      "value": "SuMWTh 19-21 in Lib 204"
+    }
+  ],
+  "render": [
+    {
+      "col": "topic",
+      "kind": "md"
+    },
+    {
+      "col": "resources",
+      "kind": "md",
+      "label": "links"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "slug": "545",
+  "number": "math 545",
+  "title": "manifolds",
+  "term": "winter 2023",
+  "schedule": "545-winter23.csv",
+  "filesBase": "/files/545/",
+  "panoptoBase": "https://uw.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=",
+  "current": false,
+  "blurb": "Covering spaces, monodromy, the classification of coverings, and a first look at homology.",
+  "preamble": "Students are strongly encouraged to typeset their work in $\\LaTeX$. You can get started easily with [Overleaf](https://www.overleaf.com/learn/latex/Tutorials). To facilitate your typesetting, for (nearly) all URL's on this site ending in .pdf, you can change the suffix to .tex to access the source code.",
+  "facts": [
+    {
+      "label": "teaching assistant",
+      "value": "[Alex Waugh](https://math.washington.edu/people/alexander-waugh)"
+    },
+    {
+      "label": "textbook",
+      "value": "[Introduction to Topological Manifolds](https://link-springer-com.offcampus.lib.washington.edu/book/10.1007/978-1-4419-7940-7) (2nd ed.) & [Introduction to Smooth Manifolds](https://link-springer-com.offcampus.lib.washington.edu/book/10.1007/978-1-4419-9982-5)"
+    },
+    {
+      "label": "syllabus",
+      "value": "[Course Information & Syllabus](/files/545/545syllabus.pdf)"
+    },
+    {
+      "label": "problem session",
+      "value": "Tuesdays 13:30-14:30 in the graduate lounge"
+    },
+    {
+      "label": "office hours",
+      "value": "W 11:30-12:30 with Alex in C-132, Th 15:00-16:00 (and by appointment) with Kyle in C-442"
+    }
+  ],
+  "render": [
+    {
+      "col": "topic",
+      "kind": "md"
+    },
+    {
+      "col": "reading",
+      "kind": "md",
+      "label": "reading",
+      "pages": "pages"
+    },
+    {
+      "col": "supplemental",
+      "kind": "text",
+      "label": "supplemental"
+    },
+    {
+      "col": "notes",
+      "kind": "pdf",
+      "label": "notes",
+      "text": "notes",
+      "also": [
+        {
+          "col": "handout",
+          "text": "handout"
+        }
+      ]
+    },
+    {
+      "col": "recording",
+      "kind": "panopto",
+      "label": "recording",
+      "text": "recording"
+    },
+    {
+      "col": "homework",
+      "kind": "pdf",
+      "label": "homework due",
+      "text": "problem set"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
+    }
+  ]
+}

@@ -1,9 +1,6 @@
 # configuration.space
 
-A prototype replacement for `kyleormsby.github.io`, built with
-[Astro](https://astro.build). Three things are proven out here: the visual
-identity, the visualization gallery, and course pages generated from a
-spreadsheet.
+A replacement for `kyleormsby.github.io`, built with [Astro](https://astro.build).
 
 ```bash
 npm install
@@ -19,63 +16,119 @@ src/
   layouts/Base.astro       shell: head, nav, footer
   components/Motif.astro   the landing-page configuration-space animation
   lib/csv.ts               small CSV reader, no dependencies
-  lib/courses.ts           turns a CSV row into a rendered class meeting
+  lib/courses.ts           turns CSV rows into rendered class meetings
   data/courses/            <course>.csv  +  <course>.json   ← course content
   content/viz/             one markdown file per visualization
   content/writing/         blog posts
   pages/
     index.astro            landing page
-    [course]/index.astro   /113/, /111/, … generated from data/courses/
+    [course]/index.astro   /113/, /544/, … generated from data/courses/
     viz/index.astro        gallery
-    writing/               index + post pages
+    teaching/, writing/, research/
 public/                    visualizations, verbatim, at their original URLs
-tools/                     migration and thumbnail scripts
+tools/                     importers and screenshot scripts
 ```
 
 ## Course pages
 
-Each course is two files:
+Each course is two files in `src/data/courses/`:
 
-- `src/data/courses/113-spring26.csv` — one row per class meeting
-- `src/data/courses/113-spring26.json` — title, term, office hours, links
+- `544-fall22.csv` — one row per class meeting
+- `544-fall22.json` — title, term, office hours, links, and a **render spec**
 
-The CSV columns are `week, date, type, reading, pages, lecture, worksheet,
-solutions, hw, hw_due, submit, submit_by, note`.
+### Why a render spec
 
-Two conventions keep it readable in a spreadsheet:
+The eight course pages did not share a shape. Math 111 is a topic and a couple
+of demo links per day. Math 544 is reading + lecture notes + Panopto recording +
+problem set. Math 113 adds worksheets, solutions, and two separate homework
+columns (assigned and due). Forcing one schema on all of them would mean a CSV
+that is mostly empty columns.
 
-- **File stems, not paths.** `07-group` becomes
-  `/files/113spring26/07-group.pdf` using `filesBase` from the JSON.
-- **Panopto IDs, not URLs.** The GUID alone becomes a full viewer link using
-  `panoptoBase`.
+Instead each course JSON declares how to turn *its own* columns into the lines
+of a meeting:
 
-`type` is one of `class`, `review`, `exam`, `cancelled`. Exams and review days
-get accent styling automatically. Anything the importer could not classify
-lands in `note`, which accepts markdown links and `❦` separators.
+```json
+"render": [
+  { "col": "topic",   "kind": "md" },
+  { "col": "reading", "kind": "md",      "label": "reading",  "pages": "pages" },
+  { "col": "notes",   "kind": "pdf",     "label": "notes",    "text": "notes",
+    "also": [{ "col": "handout", "text": "handout" }] },
+  { "col": "recording", "kind": "panopto", "label": "recording", "text": "recording" }
+]
+```
 
-Edit the CSV in Excel, Numbers, or Google Sheets (export as CSV) and rebuild.
-To pull from a published Google Sheet at build time instead, replace the
-`import.meta.glob` call in `lib/courses.ts` with a `fetch` of the sheet's CSV
-export URL — everything downstream is unchanged.
+`kind` is one of:
+
+| kind | cell contains | becomes |
+|---|---|---|
+| `md` | inline markdown, including `$math$` | rendered inline |
+| `text` | plain text | escaped text |
+| `pdf` | a file stem, e.g. `07-group` | link to `{filesBase}07-group.pdf` |
+| `url` | a full URL | a link |
+| `panopto` | a bare GUID | link to `{panoptoBase}{guid}` |
+
+Modifiers: `pages` (a column with a page range, shown dim), `due` (a column with
+an ISO date, shown as "due March 4"), `by` (a column with a time), `note` (a
+fixed dim suffix), `also` (extra links joined with ❦).
+
+Adding a column to one course is a JSON edit, not a code change.
+
+Two conventions keep the CSV readable in a spreadsheet: cells hold **file stems,
+not paths** and **Panopto GUIDs, not URLs**. The prefixes live once in the JSON.
+
+`type` is one of `class`, `review`, `exam`, `final`, `cancelled`, `break`,
+`note`. Exams and review days style themselves. Past meetings dim and the
+current one is anchored at *read* time, not build time, so the page stays honest
+between deploys.
+
+Math in schedules is rendered with KaTeX at build time — Math 411's "$L^2$ and
+Hilbert spaces" and Math 544's "$\pi_1$" come through as real math.
 
 ### Importing an existing course page
 
 ```bash
-python3 tools/jekyll_course_to_csv.py path/to/_pages/113.md \
-  --year 2026 --slug 113-spring26 \
-  --files-base /files/113spring26/ --out src/data/courses
+python3 tools/import_course.py ../kyleormsby.github.io/_pages/544.md \
+  --format weekly --year 2022 --slug 544-fall22 --term "fall 2022" \
+  --files-base /files/544/ \
+  --panopto "https://uw.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=" \
+  --out src/data/courses
 ```
 
-This got 40 of 40 meetings out of the current Math 113 page. Skim the `note`
-column afterward — anything the parser did not recognize is preserved there
-rather than dropped.
+`--format` picks the source layout:
+
+| format | courses | shape |
+|---|---|---|
+| `bullets` | 113 | `**Monday February 9**:` then `- reading: …`, `- [worksheet](…)` |
+| `inline` | 111, 201, 342, 411 | `**Monday 9 September**: topic, [notes](…)` — day before month |
+| `weekly` | 544, 545, 546 | `## week 3`, `*17 October - 21 October*`, then `**Monday**: topic` |
+
+Dates are resolved with one cursor rule covering all three: an explicit date sets
+the cursor, a bare weekday advances to the next matching day, and a week's date
+range reseeds it. That is what lets Math 111 switch from
+`**Wednesday 3 September**` to a bare `**Monday**` halfway down the page.
+
+The importer also drafts the JSON — it labels the header bullets, folds nested
+ones (`Course meetings:` → `F01: …`), and picks the render spec for the format.
+It never overwrites an existing JSON, so re-running is safe once you have tuned
+one.
+
+Anything the parser cannot classify is preserved in a `note` column rather than
+dropped. Skim that column after an import.
+
+All eight current pages converted: 330 meetings, every date verified as
+strictly increasing and landing on a real class day.
+
+### Known limitation
+
+A course's `slug` is its URL. Teaching Math 113 again in a later term would mean
+two JSON files claiming `/113/`. When that happens, give the older one a slug
+like `113-spring26` and add a redirect.
 
 ## Visualizations
 
 The projects in `public/` are untouched and keep their original URLs
-(`/lattice-flow/`, `/nets/`, …), so existing links and citations stay valid.
-The gallery is built from `src/content/viz/*.md`; each file carries a title,
-href, year, tags, and a one-line description.
+(`/lattice-flow/`, `/nets/`, …), so existing links and citations stay valid. The
+gallery is built from `src/content/viz/*.md`.
 
 Thumbnails are real screenshots:
 
@@ -84,27 +137,48 @@ npm run thumbs              # all 18
 npm run thumbs -- nets      # just one
 ```
 
-`tools/thumbnails.config.json` holds per-project tweaks (extra settling time, a
-button to click, an element to scroll into view). Commit the PNGs so the site
-builds without a browser.
+`tools/thumbnails.config.json` holds per-project tweaks (settling time, a button
+to click, an element to scroll into view). Commit the PNGs so the site builds
+without a browser.
 
 ### One thing to fix before launch
 
-Ten of the eighteen visualizations load three.js from a CDN — `cdnjs` for
-r128, `unpkg` for 0.160 via an importmap. That means an outage or a removed
-version at either host silently breaks those pages. Vendoring the two library
-versions into `public/vendor/` and pointing the importmaps at local paths would
-make the whole gallery self-contained. The thumbnail script already stubs these
-requests locally, which is why it works offline.
+Ten of the eighteen visualizations load three.js from a CDN — `cdnjs` for r128,
+`unpkg` for 0.160 via an importmap. An outage or a removed version at either
+host silently breaks those pages. Vendoring both versions into `public/vendor/`
+and pointing the importmaps at local paths would make the gallery
+self-contained. The thumbnail script already stubs these requests locally, which
+is why it renders offline.
 
-## Math
+## Writing
 
-`remark-math` + `rehype-katex` render `$…$` and `$$…$$` at build time, so pages
-ship no math engine. Existing posts carry over unchanged.
+20 posts: 19 imported from `thebrightobvious.wordpress.com` plus the existing
+Jekyll post. `remark-math` + `rehype-katex` render `$…$` and `$$…$$` at build
+time, so pages ship no math engine.
+
+### The WordPress import needs a proof-read
+
+WordPress.com renders `$latex …$` **server-side into images**, so the original
+LaTeX source is not recoverable by scraping — the math had to be reconstructed
+from rendered output. Two files need your eye:
+
+- `when-something-is-nothing.md` — heaviest reconstruction. Homotopy sheaves came
+  back as `∏` where `$\pi$` was meant; that and several other symbols were
+  normalized by hand.
+- `comparing-g-sets-and-quadratic-forms.md` — the one-dimensional form reads
+  "takes $x$ to $ax$", which should probably be $ax^2$. Left as fetched rather
+  than silently corrected.
+
+Also: `monadnock.md` lost a video embed, and `_about-page.md` is the blog's About
+page parked for you to fold into a real page (files beginning with `_` are
+excluded from the collection).
+
+**The clean fix:** in wp-admin, Tools → Export gives a WXR XML file containing the
+original `$latex …$` source. If you export it and drop it here, the math posts
+can be re-imported losslessly.
 
 ## Deploying
 
 `.github/workflows/deploy.yml` builds and publishes to GitHub Pages. Set
 `configuration.space` as the custom domain in the repository settings; GitHub
-will then redirect `kyleormsby.github.io` to it, which keeps every old link
-working.
+then redirects `kyleormsby.github.io` to it, which keeps old links working.
