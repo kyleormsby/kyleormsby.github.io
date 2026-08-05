@@ -306,6 +306,33 @@ That check exists for a specific silent failure: the toggle continuing to work
 while the pre-paint script stops. A screenshot taken after load looks identical
 either way, so the check reads `data-theme` at navigation *commit* instead.
 
+## Contrast
+
+```bash
+npm run check:contrast
+```
+
+Measures every text colour on the main pages, in both schemes, against WCAG AA
+(4.5:1 normal, 3:1 large). All text currently passes; the tightest is 4.57:1.
+
+The subtlety it exists for is **`opacity`**. A colour can pass on its own and
+fail in place, because opacity on an ancestor composites it toward the
+background. Reading the computed `color` would have called the course pages
+fine; folding in every ancestor's opacity first is what actually reaches the
+eye. That is how these were found:
+
+| what | was | now |
+|---|---|---|
+| `.sep` (the ❦ between links) | **1.29:1** — it used `--rule`, a hairline colour, as text | uses `--muted` |
+| past meetings, mono labels | **2.97:1** — `--muted` under `opacity: 0.72` | 5.16:1 |
+| past meetings, exam dates | **3.53:1** | 4.86:1 |
+| `--muted-light` on its own | 5.22:1 | **7:1** (`#5A574D`) |
+
+`.meeting.is-past` went from `opacity: 0.72` to `0.88` and cancelled meetings
+from `0.55` to `0.85`. Dimming past meetings is worth doing, but gently: those
+rows hold the worksheets and readings students go back to all term, so they are
+not the ones to make hard to read.
+
 ## The landing-page motif
 
 `src/components/Motif.astro` shows 11 points stirring a rectangle beside the

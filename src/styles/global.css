@@ -10,7 +10,7 @@
   --paper-light:      #FCFBF8;   --paper-dark:      #121213;
   --paper-sunk-light: #F4F1E9;   --paper-sunk-dark: #191919;
   --ink-light:        #14130F;   --ink-dark:        #EDEAE2;
-  --muted-light:      #6E6A5E;   --muted-dark:      #918C7E;
+  --muted-light:      #5A574D;   --muted-dark:      #918C7E;
   --rule-light:       #E3DFD4;   --rule-dark:       #2B2B28;
   --accent-light:     #A93B1B;   --accent-dark:     #E8734A;
   --accent-bg-light:  #F5E9E3;   --accent-bg-dark:  #241A16;
@@ -285,14 +285,16 @@ pre {
 .meeting[data-type='exam'] { box-shadow: inset 3px 0 0 var(--accent); }
 .meeting[data-type='exam'] .when .day,
 .meeting[data-type='exam'] .kind { color: var(--accent); }
-.meeting[data-type='cancelled'] { opacity: 0.55; }
+.meeting[data-type='cancelled'] { opacity: 0.85; }
 .meeting[data-type='exam'],
 .meeting[data-type='review'] { padding-inline: var(--s4); }
 
 .meeting.is-next { box-shadow: inset 3px 0 0 var(--ink); padding-inline: var(--s4); }
-.meeting.is-past { opacity: 0.72; }
+.meeting.is-past { opacity: 0.88; }
 
-.sep { color: var(--rule); padding-inline: 0.35em; }
+/* --rule is a hairline colour; as text it came out at 1.29:1, i.e. invisible,
+   which rather defeats a separator. */
+.sep { color: var(--muted); padding-inline: 0.35em; }
 
 /* ---- images and tables inside posts --------------------------- */
 
