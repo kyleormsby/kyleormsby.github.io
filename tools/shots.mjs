@@ -35,6 +35,7 @@ const targets = [
   ['teaching',    '/teaching/',  1440, 'full'],
   ['writing',     '/writing/',   1440, 'full'],
   ['post',        '/writing/homotopical-combinatorics/', 1440, 'full'],
+  ['post-aha',    '/writing/aha/', 1440, 'full'],
   ['post-wp',     '/writing/the-homogeneous-spectrum-of-milnor-witt-k-theory/', 1440, 1500],
   ['home-dark',   '/',           1440, 1400],
   ['course-mobile', '/113/',      420, 1400],

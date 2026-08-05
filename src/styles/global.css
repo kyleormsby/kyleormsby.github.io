@@ -268,6 +268,31 @@ pre {
 
 .sep { color: var(--rule); padding-inline: 0.35em; }
 
+/* ---- images and tables inside posts --------------------------- */
+
+article img, .prose img { max-width: 100%; height: auto; display: block; }
+figure { margin: var(--s6) 0; text-align: center; }
+figure img { margin-inline: auto; }
+figcaption { margin-top: var(--s3); font-size: 0.9rem; color: var(--muted); }
+
+article table, .prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--s5) 0;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+article th, article td, .prose th, .prose td {
+  text-align: left;
+  padding: var(--s2) var(--s3);
+  border-bottom: 1px solid var(--rule);
+}
+article th, .prose th { font-weight: 400; color: var(--muted); }
+
+details > summary { cursor: pointer; }
+details { margin: var(--s4) 0; }
+details details { margin-left: var(--s4); }
+
 /* ---- misc ---------------------------------------------------- */
 
 .lede {

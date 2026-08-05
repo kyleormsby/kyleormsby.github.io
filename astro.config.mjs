@@ -83,5 +83,12 @@ export default defineConfig({
       smartypants: true,
     }),
   },
+  // The Jekyll site published posts at /posts/YYYY/MM/slug/. Those URLs are in
+  // the wild, so keep them resolving.
+  redirects: {
+    '/posts/2021/11/aha/': '/writing/aha/',
+    '/posts/2021/09/homotopical-combinatorics/': '/writing/homotopical-combinatorics/',
+    '/posts/2021/06/farewell-bright-obvious/': '/writing/farewell-bright-obvious/',
+  },
   build: { format: 'directory' },
 });

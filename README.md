@@ -214,8 +214,9 @@ markdown-plus-KaTeX renderer the course schedules use, so `$N_\infty$` and
 
 ## Writing
 
-20 posts: 19 imported from `thebrightobvious.wordpress.com` plus the existing
-Jekyll post. `remark-math` + `rehype-katex` render `$…$` and `$$…$$` at build
+22 posts: 19 imported from `thebrightobvious.wordpress.com` plus the three
+Jekyll posts. The old Jekyll permalinks (`/posts/2021/11/aha/` and friends)
+redirect to `/writing/<slug>/` via `redirects` in `astro.config.mjs`. `remark-math` + `rehype-katex` render `$…$` and `$$…$$` at build
 time, so pages ship no math engine.
 
 ### The WordPress import: proof-read complete
