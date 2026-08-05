@@ -218,26 +218,57 @@ markdown-plus-KaTeX renderer the course schedules use, so `$N_\infty$` and
 Jekyll post. `remark-math` + `rehype-katex` render `$…$` and `$$…$$` at build
 time, so pages ship no math engine.
 
-### The WordPress import needs a proof-read
+### The WordPress import: proof-read complete
 
-WordPress.com renders `$latex …$` **server-side into images**, so the original
-LaTeX source is not recoverable by scraping — the math had to be reconstructed
-from rendered output. Two files need your eye:
+WordPress.com renders `$latex …$` **server-side into images**, so scraping a
+post normally loses the source. It turns out the source survives anyway — the
+image URL is the LaTeX, percent-encoded:
 
-- `when-something-is-nothing.md` — heaviest reconstruction. Homotopy sheaves came
-  back as `∏` where `$\pi$` was meant; that and several other symbols were
-  normalized by hand.
-- `comparing-g-sets-and-quadratic-forms.md` — the one-dimensional form reads
-  "takes $x$ to $ax$", which should probably be $ax^2$. Left as fetched rather
-  than silently corrected.
+```
+https://s0.wp.com/latex.php?latex=K%5E%7BMW%7D_%2A%28F%29&bg=ffffff&…
+                                   ^ K^{MW}_*(F)
+```
 
-Also: `monadnock.md` lost a video embed, and `_about-page.md` is the blog's About
-page parked for you to fold into a real page (files beginning with `_` are
-excluded from the collection).
+Decoding those recovers ground truth for any post that used `$latex`. Results:
 
-**The clean fix:** in wp-admin, Tools → Export gives a WXR XML file containing the
-original `$latex …$` source. If you export it and drop it here, the math posts
-can be re-imported losslessly.
+| post | how math was written | verdict |
+|---|---|---|
+| `the-homogeneous-spectrum-of-milnor-witt-k-theory` | `$latex …$` | **46 of 47 recovered expressions match the import verbatim** |
+| `comparing-g-sets-and-quadratic-forms` | plain HTML/unicode | import matches the source word for word |
+| `when-something-is-nothing` | plain unicode, no LaTeX at all | see below |
+| `generalizing-the-fundamental-theorem-of-galois-theory` | plain text with italics | conversion to LaTeX is interpretive |
+
+Two editorial changes were made, both easy to revert:
+
+1. **`comparing-g-sets-and-quadratic-forms.md`** — the original says a
+   one-dimensional form $\langle a\rangle$ "takes $x$ in $k$ to $ax$". A
+   one-dimensional quadratic form sends $x \mapsto ax^2$; the original is a
+   typo, and the same paragraph gets the trace form right with $x^2$. Changed
+   to $ax^2$.
+
+2. **`when-something-is-nothing.md`** — the author wrote homotopy sheaves as
+   the literal character **∏ (U+220F, N-ARY PRODUCT)**, not π, and said so:
+   "*primarily because I don't want to fiddle with too much fancy formatting in
+   WordPress*". The import renders these as $\pi_{m+n\alpha}$, which is what
+   was meant, so the parenthetical excuse no longer described anything true and
+   was dropped.
+
+### Checking the math
+
+```bash
+npm run check:math
+```
+
+Parses every math span with KaTeX in **strict** mode. The build deliberately
+uses `strict: false` so one bad formula cannot fail a deploy — which also means
+errors scroll past unnoticed. This fails loudly instead. Currently 497 spans,
+0 rejected.
+
+It caught the six that had been warning on every build: the lifting-property
+operator was a raw **⧄ (U+29C4)**, which KaTeX cannot set. KaTeX has no
+`\boxslash`, so `astro.config.mjs` defines one as
+`{\square\mkern-11mu\diagup}` — no `\mathbin`, because it appears in
+superscript position (`{}^\boxslash R`).
 
 ## Deploying
 

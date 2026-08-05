@@ -72,7 +72,7 @@ Delightfully, homotopy theorists can now add to the list with transfer systems o
 Surprisingly, transfer systems on lattices are in bijection with weak factorization systems, a type of object that arises in categorical homotopy theory. A _weak factorization system_ on a lattice $(P,\le)$ is an ordered pair of relations $(L,R)$ each refining $\le$ satisfying
 
 * factorization: if $p\le q$, then there exists $r$ such that $p~L~r~R~q$, and
-* lifting: $L = {}^⧄ R$ and $R = L^⧄$ (notation to be explained shortly).
+* lifting: $L = {}^\boxslash R$ and $R = L^\boxslash $ (notation to be explained shortly).
 
 Here lifting is usually conceptualized in terms of commutative diagrams, but we can translate into posets: say that $p\le q$ has the _left lifting property_ (LLP) with repsect to $r\le s$ when $p\le r$ and $q\le s$ implies that $q\le r$; in this situation, we also say that $r\le s$ has the _right lifting property_ (RLP) with respect to $p\le q$.
 
@@ -84,17 +84,17 @@ Since this definition is crucial to all that follows, let's take the time to unp
 
 Now given a relation $M$ refining $\le$ on $P$, we define
 
-$${}^⧄ M := \{p\le q\mid p\le q\text{ has LLP with respect to all }r~M~s\}$$
+$${}^\boxslash M := \{p\le q\mid p\le q\text{ has LLP with respect to all }r~M~s\}$$
 
 and
 
-$$M^⧄ := \{r\le s\mid r\le s\text{ has RLP with respect to all }p~M~q\}.$$
+$$M^\boxslash := \{r\le s\mid r\le s\text{ has RLP with respect to all }p~M~q\}.$$
 
 The bijection between transfer systems and weak factorization systems on lattices is quite simple. Notated somewhat glibly, it amounts to
 
-$$\to \longmapsto ({}^⧄\to,\to).$$
+$$\to \longmapsto ({}^\boxslash \to,\to).$$
 
-In other words, we set $R = {\to}$ and – as we must – $L = {}^⧄R$.
+In other words, we set $R = {\to}$ and – as we must – $L = {}^\boxslash R$.
 
 One of the main results of [_Self-duality of the lattice of transfer systems via weak factorization systems_](https://arxiv.org/abs/2102.04415) is to establish this bijection and use it to show that transfer systems on a self-dual lattice also carry a duality.
 

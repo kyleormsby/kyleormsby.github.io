@@ -71,7 +71,15 @@ export default defineConfig({
     // Math is rendered to HTML at build time, so pages ship no math engine.
     processor: unified({
       remarkPlugins: [remarkMath],
-      rehypePlugins: [[rehypeKatex, { output: 'html', throwOnError: false, strict: false }]],
+      rehypePlugins: [[rehypeKatex, {
+        output: 'html',
+        throwOnError: false,
+        strict: false,
+        // KaTeX has no \boxslash. The lifting-property operator in the
+        // homotopical combinatorics post needs one, so build it from pieces.
+        // No \mathbin: it is used in superscript position ({}^\boxslash R).
+        macros: { '\\boxslash': '{\\square\\mkern-11mu\\diagup}' },
+      }]],
       smartypants: true,
     }),
   },
