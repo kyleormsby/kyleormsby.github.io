@@ -4,14 +4,25 @@
    --------------------------------------------------------------- */
 
 :root {
-  /* Paper & ink. Warm off-white, never pure #fff; ink, never pure #000. */
-  --paper:      #FCFBF8;
-  --paper-sunk: #F4F1E9;
-  --ink:        #14130F;
-  --muted:      #6E6A5E;
-  --rule:       #E3DFD4;
-  --accent:     #A93B1B;
-  --accent-bg:  #F5E9E3;
+  /* Paper & ink. Warm off-white, never pure #fff; ink, never pure #000.
+     Every colour is written once, here. The two mappings below only choose
+     between them, so there is no second copy of the palette to drift. */
+  --paper-light:      #FCFBF8;   --paper-dark:      #121213;
+  --paper-sunk-light: #F4F1E9;   --paper-sunk-dark: #191919;
+  --ink-light:        #14130F;   --ink-dark:        #EDEAE2;
+  --muted-light:      #6E6A5E;   --muted-dark:      #918C7E;
+  --rule-light:       #E3DFD4;   --rule-dark:       #2B2B28;
+  --accent-light:     #A93B1B;   --accent-dark:     #E8734A;
+  --accent-bg-light:  #F5E9E3;   --accent-bg-dark:  #241A16;
+
+  color-scheme: light;
+  --paper:      var(--paper-light);
+  --paper-sunk: var(--paper-sunk-light);
+  --ink:        var(--ink-light);
+  --muted:      var(--muted-light);
+  --rule:       var(--rule-light);
+  --accent:     var(--accent-light);
+  --accent-bg:  var(--accent-bg-light);
 
   --serif: 'Newsreader Variable', 'Newsreader', Georgia, 'Times New Roman', serif;
   --mono:  'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -27,16 +38,31 @@
   --tracking: 0.08em;
 }
 
+/* The dark mapping, applied two ways: by the OS unless the visitor has asked
+   for light, and by an explicit choice, which always wins. Kept adjacent so
+   they cannot fall out of step. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --paper:      #121213;
-    --paper-sunk: #191919;
-    --ink:        #EDEAE2;
-    --muted:      #918C7E;
-    --rule:       #2B2B28;
-    --accent:     #E8734A;
-    --accent-bg:  #241A16;
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --paper:      var(--paper-dark);
+    --paper-sunk: var(--paper-sunk-dark);
+    --ink:        var(--ink-dark);
+    --muted:      var(--muted-dark);
+    --rule:       var(--rule-dark);
+    --accent:     var(--accent-dark);
+    --accent-bg:  var(--accent-bg-dark);
   }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --paper:      var(--paper-dark);
+  --paper-sunk: var(--paper-sunk-dark);
+  --ink:        var(--ink-dark);
+  --muted:      var(--muted-dark);
+  --rule:       var(--rule-dark);
+  --accent:     var(--accent-dark);
+  --accent-bg:  var(--accent-bg-dark);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -331,4 +357,31 @@ details details { margin-left: var(--s4); }
   .site-head nav, .site-foot, .motif { display: none; }
   body { background: #fff; color: #000; font-size: 10.5pt; }
   .meeting { break-inside: avoid; }
+}
+
+/* ---- colour-scheme toggle ------------------------------------- */
+
+.theme-toggle {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0 0 0 var(--s4);
+  margin-left: var(--s2);
+  border-left: 1px solid var(--rule);
+  color: var(--muted);
+  font: inherit;
+  font-family: var(--mono);
+  font-size: var(--label);
+  letter-spacing: var(--tracking);
+  text-transform: lowercase;
+  cursor: pointer;
+}
+.theme-toggle:hover { color: var(--accent); }
+.theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.theme-toggle[hidden] { display: none; }
+
+/* Once the nav wraps, the toggle starts a row of its own and the dividing
+   rule reads as a stray mark rather than a separator. */
+@media (max-width: 34rem) {
+  .theme-toggle { border-left: 0; padding-left: 0; margin-left: 0; }
 }

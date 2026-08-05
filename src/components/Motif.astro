@@ -381,9 +381,14 @@ const ENTROPY = '1.7049';
       size();
       if (still) { ctx.clearRect(0, 0, w, h); drawDiagram(0); drawRect(0); }
     });
-    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    // The palette can change under us two ways: the OS switches, or the
+    // visitor uses the toggle in the header. The canvas reads its colours from
+    // CSS custom properties, so both need the same response.
+    const repaint = () => {
       readTheme(); buildRamp();
       if (still) { ctx.clearRect(0, 0, w, h); drawDiagram(0); drawRect(0); }
-    });
+    };
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', repaint);
+    document.addEventListener('themechange', repaint);
   }
 </script>

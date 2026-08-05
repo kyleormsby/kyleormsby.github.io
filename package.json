@@ -15,7 +15,8 @@
     "vendor:check": "node tools/vendor_three.mjs --check && node tools/vendor_fonts.mjs --check",
     "files:sync": "bash tools/sync_files.sh",
     "check:math": "node tools/check_math.mjs",
-    "shots:motif": "node tools/motif_shots.mjs"
+    "shots:motif": "node tools/motif_shots.mjs",
+    "check:theme": "node tools/check_theme.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.2.2",

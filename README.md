@@ -271,6 +271,41 @@ operator was a raw **⧄ (U+29C4)**, which KaTeX cannot set. KaTeX has no
 `{\square\mkern-11mu\diagup}` — no `\mathbin`, because it appears in
 superscript position (`{}^\boxslash R`).
 
+## Light and dark
+
+The palette follows the operating system by default, and a toggle in the header
+overrides it. Three states, cycling: **auto → light → dark → auto**.
+
+`auto` is a real state rather than a placeholder. Without it, the first click
+would permanently opt out of following the system, which is wrong for anyone
+whose desktop switches at sunset — they would have to remember to come back and
+flip the site by hand twice a day.
+
+Two details do the work:
+
+- **The choice is applied before first paint**, by an inline `is:inline` script
+  in `<head>` that reads `localStorage` and sets `data-theme` on `<html>`. Move
+  that logic into a deferred bundle and the page flashes the wrong palette for
+  a frame on *every* load. It is written in ES5 with `try`/`catch` around
+  storage, because it runs before anything else and must not throw in a private
+  window or an embedded webview.
+- **Every colour is written once.** `global.css` defines `--ink-light` and
+  `--ink-dark` and so on, then two short mappings choose between them — one in
+  a `prefers-color-scheme` query scoped to `:not([data-theme='light'])`, one on
+  `[data-theme='dark']`. The hex values never appear twice, so the two paths
+  cannot drift.
+
+The motif draws to a canvas and so cannot inherit CSS variables; it listens for
+both the media query and a `themechange` event and repaints.
+
+```bash
+npm run check:theme    # asserts every state, both OS settings, and pre-paint
+```
+
+That check exists for a specific silent failure: the toggle continuing to work
+while the pre-paint script stops. A screenshot taken after load looks identical
+either way, so the check reads `data-theme` at navigation *commit* instead.
+
 ## The landing-page motif
 
 `src/components/Motif.astro` shows 11 points stirring a rectangle beside the

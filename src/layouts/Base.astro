@@ -36,6 +36,33 @@ const isCurrent = (href: string) => here === href || (href !== '/' && here.start
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <link rel="alternate" type="application/rss+xml" title="Kyle Ormsby" href="/rss.xml" />
+
+    <script is:inline>
+      /* Runs before first paint. Anything deferred here shows the wrong
+         palette for a frame on every single page load. */
+      (function () {
+        var KEY = 'theme';                 // 'light' | 'dark'; absent = follow the OS
+        var root = document.documentElement;
+        try {
+          var saved = localStorage.getItem(KEY);
+          if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
+        } catch (e) { /* private mode, embedded webview: just follow the OS */ }
+
+        window.__theme = {
+          get: function () { return root.dataset.theme || 'auto'; },
+          set: function (mode) {
+            if (mode === 'auto') {
+              delete root.dataset.theme;
+              try { localStorage.removeItem(KEY); } catch (e) {}
+            } else {
+              root.dataset.theme = mode;
+              try { localStorage.setItem(KEY, mode); } catch (e) {}
+            }
+            document.dispatchEvent(new CustomEvent('themechange', { detail: mode }));
+          },
+        };
+      })();
+    </script>
   </head>
   <body>
     <a class="skip" href="#main">skip to content</a>
@@ -48,6 +75,7 @@ const isCurrent = (href: string) => here === href || (href !== '/' && here.start
               {n.label}
             </a>
           ))}
+          <button type="button" class="theme-toggle" data-theme-toggle hidden>auto</button>
         </nav>
       </header>
     </div>
@@ -65,5 +93,39 @@ const isCurrent = (href: string) => here === href || (href !== '/' && here.start
         <a class="label" href="https://github.com/kyleormsby">github</a>
       </footer>
     </div>
+    <script>
+      /* Cycles auto -> light -> dark -> auto. 'auto' is a real state, not a
+         placeholder: without it the first click would permanently opt out of
+         following the OS, which is the wrong default for anyone whose desktop
+         switches at sunset. */
+      const button = document.querySelector('[data-theme-toggle]');
+      const theme = (window as any).__theme;
+
+      if (button && theme) {
+        const ORDER = ['auto', 'light', 'dark'];
+        const DESCRIPTION = {
+          auto: 'following your system setting',
+          light: 'always light',
+          dark: 'always dark',
+        };
+
+        const paint = () => {
+          const mode = theme.get();
+          button.textContent = mode;
+          button.setAttribute(
+            'aria-label',
+            `Colour scheme: ${DESCRIPTION[mode as keyof typeof DESCRIPTION]}. Activate to change.`,
+          );
+        };
+
+        button.addEventListener('click', () => {
+          theme.set(ORDER[(ORDER.indexOf(theme.get()) + 1) % ORDER.length]);
+          paint();
+        });
+
+        paint();
+        button.removeAttribute('hidden');
+      }
+    </script>
   </body>
 </html>
