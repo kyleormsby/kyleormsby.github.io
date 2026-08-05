@@ -296,6 +296,22 @@ caption claims. The counter in the caption tracks progress toward those 110.
 a reciprocal polynomial, as a dilatation must be — lambda = 5.50071..., giving
 topological entropy log lambda = 1.70488.
 
+### Reading the picture
+
+Each strand keeps one colour for its whole life, drawn from a ramp between
+`--ink` and `--accent` — white to orange in dark mode, near-black to rust in
+light — mixed in linear light so the middle of the ramp does not go muddy. The
+ramp is rebuilt when the colour scheme changes. A dot and its strand always
+share a colour, so you can follow any single point through the weave.
+
+Time runs *away* from the rectangle: the instant shown by the dots is the
+diagram's **left** edge, and the past trails off to the right. Getting this
+backwards puts a whole screen of history between a dot and the strand it
+belongs to, which reads as lag. The two views also share one easing function,
+`vprofile` — a swap in the rectangle is a rigid rotation, so its vertical
+component is a cosine of the eased phase, and the diagram must interpolate the
+same way or the views disagree about where a strand is mid-swap.
+
 ### Why you can believe that number
 
 `tools/braid.py` computes it two independent ways, each first validated on the

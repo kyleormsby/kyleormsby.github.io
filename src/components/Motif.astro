@@ -153,6 +153,46 @@ const ENTROPY = '1.7049';
     const siteY = (k: number) => padY + k * gap;
     const smooth = (t: number) => t * t * (3 - 2 * t);
 
+    /**
+     * How a strand travels between two sites, as a fraction of the way across,
+     * 0 -> 1. In the rectangle a swap is a rigid rotation about the pair's
+     * midpoint, so the vertical component is a cosine of the eased phase. The
+     * diagram must use the SAME profile or the two views disagree about where
+     * a strand is mid-swap.
+     */
+    const vprofile = (t: number) => (1 - Math.cos(Math.PI * smooth(t))) / 2;
+
+    // --- colour: a ramp from --ink to --accent, one hue per strand ---------
+    function parse(c: string): [number, number, number] {
+      const m = /^#?([0-9a-f]{6})$/i.exec(c.trim());
+      if (m) {
+        const n = parseInt(m[1], 16);
+        return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+      }
+      const r = /rgba?\(([^)]+)\)/.exec(c);
+      if (r) { const v = r[1].split(',').map(Number); return [v[0], v[1], v[2]]; }
+      return [0, 0, 0];
+    }
+    const toLin = (c: number) => {
+      const u = c / 255;
+      return u <= 0.04045 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4);
+    };
+    const toSrgb = (c: number) => {
+      const u = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+      return Math.round(Math.min(1, Math.max(0, u)) * 255);
+    };
+    /** Mix in linear light, so the middle of the ramp does not go muddy. */
+    function mix(a: string, b: string, t: number) {
+      const [ar, ag, ab] = parse(a).map(toLin);
+      const [br, bg, bb] = parse(b).map(toLin);
+      const c = (x: number, y: number) => toSrgb(x + (y - x) * t);
+      return `rgb(${c(ar, br)},${c(ag, bg)},${c(ab, bb)})`;
+    }
+    let ramp: string[] = [];
+    const buildRamp = () => {
+      ramp = Array.from({ length: N }, (_, i) => mix(theme.ink, theme.accent, i / (N - 1)));
+    };
+
     // --- the rectangle: 11 points executing the current beat -------------
     const trails: { x: number; y: number }[][] = Array.from({ length: N }, () => []);
 
@@ -169,13 +209,12 @@ const ENTROPY = '1.7049';
         }
       }
       for (const [p, q] of b.pairs) {
-        const my = (siteY(p) + siteY(q)) / 2;
-        const r = (siteY(q) - siteY(p)) / 2;
-        const th = b.sign * Math.PI * smooth(f);
-        const ct = Math.cos(th), st = Math.sin(th);
-        // rotate (0, -r) and (0, +r) about the midpoint
-        pos[occupancy[p]] = { x: cx + st * r, y: my - ct * r, over: b.sign > 0 };
-        pos[occupancy[q]] = { x: cx - st * r, y: my + ct * r, over: b.sign < 0 };
+        const yp = siteY(p), yq = siteY(q);
+        const r = (yq - yp) / 2;
+        const st = Math.sin(b.sign * Math.PI * smooth(f));
+        const v = vprofile(f);               // 0 at p, 1 at q — same as the diagram
+        pos[occupancy[p]] = { x: cx + st * r, y: yp + (yq - yp) * v, over: b.sign > 0 };
+        pos[occupancy[q]] = { x: cx - st * r, y: yq + (yp - yq) * v, over: b.sign < 0 };
       }
       return pos;
     }
@@ -191,7 +230,7 @@ const ENTROPY = '1.7049';
         t.push({ x: pos[s].x, y: pos[s].y });
         if (t.length > 26) t.shift();
         if (t.length > 2) {
-          ctx.strokeStyle = s === 0 ? theme.accent : theme.muted;
+          ctx.strokeStyle = ramp[s];
           ctx.lineWidth = 1;
           for (let i = 1; i < t.length; i++) {
             ctx.globalAlpha = 0.30 * (i / t.length);
@@ -209,9 +248,9 @@ const ENTROPY = '1.7049';
           ctx.beginPath(); ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2); ctx.fill();
           ctx.globalCompositeOperation = 'source-over';
         }
-        ctx.fillStyle = s === 0 ? theme.accent : theme.ink;
-        ctx.globalAlpha = s === 0 ? 1 : 0.8;
-        ctx.beginPath(); ctx.arc(p.x, p.y, s === 0 ? 4 : 3.2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = ramp[s];
+        ctx.globalAlpha = 1;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3.6, 0, Math.PI * 2); ctx.fill();
       }
       ctx.globalAlpha = 1;
     }
@@ -226,7 +265,10 @@ const ENTROPY = '1.7049';
       const rightEdge = diagX + diagW;
       const now = beat + f;                  // continuous time, in beats
       const visible = Math.ceil(diagW / BEAT_W) + 2;
-      const xOf = (tau: number) => rightEdge - (now - tau) * BEAT_W;
+      // Now sits at the LEFT edge, right beside the rectangle, and the past
+      // trails off to the right. That way the leftmost point of every strand
+      // is the strand's position this instant, level with its dot.
+      const xOf = (tau: number) => diagX + (now - tau) * BEAT_W;
 
       // Every completed beat, plus the one currently under way. The clip
       // rectangle trims the in-progress beat at the right edge, so the diagram
@@ -238,10 +280,9 @@ const ENTROPY = '1.7049';
       }]);
       const start = Math.max(0, events.length - visible);
       for (let s = 0; s < N; s++) {
-        const isAccent = s === 0;
-        ctx.lineWidth = isAccent ? 1.6 : 1.1;
-        ctx.strokeStyle = isAccent ? theme.accent : theme.ink;
-        ctx.globalAlpha = isAccent ? 1 : 0.62;
+        ctx.lineWidth = 1.3;
+        ctx.strokeStyle = ramp[s];
+        ctx.globalAlpha = 0.92;
 
         for (let hi = start; hi < events.length; hi++) {
           const ev = events[hi];
@@ -254,7 +295,7 @@ const ENTROPY = '1.7049';
             else if (q === k0) { k1 = p; sign = ev.sign; partner = p; }
           }
           const x0 = xOf(bIndex), x1 = xOf(bIndex + 1);
-          if (x1 < diagX - BEAT_W || x0 > rightEdge) continue;
+          if (Math.min(x0, x1) > rightEdge || Math.max(x0, x1) < diagX) continue;
 
           // Convention: for a positive generator the strand coming from the
           // lower-indexed site passes over.
@@ -277,7 +318,7 @@ const ENTROPY = '1.7049';
         const inGap = !over && Math.abs(t - gapAt) < gapHalf;
         if (inGap) { drawing = false; continue; }
         const x = x0 + (x1 - x0) * t;
-        const y = y0 + (y1 - y0) * smooth(t);
+        const y = y0 + (y1 - y0) * vprofile(t);
         if (!drawing) { ctx.moveTo(x, y); drawing = true; } else ctx.lineTo(x, y);
       }
       ctx.stroke();
@@ -302,6 +343,7 @@ const ENTROPY = '1.7049';
     }
 
     readTheme();
+    buildRamp();
     size();
 
     // Pre-run whole periods so the diagram is full from the first frame and the
@@ -324,6 +366,9 @@ const ENTROPY = '1.7049';
       size();
       if (still) { ctx.clearRect(0, 0, w, h); drawDiagram(0); drawRect(0); }
     });
-    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readTheme);
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      readTheme(); buildRamp();
+      if (still) { ctx.clearRect(0, 0, w, h); drawDiagram(0); drawRect(0); }
+    });
   }
 </script>
