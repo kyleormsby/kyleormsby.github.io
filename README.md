@@ -274,7 +274,7 @@ superscript position (`{}^\boxslash R`).
 ## The landing-page motif
 
 `src/components/Motif.astro` shows 11 points stirring a rectangle beside the
-braid word the motion spells in \(\pi_1\). The braid is the alternating
+braid word the motion spells in pi_1. The braid is the alternating
 "brick wall" stir
 
     beta = (s1 s3 s5 s7 s9)(s2 s4 s6 s8 s10)^-1   in B_11
@@ -285,7 +285,7 @@ two-beat rhythm rather than plodding through ten crossings one at a time.
 
 One period permutes the points by an 11-cycle, so `beta^11` — 110 letters — is
 a **pure** braid: every point returns to its own starting position, and the
-path closes in the *ordered* configuration space F(R, 11), which is what the
+path closes in the *ordered* configuration space Conf_11(R^2), which is what the
 caption claims. The counter in the caption tracks progress toward those 110.
 
 `beta` is pseudo-Anosov, and its dilatation is the largest root of
@@ -316,6 +316,22 @@ method has. Two different routes, one answer.
 python3 tools/braid.py     # prints both, with the controls
 npm run shots:motif        # light, dark, narrow, reduced-motion captures
 ```
+
+### A course that lives somewhere else
+
+Math 342 is a PreTeXt book published from its own repo, so its JSON carries an
+`href`:
+
+```json
+"href": "https://kyleormsby.github.io/math342spring26/course/frontmatter.html"
+```
+
+Any course with an `href` still appears in "currently teaching" and in the
+teaching index, but every link points at the real site and **no local page is
+built** — there is no half-filled duplicate to drift out of date. `/342/`
+redirects there too, since that URL existed before. Drop the `href` and the
+local page comes back, schedule CSV and all; `342-spring26.csv` is still in
+the repo for exactly that reason.
 
 ## Deploying
 

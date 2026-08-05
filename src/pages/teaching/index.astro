@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { allCourses } from '../../lib/courses';
+import { allCourses, courseHref } from '../../lib/courses';
 
 const courses = allCourses();
 const current = courses.filter((c) => c.current);
@@ -24,7 +24,7 @@ const past = courses.filter((c) => !c.current);
           <div class="entry">
             <span class="label">{c.term}</span>
             <div>
-              <a href={`/${c.slug}/`}>{c.number} · {c.title}</a>
+              <a href={courseHref(c)}>{c.number} · {c.title}</a>
               {c.blurb && <p class="dim" style="margin:var(--s1) 0 0;font-size:0.94rem">{c.blurb}</p>}
             </div>
           </div>
@@ -39,7 +39,7 @@ const past = courses.filter((c) => !c.current);
       <div class="entry">
         <span class="label">{c.term}</span>
         <div>
-          <a href={`/${c.slug}/`}>{c.number} · {c.title}</a>
+          <a href={courseHref(c)}>{c.number} · {c.title}</a>
           {c.blurb && <p class="dim" style="margin:var(--s1) 0 0;font-size:0.94rem">{c.blurb}</p>}
         </div>
       </div>

@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Motif from '../components/Motif.astro';
 import { getCollection } from 'astro:content';
-import { currentCourses } from '../lib/courses';
+import { currentCourses, courseHref } from '../lib/courses';
 
 const viz = (await getCollection('viz'))
   .sort((a, b) => b.data.year - a.data.year)
@@ -30,7 +30,7 @@ try {
     <p class="dim" style="margin-top:var(--s4);max-width:var(--measure)">
       Professor of mathematics. Currently teaching{' '}
       {courses.map((c, i) => (
-        <>{i > 0 && ', '}<a href={`/${c.slug}/`}>{c.number}</a></>
+        <>{i > 0 && ', '}<a href={courseHref(c)}>{c.number}</a></>
       ))}.
     </p>
   </div>

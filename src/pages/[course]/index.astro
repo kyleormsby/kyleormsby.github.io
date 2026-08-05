@@ -1,9 +1,9 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { allCourses, loadCourse, inline } from '../../lib/courses';
+import { localCourses, loadCourse, inline } from '../../lib/courses';
 
 export function getStaticPaths() {
-  return allCourses().map((c) => ({ params: { course: c.slug } }));
+  return localCourses().map((c) => ({ params: { course: c.slug } }));
 }
 
 const { course } = Astro.params;

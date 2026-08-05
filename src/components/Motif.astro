@@ -1,7 +1,8 @@
 ---
 /**
  * A nod to the domain name: 11 points stirring a rectangle, never colliding —
- * a loop in the configuration space F(R, 11), drawn alongside the braid word
+ * a loop in the ordered configuration space Conf_11(R^2), drawn alongside the
+ * braid word
  * it spells in pi_1.
  *
  * The braid is the alternating "brick wall" stir
@@ -35,8 +36,9 @@ const ENTROPY = '1.7049';
   <canvas aria-hidden="true"></canvas>
   <figcaption>
     <span class="label">
-      a loop in <span class="math">F(R,&nbsp;{points})</span> — the pseudo-Anosov stir{' '}
-      <span class="math">(σ₁σ₃σ₅σ₇σ₉ · σ₂⁻¹σ₄⁻¹σ₆⁻¹σ₈⁻¹σ₁₀⁻¹)<sup>11</sup></span>
+      a loop in <span class="math">Conf<sub>{points}</sub>(ℝ²)</span> — the pseudo-Anosov
+      stir{' '}
+      <span class="math">(σ₁σ₃σ₅σ₇σ₉ · σ₂⁻¹σ₄⁻¹σ₆⁻¹σ₈⁻¹σ₁₀⁻¹)<sup>11</sup> ∈ P<sub>{points}</sub></span>
     </span>
     <span class="label dim">
       dilatation <span class="math">λ ≈ {LAMBDA}</span> · entropy{' '}
@@ -71,7 +73,7 @@ const ENTROPY = '1.7049';
     text-transform: none;
     letter-spacing: 0;
   }
-  .motif .math sup { font-size: 0.7em; font-style: normal; }
+  .motif .math sup, .motif .math sub { font-size: 0.7em; font-style: normal; }
   @media (max-width: 34rem) {
     .motif figcaption { display: block; }
     .motif figcaption .dim { display: block; margin-top: var(--s2); }

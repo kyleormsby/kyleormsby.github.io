@@ -38,6 +38,12 @@ export interface CourseMeta {
   blurb?: string;
   preamble?: string;       // markdown shown above the schedule
   current?: boolean;       // show in the "currently teaching" list
+  /**
+   * Set when the course site is published elsewhere — a PreTeXt book, say.
+   * Every link to the course then points there, and no local page is built,
+   * so there is no half-filled duplicate to drift out of date.
+   */
+  href?: string;
   facts: { label: string; value: string }[];
   render?: RenderRule[];
 }
@@ -127,6 +133,12 @@ export function allCourses(): CourseMeta[] {
     (a, b) => termKey(b.term) - termKey(a.term) || a.slug.localeCompare(b.slug),
   );
 }
+
+/** Where a link to this course should go. */
+export const courseHref = (c: CourseMeta) => c.href ?? `/${c.slug}/`;
+
+/** Courses whose page this site actually builds. */
+export const localCourses = () => allCourses().filter((c) => !c.href);
 
 export function currentCourses(): CourseMeta[] {
   return allCourses().filter((c) => c.current);

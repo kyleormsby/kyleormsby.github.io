@@ -5,8 +5,9 @@
   "term": "spring 2026",
   "schedule": "342-spring26.csv",
   "filesBase": "/files/342spring26/",
+  "href": "https://kyleormsby.github.io/math342spring26/course/frontmatter.html",
   "current": true,
-  "blurb": "Point-set topology. The schedule is a skeleton for now — one row per meeting, waiting to be filled in.",
+  "blurb": "Point-set topology. The schedule is a skeleton for now \u2014 one row per meeting, waiting to be filled in.",
   "facts": [
     {
       "label": "syllabus",

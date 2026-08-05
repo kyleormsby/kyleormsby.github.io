@@ -89,6 +89,8 @@ export default defineConfig({
     '/posts/2021/11/aha/': '/writing/aha/',
     '/posts/2021/09/homotopical-combinatorics/': '/writing/homotopical-combinatorics/',
     '/posts/2021/06/farewell-bright-obvious/': '/writing/farewell-bright-obvious/',
+    // math 342 is a PreTeXt book published from its own repo.
+    '/342/': 'https://kyleormsby.github.io/math342spring26/course/frontmatter.html',
   },
   build: { format: 'directory' },
 });

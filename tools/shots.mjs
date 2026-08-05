@@ -31,7 +31,6 @@ const targets = [
   ['course',      '/113/',       1440, 2100],
   ['course-544',  '/544/',       1440, 1700],
   ['course-111',  '/111/',       1440, 1500],
-  ['course-342',  '/342/',       1440, 1300],
   ['teaching',    '/teaching/',  1440, 'full'],
   ['writing',     '/writing/',   1440, 'full'],
   ['post',        '/writing/homotopical-combinatorics/', 1440, 'full'],
