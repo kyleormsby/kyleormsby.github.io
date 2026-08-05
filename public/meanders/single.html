@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Meandric System — Single View</title>
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; overflow: hidden;
+               background: #06060c; color: #c8c8d8; font: 12px/1.4 ui-monospace, monospace; }
+  #info { position: absolute; top: 12px; left: 14px; pointer-events: none;
+          text-shadow: 0 1px 2px #000; max-width: 400px; }
+  #info h1 { margin: 0 0 4px 0; font-size: 14px; font-weight: 600; }
+  #info p { margin: 0; opacity: 0.8; }
+  #info code { background: rgba(255,255,255,0.06); padding: 1px 4px; border-radius: 2px; }
+  #picker { position: absolute; top: 12px; right: 14px; display: flex;
+            flex-direction: column; gap: 6px; align-items: flex-end;
+            background: rgba(20,20,30,0.7); padding: 10px 12px;
+            border: 1px solid #333; border-radius: 4px; }
+  #picker label { display: flex; align-items: center; gap: 8px; }
+  #picker select, #picker input {
+    background: rgba(40,40,55,0.8); color: #c8c8d8; border: 1px solid #555;
+    font: inherit; padding: 2px 6px; border-radius: 3px;
+  }
+  #picker select { min-width: 14ch; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<div id="info">
+  <h1 id="title">Meandric System</h1>
+  <p id="subtitle"></p>
+  <p style="margin-top: 6px;">URL params: <code>?n=4&amp;top=0&amp;bottom=5</code> or <code>?top=((()()))&amp;bottom=()()()()</code></p>
+</div>
+<div id="picker">
+  <label>n
+    <select id="sel-n">
+      <option>2</option><option>3</option><option selected>4</option>
+      <option>5</option><option>6</option>
+    </select>
+  </label>
+  <label>top
+    <select id="sel-top"></select>
+  </label>
+  <label>bottom
+    <select id="sel-bottom"></select>
+  </label>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+import { dyckWords, allMatchings, pairsFromDyck, findComponents } from './meanders.js';
+import { createMeanderObject, updateMeanderBalls } from './meander-viz.js';
+
+// ----- URL params and pickers -----
+const params = new URLSearchParams(location.search);
+const n0 = parseInt(params.get('n') || '4', 10);
+
+function resolveMatching(spec, n) {
+  // spec is either a Dyck-word string or a numeric lex index
+  if (spec === null || spec === undefined) return null;
+  if (/^[()]+$/.test(spec)) {
+    if (spec.length !== 2 * n) return null;
+    return pairsFromDyck(spec);
+  }
+  const idx = parseInt(spec, 10);
+  if (Number.isFinite(idx)) {
+    const dws = dyckWords(n);
+    if (idx >= 0 && idx < dws.length) return pairsFromDyck(dws[idx]);
+  }
+  return null;
+}
+
+const topSpec    = params.get('top');
+const bottomSpec = params.get('bottom');
+
+const selN = document.getElementById('sel-n');
+const selT = document.getElementById('sel-top');
+const selB = document.getElementById('sel-bottom');
+selN.value = String(n0);
+
+let n = n0;
+let topIdx = 0;
+let bottomIdx = 0;
+
+function refreshSelectors() {
+  const dws = dyckWords(n);
+  selT.innerHTML = '';
+  selB.innerHTML = '';
+  dws.forEach((dw, k) => {
+    const ot = document.createElement('option'); ot.value = String(k); ot.textContent = `${k}: ${dw}`;
+    const ob = ot.cloneNode(true);
+    selT.appendChild(ot); selB.appendChild(ob);
+  });
+  selT.value = String(Math.min(topIdx, dws.length - 1));
+  selB.value = String(Math.min(bottomIdx, dws.length - 1));
+}
+
+// Initial selection (URL > defaults)
+{
+  const dws = dyckWords(n);
+  const initTop    = resolveMatching(topSpec,    n);
+  const initBottom = resolveMatching(bottomSpec, n);
+  // map back to indices for the selector
+  const topDw = initTop ?
+    dws.find(dw => JSON.stringify(pairsFromDyck(dw)) === JSON.stringify(initTop))
+    : dws[0];
+  const botDw = initBottom ?
+    dws.find(dw => JSON.stringify(pairsFromDyck(dw)) === JSON.stringify(initBottom))
+    : dws[Math.min(5, dws.length - 1)];
+  topIdx    = dws.indexOf(topDw);
+  bottomIdx = dws.indexOf(botDw);
+}
+refreshSelectors();
+
+// ----- Scene -----
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05050b);
+
+const camera = new THREE.PerspectiveCamera(
+  35, window.innerWidth / window.innerHeight, 0.05, 50
+);
+camera.position.set(0, -3.5, 3.0);
+camera.lookAt(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const key = new THREE.DirectionalLight(0xffffff, 0.9);
+key.position.set(4, 6, 8);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xb0c8ff, 0.35);
+rim.position.set(-5, -3, 4);
+scene.add(rim);
+
+// ----- Meander object -----
+let meanderObj = null;
+function rebuild() {
+  if (meanderObj) {
+    scene.remove(meanderObj);
+    meanderObj.traverse(o => {
+      if (o.geometry) o.geometry.dispose();
+      if (o.material) o.material.dispose();
+    });
+  }
+  const matchings = allMatchings(n);
+  const top = matchings[topIdx];
+  const bot = matchings[bottomIdx];
+
+  meanderObj = createMeanderObject(top, bot, n, {
+    sphereRadius: 1.0,
+    tubeRadius: 0.16,             // thicker; ball stays at 0.05
+    tubeOpacity: 0.32,
+    tubeTransmission: 0.55,
+    tubeRoughness: 0.12,
+    tubeIor: 1.5,
+    tubeThickness: 0.6,
+    tubeEmissiveIntensity: 0.40,
+    tubeClearcoat: 0.85,
+    tubeAttenuationDistance: 0.9,
+    ballRadius: 0.05,             // unchanged
+    ballEmissive: 5.0,
+    showHalo: false,
+    tubularSegments: 64,
+    radialSegments: 16,
+    showPoints: false,
+  });
+  scene.add(meanderObj);
+
+  // Update equator scale if needed (always radius 1 here)
+  // Update title
+  const dws = dyckWords(n);
+  const k = meanderObj.userData.components.length;
+  document.getElementById('title').textContent =
+    `Meandric system  (n=${n})`;
+  document.getElementById('subtitle').textContent =
+    `top = ${dws[topIdx]}    bottom = ${dws[bottomIdx]}    components = ${k}`;
+}
+rebuild();
+
+// ----- Picker handlers -----
+selN.addEventListener('change', () => {
+  n = parseInt(selN.value, 10);
+  topIdx = 0; bottomIdx = 0;
+  refreshSelectors();
+  rebuild();
+});
+selT.addEventListener('change', () => { topIdx = parseInt(selT.value, 10); rebuild(); });
+selB.addEventListener('change', () => { bottomIdx = parseInt(selB.value, 10); rebuild(); });
+
+// ----- Postprocessing (bloom) -----
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(
+  new THREE.Vector2(window.innerWidth, window.innerHeight),
+  0.7, 0.55, 0.55
+);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// ----- Controls -----
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 1.5;
+controls.maxDistance = 12;
+
+// ----- Animate -----
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  if (meanderObj) updateMeanderBalls(meanderObj, t, { speed: 0.18, mode: 'arclength' });
+  controls.update();
+  composer.render();
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  composer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

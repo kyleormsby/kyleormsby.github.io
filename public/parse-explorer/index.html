@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>All Parses — PEMDAS Explorer</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #1a2233;
+    --muted: #66707f;
+    --line: #d8dde4;
+    --accent: #2563eb;
+    --accent-ink: #ffffff;
+    --implicit: #0e9488;
+    --num-bg: #eef1f5;
+    --badge-std: #b45309;
+    --badge-std-bg: #fef3c7;
+    --badge-jux: #9d174d;
+    --badge-jux-bg: #fce7f3;
+    --err: #b91c1c;
+    --err-bg: #fee2e2;
+    --ghost: #a6adba;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151c;
+      --card: #1b2029;
+      --ink: #e7ebf2;
+      --muted: #97a1b0;
+      --line: #313947;
+      --accent: #5b8def;
+      --implicit: #2dd4bf;
+      --num-bg: #262d39;
+      --badge-std: #fbbf24;
+      --badge-std-bg: #4a3407;
+      --badge-jux: #f9a8d4;
+      --badge-jux-bg: #4d1233;
+      --err: #fca5a5;
+      --err-bg: #43181a;
+      --ghost: #4d5666;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 28px 20px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+  .inputrow { display: flex; gap: 10px; }
+  #expr {
+    flex: 1;
+    font: 18px/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    padding: 10px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--ink);
+    outline: none;
+  }
+  #expr:focus { border-color: var(--accent); }
+  #go {
+    font: 600 15px/1 inherit;
+    padding: 0 22px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    cursor: pointer;
+  }
+  #go:hover { filter: brightness(1.08); }
+  .examples { margin: 12px 0 4px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .examples span { color: var(--muted); font-size: 13px; margin-right: 2px; }
+  .ex {
+    font: 13.5px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .ex:hover { border-color: var(--accent); color: var(--accent); }
+  #error {
+    display: none;
+    margin: 14px 0 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: var(--err-bg);
+    color: var(--err);
+    font-size: 14px;
+  }
+  #topbar { margin: 22px 0 6px; display: none; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  #headline { font-size: 15px; }
+  #headline b { font-size: 17px; }
+  .modebar { display: inline-flex; border: 1.5px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .mode {
+    font: 600 13.5px/1 inherit;
+    padding: 8px 16px;
+    border: none;
+    background: var(--card);
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .mode.active { background: var(--accent); color: #fff; }
+  .chips { display: none; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    background: var(--card);
+    cursor: pointer;
+    font-size: 13.5px;
+    user-select: none;
+  }
+  .chip .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .chip .cnt { color: var(--muted); }
+  .chip.active { border-color: var(--ink); }
+  .chip:hover { border-color: var(--accent); }
+  #grid {
+    margin-top: 16px;
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 14px 12px;
+    overflow: hidden;
+  }
+  .card.hidden { display: none; }
+  .cardhead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .idx { color: var(--muted); font-size: 12.5px; }
+  .val {
+    font: 600 14px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    padding: 2px 10px;
+    border-radius: 999px;
+    color: #fff;
+  }
+  .badge {
+    font-size: 11.5px; font-weight: 700; letter-spacing: .02em;
+    padding: 2px 8px; border-radius: 6px;
+  }
+  .badge.std { color: var(--badge-std); background: var(--badge-std-bg); }
+  .badge.jux { color: var(--badge-jux); background: var(--badge-jux-bg); }
+  .badge.ghostb { color: var(--muted); background: var(--num-bg); }
+  .svgbox { overflow-x: auto; display: flex; justify-content: center; }
+  .paren {
+    margin-top: 8px;
+    font: 14px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--muted);
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+  #assoc { margin-top: 16px; display: none; }
+  #assocbox {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  #c3d { display: block; width: 100%; height: 620px; cursor: grab; touch-action: none; }
+  #c3d.dragging { cursor: grabbing; }
+  #tooltip {
+    position: absolute;
+    display: none;
+    pointer-events: none;
+    background: var(--ink);
+    color: var(--bg);
+    font: 12.5px ui-monospace, Menlo, Consolas, monospace;
+    padding: 5px 9px;
+    border-radius: 7px;
+    max-width: 340px;
+    z-index: 5;
+  }
+  #assocmsg {
+    padding: 26px 18px;
+    color: var(--muted);
+    text-align: center;
+    font-size: 14px;
+  }
+  #assocdetail { margin-top: 14px; display: none; max-width: 620px; margin-left: auto; margin-right: auto; }
+  #morphc { display: block; }
+  .note { margin-top: 12px; color: var(--muted); font-size: 13px; }
+  .legend { margin-top: 34px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 14px; }
+  .legend b { color: var(--ink); font-weight: 600; }
+  .legend p { margin: 6px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>All Parses — PEMDAS Explorer</h1>
+  <p class="sub">Enter an expression with + − × ÷ ^ (also <code>*</code>, <code>/</code>, <code>**</code>), parentheses, and implicit multiplication. Explicit parentheses are kept as fixed subtrees; every remaining order of operations is enumerated as a parse tree and evaluated.</p>
+
+  <div class="inputrow">
+    <input id="expr" type="text" spellcheck="false" autocomplete="off"
+           placeholder="e.g. 8 ÷ 2(2+2)" value="9-3-3/3">
+    <button id="go">Parse</button>
+  </div>
+  <div class="examples">
+    <span>Try:</span>
+    <button class="ex">8/2(2+2)</button>
+    <button class="ex">9-3-3/3</button>
+    <button class="ex">(1+2)*3+4</button>
+    <button class="ex">6-9+7*7^2</button>
+    <button class="ex">4-2-2/2</button>
+    <button class="ex">1+2*3^2*2+1</button>
+  </div>
+  <div id="error"></div>
+
+  <div id="topbar">
+    <div id="headline"></div>
+    <div class="modebar">
+      <button class="mode active" id="mode-gallery">Tree gallery</button>
+      <button class="mode" id="mode-assoc">Associahedron</button>
+    </div>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div id="grid"></div>
+  <div class="note" id="capnote" style="display:none"></div>
+
+  <div id="assoc">
+    <div id="assocbox">
+      <canvas id="c3d"></canvas>
+      <div id="tooltip"></div>
+    </div>
+    <div class="note" id="assocnote"></div>
+    <div class="card" id="assocdetail"></div>
+  </div>
+
+  <div class="legend">
+    <p><b>Badges:</b> <span class="badge std">PEMDAS</span> marks the conventional parse (^ before × ÷ before + −, left-to-right within a level, ^ right-associative, implicit × treated like ×).
+    <span class="badge jux">PEMDAS · juxtaposition first</span> marks the variant where implicit multiplication binds tighter than ÷ and × — shown only when it differs.
+    In trees, <span style="color:var(--implicit)">teal ·</span> is implicit multiplication.</p>
+    <p><b>Associahedron view:</b> vertices are all bracketings of the flattened operand sequence — the associahedron K<sub>m−1</sub> in Loday's realization, PCA-projected to 3D (for five operands this is the genuine 3-dimensional associahedron; beyond that, a 3D shadow of the higher-dimensional polytope). Edges are single associativity flips. Colored vertices are parses reachable given your explicit parentheses; pale dashed vertices are blocked by them. Drag to rotate, scroll to zoom, click a vertex to inspect it, and click an edge to animate the tree rotation it represents.</p>
+  </div>
+</div>
+
+<script id="logic">
+"use strict";
+
+// ============ tokenizer ============
+function tokenize(src) {
+  const toks = [];
+  let i = 0;
+  const n = src.length;
+  const isDigit = c => c >= "0" && c <= "9";
+  while (i < n) {
+    const c = src[i];
+    if (c === " " || c === "\t" || c === "\n" || c === "\r") { i++; continue; }
+    if (isDigit(c) || (c === "." && isDigit(src[i + 1]))) {
+      let j = i, seenDot = false;
+      while (j < n && (isDigit(src[j]) || (src[j] === "." && !seenDot))) {
+        if (src[j] === ".") seenDot = true;
+        j++;
+      }
+      toks.push({ kind: "num", text: src.slice(i, j) });
+      i = j; continue;
+    }
+    if (c === "(" || c === "[") { toks.push({ kind: "lp" }); i++; continue; }
+    if (c === ")" || c === "]") { toks.push({ kind: "rp" }); i++; continue; }
+    let op = null, adv = 1;
+    if (c === "*" && src[i + 1] === "*") { op = "^"; adv = 2; }
+    else if (c === "+") op = "+";
+    else if (c === "-" || c === "−" || c === "–") op = "-";
+    else if (c === "*" || c === "×" || c === "·") op = "*";
+    else if (c === "/" || c === "÷") op = "/";
+    else if (c === "^") op = "^";
+    if (op !== null) {
+      toks.push({ kind: "op", op, implicit: false });
+      i += adv; continue;
+    }
+    throw new Error('Unrecognized character "' + c + '" at position ' + (i + 1) + ".");
+  }
+  // insert implicit multiplication between juxtaposed factors
+  const out = [];
+  for (let k = 0; k < toks.length; k++) {
+    const t = toks[k], prev = out[out.length - 1];
+    if (prev && (prev.kind === "num" || prev.kind === "rp") && (t.kind === "num" || t.kind === "lp")) {
+      out.push({ kind: "op", op: "*", implicit: true });
+    }
+    out.push(t);
+  }
+  return out;
+}
+
+// ============ validation ============
+function validate(toks) {
+  if (toks.length === 0) throw new Error("Enter an expression.");
+  let depth = 0, expectOperand = true;
+  for (const t of toks) {
+    if (expectOperand) {
+      if (t.kind === "num") expectOperand = false;
+      else if (t.kind === "lp") depth++;
+      else if (t.kind === "op") throw new Error('Operator "' + opSymbol(t) + '" appears where a value was expected' + (t.op === "-" ? " (unary minus is not supported)." : "."));
+      else if (t.kind === "rp") throw new Error("Closing parenthesis appears where a value was expected.");
+    } else {
+      if (t.kind === "op") expectOperand = true;
+      else if (t.kind === "rp") { depth--; if (depth < 0) throw new Error("Unbalanced closing parenthesis."); }
+      else throw new Error("Unexpected token after a value.");
+    }
+  }
+  if (expectOperand) throw new Error("Expression ends where a value was expected.");
+  if (depth > 0) throw new Error("Missing " + depth + " closing parenthes" + (depth === 1 ? "is" : "es") + ".");
+}
+
+function matchParens(toks) {
+  const match = new Array(toks.length).fill(-1);
+  const stack = [];
+  for (let k = 0; k < toks.length; k++) {
+    if (toks[k].kind === "lp") stack.push(k);
+    else if (toks[k].kind === "rp") { const o = stack.pop(); match[o] = k; match[k] = o; }
+  }
+  return match;
+}
+
+// ============ enumeration of all parses ============
+function countParses(toks, match) {
+  const memo = new Map();
+  function cnt(i, j) {
+    if (j - i <= 0) return 0;
+    const key = i * 8192 + j;
+    if (memo.has(key)) return memo.get(key);
+    let total = 0;
+    if (j - i === 1) total = toks[i].kind === "num" ? 1 : 0;
+    else {
+      if (toks[i].kind === "lp" && match[i] === j - 1) total += cnt(i + 1, j - 1);
+      let depth = 0;
+      for (let k = i; k < j; k++) {
+        const t = toks[k];
+        if (t.kind === "lp") depth++;
+        else if (t.kind === "rp") depth--;
+        else if (t.kind === "op" && depth === 0 && k > i && k < j - 1) {
+          total += cnt(i, k) * cnt(k + 1, j);
+        }
+      }
+    }
+    memo.set(key, total);
+    return total;
+  }
+  return cnt(0, toks.length);
+}
+
+function enumerateParses(toks, match) {
+  const memo = new Map();
+  function parse(i, j) {
+    if (j - i <= 0) return [];
+    const key = i * 8192 + j;
+    if (memo.has(key)) return memo.get(key);
+    const res = [];
+    if (j - i === 1) {
+      if (toks[i].kind === "num") res.push({ type: "num", text: toks[i].text });
+    } else {
+      if (toks[i].kind === "lp" && match[i] === j - 1) {
+        for (const t of parse(i + 1, j - 1)) res.push(t);
+      }
+      let depth = 0;
+      for (let k = i; k < j; k++) {
+        const t = toks[k];
+        if (t.kind === "lp") depth++;
+        else if (t.kind === "rp") depth--;
+        else if (t.kind === "op" && depth === 0 && k > i && k < j - 1) {
+          const L = parse(i, k), R = parse(k + 1, j);
+          for (const l of L) for (const r of R) {
+            res.push({ type: "op", op: t.op, implicit: !!t.implicit, left: l, right: r });
+          }
+        }
+      }
+    }
+    memo.set(key, res);
+    return res;
+  }
+  return parse(0, toks.length);
+}
+
+// ============ conventional (PEMDAS) parses ============
+// convention: "same"  -> implicit × has the precedence of ×
+//             "tight" -> implicit × binds tighter than × and ÷ (juxtaposition first)
+function stdParse(toks, convention) {
+  let pos = 0;
+  function lbpOf(t) {
+    if (t.op === "+" || t.op === "-") return 1;
+    if (t.op === "*" || t.op === "/") return t.implicit && convention === "tight" ? 3 : 2;
+    if (t.op === "^") return 4;
+    return 0;
+  }
+  function parseExpr(minBp) {
+    const t = toks[pos++];
+    let lhs;
+    if (t.kind === "num") lhs = { type: "num", text: t.text };
+    else if (t.kind === "lp") { lhs = parseExpr(0); pos++; /* rp */ }
+    else throw new Error("std parse error");
+    for (;;) {
+      const p = toks[pos];
+      if (!p || p.kind === "rp") break;
+      const lbp = lbpOf(p);
+      if (lbp <= minBp) break;
+      pos++;
+      const rhs = parseExpr(p.op === "^" ? lbp - 0.01 : lbp);
+      lhs = { type: "op", op: p.op, implicit: !!p.implicit, left: lhs, right: rhs };
+    }
+    return lhs;
+  }
+  const t = parseExpr(0);
+  return pos === toks.length ? t : null;
+}
+
+// ============ evaluation, keys, display ============
+function evalTree(t) {
+  if (t.type === "num") return parseFloat(t.text);
+  const a = evalTree(t.left), b = evalTree(t.right);
+  switch (t.op) {
+    case "+": return a + b;
+    case "-": return a - b;
+    case "*": return a * b;
+    case "/": return a / b;
+    case "^": return Math.pow(a, b);
+  }
+  return NaN;
+}
+
+function keyOf(t) {
+  if (t.type === "num") return String(parseFloat(t.text));
+  return "(" + keyOf(t.left) + t.op + keyOf(t.right) + ")";
+}
+
+function opSymbol(t) {
+  if (t.implicit) return "·";
+  switch (t.op) {
+    case "+": return "+";
+    case "-": return "−";
+    case "*": return "×";
+    case "/": return "÷";
+    case "^": return "^";
+  }
+  return "?";
+}
+
+function parenStr(t, top) {
+  if (t.type === "num") return t.text;
+  const s = parenStr(t.left, false) + " " + opSymbol(t) + " " + parenStr(t.right, false);
+  return top ? s : "(" + s + ")";
+}
+
+function valueKey(v) {
+  if (Number.isNaN(v)) return "NaN";
+  if (!isFinite(v)) return v > 0 ? "Inf" : "-Inf";
+  return String(+v.toPrecision(12));
+}
+
+function fmtVal(v) {
+  if (Number.isNaN(v)) return "undefined";
+  if (!isFinite(v)) return v > 0 ? "∞" : "−∞";
+  const r = +v.toPrecision(12);
+  return String(r).replace("-", "−");
+}
+
+// ============ tree layout (pure) ============
+function layout(t) {
+  function measure(n) {
+    if (n.type === "num") { n.w = Math.max(1, n.text.length * 0.22 + 0.35); return n.w; }
+    n.w = measure(n.left) + measure(n.right);
+    return n.w;
+  }
+  let maxDepth = 0;
+  function place(n, off, depth) {
+    maxDepth = Math.max(maxDepth, depth);
+    n.y = depth;
+    if (n.type === "num") { n.x = off + n.w / 2; return; }
+    place(n.left, off, depth + 1);
+    place(n.right, off + n.left.w, depth + 1);
+    n.x = (n.left.x + n.right.x) / 2;
+  }
+  measure(t);
+  place(t, 0, 0);
+  return { w: t.w, d: maxDepth };
+}
+
+// position snapshot with in-order node indexing (labels follow token positions,
+// so index i refers to the same token in any bracketing of the same sequence)
+function snapshot(t) {
+  const { w, d } = layout(t);
+  const nodes = [];
+  (function walk(n) {
+    if (n.type === "op") {
+      walk(n.left);
+      n._io = nodes.length;
+      nodes.push({ x: n.x, y: n.y, op: true, label: opSymbol(n), implicit: !!n.implicit });
+      walk(n.right);
+    } else {
+      n._io = nodes.length;
+      nodes.push({ x: n.x, y: n.y, op: false, label: n.text });
+    }
+  })(t);
+  const edges = [];
+  (function walkE(n) {
+    if (n.type !== "op") return;
+    for (const k of [n.left, n.right]) {
+      edges.push([n._io, k._io]);
+      walkE(k);
+    }
+  })(t);
+  return { nodes, edges, w, d };
+}
+
+// ============ associahedron ============
+function flattenToks(toks) {
+  return toks.filter(t => t.kind !== "lp" && t.kind !== "rp");
+}
+
+// all trees one associativity flip away (in-order token sequence preserved)
+function flips(t) {
+  const out = [];
+  if (t.type !== "op") return out;
+  const mk = (opNode, left, right) => ({ type: "op", op: opNode.op, implicit: opNode.implicit, left, right });
+  if (t.left.type === "op") {
+    const l = t.left;
+    out.push(mk(l, l.left, mk(t, l.right, t.right)));
+  }
+  if (t.right.type === "op") {
+    const r = t.right;
+    out.push(mk(r, mk(t, t.left, r.left), r.right));
+  }
+  for (const f of flips(t.left)) out.push(mk(t, f, t.right));
+  for (const f of flips(t.right)) out.push(mk(t, t.left, f));
+  return out;
+}
+
+// Loday's realization: coordinate at gap g is (#leaves left) * (#leaves right)
+// for the internal node sitting over gap g.
+function lodayCoords(t) {
+  const coord = [];
+  function walk(n, off) {
+    if (n.type === "num") return 1;
+    const L = walk(n.left, off);
+    const R = walk(n.right, off + L);
+    coord[off + L - 1] = L * R;
+    return L + R;
+  }
+  walk(t, 0);
+  return coord;
+}
+
+// PCA projection of a small point cloud to k dims (deterministic)
+function projectPCA(coords, kdim) {
+  const n = coords.length, d = coords[0] ? coords[0].length : 0;
+  if (d === 0 || n === 1) return coords.map(() => new Array(kdim).fill(0));
+  const mean = new Array(d).fill(0);
+  for (const c of coords) for (let i = 0; i < d; i++) mean[i] += c[i] / n;
+  const X = coords.map(c => c.map((v, i) => v - mean[i]));
+  let C = Array.from({ length: d }, () => new Array(d).fill(0));
+  for (const x of X) for (let i = 0; i < d; i++) for (let j = 0; j < d; j++) C[i][j] += x[i] * x[j];
+  const mul = (M, v) => M.map(row => row.reduce((s, m, j) => s + m * v[j], 0));
+  const dot = (a, b) => a.reduce((s, x, i) => s + x * b[i], 0);
+  function topEig(M) {
+    let v = Array.from({ length: d }, (_, i) => Math.sin(i + 1) + 0.3 * Math.cos(3 * i));
+    for (let it = 0; it < 300; it++) {
+      const w = mul(M, v);
+      const norm = Math.hypot(...w);
+      if (norm < 1e-12) return { v: v.map(() => 0), l: 0 };
+      v = w.map(x => x / norm);
+    }
+    return { v, l: dot(v, mul(M, v)) };
+  }
+  const axes = [];
+  for (let k = 0; k < kdim; k++) {
+    const e = topEig(C);
+    axes.push(e.v);
+    C = C.map((row, i) => row.map((x, j) => x - e.l * e.v[i] * e.v[j]));
+  }
+  return X.map(x => axes.map(a => dot(x, a)));
+}
+
+function buildAssociahedron(flat) {
+  const noMatch = new Array(flat.length).fill(-1);
+  const trees = enumerateParses(flat, noMatch);
+  const idx = new Map(trees.map((t, i) => [keyOf(t), i]));
+  const edgeSet = new Set();
+  for (let i = 0; i < trees.length; i++) {
+    for (const nb of flips(trees[i])) {
+      const j = idx.get(keyOf(nb));
+      if (j !== undefined && j !== i) edgeSet.add(i < j ? i + "," + j : j + "," + i);
+    }
+  }
+  const pts = projectPCA(trees.map(lodayCoords), 3);
+  return {
+    trees,
+    edges: [...edgeSet].map(s => s.split(",").map(Number)),
+    pts
+  };
+}
+
+// full analysis of an input string
+function analyze(src, maxEnumerate) {
+  const toks = tokenize(src);
+  validate(toks);
+  const match = matchParens(toks);
+  const count = countParses(toks, match);
+  const result = { count, toks };
+  if (count > maxEnumerate) { result.tooMany = true; return result; }
+  const trees = enumerateParses(toks, match);
+  const stdSame = stdParse(toks, "same");
+  const stdTight = stdParse(toks, "tight");
+  const kSame = stdSame ? keyOf(stdSame) : null;
+  const kTight = stdTight ? keyOf(stdTight) : null;
+  result.kSame = kSame;
+  result.kTight = kTight;
+  result.parses = trees.map(t => {
+    const k = keyOf(t);
+    const v = evalTree(t);
+    return {
+      tree: t, key: k, value: v, valueKey: valueKey(v),
+      isStd: k === kSame,
+      isJux: kTight !== kSame && k === kTight
+    };
+  });
+  result.flat = flattenToks(toks);
+  return result;
+}
+
+if (typeof module !== "undefined") {
+  module.exports = { tokenize, validate, matchParens, countParses, enumerateParses, stdParse, evalTree, keyOf, parenStr, analyze, fmtVal, valueKey, flattenToks, flips, lodayCoords, projectPCA, buildAssociahedron, layout, snapshot };
+}
+</script>
+
+<script>
+"use strict";
+
+// ============ full-size tree SVG (gallery & detail) ============
+const XU = 46, YU = 52, PAD = 20, R = 14;
+
+function css(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function treeSVG(t) {
+  const { w, d } = layout(t);
+  const W = w * XU + PAD * 2, H = d * YU + PAD * 2 + R * 2;
+  const px = x => PAD + x * XU;
+  const py = y => PAD + R + y * YU;
+  const edges = [], nodes = [];
+  const cInk = css("--ink"), cMuted = css("--muted"), cAccent = css("--accent"),
+        cImp = css("--implicit"), cNumBg = css("--num-bg");
+  function draw(n) {
+    const kids = n.type === "op" ? [n.left, n.right] : [];
+    for (const k of kids) {
+      edges.push('<line x1="' + px(n.x) + '" y1="' + py(n.y) + '" x2="' + px(k.x) + '" y2="' + py(k.y) + '" stroke="' + cMuted + '" stroke-width="1.4" opacity="0.55"/>');
+      draw(k);
+    }
+    if (n.type === "num") {
+      const tw = Math.max(24, n.text.length * 9 + 12);
+      nodes.push('<rect x="' + (px(n.x) - tw / 2) + '" y="' + (py(n.y) - 12) + '" width="' + tw + '" height="24" rx="7" fill="' + cNumBg + '"/>' +
+        '<text x="' + px(n.x) + '" y="' + (py(n.y) + 4.5) + '" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="13.5" font-weight="600" fill="' + cInk + '">' + n.text + "</text>");
+    } else {
+      const fill = n.implicit ? cImp : cAccent;
+      nodes.push('<circle cx="' + px(n.x) + '" cy="' + py(n.y) + '" r="' + R + '" fill="' + fill + '"/>' +
+        '<text x="' + px(n.x) + '" y="' + (py(n.y) + 5) + '" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">' + opSymbol(n) + "</text>");
+    }
+  }
+  draw(t);
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + " " + H + '">' + edges.join("") + nodes.join("") + "</svg>";
+}
+
+// ============ UI state ============
+const PALETTE = ["#2563eb", "#d97706", "#0e9488", "#dc2626", "#7c3aed", "#db2777", "#4d7c0f", "#0891b2", "#9333ea", "#b45309"];
+const MAX_ENUM = 3000, MAX_RENDER = 160, MAX_ASSOC = 150;
+const ANIM_MS = (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ? 1 : 1500;
+
+const $expr = document.getElementById("expr");
+const $go = document.getElementById("go");
+const $err = document.getElementById("error");
+const $topbar = document.getElementById("topbar");
+const $headline = document.getElementById("headline");
+const $chips = document.getElementById("chips");
+const $grid = document.getElementById("grid");
+const $capnote = document.getElementById("capnote");
+const $assoc = document.getElementById("assoc");
+const $assocbox = document.getElementById("assocbox");
+const $assocnote = document.getElementById("assocnote");
+const $assocdetail = document.getElementById("assocdetail");
+const $tooltip = document.getElementById("tooltip");
+const $c3d = document.getElementById("c3d");
+const $modeGallery = document.getElementById("mode-gallery");
+const $modeAssoc = document.getElementById("mode-assoc");
+
+let mode = "gallery";
+let activeFilter = null;
+let current = null;        // last analysis + derived data
+let selectedVertex = null;
+let rafId = null;
+
+function showError(msg) {
+  $err.textContent = msg;
+  $err.style.display = "block";
+  $topbar.style.display = "none";
+  $chips.style.display = "none";
+  $grid.style.display = "none";
+  $assoc.style.display = "none";
+  $capnote.style.display = "none";
+  current = null;
+}
+
+function run() {
+  const src = $expr.value.trim();
+  $err.style.display = "none";
+  activeFilter = null;
+  selectedVertex = null;
+  let res;
+  try {
+    res = analyze(src, MAX_ENUM);
+  } catch (e) {
+    showError(e.message || String(e));
+    return;
+  }
+  if (res.tooMany) {
+    showError("This expression has " + res.count.toLocaleString() + " possible parses — too many to draw. Add parentheses or use fewer operators (limit: " + MAX_ENUM.toLocaleString() + ").");
+    return;
+  }
+
+  const groups = new Map();
+  for (const p of res.parses) {
+    if (!groups.has(p.valueKey)) groups.set(p.valueKey, { value: p.value, items: [] });
+    groups.get(p.valueKey).items.push(p);
+  }
+  const order = [...groups.keys()].sort((a, b) => {
+    const ga = groups.get(a).value, gb = groups.get(b).value;
+    const na = isFinite(ga) ? ga : (Number.isNaN(ga) ? Infinity : ga);
+    const nb = isFinite(gb) ? gb : (Number.isNaN(gb) ? Infinity : gb);
+    return na - nb || 0;
+  });
+  const colorOf = new Map(order.map((k, i) => [k, PALETTE[i % PALETTE.length]]));
+
+  current = { res, groups, order, colorOf, a3: null };
+  render();
+}
+
+function render() {
+  if (!current) return;
+  $topbar.style.display = "flex";
+  $modeGallery.classList.toggle("active", mode === "gallery");
+  $modeAssoc.classList.toggle("active", mode === "assoc");
+  if (mode === "gallery") {
+    $assoc.style.display = "none";
+    $tooltip.style.display = "none";
+    renderGallery();
+  } else {
+    $chips.style.display = "none";
+    $grid.style.display = "none";
+    $capnote.style.display = "none";
+    $assoc.style.display = "block";
+    renderAssoc();
+  }
+}
+
+// ============ gallery ============
+function renderGallery() {
+  const { res, groups, order, colorOf } = current;
+  const parses = res.parses;
+  const distinct = order.length;
+  $headline.innerHTML = "<b>" + parses.length + "</b> parse" + (parses.length === 1 ? "" : "s") +
+    " &nbsp;·&nbsp; <b>" + distinct + "</b> distinct value" + (distinct === 1 ? "" : "s");
+
+  $chips.style.display = "flex";
+  $chips.innerHTML = "";
+  const allChip = document.createElement("button");
+  allChip.className = "chip active";
+  allChip.textContent = "all";
+  allChip.onclick = () => { activeFilter = null; refreshFilter(); };
+  $chips.appendChild(allChip);
+  for (const k of order) {
+    const g = groups.get(k);
+    const chip = document.createElement("button");
+    chip.className = "chip";
+    chip.dataset.vk = k;
+    chip.innerHTML = '<span class="dot" style="background:' + colorOf.get(k) + '"></span>' +
+      "<span>" + fmtVal(g.value) + "</span><span class='cnt'>×" + g.items.length + "</span>";
+    chip.onclick = () => { activeFilter = activeFilter === k ? null : k; refreshFilter(); };
+    $chips.appendChild(chip);
+  }
+
+  const ordered = [];
+  for (const k of order) {
+    const items = groups.get(k).items.slice().sort((a, b) => (b.isStd || b.isJux) - (a.isStd || a.isJux));
+    ordered.push(...items);
+  }
+  $grid.style.display = "grid";
+  $grid.innerHTML = "";
+  const shown = ordered.slice(0, MAX_RENDER);
+  shown.forEach((p, i) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.dataset.vk = p.valueKey;
+    let badges = "";
+    if (p.isStd) badges += ' <span class="badge std">PEMDAS</span>';
+    if (p.isJux) badges += ' <span class="badge jux">PEMDAS · juxtaposition first</span>';
+    card.innerHTML =
+      '<div class="cardhead"><span class="idx">#' + (i + 1) + '</span>' +
+      '<span class="val" style="background:' + colorOf.get(p.valueKey) + '">= ' + fmtVal(p.value) + "</span>" +
+      badges + "</div>" +
+      '<div class="svgbox">' + treeSVG(p.tree) + "</div>" +
+      '<div class="paren">' + parenStr(p.tree, true) + "</div>";
+    $grid.appendChild(card);
+  });
+  if (ordered.length > MAX_RENDER) {
+    $capnote.style.display = "block";
+    $capnote.textContent = "Showing the first " + MAX_RENDER + " of " + ordered.length + " parse trees. All " + ordered.length + " are counted in the summary above.";
+  } else {
+    $capnote.style.display = "none";
+  }
+  refreshFilter();
+}
+
+function refreshFilter() {
+  for (const chip of $chips.querySelectorAll(".chip")) {
+    const vk = chip.dataset.vk;
+    chip.classList.toggle("active", activeFilter === null ? vk === undefined : vk === activeFilter);
+  }
+  for (const card of $grid.children) {
+    card.classList.toggle("hidden", activeFilter !== null && card.dataset.vk !== activeFilter);
+  }
+}
+
+// ============ 3D associahedron ============
+function matMul(A, B) {
+  const M = [[0,0,0],[0,0,0],[0,0,0]];
+  for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++)
+    M[i][j] = A[i][0]*B[0][j] + A[i][1]*B[1][j] + A[i][2]*B[2][j];
+  return M;
+}
+function rotX(a) { const c = Math.cos(a), s = Math.sin(a); return [[1,0,0],[0,c,-s],[0,s,c]]; }
+function rotY(a) { const c = Math.cos(a), s = Math.sin(a); return [[c,0,s],[0,1,0],[-s,0,c]]; }
+function apply(M, p) {
+  return [
+    M[0][0]*p[0] + M[0][1]*p[1] + M[0][2]*p[2],
+    M[1][0]*p[0] + M[1][1]*p[1] + M[1][2]*p[2],
+    M[2][0]*p[0] + M[2][1]*p[1] + M[2][2]*p[2]
+  ];
+}
+const easeInOut = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3) / 2;
+
+function buildA3() {
+  const { res } = current;
+  const flat = res.flat;
+  const m = (flat.length + 1) / 2;
+  const totalFlat = countParses(flat, new Array(flat.length).fill(-1));
+  if (totalFlat > MAX_ASSOC) return { tooMany: true, m, totalFlat };
+
+  const A = buildAssociahedron(flat);
+  const accessibleKeys = new Map(res.parses.map(p => [p.key, p]));
+  const verts = A.trees.map((t, i) => {
+    const k = keyOf(t);
+    const v = evalTree(t);
+    return {
+      i, tree: t, key: k, value: v, valueKey: valueKey(v),
+      accessible: accessibleKeys.has(k),
+      isStd: k === res.kSame,
+      isJux: res.kTight !== res.kSame && k === res.kTight,
+      snap: snapshot(t)
+    };
+  });
+  // normalize points to unit radius
+  let maxR = 1e-9;
+  for (const p of A.pts) maxR = Math.max(maxR, Math.hypot(p[0], p[1], p[2]));
+  const pts = A.pts.map(p => [p[0]/maxR, p[1]/maxR, p[2]/maxR]);
+
+  return {
+    m, totalFlat, verts, edges: A.edges, pts,
+    R: matMul(rotX(-0.45), rotY(0.5)),
+    zoom: 1,
+    interacted: false,
+    hover: null,          // {type:'v'|'e', i}
+    anim: null,           // {ei, from, to, start}
+    screen: null
+  };
+}
+
+function renderAssoc() {
+  if (!current.a3) current.a3 = buildA3();
+  const a3 = current.a3;
+  if (a3.tooMany) {
+    $headline.innerHTML = "Associahedron K<sub>" + (a3.m - 1) + "</sub> &nbsp;·&nbsp; <b>" + a3.totalFlat.toLocaleString() + "</b> vertices";
+    $c3d.style.display = "none";
+    if (!document.getElementById("assocmsg")) {
+      const div = document.createElement("div");
+      div.id = "assocmsg";
+      div.textContent = "The associahedron on " + a3.m + " operands has " + a3.totalFlat.toLocaleString() +
+        " vertices — too many to draw (limit " + MAX_ASSOC + "). Use fewer operands.";
+      $assocbox.appendChild(div);
+    }
+    $assocnote.textContent = "";
+    $assocdetail.style.display = "none";
+    return;
+  }
+  const old = document.getElementById("assocmsg");
+  if (old) old.remove();
+  $c3d.style.display = "block";
+  const nAcc = a3.verts.filter(v => v.accessible).length;
+  $headline.innerHTML = "Associahedron K<sub>" + (a3.m - 1) + "</sub> &nbsp;·&nbsp; <b>" + a3.verts.length + "</b> vertices, <b>" + a3.edges.length +
+    "</b> flips &nbsp;·&nbsp; <b>" + nAcc + "</b> accessible" + (nAcc < a3.verts.length ? " with these parentheses" : "");
+  $assocnote.textContent = "Drag to rotate · scroll to zoom · click a vertex to inspect it · click an edge to animate the flip." +
+    (nAcc < a3.verts.length ? " Pale dashed vertices are bracketings ruled out by the explicit parentheses." : "");
+  updateDetail();
+  ensureLoop();
+}
+
+function ensureLoop() {
+  if (rafId === null) rafId = requestAnimationFrame(tick);
+}
+
+function tick(ts) {
+  rafId = null;
+  if (mode !== "assoc" || !current || !current.a3 || current.a3.tooMany) return;
+  const a3 = current.a3;
+  if (a3.anim) {
+    const tt = Math.min(1, (ts - a3.anim.start) / ANIM_MS);
+    a3.anim.t = tt;
+    drawMorph(easeInOut(tt));
+    if (tt >= 1) {
+      selectedVertex = a3.anim.to;
+      a3.anim = null;
+      updateDetail();
+    }
+  }
+  draw3d();
+  rafId = requestAnimationFrame(tick);
+}
+
+function draw3d() {
+  const a3 = current.a3;
+  const dpr = window.devicePixelRatio || 1;
+  const w = $c3d.clientWidth, h = $c3d.clientHeight;
+  if ($c3d.width !== Math.round(w * dpr) || $c3d.height !== Math.round(h * dpr)) {
+    $c3d.width = Math.round(w * dpr);
+    $c3d.height = Math.round(h * dpr);
+  }
+  const ctx = $c3d.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+
+  const cMuted = css("--muted"), cGhost = css("--ghost"), cCard = css("--card"),
+        cStd = css("--badge-std"), cJux = css("--badge-jux"), cAccent = css("--accent");
+  const CAM = 3.6;
+  const S = Math.min(w, h) * 0.34 * a3.zoom;
+  const scr = a3.pts.map(p => {
+    const q = apply(a3.R, p);
+    const f = 1 / (1 - q[2] / CAM);
+    return { x: w / 2 + q[0] * S * f, y: h / 2 + q[1] * S * f, z: q[2], f };
+  });
+  a3.screen = scr;
+
+  // edges, far to near
+  const eOrder = a3.edges.map((e, i) => ({ e, i, z: (scr[e[0]].z + scr[e[1]].z) / 2 }))
+    .sort((p, q) => p.z - q.z);
+  for (const { e, i } of eOrder) {
+    const [ia, ib] = e;
+    const A = scr[ia], B = scr[ib];
+    const solid = a3.verts[ia].accessible && a3.verts[ib].accessible;
+    const isAnim = a3.anim && a3.anim.ei === i;
+    const isHover = !a3.anim && a3.hover && a3.hover.type === "e" && a3.hover.i === i;
+    ctx.beginPath();
+    ctx.moveTo(A.x, A.y);
+    ctx.lineTo(B.x, B.y);
+    ctx.setLineDash(solid ? [] : [5, 5]);
+    ctx.strokeStyle = (isAnim || isHover) ? cAccent : (solid ? cMuted : cGhost);
+    ctx.globalAlpha = (isAnim || isHover) ? 0.95 : (solid ? 0.7 : 0.45);
+    ctx.lineWidth = (isAnim || isHover) ? 3 : (solid ? 1.7 : 1.2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+  }
+
+  // traveling pulse on animated edge
+  if (a3.anim) {
+    const [ia, ib] = a3.edges[a3.anim.ei];
+    const from = a3.anim.from === ia ? ia : ib;
+    const to = a3.anim.from === ia ? ib : ia;
+    const tt = easeInOut(a3.anim.t || 0);
+    const x = scr[from].x + (scr[to].x - scr[from].x) * tt;
+    const y = scr[from].y + (scr[to].y - scr[from].y) * tt;
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = cAccent;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = cCard;
+    ctx.stroke();
+  }
+
+  // vertices, far to near
+  const vOrder = a3.verts.map(v => v.i).sort((p, q) => scr[p].z - scr[q].z);
+  ctx.textAlign = "center";
+  for (const i of vOrder) {
+    const v = a3.verts[i];
+    const { x, y, f } = scr[i];
+    const color = v.accessible ? current.colorOf.get(v.valueKey) : cGhost;
+    const r = Math.max(13, Math.min(40, 25 * f * Math.sqrt(a3.zoom)));
+    const isHover = a3.hover && a3.hover.type === "v" && a3.hover.i === i;
+    const isSel = selectedVertex === i;
+    if (v.isStd || v.isJux) {
+      ctx.beginPath();
+      ctx.arc(x, y, r + 4.5, 0, Math.PI * 2);
+      ctx.strokeStyle = v.isStd ? cStd : cJux;
+      ctx.lineWidth = 2.5;
+      ctx.globalAlpha = 0.9;
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = cCard;
+    ctx.fill();
+    ctx.setLineDash(v.accessible ? [] : [3.5, 3.5]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = isSel ? 3.2 : (isHover ? 2.6 : 1.8);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // mini tree glyph
+    const s = v.snap;
+    const xu = Math.min(0.42 * r, (r * 1.58) / s.w);
+    const yu = Math.min(0.42 * r, (r * 1.28) / Math.max(1, s.d));
+    const x0 = x - (s.w * xu) / 2, y0 = y - (s.d * yu) / 2;
+    const alpha = v.accessible ? 1 : 0.5;
+    ctx.globalAlpha = alpha * 0.85;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    if (!v.accessible) ctx.setLineDash([2.5, 2]);
+    for (const [pa, pb] of s.edges) {
+      ctx.beginPath();
+      ctx.moveTo(x0 + s.nodes[pa].x * xu, y0 + s.nodes[pa].y * yu);
+      ctx.lineTo(x0 + s.nodes[pb].x * xu, y0 + s.nodes[pb].y * yu);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    for (const nd of s.nodes) {
+      ctx.beginPath();
+      ctx.arc(x0 + nd.x * xu, y0 + nd.y * yu, nd.op ? 2 : 1.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    // value label
+    if (v.accessible) {
+      ctx.font = "700 " + Math.max(10, 12 * Math.min(1.25, f)) + "px ui-monospace, Menlo, Consolas, monospace";
+      ctx.fillStyle = color;
+      ctx.fillText("= " + fmtVal(v.value), x, y + r + 15);
+    }
+  }
+}
+
+// ---- picking ----
+function pick(mx, my) {
+  const a3 = current && current.a3;
+  if (!a3 || a3.tooMany || !a3.screen) return null;
+  const scr = a3.screen;
+  let best = null;
+  for (const v of a3.verts) {
+    const s = scr[v.i];
+    const r = Math.max(13, Math.min(40, 25 * s.f * Math.sqrt(a3.zoom)));
+    const d = Math.hypot(mx - s.x, my - s.y);
+    if (d <= r + 4 && (!best || s.z > scr[best.i].z)) best = { type: "v", i: v.i };
+  }
+  if (best) return best;
+  let bestD = 8;
+  for (let i = 0; i < a3.edges.length; i++) {
+    const [ia, ib] = a3.edges[i];
+    const A = scr[ia], B = scr[ib];
+    const dx = B.x - A.x, dy = B.y - A.y;
+    const len2 = dx * dx + dy * dy;
+    if (len2 < 1e-9) continue;
+    let t = ((mx - A.x) * dx + (my - A.y) * dy) / len2;
+    t = Math.max(0.08, Math.min(0.92, t));
+    const d = Math.hypot(mx - (A.x + t * dx), my - (A.y + t * dy));
+    if (d < bestD) { bestD = d; best = { type: "e", i }; }
+  }
+  return best;
+}
+
+// ---- flip animation ----
+function startFlip(ei) {
+  const a3 = current && current.a3;
+  if (!a3 || a3.tooMany || a3.anim) return;
+  const [ia, ib] = a3.edges[ei];
+  const from = selectedVertex === ib ? ib : ia;
+  const to = from === ia ? ib : ia;
+  a3.anim = { ei, from, to, start: performance.now(), t: 0 };
+  buildMorphPanel(from, to);
+  ensureLoop();
+}
+
+let morph = null; // {canvas, ctx, snapA, snapB, W, H, XU2, YU2, edgeInfo}
+
+function buildMorphPanel(from, to) {
+  const a3 = current.a3;
+  const vA = a3.verts[from], vB = a3.verts[to];
+  const snapA = vA.snap, snapB = vB.snap;
+  const XU2 = 44, YU2 = 48, M = 26;
+  const W = Math.ceil(Math.max(snapA.w, snapB.w) * XU2 + M * 2);
+  const H = Math.ceil(Math.max(snapA.d, snapB.d) * YU2 + M * 2 + 8);
+  $assocdetail.style.display = "block";
+  $assocdetail.innerHTML =
+    '<div class="cardhead"><span class="val" style="background:' + (vA.accessible ? current.colorOf.get(vA.valueKey) : css("--ghost")) + '">= ' + fmtVal(vA.value) + "</span>" +
+    '<span class="idx">→</span>' +
+    '<span class="val" style="background:' + (vB.accessible ? current.colorOf.get(vB.valueKey) : css("--ghost")) + '">= ' + fmtVal(vB.value) + "</span>" +
+    '<span class="idx">rotating…</span></div>' +
+    '<div class="svgbox"><canvas id="morphc"></canvas></div>' +
+    '<div class="paren">' + parenStr(vA.tree, true) + " &nbsp;→&nbsp; " + parenStr(vB.tree, true) + "</div>";
+  const canvas = document.getElementById("morphc");
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const ekey = e => Math.min(e[0], e[1]) + "," + Math.max(e[0], e[1]);
+  const setA = new Set(snapA.edges.map(ekey));
+  const setB = new Set(snapB.edges.map(ekey));
+  const edgeInfo = [];
+  const seen = new Set();
+  for (const e of [...snapA.edges, ...snapB.edges]) {
+    const k = ekey(e);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    edgeInfo.push({ a: e[0], b: e[1], inA: setA.has(k), inB: setB.has(k) });
+  }
+  morph = { canvas, ctx, snapA, snapB, W, H, XU2, YU2, M, edgeInfo };
+  drawMorph(0);
+}
+
+function drawMorph(tt) {
+  if (!morph) return;
+  const { ctx, snapA, snapB, W, H, XU2, YU2, M, edgeInfo } = morph;
+  const cInk = css("--ink"), cMuted = css("--muted"), cAccent = css("--accent"),
+        cImp = css("--implicit"), cNumBg = css("--num-bg");
+  ctx.clearRect(0, 0, W, H);
+  const wNow = snapA.w + (snapB.w - snapA.w) * tt;
+  const xoff = (W - wNow * XU2) / 2;
+  const nx = i => xoff + (snapA.nodes[i].x + (snapB.nodes[i].x - snapA.nodes[i].x) * tt) * XU2;
+  const ny = i => M + 12 + (snapA.nodes[i].y + (snapB.nodes[i].y - snapA.nodes[i].y) * tt) * YU2;
+  // edges (crossfade the one that changes)
+  for (const e of edgeInfo) {
+    const alpha = e.inA && e.inB ? 0.55 : (e.inA ? (1 - tt) : tt) * 0.85;
+    if (alpha < 0.02) continue;
+    ctx.beginPath();
+    ctx.moveTo(nx(e.a), ny(e.a));
+    ctx.lineTo(nx(e.b), ny(e.b));
+    ctx.strokeStyle = e.inA && e.inB ? cMuted : cAccent;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = e.inA && e.inB ? 1.5 : 2.2;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  // nodes
+  ctx.textAlign = "center";
+  const nodes = snapA.nodes;
+  for (let i = 0; i < nodes.length; i++) {
+    const x = nx(i), y = ny(i);
+    if (nodes[i].op) {
+      ctx.beginPath();
+      ctx.arc(x, y, 12.5, 0, Math.PI * 2);
+      ctx.fillStyle = nodes[i].implicit ? cImp : cAccent;
+      ctx.fill();
+      ctx.font = "700 13px -apple-system, sans-serif";
+      ctx.fillStyle = "#fff";
+      ctx.fillText(nodes[i].label, x, y + 4.5);
+    } else {
+      const tw = Math.max(22, nodes[i].label.length * 8.5 + 10);
+      ctx.fillStyle = cNumBg;
+      ctx.beginPath();
+      ctx.roundRect(x - tw / 2, y - 11, tw, 22, 6);
+      ctx.fill();
+      ctx.font = "600 12.5px ui-monospace, Menlo, Consolas, monospace";
+      ctx.fillStyle = cInk;
+      ctx.fillText(nodes[i].label, x, y + 4);
+    }
+  }
+}
+
+// ---- detail panel (static) ----
+function updateDetail() {
+  const a3 = current && current.a3;
+  if (!a3 || a3.tooMany || a3.anim) return;
+  if (selectedVertex === null || !a3.verts[selectedVertex]) {
+    $assocdetail.style.display = "none";
+    return;
+  }
+  const v = a3.verts[selectedVertex];
+  let badges = "";
+  if (v.isStd) badges += ' <span class="badge std">PEMDAS</span>';
+  if (v.isJux) badges += ' <span class="badge jux">PEMDAS · juxtaposition first</span>';
+  if (!v.accessible) badges += ' <span class="badge ghostb">blocked by parentheses</span>';
+  $assocdetail.style.display = "block";
+  $assocdetail.innerHTML =
+    '<div class="cardhead"><span class="val" style="background:' + (v.accessible ? current.colorOf.get(v.valueKey) : css("--ghost")) + '">= ' + fmtVal(v.value) + "</span>" + badges + "</div>" +
+    '<div class="svgbox">' + treeSVG(v.tree) + "</div>" +
+    '<div class="paren">' + parenStr(v.tree, true) + "</div>";
+}
+
+// ---- pointer interaction ----
+let drag = null; // {x, y, moved}
+
+$c3d.addEventListener("pointerdown", e => {
+  const a3 = current && current.a3;
+  if (!a3 || a3.tooMany) return;
+  drag = { x: e.clientX, y: e.clientY, moved: false };
+  $c3d.setPointerCapture(e.pointerId);
+});
+
+$c3d.addEventListener("pointermove", e => {
+  const a3 = current && current.a3;
+  if (!a3 || a3.tooMany) return;
+  if (drag && (e.buttons & 1)) {
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.abs(e.clientX - drag.x) + Math.abs(e.clientY - drag.y) > 3) drag.moved = true;
+    if (drag.moved) {
+      a3.interacted = true;
+      $c3d.classList.add("dragging");
+      a3.R = matMul(matMul(rotX(dy * 0.008), rotY(dx * 0.008)), a3.R);
+      drag.x = e.clientX;
+      drag.y = e.clientY;
+    }
+    $tooltip.style.display = "none";
+    return;
+  }
+  const rect = $c3d.getBoundingClientRect();
+  const hit = pick(e.clientX - rect.left, e.clientY - rect.top);
+  a3.hover = hit;
+  $c3d.style.cursor = hit ? "pointer" : "grab";
+  if (hit) {
+    let txt;
+    if (hit.type === "v") {
+      const v = a3.verts[hit.i];
+      txt = parenStr(v.tree, true) + " = " + fmtVal(v.value) + (v.accessible ? "" : "   (blocked by parentheses)");
+    } else {
+      txt = "click to animate this flip";
+    }
+    $tooltip.textContent = txt;
+    $tooltip.style.display = "block";
+    $tooltip.style.left = Math.min(rect.width - 200, e.clientX - rect.left + 14) + "px";
+    $tooltip.style.top = (e.clientY - rect.top + 14) + "px";
+  } else {
+    $tooltip.style.display = "none";
+  }
+});
+
+$c3d.addEventListener("pointerup", e => {
+  const a3 = current && current.a3;
+  $c3d.classList.remove("dragging");
+  if (!a3 || a3.tooMany || !drag) { drag = null; return; }
+  const wasMoved = drag.moved;
+  drag = null;
+  if (wasMoved) return;
+  const rect = $c3d.getBoundingClientRect();
+  const hit = pick(e.clientX - rect.left, e.clientY - rect.top);
+  a3.interacted = true;
+  if (!hit) return;
+  if (hit.type === "v") {
+    selectedVertex = selectedVertex === hit.i ? null : hit.i;
+    if (!a3.anim) updateDetail();
+  } else {
+    startFlip(hit.i);
+  }
+});
+
+$c3d.addEventListener("pointerleave", () => {
+  if (current && current.a3) current.a3.hover = null;
+  $tooltip.style.display = "none";
+});
+
+$c3d.addEventListener("wheel", e => {
+  const a3 = current && current.a3;
+  if (!a3 || a3.tooMany) return;
+  e.preventDefault();
+  a3.interacted = true;
+  a3.zoom = Math.max(0.4, Math.min(3, a3.zoom * Math.exp(-e.deltaY * 0.0012)));
+}, { passive: false });
+
+// expose a small hook for automated testing
+window.__assoc = {
+  startFlip,
+  get a3() { return current && current.a3; },
+  get selected() { return selectedVertex; }
+};
+
+// ---- wiring ----
+$modeGallery.onclick = () => { mode = "gallery"; render(); };
+$modeAssoc.onclick = () => { mode = "assoc"; render(); };
+$go.onclick = run;
+$expr.addEventListener("keydown", e => { if (e.key === "Enter") run(); });
+let deb;
+$expr.addEventListener("input", () => { clearTimeout(deb); deb = setTimeout(run, 350); });
+for (const b of document.querySelectorAll(".ex")) {
+  b.onclick = () => { $expr.value = b.textContent; run(); };
+}
+run();
+</script>
+</body>
+</html>

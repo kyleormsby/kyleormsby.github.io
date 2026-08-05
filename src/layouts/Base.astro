@@ -1,0 +1,69 @@
+---
+import '@fontsource-variable/newsreader';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import 'katex/dist/katex.min.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  wide?: boolean;
+}
+
+const { title, description = 'Kyle Ormsby — homotopy theory, combinatorics, and mathematical visualization.', wide = false } = Astro.props;
+const here = Astro.url.pathname;
+
+const nav = [
+  { href: '/research/', label: 'research' },
+  { href: '/teaching/', label: 'teaching' },
+  { href: '/viz/', label: 'visualizations' },
+  { href: '/writing/', label: 'writing' },
+];
+
+const isCurrent = (href: string) => here === href || (href !== '/' && here.startsWith(href));
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(here, Astro.site)} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="alternate" type="application/rss+xml" title="Kyle Ormsby" href="/rss.xml" />
+  </head>
+  <body>
+    <a class="skip" href="#main">skip to content</a>
+    <div class="wrap">
+      <header class="site-head">
+        <a class="home" href="/">kyle ormsby</a>
+        <nav>
+          {nav.map((n) => (
+            <a class="label" href={n.href} aria-current={isCurrent(n.href) ? 'page' : undefined}>
+              {n.label}
+            </a>
+          ))}
+        </nav>
+      </header>
+    </div>
+
+    <main id="main" class={wide ? 'wrap' : 'prose'}>
+      <slot />
+    </main>
+
+    <div class="wrap">
+      <footer class="site-foot">
+        <span class="label">configuration.space</span>
+        <span class="spacer"></span>
+        <a class="label" href="mailto:kyle@configuration.space">email</a>
+        <a class="label" href="https://arxiv.org/a/ormsby_k_1">arxiv</a>
+        <a class="label" href="https://github.com/kyleormsby">github</a>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+---
+import Base from '../../layouts/Base.astro';
+import { allCourses } from '../../lib/courses';
+
+const courses = allCourses();
+---
+
+<Base title="Teaching · Kyle Ormsby">
+  <p class="label">teaching</p>
+  <h1>Courses</h1>
+  <p class="lede dim" style="margin-top:var(--s4)">
+    Every course page is generated from a spreadsheet — one row per class
+    meeting. Readings, worksheets, and homework links stay in sync because
+    there is only one place to edit them.
+  </p>
+
+  <section style="margin-top:var(--s7)">
+    {courses.map((c) => (
+      <div class="entry">
+        <span class="label">{c.term}</span>
+        <div>
+          <a href={`/${c.slug}/`}>{c.number} · {c.title}</a>
+          {c.blurb && <p class="dim" style="margin:var(--s1) 0 0;font-size:0.94rem">{c.blurb}</p>}
+        </div>
+      </div>
+    ))}
+  </section>
+
+  <h2 class="rule-label"><span class="label">archive</span></h2>
+  <p class="dim">
+    Past course pages (111, 201, 224, 342, 411, 544, 545, 546, 583) keep their
+    original URLs and will be migrated to the same spreadsheet format.
+  </p>
+</Base>

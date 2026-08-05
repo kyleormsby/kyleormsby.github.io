@@ -1,0 +1,52 @@
+{
+  "slug": "113",
+  "number": "math 113",
+  "title": "discrete structures",
+  "term": "spring 2026",
+  "schedule": "113-spring26.csv",
+  "filesBase": "/files/113spring26/",
+  "panoptoBase": "https://reedcollege.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=",
+  "blurb": "Counting, graphs, recursion, and number theory — a first course in reading and writing mathematics.",
+  "facts": [
+    {
+      "label": "meetings",
+      "value": "S01 MWF 10–10:50, Lib 389\nS02 MWF 12–12:50, Chem 301"
+    },
+    {
+      "label": "office hours",
+      "value": "Tu 13–14, Th 14:30–15:30 in Lib 306 — [book a slot](https://calendar.notion.so/meet/kyleormsby/lib306)"
+    },
+    {
+      "label": "syllabus",
+      "value": "[113_syllabus.pdf](/files/113spring26/113_syllabus.pdf)"
+    },
+    {
+      "label": "textbook",
+      "value": "[Discrete Structures](/files/113spring26/113full_text.pdf) by Ormsby & Perkinson"
+    },
+    {
+      "label": "discussion",
+      "value": "[Zulip](https://math113-s26.zulipchat.com)"
+    },
+    {
+      "label": "submissions",
+      "value": "[Gradescope](https://www.gradescope.com/courses/1238533)"
+    },
+    {
+      "label": "course assistant",
+      "value": "Vivek Malik"
+    },
+    {
+      "label": "problem session",
+      "value": "TuTh 18–19 in Lib 204"
+    },
+    {
+      "label": "drop-in tutoring",
+      "value": "SuMWTh 19–21 in Lib 204"
+    },
+    {
+      "label": "forms",
+      "value": "[absence](https://forms.gle/6yjCebd8Pm6eVrVf9) ❦ [homework extension](https://forms.gle/hpqvZmojzPJSJekw9)"
+    }
+  ]
+}

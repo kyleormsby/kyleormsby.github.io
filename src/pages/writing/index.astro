@@ -1,0 +1,32 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('writing'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => +b.data.date - +a.data.date);
+---
+
+<Base title="Writing · Kyle Ormsby">
+  <p class="label">writing</p>
+  <h1>Writing</h1>
+  <p class="lede dim" style="margin-top:var(--s4)">
+    Notes on papers, teaching, and whatever the visualizations turn up.
+  </p>
+
+  <section style="margin-top:var(--s7)">
+    {posts.map((p) => (
+      <div class="entry">
+        <span class="label">
+          {p.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }).toLowerCase()}
+        </span>
+        <div>
+          <a href={`/writing/${p.id}/`}>{p.data.title}</a>
+          <div class="tags label" style="margin-top:var(--s1)">
+            {p.data.tags.map((t) => <span>{t}</span>)}
+          </div>
+        </div>
+      </div>
+    ))}
+  </section>
+</Base>

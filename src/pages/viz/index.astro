@@ -1,0 +1,39 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+const items = (await getCollection('viz')).sort(
+  (a, b) => b.data.year - a.data.year || a.data.title.localeCompare(b.data.title),
+);
+
+const rendered = await Promise.all(
+  items.map(async (e) => ({ ...e, Body: (await render(e)).Content })),
+);
+---
+
+<Base title="Visualizations · Kyle Ormsby" description="Interactive mathematical visualizations — algebraic geometry, group theory, combinatorics." wide>
+  <div style="max-width:var(--measure)">
+    <p class="label">visualizations</p>
+    <h1>Things that are easier to see than to say</h1>
+    <p class="lede dim" style="margin-top:var(--s4)">
+      Small interactive pieces, mostly built to answer a question I had while
+      teaching or while stuck on a proof. Everything runs in the browser; nothing
+      phones home.
+    </p>
+  </div>
+
+  <ul class="gallery" style="margin-top:var(--s8)">
+    {rendered.map(({ data, Body }) => (
+      <li class="card">
+        <a class="frame" href={data.href} aria-label={data.title}>
+          {data.thumb && <img src={data.thumb} alt="" loading="lazy" width="800" height="600" />}
+        </a>
+        <h3><a href={data.href}>{data.title}</a></h3>
+        <div class="dim" style="font-size:0.92rem;line-height:1.5"><Body /></div>
+        <div class="tags label">
+          {data.tags.map((t) => <span>{t}</span>)}
+        </div>
+      </li>
+    ))}
+  </ul>
+</Base>

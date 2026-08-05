@@ -1,0 +1,7 @@
+{
+  "_comment": "Per-visualization capture tweaks. wait = extra ms before the shot; click = selector to press first; scrollTo = selector to bring into view. Anything not listed uses the defaults.",
+  "nets": { "wait": 9000 },
+  "bipartite-polyhedra": { "wait": 9000 },
+  "plane-curves": { "click": "button:has-text('PLOT')", "wait": 5000, "scrollTo": "canvas, svg" },
+  "projective-surfaces": { "click": "button:has-text('PLOT')", "wait": 6000, "scrollTo": "canvas, svg" }
+}

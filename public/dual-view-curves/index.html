@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>algebraic plane curves</title>
+<style>
+  :root {
+    --bg: #1a1a1c;
+    --panel: #232328;
+    --panel2: #2c2c33;
+    --text: #e8e8ec;
+    --muted: #9a9aa3;
+    --accent: #6aa6ff;
+    --accent2: #4a8ada;
+    --highlight: #ffd166;
+    --error: #ff8a8a;
+    --border: #36363d;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+         margin: 0; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
+  #container { display: flex; height: 100vh; }
+  #controls { width: 320px; padding: 16px; background: var(--panel);
+              overflow-y: auto; border-right: 1px solid var(--border); flex: 0 0 320px; }
+  #panes { flex: 1; display: flex; flex-direction: row; min-width: 0; }
+  .pane { flex: 1 1 50%; min-width: 0; display: flex; flex-direction: column;
+          border-right: 1px solid var(--border); background: #0c0c10; position: relative; }
+  .pane:last-child { border-right: none; }
+  .pane-canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+  .pane-canvas:active { cursor: grabbing; }
+  .pane-label { position: absolute; left: 14px; top: 12px;
+                background: rgba(20,20,30,0.7); padding: 6px 10px; border-radius: 5px;
+                font-size: 11px; color: rgba(240,240,250,0.85); pointer-events: none;
+                border: 1px solid rgba(255,255,255,0.06);
+                font-family: "SF Mono", Menlo, Consolas, monospace; }
+  .pane-label .sub { color: rgba(240,240,250,0.5); margin-top: 2px; font-size: 10px; }
+  h2 { margin: 0 0 4px 0; font-weight: 500; font-size: 17px; }
+  .subtitle { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  .control-group { margin-bottom: 12px; }
+  .section-title { font-size: 10px; color: var(--accent); margin: 14px 0 8px 0;
+                   text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  label { display: flex; justify-content: space-between; align-items: baseline;
+          font-size: 11px; color: var(--muted); margin-bottom: 4px;
+          text-transform: uppercase; letter-spacing: 0.04em; }
+  label .value { color: var(--text); font-variant-numeric: tabular-nums;
+                 text-transform: none; letter-spacing: 0; font-size: 12px; }
+  input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; }
+  input[type=range]::-webkit-slider-runnable-track { height: 4px; background: var(--panel2); border-radius: 2px; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px;
+    border-radius: 50%; background: var(--accent); margin-top: -4.5px; cursor: pointer; }
+  input[type=text], select { width: 100%; padding: 6px 8px;
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; }
+  select { font-family: inherit; }
+  input[type=text]:focus, select:focus { outline: none; border-color: var(--accent); }
+  input[type=checkbox] { vertical-align: middle; margin-right: 6px; }
+  button { background: var(--accent2); color: white; border: none; padding: 7px 12px;
+    border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; transition: background 0.1s; }
+  button:hover { background: var(--accent); }
+  button:disabled { background: var(--border); cursor: not-allowed; }
+  .error { color: var(--error); font-size: 11px; margin-top: 4px; min-height: 14px; font-family: monospace; }
+  .info { font-size: 10px; color: var(--muted); margin-top: 4px; font-family: monospace; line-height: 1.4; }
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+  .row { display: flex; gap: 6px; }
+  .row > * { flex: 1; }
+  .toggle-row { display: flex; align-items: center; font-size: 11px; color: var(--text);
+                padding: 6px 0; cursor: pointer; user-select: none; }
+  .toggle-row input { margin-right: 8px; }
+  .help { font-size: 10px; color: var(--muted); line-height: 1.5;
+    padding: 8px 10px; background: var(--panel2); border-radius: 4px; margin-top: 10px; }
+  .help code { color: var(--text); background: rgba(255,255,255,0.06); padding: 1px 3px; border-radius: 2px; }
+</style>
+</head>
+<body>
+<div id="container">
+  <div id="controls">
+    <h2>Algebraic plane curves: affine + slice</h2>
+    <div class="subtitle">Affine chart (left) + Intersection with S<sub>c</sub> (right)</div>
+
+    <div class="control-group">
+      <label>View</label>
+      <select id="viewMode">
+        <option value="both" selected>Both panes</option>
+        <option value="affine">Affine only (left)</option>
+        <option value="slice">Slice only (right)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Preset curve</label>
+      <select id="preset">
+        <option value="x^2 + y^2 - z^2">Real conic: x² + y² − z²</option>
+        <option value="x^3 + y^3 + z^3" selected>Fermat cubic: x³ + y³ + z³</option>
+        <option value="x^3 + y^3 + z^3 - 3*x*y*z">Hesse cubic: x³+y³+z³ − 3xyz</option>
+        <option value="y^2*z - x^3">Cuspidal cubic: y²z − x³</option>
+        <option value="y^2*z - x^3 - x^2*z">Nodal cubic: y²z − x³ − x²z</option>
+        <option value="y^2*z - x^3 - x*z^2">Elliptic: y²z − x³ − xz²</option>
+        <option value="x^4 + y^4 + z^4">Fermat quartic</option>
+        <option value="x^3*y + y^3*z + z^3*x">Klein quartic</option>
+        <option value="x*y*z">Three lines: xyz</option>
+        <option value="(x^2+y^2-z^2)*(x^2+y^2-4*z^2)">Two concentric circles</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Polynomial p(x, y, z)</label>
+      <input type="text" id="poly" value="x^3 + y^3 + z^3">
+      <div class="error" id="error"></div>
+      <div class="info" id="info"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="control-group">
+      <label>Slice c = |z₀|² / |z|² <span class="value" id="sliceCV">0.330</span></label>
+      <input type="range" id="sliceC" min="0.001" max="0.999" step="0.001" value="0.33">
+    </div>
+
+    <div class="row">
+      <button id="sweep">▶ Sweep c</button>
+      <button id="resample">Rebuild</button>
+    </div>
+
+    <label class="toggle-row" style="margin-top:8px">
+      <input type="checkbox" id="overlay" checked>
+      Show slice highlight in affine view
+    </label>
+
+    <div class="section-title">Affine view (left)</div>
+
+    <div class="control-group">
+      <label>Affine chart</label>
+      <select id="chart">
+        <option value="2" selected>z = 1   (affine coords x/z, y/z)</option>
+        <option value="0">x = 1   (affine coords y/x, z/x)</option>
+        <option value="1">y = 1   (affine coords x/y, z/y)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Drop coordinate (color)</label>
+      <select id="drop">
+        <option value="imy" selected>Drop Im y → (Re x, Im x, Re y)</option>
+        <option value="imx">Drop Im x → (Re x, Re y, Im y)</option>
+        <option value="rey">Drop Re y → (Re x, Im x, Im y)</option>
+        <option value="rex">Drop Re x → (Im x, Re y, Im y)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Color scheme</label>
+      <select id="color">
+        <option value="dropped" selected>By dropped coord (diverging)</option>
+        <option value="fs">Fubini-Study moment map</option>
+        <option value="white">White</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Grid resolution <span class="value" id="gridResV">250</span></label>
+      <input type="range" id="gridRes" min="20" max="500" step="2" value="250">
+    </div>
+
+    <div class="control-group">
+      <label>Grid range |Re x|, |Im x| ≤ <span class="value" id="gridRangeV">3.0</span></label>
+      <input type="range" id="gridRange" min="0.5" max="30" step="0.1" value="3">
+    </div>
+
+    <div class="control-group">
+      <label>Max radius (R³ clip) <span class="value" id="maxRV">10</span></label>
+      <input type="range" id="maxR" min="1" max="50" step="0.5" value="10">
+    </div>
+
+    <div class="control-group">
+      <label>Mesh opacity <span class="value" id="meshOpacityV">0.55</span></label>
+      <input type="range" id="meshOpacity" min="0.1" max="1" step="0.01" value="0.55">
+    </div>
+
+    <div class="section-title">Slice view (right)</div>
+
+    <div class="control-group">
+      <label>Tube radius <span class="value" id="tubeRadiusV">0.020</span></label>
+      <input type="range" id="tubeRadius" min="0.003" max="0.08" step="0.001" value="0.020">
+    </div>
+
+    <div class="control-group">
+      <label>Continuation step <span class="value" id="contStepV">0.020</span></label>
+      <input type="range" id="contStep" min="0.005" max="0.1" step="0.001" value="0.020">
+    </div>
+
+    <div class="control-group">
+      <label>Max components <span class="value" id="maxCompV">8</span></label>
+      <input type="range" id="maxComp" min="1" max="20" step="1" value="8">
+    </div>
+
+    <div class="control-group">
+      <label>Highlight color</label>
+      <select id="highColor">
+        <option value="gold" selected>Gold</option>
+        <option value="cyan">Cyan</option>
+        <option value="white">White</option>
+        <option value="magenta">Magenta</option>
+      </select>
+    </div>
+
+    <div class="help">
+      Left: standard affine algebraic mesh of V in the chosen chart, clipped
+      by Max radius. Right: V ∩ S_c traced by predictor-corrector continuation,
+      rendered as TubeGeometry. The slice's projection into the affine pane
+      is overlaid as bright LineSegments when the toggle is on. Drag canvases
+      to orbit; scroll to zoom; shift-drag to pan.
+    </div>
+  </div>
+
+  <div id="panes">
+    <div class="pane">
+      <canvas class="pane-canvas" id="cvAffine"></canvas>
+      <div class="pane-label">
+        Affine view (mesh)
+        <div class="sub" id="affineSub">affine · chart z = 1</div>
+      </div>
+    </div>
+    <div class="pane">
+      <canvas class="pane-canvas" id="cvSlice"></canvas>
+      <div class="pane-label">
+        Slice V ∩ S<sub>c</sub> (tubes)
+        <div class="sub" id="sliceSub">c = 0.330</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ============================================================
+// Complex arithmetic
+// ============================================================
+const C = (re, im) => ({re: re || 0, im: im || 0});
+const cadd = (a, b) => ({re: a.re + b.re, im: a.im + b.im});
+const csub = (a, b) => ({re: a.re - b.re, im: a.im - b.im});
+const cmul = (a, b) => ({re: a.re*b.re - a.im*b.im, im: a.re*b.im + a.im*b.re});
+const cscale = (a, s) => ({re: a.re * s, im: a.im * s});
+const cabs = a => Math.hypot(a.re, a.im);
+const cabs2 = a => a.re*a.re + a.im*a.im;
+const cdiv = (a, b) => { const d = cabs2(b); return {re: (a.re*b.re + a.im*b.im)/d, im: (a.im*b.re - a.re*b.im)/d}; };
+const cneg = a => ({re: -a.re, im: -a.im});
+function csqrt(z) {
+  const r = Math.hypot(z.re, z.im);
+  const sr = Math.sqrt(r);
+  const th = Math.atan2(z.im, z.re) / 2;
+  return {re: sr * Math.cos(th), im: sr * Math.sin(th)};
+}
+
+// ============================================================
+// Polynomial parser
+// ============================================================
+function parsePoly(input) {
+  const s = input.replace(/\s+/g, '').replace(/\*\*/g, '^').toLowerCase();
+  if (!s) throw new Error('empty polynomial');
+  const parser = new Parser(s);
+  const result = parser.parseExpr();
+  if (parser.pos < parser.s.length) throw new Error('unexpected ' + parser.s[parser.pos]);
+  return canonicalize(result);
+}
+class Parser {
+  constructor(s) { this.s = s; this.pos = 0; }
+  peek() { return this.s[this.pos]; }
+  eat(c) { if (this.s[this.pos] === c) { this.pos++; return true; } return false; }
+  parseExpr() {
+    let t = this.parseTerm();
+    while (this.pos < this.s.length) {
+      const c = this.peek();
+      if (c === '+') { this.pos++; t = addPoly(t, this.parseTerm()); }
+      else if (c === '-') { this.pos++; t = addPoly(t, negPoly(this.parseTerm())); }
+      else break;
+    }
+    return t;
+  }
+  parseTerm() {
+    let acc = this.parseSignedFactor();
+    while (this.pos < this.s.length) {
+      const c = this.peek();
+      if (c === '*') { this.pos++; acc = mulPoly(acc, this.parseSignedFactor()); }
+      else if (c === '(' || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c === '.') {
+        acc = mulPoly(acc, this.parseSignedFactor());
+      } else break;
+    }
+    return acc;
+  }
+  parseSignedFactor() {
+    let sign = 1;
+    while (this.peek() === '+' || this.peek() === '-') { if (this.peek() === '-') sign = -sign; this.pos++; }
+    const f = this.parsePower();
+    return sign === 1 ? f : negPoly(f);
+  }
+  parsePower() {
+    const a = this.parseAtom();
+    if (this.peek() === '^') {
+      this.pos++;
+      const start = this.pos;
+      while (this.pos < this.s.length && /[0-9]/.test(this.s[this.pos])) this.pos++;
+      if (start === this.pos) throw new Error('expected integer after ^');
+      const n = parseInt(this.s.slice(start, this.pos), 10);
+      let r = constPoly(1);
+      for (let i = 0; i < n; i++) r = mulPoly(r, a);
+      return r;
+    }
+    return a;
+  }
+  parseAtom() {
+    const c = this.peek();
+    if (c === '(') { this.pos++; const e = this.parseExpr(); if (!this.eat(')')) throw new Error('expected )'); return e; }
+    if (/[0-9.]/.test(c)) {
+      const start = this.pos;
+      while (this.pos < this.s.length && /[0-9.]/.test(this.s[this.pos])) this.pos++;
+      return constPoly(parseFloat(this.s.slice(start, this.pos)));
+    }
+    if (c === 'x') { this.pos++; return varPoly('x'); }
+    if (c === 'y') { this.pos++; return varPoly('y'); }
+    if (c === 'z') { this.pos++; return varPoly('z'); }
+    throw new Error('unexpected ' + (c || 'end'));
+  }
+}
+const constPoly = c => c === 0 ? [] : [{c, e: [0,0,0]}];
+const varPoly = v => { const e = [0,0,0]; e[{x:0,y:1,z:2}[v]] = 1; return [{c:1, e}]; };
+const negPoly = p => p.map(t => ({c: -t.c, e: t.e}));
+function addPoly(a, b) { return canonicalize(a.concat(b)); }
+function mulPoly(a, b) {
+  const out = [];
+  for (const ta of a) for (const tb of b) out.push({c: ta.c*tb.c, e: [ta.e[0]+tb.e[0], ta.e[1]+tb.e[1], ta.e[2]+tb.e[2]]});
+  return canonicalize(out);
+}
+function canonicalize(terms) {
+  const map = new Map();
+  for (const t of terms) {
+    const k = t.e[0]+','+t.e[1]+','+t.e[2];
+    map.set(k, (map.get(k) || 0) + t.c);
+  }
+  const out = [];
+  for (const [k, c] of map) if (Math.abs(c) > 1e-14) out.push({c, e: k.split(',').map(Number)});
+  return out;
+}
+function polyDegree(terms) { let d = 0; for (const t of terms) d = Math.max(d, t.e[0]+t.e[1]+t.e[2]); return d; }
+function isHomogeneous(terms) {
+  if (terms.length === 0) return false;
+  const d = terms[0].e[0]+terms[0].e[1]+terms[0].e[2];
+  return terms.every(t => t.e[0]+t.e[1]+t.e[2] === d);
+}
+
+// ============================================================
+// Univariate root finding (closed forms for d ≤ 2, DK for d ≥ 3)
+// ============================================================
+function findRoots(coeffs) {
+  let cs = coeffs.slice();
+  while (cs.length > 1 && cabs(cs[cs.length-1]) < 1e-14) cs.pop();
+  const n = cs.length - 1;
+  if (n <= 0) return [];
+  if (n === 1) return [cscale(cdiv(cs[0], cs[1]), -1)];
+  if (n === 2) {
+    const a = cs[2], b = cs[1], c = cs[0];
+    const disc = csub(cmul(b, b), cscale(cmul(a, c), 4));
+    const sd = csqrt(disc);
+    const denom = cscale(a, 2);
+    return [cdiv(cadd(cneg(b), sd), denom), cdiv(csub(cneg(b), sd), denom)];
+  }
+  const lead = cs[n];
+  const norm = cs.map(c => cdiv(c, lead));
+  let maxC = 0;
+  for (let k = 0; k < n; k++) maxC = Math.max(maxC, cabs(norm[k]));
+  const R = 1 + maxC;
+  const roots = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const th = 2 * Math.PI * (i + 0.4) / n + 0.123 * i;
+    roots[i] = C(R * Math.cos(th), R * Math.sin(th));
+  }
+  for (let iter = 0; iter < 250; iter++) {
+    let mx = 0;
+    for (let i = 0; i < n; i++) {
+      const r = roots[i];
+      let p = norm[n];
+      for (let k = n - 1; k >= 0; k--) p = cadd(cmul(p, r), norm[k]);
+      let denom = C(1, 0);
+      for (let j = 0; j < n; j++) if (j !== i) denom = cmul(denom, csub(r, roots[j]));
+      if (cabs2(denom) < 1e-300) continue;
+      const dl = cdiv(p, denom);
+      roots[i] = csub(r, dl);
+      const da = cabs(dl);
+      if (da > mx) mx = da;
+    }
+    if (mx < 1e-13) break;
+  }
+  return roots;
+}
+
+// ============================================================
+// Random-line sampling (used as continuation seeds)
+// ============================================================
+function linearPow(p, q, n) {
+  if (n === 0) return [C(1, 0)];
+  const out = new Array(n + 1);
+  const pPow = new Array(n + 1); pPow[0] = C(1, 0);
+  const qPow = new Array(n + 1); qPow[0] = C(1, 0);
+  for (let i = 1; i <= n; i++) { pPow[i] = cmul(pPow[i-1], p); qPow[i] = cmul(qPow[i-1], q); }
+  let bin = 1;
+  for (let k = 0; k <= n; k++) { out[k] = cscale(cmul(pPow[k], qPow[n - k]), bin); bin = bin * (n - k) / (k + 1); }
+  return out;
+}
+function polyMulC(a, b) {
+  const out = new Array(a.length + b.length - 1);
+  for (let i = 0; i < out.length; i++) out[i] = C(0, 0);
+  for (let i = 0; i < a.length; i++) for (let j = 0; j < b.length; j++) out[i+j] = cadd(out[i+j], cmul(a[i], b[j]));
+  return out;
+}
+function polyAddC(a, b) {
+  const n = Math.max(a.length, b.length);
+  const out = new Array(n);
+  for (let i = 0; i < n; i++) out[i] = cadd(i < a.length ? a[i] : C(0,0), i < b.length ? b[i] : C(0,0));
+  return out;
+}
+function lineRestrict(poly, P, Q) {
+  const d = polyDegree(poly);
+  let acc = new Array(d + 1).fill(0).map(() => C(0, 0));
+  for (const t of poly) {
+    const [a, b, c] = t.e;
+    let prod = linearPow(P[0], Q[0], a);
+    if (b > 0) prod = polyMulC(prod, linearPow(P[1], Q[1], b));
+    if (c > 0) prod = polyMulC(prod, linearPow(P[2], Q[2], c));
+    prod = prod.map(co => cscale(co, t.c));
+    acc = polyAddC(acc, prod);
+  }
+  return acc;
+}
+function randCgauss() {
+  const u = Math.random(), v = Math.random();
+  const r = Math.sqrt(-2 * Math.log(Math.max(u, 1e-300)));
+  return C(r * Math.cos(2 * Math.PI * v), r * Math.sin(2 * Math.PI * v));
+}
+function sampleCurveSeeds(poly, nLines) {
+  const out = [];
+  for (let i = 0; i < nLines; i++) {
+    const P = [randCgauss(), randCgauss(), randCgauss()];
+    const Q = [randCgauss(), randCgauss(), randCgauss()];
+    const uni = lineRestrict(poly, P, Q);
+    const roots = findRoots(uni);
+    for (const s of roots) {
+      const z0 = cadd(cmul(P[0], s), Q[0]);
+      const z1 = cadd(cmul(P[1], s), Q[1]);
+      const z2 = cadd(cmul(P[2], s), Q[2]);
+      if (isFinite(z0.re) && isFinite(z0.im) && isFinite(z1.re) && isFinite(z1.im) && isFinite(z2.re) && isFinite(z2.im)) {
+        out.push([z0, z1, z2]);
+      }
+    }
+  }
+  return out;
+}
+
+// ============================================================
+// Chart restriction (for the affine mesh)
+// ============================================================
+function restrictForChart(poly, x, chartK, d) {
+  const xPow = new Array(d + 1);
+  xPow[0] = C(1, 0);
+  for (let i = 1; i <= d; i++) xPow[i] = cmul(xPow[i-1], x);
+  const coeffs = new Array(d + 1);
+  for (let k = 0; k <= d; k++) coeffs[k] = C(0, 0);
+  for (const t of poly) {
+    const [ti, tj, tk] = t.e;
+    let xExp, yExp;
+    if (chartK === 2)      { xExp = ti; yExp = tj; }
+    else if (chartK === 0) { xExp = tj; yExp = tk; }
+    else                   { xExp = ti; yExp = tk; }
+    coeffs[yExp] = cadd(coeffs[yExp], cscale(xPow[xExp], t.c));
+  }
+  return coeffs;
+}
+function matchRoots(rootsA, rootsB) {
+  const d = rootsA.length;
+  const used = new Array(d).fill(false);
+  const perm = new Array(d).fill(-1);
+  const realA = [], nanA = [], realB = [], nanB = [];
+  for (let k = 0; k < d; k++) (isNaN(rootsA[k].re) ? nanA : realA).push(k);
+  for (let l = 0; l < d; l++) (isNaN(rootsB[l].re) ? nanB : realB).push(l);
+  for (const k of realA) {
+    let best = -1, bd = Infinity;
+    for (const l of realB) {
+      if (used[l]) continue;
+      const dx = rootsA[k].re - rootsB[l].re, dy = rootsA[k].im - rootsB[l].im;
+      const d2 = dx*dx + dy*dy;
+      if (d2 < bd) { bd = d2; best = l; }
+    }
+    perm[k] = best;
+    if (best >= 0) used[best] = true;
+  }
+  for (let i = 0; i < nanA.length && i < nanB.length; i++) {
+    perm[nanA[i]] = nanB[i];
+    used[nanB[i]] = true;
+  }
+  return perm;
+}
+
+// ============================================================
+// Newton correction onto V ∩ S_c (with derivative evaluation)
+// ============================================================
+function evalPolyAndGrad(terms, z0, z1re, z1im, z2re, z2im) {
+  let pre=0, pim=0, d0re=0, d0im=0, d1re=0, d1im=0, d2re=0, d2im=0;
+  let maxI=0, maxJ=0, maxK=0;
+  for (const t of terms) {
+    if (t.e[0]>maxI) maxI=t.e[0];
+    if (t.e[1]>maxJ) maxJ=t.e[1];
+    if (t.e[2]>maxK) maxK=t.e[2];
+  }
+  const z0p = new Array(maxI+1); z0p[0] = 1;
+  for (let i = 1; i <= maxI; i++) z0p[i] = z0p[i-1] * z0;
+  const z1pRe = new Array(maxJ+1), z1pIm = new Array(maxJ+1);
+  z1pRe[0] = 1; z1pIm[0] = 0;
+  for (let j = 1; j <= maxJ; j++) {
+    z1pRe[j] = z1pRe[j-1]*z1re - z1pIm[j-1]*z1im;
+    z1pIm[j] = z1pRe[j-1]*z1im + z1pIm[j-1]*z1re;
+  }
+  const z2pRe = new Array(maxK+1), z2pIm = new Array(maxK+1);
+  z2pRe[0] = 1; z2pIm[0] = 0;
+  for (let k = 1; k <= maxK; k++) {
+    z2pRe[k] = z2pRe[k-1]*z2re - z2pIm[k-1]*z2im;
+    z2pIm[k] = z2pRe[k-1]*z2im + z2pIm[k-1]*z2re;
+  }
+  for (const t of terms) {
+    const i = t.e[0], j = t.e[1], k = t.e[2], c = t.c;
+    const jr = z1pRe[j], ji = z1pIm[j];
+    const kr = z2pRe[k], ki = z2pIm[k];
+    const m_re = jr*kr - ji*ki;
+    const m_im = jr*ki + ji*kr;
+    const z0_i = z0p[i];
+    const cz = c * z0_i;
+    pre += cz * m_re; pim += cz * m_im;
+    if (i >= 1) {
+      const ci = c * i * z0p[i-1];
+      d0re += ci * m_re; d0im += ci * m_im;
+    }
+    if (j >= 1) {
+      const jrp = z1pRe[j-1], jip = z1pIm[j-1];
+      const cj = c * j * z0_i;
+      d1re += cj * (jrp*kr - jip*ki);
+      d1im += cj * (jrp*ki + jip*kr);
+    }
+    if (k >= 1) {
+      const krp = z2pRe[k-1], kip = z2pIm[k-1];
+      const ck = c * k * z0_i;
+      d2re += ck * (jr*krp - ji*kip);
+      d2im += ck * (jr*kip + ji*krp);
+    }
+  }
+  return [pre, pim, d0re, d0im, d1re, d1im, d2re, d2im];
+}
+function solve3x3(M00, M01, M02, M11, M12, M22, b0, b1, b2) {
+  const M10 = M01, M20 = M02, M21 = M12;
+  const det = M00*(M11*M22 - M12*M21) - M01*(M10*M22 - M12*M20) + M02*(M10*M21 - M11*M20);
+  if (Math.abs(det) < 1e-14) return null;
+  const inv = 1 / det;
+  return [
+    inv * (b0*(M11*M22 - M12*M21) - M01*(b1*M22 - M12*b2) + M02*(b1*M21 - M11*b2)),
+    inv * (M00*(b1*M22 - M12*b2) - b0*(M10*M22 - M12*M20) + M02*(M10*b2 - b1*M20)),
+    inv * (M00*(M11*b2 - b1*M21) - M01*(M10*b2 - b1*M20) + b0*(M10*M21 - M11*M20)),
+  ];
+}
+// Build the 3x4 real Jacobian of F = (Re p, Im p, |s|² - (1-c)) at s.
+function buildJacobian(s, terms) {
+  const x_R = s[0], x_I = s[1], y_R = s[2], y_I = s[3];
+  const r2 = x_R*x_R + x_I*x_I + y_R*y_R + y_I*y_I;
+  if (r2 > 0.99999) return null;
+  const z0 = Math.sqrt(Math.max(1e-20, 1 - r2));
+  const [pre, pim, d0re, d0im, d1re, d1im, d2re, d2im] =
+    evalPolyAndGrad(terms, z0, x_R, x_I, y_R, y_I);
+  const invZ0 = 1 / z0;
+  const dxR_re = d1re - d0re * x_R * invZ0;
+  const dxR_im = d1im - d0im * x_R * invZ0;
+  const dxI_re = -d1im - d0re * x_I * invZ0;
+  const dxI_im =  d1re - d0im * x_I * invZ0;
+  const dyR_re = d2re - d0re * y_R * invZ0;
+  const dyR_im = d2im - d0im * y_R * invZ0;
+  const dyI_re = -d2im - d0re * y_I * invZ0;
+  const dyI_im =  d2re - d0im * y_I * invZ0;
+  return {
+    F: [pre, pim, r2],   // F[2] needs subtraction of targetR2 by caller
+    J: [
+      [dxR_re, dxI_re, dyR_re, dyI_re],
+      [dxR_im, dxI_im, dyR_im, dyI_im],
+      [2*x_R, 2*x_I, 2*y_R, 2*y_I],
+    ],
+  };
+}
+function newtonCorrectToSlice(s, terms, targetC, maxIter) {
+  const targetR2 = 1 - targetC;
+  for (let iter = 0; iter < maxIter; iter++) {
+    const info = buildJacobian(s, terms);
+    if (!info) return false;
+    const F = [info.F[0], info.F[1], info.F[2] - targetR2];
+    if (Math.hypot(F[0], F[1], F[2]) < 1e-11) return true;
+    const J = info.J;
+    const M00 = J[0][0]*J[0][0] + J[0][1]*J[0][1] + J[0][2]*J[0][2] + J[0][3]*J[0][3];
+    const M01 = J[0][0]*J[1][0] + J[0][1]*J[1][1] + J[0][2]*J[1][2] + J[0][3]*J[1][3];
+    const M02 = J[0][0]*J[2][0] + J[0][1]*J[2][1] + J[0][2]*J[2][2] + J[0][3]*J[2][3];
+    const M11 = J[1][0]*J[1][0] + J[1][1]*J[1][1] + J[1][2]*J[1][2] + J[1][3]*J[1][3];
+    const M12 = J[1][0]*J[2][0] + J[1][1]*J[2][1] + J[1][2]*J[2][2] + J[1][3]*J[2][3];
+    const M22 = J[2][0]*J[2][0] + J[2][1]*J[2][1] + J[2][2]*J[2][2] + J[2][3]*J[2][3];
+    const x = solve3x3(M00, M01, M02, M11, M12, M22, F[0], F[1], F[2]);
+    if (!x) return false;
+    const dxR = -(J[0][0]*x[0] + J[1][0]*x[1] + J[2][0]*x[2]);
+    const dxI = -(J[0][1]*x[0] + J[1][1]*x[1] + J[2][1]*x[2]);
+    const dyR = -(J[0][2]*x[0] + J[1][2]*x[1] + J[2][2]*x[2]);
+    const dyI = -(J[0][3]*x[0] + J[1][3]*x[1] + J[2][3]*x[2]);
+    let alpha = 1;
+    for (let damp = 0; damp < 10; damp++) {
+      const a = s[0]+alpha*dxR, b = s[1]+alpha*dxI, c = s[2]+alpha*dyR, d = s[3]+alpha*dyI;
+      if (a*a + b*b + c*c + d*d < 0.9999) break;
+      alpha *= 0.5;
+    }
+    s[0] += alpha*dxR; s[1] += alpha*dxI; s[2] += alpha*dyR; s[3] += alpha*dyI;
+  }
+  const r2f = s[0]*s[0] + s[1]*s[1] + s[2]*s[2] + s[3]*s[3];
+  if (r2f > 0.99999) return false;
+  const z0f = Math.sqrt(Math.max(0, 1 - r2f));
+  const [pre, pim] = evalPolyAndGrad(terms, z0f, s[0], s[1], s[2], s[3]);
+  return Math.hypot(pre, pim, r2f - targetR2) < 2e-3;
+}
+
+// ============================================================
+// Predictor-corrector continuation of V ∩ S_c
+// Tangent: 1-D null space of the 3×4 Jacobian J — computed as the
+// generalized "4-D cross product" (signed minors of the 3×4 matrix).
+// ============================================================
+function tangent4(J) {
+  // For 3×4 J, the 4-vector t with J·t = 0 has components
+  // t_i = (-1)^i · det(J with column i removed). Returns normalized t or null.
+  const det3 = (a, b, c, d, e, f, g, h, i) => a*(e*i - f*h) - b*(d*i - f*g) + c*(d*h - e*g);
+  const m0 = det3(J[0][1], J[0][2], J[0][3], J[1][1], J[1][2], J[1][3], J[2][1], J[2][2], J[2][3]);
+  const m1 = det3(J[0][0], J[0][2], J[0][3], J[1][0], J[1][2], J[1][3], J[2][0], J[2][2], J[2][3]);
+  const m2 = det3(J[0][0], J[0][1], J[0][3], J[1][0], J[1][1], J[1][3], J[2][0], J[2][1], J[2][3]);
+  const m3 = det3(J[0][0], J[0][1], J[0][2], J[1][0], J[1][1], J[1][2], J[2][0], J[2][1], J[2][2]);
+  const t = [m0, -m1, m2, -m3];
+  const n = Math.hypot(t[0], t[1], t[2], t[3]);
+  if (n < 1e-30) return null;
+  return [t[0]/n, t[1]/n, t[2]/n, t[3]/n];
+}
+
+function traceComponent(start, terms, targetC, opts) {
+  const stepSize = opts.stepSize || 0.02;
+  const maxSteps = opts.maxSteps || 2000;
+  const closeFactor = opts.closeFactor || 1.5;
+  const s = start.slice();
+  const trace = [s.slice()];
+  let prevT = null;
+  for (let step = 0; step < maxSteps; step++) {
+    const info = buildJacobian(s, terms);
+    if (!info) break;
+    let t = tangent4(info.J);
+    if (!t) break;
+    if (prevT && (t[0]*prevT[0] + t[1]*prevT[1] + t[2]*prevT[2] + t[3]*prevT[3]) < 0) {
+      t = [-t[0], -t[1], -t[2], -t[3]];
+    }
+    // Predictor
+    s[0] += stepSize * t[0]; s[1] += stepSize * t[1];
+    s[2] += stepSize * t[2]; s[3] += stepSize * t[3];
+    // Corrector
+    if (!newtonCorrectToSlice(s, terms, targetC, 6)) break;
+    trace.push(s.slice());
+    prevT = t;
+    // Closed-loop check (after a few steps)
+    if (step > 12) {
+      const st = trace[0];
+      const dx = s[0]-st[0], dy = s[1]-st[1], dz = s[2]-st[2], dw = s[3]-st[3];
+      const dd = Math.sqrt(dx*dx + dy*dy + dz*dz + dw*dw);
+      if (dd < stepSize * closeFactor) {
+        // Close the loop by repeating the first vertex.
+        trace.push(st.slice());
+        return { trace, closed: true };
+      }
+    }
+  }
+  return { trace, closed: false };
+}
+
+// Gauge-fix and normalize a raw projective sample to (z₁, z₂) with
+// z₀ real ≥ 0 and |z|² = 1. Returns [Re z₁, Im z₁, Re z₂, Im z₂] or null.
+function gaugeAndNormalize(sample) {
+  const [Z0, Z1, Z2] = sample;
+  const a0 = Z0.re*Z0.re + Z0.im*Z0.im;
+  const a1 = Z1.re*Z1.re + Z1.im*Z1.im;
+  const a2 = Z2.re*Z2.re + Z2.im*Z2.im;
+  const tot = a0 + a1 + a2;
+  if (tot < 1e-30) return null;
+  let g1r, g1i, g2r, g2i;
+  if (a0 > 1e-30) {
+    const r0 = Math.sqrt(a0);
+    const cs = Z0.re / r0, sn = Z0.im / r0;
+    g1r = Z1.re*cs + Z1.im*sn;  g1i = Z1.im*cs - Z1.re*sn;
+    g2r = Z2.re*cs + Z2.im*sn;  g2i = Z2.im*cs - Z2.re*sn;
+  } else if (a1 > 1e-30) {
+    const r1 = Math.sqrt(a1);
+    const cs = Z1.re / r1, sn = Z1.im / r1;
+    g1r = r1; g1i = 0;
+    g2r = Z2.re*cs + Z2.im*sn;  g2i = Z2.im*cs - Z2.re*sn;
+  } else {
+    g1r = 0; g1i = 0; g2r = Math.sqrt(a2); g2i = 0;
+  }
+  const inv = 1 / Math.sqrt(tot);
+  return [g1r*inv, g1i*inv, g2r*inv, g2i*inv];
+}
+
+function dist4(a, b) {
+  const dx = a[0]-b[0], dy = a[1]-b[1], dz = a[2]-b[2], dw = a[3]-b[3];
+  return Math.sqrt(dx*dx + dy*dy + dz*dz + dw*dw);
+}
+
+function traceAllComponents(poly, targetC, opts) {
+  const maxComp = opts.maxComp || 8;
+  const stepSize = opts.stepSize || 0.02;
+  const dupTol = stepSize * 1.2;  // points closer than this to a traced curve = "already done"
+  const components = [];
+  const allTraced = [];
+  // Generate seed points on V via random lines, project each to V ∩ S_c.
+  const seeds = sampleCurveSeeds(poly, 200);
+  const projected = [];
+  for (const seed of seeds) {
+    const gauged = gaugeAndNormalize(seed);
+    if (!gauged) continue;
+    if (!newtonCorrectToSlice(gauged, poly, targetC, 18)) continue;
+    projected.push(gauged);
+  }
+  // Trace components starting from unused seeds.
+  for (const seed of projected) {
+    if (components.length >= maxComp) break;
+    let tooClose = false;
+    for (const p of allTraced) {
+      if (dist4(seed, p) < dupTol) { tooClose = true; break; }
+    }
+    if (tooClose) continue;
+    const result = traceComponent(seed, poly, targetC, { stepSize, maxSteps: 3000 });
+    if (result.trace.length > 8) {
+      components.push(result);
+      allTraced.push(...result.trace);
+    }
+  }
+  return components;
+}
+
+// ============================================================
+// Affine-mesh build (compact spherical gauge + tan grid)
+// ============================================================
+function buildAffineMesh(poly, opts) {
+  const d = polyDegree(poly);
+  const chartK = opts.chartK;
+  const dropChoice = opts.dropChoice;
+  const N = opts.N;
+  const R = opts.gridRange;
+  // Standard affine: linear grid in (Re x, Im x) ∈ [-R, R]².
+  const xCoords = new Array(N);
+  const step = 2 * R / (N - 1);
+  for (let i = 0; i < N; i++) xCoords[i] = -R + i * step;
+
+  // y-roots at each grid point (NaN-padded to length d).
+  const grid = [];
+  for (let i = 0; i < N; i++) {
+    grid.push([]);
+    for (let j = 0; j < N; j++) {
+      const x = C(xCoords[i], xCoords[j]);
+      const coeffs = restrictForChart(poly, x, chartK, d);
+      const r = findRoots(coeffs);
+      while (r.length < d) r.push({re: NaN, im: NaN});
+      grid[i].push(r);
+    }
+  }
+  const horMatch = [];
+  for (let i = 0; i < N - 1; i++) {
+    horMatch.push([]);
+    for (let j = 0; j < N; j++) horMatch[i].push(matchRoots(grid[i][j], grid[i+1][j]));
+  }
+  const verMatch = [];
+  for (let i = 0; i < N; i++) {
+    verMatch.push([]);
+    for (let j = 0; j < N - 1; j++) verMatch[i].push(matchRoots(grid[i][j], grid[i][j+1]));
+  }
+
+  // Vertices: each (i, j, sheet k) gets one vertex.
+  const V = N * N * d;
+  const positions = new Float32Array(V * 3);
+  const droppedArr = new Float32Array(V);
+  const z012 = new Float32Array(V * 6);
+  let droppedMaxAbs = 0;
+  const inRange = new Uint8Array(V);
+  const maxR = opts.maxR;
+
+  for (let i = 0; i < N; i++) {
+    for (let j = 0; j < N; j++) {
+      const xR = xCoords[i], xI = xCoords[j];
+      for (let k = 0; k < d; k++) {
+        const y = grid[i][j][k];
+        const idx = (i * N + j) * d + k;
+        // Standard affine 4-tuple (no compactification).
+        const aR = xR, aI = xI, bR = y.re, bI = y.im;
+        let X, Y, Z, dropped;
+        switch (dropChoice) {
+          case 'imy': X = aR; Y = aI; Z = bR; dropped = bI; break;
+          case 'imx': X = aR; Y = bR; Z = bI; dropped = aI; break;
+          case 'rey': X = aR; Y = aI; Z = bI; dropped = bR; break;
+          case 'rex': X = aI; Y = bR; Z = bI; dropped = aR; break;
+        }
+        positions[3*idx] = X; positions[3*idx+1] = Y; positions[3*idx+2] = Z;
+        droppedArr[idx] = dropped;
+        if (Math.abs(dropped) > droppedMaxAbs) droppedMaxAbs = Math.abs(dropped);
+        const rr = Math.hypot(X, Y, Z);
+        inRange[idx] = (isFinite(X) && isFinite(Y) && isFinite(Z) && rr <= maxR) ? 1 : 0;
+        // Reconstruct projective coords for FS color computation.
+        let z0r, z0i, z1r, z1i, z2r, z2i;
+        if (chartK === 2)      { z0r=xR; z0i=xI; z1r=y.re; z1i=y.im; z2r=1; z2i=0; }
+        else if (chartK === 0) { z0r=1;  z0i=0;  z1r=xR;   z1i=xI;   z2r=y.re; z2i=y.im; }
+        else                   { z0r=xR; z0i=xI; z1r=1;    z1i=0;    z2r=y.re; z2i=y.im; }
+        z012[6*idx]   = z0r; z012[6*idx+1] = z0i;
+        z012[6*idx+2] = z1r; z012[6*idx+3] = z1i;
+        z012[6*idx+4] = z2r; z012[6*idx+5] = z2i;
+      }
+    }
+  }
+
+  const indices = [];
+  for (let i = 0; i < N - 1; i++) {
+    for (let j = 0; j < N - 1; j++) {
+      const matchAB = horMatch[i][j];
+      const matchBC = verMatch[i+1][j];
+      const matchAD = verMatch[i][j];
+      const matchDC = horMatch[i][j+1];
+      for (let k = 0; k < d; k++) {
+        const kB = matchAB[k]; if (kB < 0) continue;
+        const kC = matchBC[kB]; if (kC < 0) continue;
+        const kD = matchAD[k]; if (kD < 0) continue;
+        const kC_viaD = matchDC[kD]; if (kC_viaD < 0) continue;
+        if (kC !== kC_viaD) continue;
+        const idxA = (i * N + j) * d + k;
+        const idxB = ((i+1) * N + j) * d + kB;
+        const idxC = ((i+1) * N + (j+1)) * d + kC;
+        const idxD = (i * N + (j+1)) * d + kD;
+        if (!inRange[idxA] || !inRange[idxB] || !inRange[idxC] || !inRange[idxD]) continue;
+        indices.push(idxA, idxB, idxC, idxA, idxC, idxD);
+      }
+    }
+  }
+  return { positions, droppedArr, droppedMaxAbs, z012, indices, V, d };
+}
+
+// ============================================================
+// Coloring helpers
+// ============================================================
+const FS_M = [0.8389, 0.0307, 0.3759];
+const FS_C = [0.0307, 0.3759, 0.8389];
+const FS_Y = [0.8389, 0.5212, 0.0307];
+function lin2srgb(x) {
+  x = x < 0 ? 0 : (x > 1 ? 1 : x);
+  return x < 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1/2.4) - 0.055;
+}
+function fsColorFromComplex(z0r, z0i, z1r, z1i, z2r, z2i) {
+  const a = z0r*z0r + z0i*z0i;
+  const b = z1r*z1r + z1i*z1i;
+  const c = z2r*z2r + z2i*z2i;
+  const sm = a + b + c;
+  if (sm < 1e-30) return [0.5, 0.5, 0.5];
+  const ra = a/sm, rb = b/sm, rc = c/sm;
+  return [
+    lin2srgb(ra*FS_M[0] + rb*FS_C[0] + rc*FS_Y[0]),
+    lin2srgb(ra*FS_M[1] + rb*FS_C[1] + rc*FS_Y[1]),
+    lin2srgb(ra*FS_M[2] + rb*FS_C[2] + rc*FS_Y[2]),
+  ];
+}
+function divergingColor(t) {
+  t = Math.max(-1, Math.min(1, t));
+  // Higher-contrast mid + saturated ends so colors pop through the glass.
+  const mid = [0.75, 0.75, 0.82];
+  if (t < 0) {
+    const f = -t, end = [0.00, 0.95, 1.00];  // vivid cyan
+    return [mid[0] + f*(end[0]-mid[0]), mid[1] + f*(end[1]-mid[1]), mid[2] + f*(end[2]-mid[2])];
+  } else {
+    const f = t, end = [1.00, 0.50, 0.00];   // saturated orange
+    return [mid[0] + f*(end[0]-mid[0]), mid[1] + f*(end[1]-mid[1]), mid[2] + f*(end[2]-mid[2])];
+  }
+}
+
+// ============================================================
+// Coordinate conversions between slice gauge and affine chart
+// ============================================================
+// Slice point (z₀ real ≥ 0, |z|²=1) → standard affine 4-tuple in chart chartK.
+// In chart with denominator z_k, affine x = z_i/z_k and y = z_j/z_k.
+// Returns null if z_k ≈ 0 (point is on the chart's line at infinity).
+function sliceToAffineXY(s, chartK) {
+  const r2 = s[0]*s[0] + s[1]*s[1] + s[2]*s[2] + s[3]*s[3];
+  if (r2 > 1 - 1e-12) return null;
+  const z0r = Math.sqrt(Math.max(0, 1 - r2)), z0i = 0;
+  const z1r = s[0], z1i = s[1];
+  const z2r = s[2], z2i = s[3];
+  let n1r, n1i, n2r, n2i, dR, dI;
+  if (chartK === 2)      { n1r=z0r; n1i=z0i; n2r=z1r; n2i=z1i; dR=z2r; dI=z2i; }
+  else if (chartK === 0) { n1r=z1r; n1i=z1i; n2r=z2r; n2i=z2i; dR=z0r; dI=z0i; }
+  else                   { n1r=z0r; n1i=z0i; n2r=z2r; n2i=z2i; dR=z1r; dI=z1i; }
+  const dm2 = dR*dR + dI*dI;
+  if (dm2 < 1e-12) return null;
+  const inv = 1 / dm2;
+  return [
+    (n1r*dR + n1i*dI) * inv,   // Re(x)
+    (n1i*dR - n1r*dI) * inv,   // Im(x)
+    (n2r*dR + n2i*dI) * inv,   // Re(y)
+    (n2i*dR - n2r*dI) * inv,   // Im(y)
+  ];
+}
+function pickProjectionR3(c4, dropChoice) {
+  const [a, b, c, d] = c4;
+  switch (dropChoice) {
+    case 'imy': return [a, b, c];
+    case 'imx': return [a, c, d];
+    case 'rey': return [a, b, d];
+    case 'rex': return [b, c, d];
+  }
+  return [a, b, c];
+}
+
+// Slice point → R³ position in the slice view via stereographic projection
+// from (Re u₁, Im u₁, Re u₂, Im u₂) = (1,0,0,0) on the slice's S³ (radius √(1-c)).
+function sliceToStereoR3(s, targetC) {
+  const sliceRad = Math.sqrt(Math.max(1e-30, 1 - targetC));
+  const inv = 1 / sliceRad;
+  const u1r = s[0] * inv, u1i = s[1] * inv;
+  const u2r = s[2] * inv, u2i = s[3] * inv;
+  const denom = 1 - u1r;
+  if (Math.abs(denom) < 1e-6) {
+    const len = Math.hypot(u1i, u2r, u2i) || 1;
+    return [u1i / len * 50, u2r / len * 50, u2i / len * 50];
+  }
+  return [u1i / denom, u2r / denom, u2i / denom];
+}
+
+// ============================================================
+// Two THREE.js viewers (left = affine, right = slice)
+// ============================================================
+function makeViewer(canvas, opts) {
+  const renderer = new THREE.WebGLRenderer({canvas, antialias: true});
+  renderer.setPixelRatio(window.devicePixelRatio || 1);
+  renderer.setClearColor(0x0c0c10);
+  // Skip sRGB+ACES so the vertex colors come through at full saturation; the
+  // glassy look comes from clearcoat + low roughness instead of tone-mapped PBR.
+  renderer.outputEncoding = THREE.LinearEncoding;
+  renderer.toneMapping = THREE.NoToneMapping;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 5000);
+  // Slightly brighter directional lights so the glass clearcoat has crisp highlights.
+  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+  const d1 = new THREE.DirectionalLight(0xffffff, 1.05); d1.position.set(5, 8, 5);  scene.add(d1);
+  const d2 = new THREE.DirectionalLight(0xb0c8ff, 0.55); d2.position.set(-6, -3, -4); scene.add(d2);
+  const d3 = new THREE.DirectionalLight(0xffeebb, 0.30); d3.position.set(0, -5, 8);  scene.add(d3);
+
+  const state = { rotX: opts.rotX || 0.5, rotY: opts.rotY || 0.8, dist: opts.dist || 3, panX: 0, panY: 0, needsRender: true };
+  function updateCamera() {
+    const ex = state.dist * Math.cos(state.rotX) * Math.sin(state.rotY);
+    const ey = state.dist * Math.sin(state.rotX);
+    const ez = state.dist * Math.cos(state.rotX) * Math.cos(state.rotY);
+    camera.position.set(ex + state.panX, ey + state.panY, ez);
+    camera.lookAt(state.panX, state.panY, 0);
+    state.needsRender = true;
+  }
+  let isDragging = false, isPanning = false, lastMouse = null;
+  canvas.addEventListener('mousedown', e => {
+    if (e.button === 0) { isDragging = true; isPanning = e.shiftKey; lastMouse = [e.clientX, e.clientY]; }
+  });
+  window.addEventListener('mouseup', () => { isDragging = false; isPanning = false; });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastMouse[0], dy = e.clientY - lastMouse[1];
+    if (isPanning) { state.panX -= dx*0.005*state.dist; state.panY += dy*0.005*state.dist; }
+    else { state.rotY -= dx*0.008; state.rotX -= dy*0.008;
+           state.rotX = Math.max(-Math.PI/2+0.05, Math.min(Math.PI/2-0.05, state.rotX)); }
+    lastMouse = [e.clientX, e.clientY];
+    updateCamera();
+  });
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    state.dist *= e.deltaY > 0 ? 1.12 : 0.89;
+    state.dist = Math.max(0.3, Math.min(200, state.dist));
+    updateCamera();
+  }, {passive: false});
+
+  // Reference axes
+  const refGroup = new THREE.Group(); scene.add(refGroup);
+  const L = opts.axisLen || 1.2;
+  for (const [dir, col] of [[[L,0,0], 0xff8a8a], [[0,L,0], 0x8aff8a], [[0,0,L], 0x8aaaff]]) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute([0,0,0, dir[0], dir[1], dir[2]], 3));
+    refGroup.add(new THREE.Line(g, new THREE.LineBasicMaterial({color: col, opacity: 0.40, transparent: true})));
+  }
+  updateCamera();
+  return { canvas, renderer, scene, camera, state, updateCamera, refGroup };
+}
+
+const affineView = makeViewer(document.getElementById('cvAffine'), { dist: 8.0, axisLen: 4.0 });
+const sliceView  = makeViewer(document.getElementById('cvSlice'),  { dist: 4.0, axisLen: 1.5 });
+
+// Procedural "studio" cube-map environment so the glass mesh has something
+// to reflect (a soft bright top, dark bottom, banded sides). The texture is
+// PMREM-pre-filtered for fast PBR lookups.
+function makeStudioEnv(renderer) {
+  const size = 128;
+  function makeFace(stops) {
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    const cx = c.getContext('2d');
+    const g = cx.createLinearGradient(0, 0, 0, size);
+    for (const [t, col] of stops) g.addColorStop(t, col);
+    cx.fillStyle = g; cx.fillRect(0, 0, size, size);
+    return c;
+  }
+  const top    = makeFace([[0, '#f0f4ff'], [1, '#b6cdee']]);
+  const bottom = makeFace([[0, '#333944'], [1, '#11141a']]);
+  const side   = makeFace([[0, '#e6edf8'], [0.55, '#5a6776'], [1, '#1a1d24']]);
+  const cubeTex = new THREE.CubeTexture([side, side, top, bottom, side, side]);
+  cubeTex.needsUpdate = true;
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  pmrem.compileCubemapShader();
+  const env = pmrem.fromCubemap(cubeTex).texture;
+  pmrem.dispose();
+  return env;
+}
+affineView.scene.environment = makeStudioEnv(affineView.renderer);
+
+// ============================================================
+// Affine mesh + overlay objects (left pane)
+// ============================================================
+let meshObj = null;
+let overlayObj = null;
+
+function disposeObj(obj, scene) {
+  if (!obj) return;
+  scene.remove(obj);
+  if (obj.geometry) obj.geometry.dispose();
+  if (obj.material) obj.material.dispose();
+}
+function disposeGroup(grp, scene) {
+  if (!grp) return;
+  scene.remove(grp);
+  for (const child of grp.children) {
+    if (child.geometry) child.geometry.dispose();
+    if (child.material) child.material.dispose();
+  }
+}
+
+function rebuildAffineMesh() {
+  disposeObj(meshObj, affineView.scene);
+  meshObj = null;
+  if (!currentPoly) { affineView.state.needsRender = true; return; }
+  const d = polyDegree(currentPoly);
+  if (d === 0) return;
+  const chartK = parseInt($('chart').value, 10);
+  const dropChoice = $('drop').value;
+  const colorMode = $('color').value;
+  const N = parseInt($('gridRes').value, 10);
+  const opacity = parseFloat($('meshOpacity').value);
+  const gridRange = parseFloat($('gridRange').value);
+  const maxR = parseFloat($('maxR').value);
+
+  const t0 = performance.now();
+  const m = buildAffineMesh(currentPoly, { chartK, dropChoice, N, gridRange, maxR });
+  const dt = performance.now() - t0;
+
+  const colors = new Float32Array(m.V * 3);
+  const droppedScale = 1 / (m.droppedMaxAbs || 1);
+  for (let idx = 0; idx < m.V; idx++) {
+    let col;
+    if (colorMode === 'fs') {
+      const o = 6 * idx;
+      col = fsColorFromComplex(m.z012[o], m.z012[o+1], m.z012[o+2], m.z012[o+3], m.z012[o+4], m.z012[o+5]);
+    } else if (colorMode === 'dropped') {
+      col = divergingColor(m.droppedArr[idx] * droppedScale);
+    } else {
+      col = [0.92, 0.92, 0.95];
+    }
+    colors[3*idx] = col[0]; colors[3*idx+1] = col[1]; colors[3*idx+2] = col[2];
+  }
+
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.BufferAttribute(m.positions, 3));
+  geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geom.setIndex(new THREE.BufferAttribute(new Uint32Array(m.indices), 1));
+  geom.computeVertexNormals();
+  // Glassy material: smooth surface + clearcoat for crisp specular highlights,
+  // a touch of transmission for depth. Transmission and env-map intensity are
+  // kept low so the vertex colors stay vivid; the gloss comes from the
+  // clearcoat layer and specular highlights, not from washing out the color.
+  const mat = new THREE.MeshPhysicalMaterial({
+    vertexColors: true, side: THREE.DoubleSide,
+    metalness: 0.0,
+    roughness: 0.14,
+    transmission: 0.35 * (1 - opacity),
+    thickness: 0.4,
+    ior: 1.45,
+    clearcoat: 0.95,
+    clearcoatRoughness: 0.05,
+    reflectivity: 0.55,
+    envMapIntensity: 0.35,
+    transparent: opacity < 1,
+    opacity: Math.max(opacity, 0.5),
+  });
+  meshObj = new THREE.Mesh(geom, mat);
+  affineView.scene.add(meshObj);
+  affineView.state.needsRender = true;
+  const chartName = chartK === 0 ? 'x' : chartK === 1 ? 'y' : 'z';
+  $('affineSub').textContent = `affine · chart ${chartName} = 1 · ${(m.indices.length/3)|0} tris · ${dt.toFixed(0)}ms`;
+}
+
+function rebuildOverlay() {
+  // Removes any existing overlay; if highlight is on AND slice components
+  // exist, projects each continuation chain through the affine compact gauge
+  // and draws line segments on top of the mesh.
+  disposeObj(overlayObj, affineView.scene);
+  overlayObj = null;
+  if (!$('overlay').checked) { affineView.state.needsRender = true; return; }
+  if (!sliceComponents || sliceComponents.length === 0) { affineView.state.needsRender = true; return; }
+  const chartK = parseInt($('chart').value, 10);
+  const dropChoice = $('drop').value;
+  const maxR = parseFloat($('maxR').value);
+  const maxR2 = maxR * maxR;
+  // Skip segments whose chord exceeds this fraction of the box scale — guards
+  // against drawing across the chart's line-at-infinity singularity.
+  const maxChord = maxR * 0.6;
+  const maxChord2 = maxChord * maxChord;
+  const positions = [];
+  for (const comp of sliceComponents) {
+    const tr = comp.trace;
+    const r3 = new Array(tr.length);
+    const inrange = new Array(tr.length).fill(false);
+    for (let i = 0; i < tr.length; i++) {
+      const c4 = sliceToAffineXY(tr[i], chartK);
+      if (!c4) { r3[i] = null; continue; }
+      r3[i] = pickProjectionR3(c4, dropChoice);
+      if (r3[i][0]*r3[i][0] + r3[i][1]*r3[i][1] + r3[i][2]*r3[i][2] <= maxR2) inrange[i] = true;
+    }
+    for (let i = 1; i < tr.length; i++) {
+      if (!inrange[i] || !inrange[i-1]) continue;
+      const a = r3[i-1], b = r3[i];
+      const d2 = (a[0]-b[0])**2 + (a[1]-b[1])**2 + (a[2]-b[2])**2;
+      if (d2 > maxChord2) continue;
+      positions.push(a[0], a[1], a[2], b[0], b[1], b[2]);
+    }
+  }
+  if (positions.length === 0) { affineView.state.needsRender = true; return; }
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  const colorHex = highlightColorHex();
+  const mat = new THREE.LineBasicMaterial({ color: colorHex, transparent: true, opacity: 0.95, depthTest: false });
+  overlayObj = new THREE.LineSegments(geom, mat);
+  overlayObj.renderOrder = 999;
+  affineView.scene.add(overlayObj);
+  affineView.state.needsRender = true;
+}
+
+function highlightColorHex() {
+  switch ($('highColor').value) {
+    case 'cyan':    return 0x66ffff;
+    case 'white':   return 0xffffff;
+    case 'magenta': return 0xff66ff;
+    case 'gold':
+    default:        return 0xffd166;
+  }
+}
+
+// ============================================================
+// Slice tubes (right pane)
+// ============================================================
+let sliceTubeGroup = null;
+let sliceComponents = [];
+
+function rebuildSlice() {
+  disposeGroup(sliceTubeGroup, sliceView.scene);
+  sliceTubeGroup = null;
+  if (!currentPoly) { sliceView.state.needsRender = true; return; }
+  const targetC = parseFloat($('sliceC').value);
+  const stepSize = parseFloat($('contStep').value);
+  const maxComp = parseInt($('maxComp').value, 10);
+  const tubeR = parseFloat($('tubeRadius').value);
+
+  const t0 = performance.now();
+  sliceComponents = traceAllComponents(currentPoly, targetC, { stepSize, maxComp });
+  const dt = performance.now() - t0;
+
+  const group = new THREE.Group();
+  let totalSegs = 0;
+  const colorHex = highlightColorHex();
+  for (const comp of sliceComponents) {
+    const tr = comp.trace;
+    const pts = [];
+    for (const s of tr) {
+      const r3 = sliceToStereoR3(s, targetC);
+      if (isFinite(r3[0]) && isFinite(r3[1]) && isFinite(r3[2]) && Math.hypot(r3[0], r3[1], r3[2]) < 25) {
+        pts.push(new THREE.Vector3(r3[0], r3[1], r3[2]));
+      }
+    }
+    if (pts.length < 4) continue;
+    try {
+      const curve = new THREE.CatmullRomCurve3(pts, comp.closed, 'centripetal', 0.5);
+      const tubeGeom = new THREE.TubeGeometry(curve, Math.max(20, pts.length * 2), tubeR, 8, comp.closed);
+      const mat = new THREE.MeshLambertMaterial({ color: colorHex });
+      group.add(new THREE.Mesh(tubeGeom, mat));
+      totalSegs += pts.length;
+    } catch (e) { /* CatmullRom may fail on degenerate input; skip */ }
+  }
+  sliceTubeGroup = group;
+  sliceView.scene.add(sliceTubeGroup);
+  sliceView.state.needsRender = true;
+  $('sliceSub').textContent = `c = ${targetC.toFixed(3)} · ${sliceComponents.length} component${sliceComponents.length === 1 ? '' : 's'} · ${totalSegs} pts · ${dt.toFixed(0)}ms`;
+}
+
+// ============================================================
+// UI orchestration
+// ============================================================
+const $ = id => document.getElementById(id);
+let currentPoly = null;
+function setError(m) { $('error').textContent = m; }
+function setInfo(m) { $('info').textContent = m; }
+
+// Pane visibility helpers. The CSS flex layout fills any visible pane(s).
+function applyViewMode() {
+  const mode = $('viewMode').value;
+  const panes = document.querySelectorAll('#panes .pane');
+  panes[0].style.display = (mode === 'slice')  ? 'none' : '';
+  panes[1].style.display = (mode === 'affine') ? 'none' : '';
+  // Wait one frame for layout to settle, then resize renderers.
+  requestAnimationFrame(fitCanvases);
+}
+function affineVisible() { return $('viewMode').value !== 'slice'; }
+function sliceVisible()  { return $('viewMode').value !== 'affine'; }
+function overlayActive() { return affineVisible() && $('overlay').checked; }
+// Slice continuation is needed if the slice pane is shown OR the overlay is on.
+function sliceNeeded()   { return sliceVisible() || overlayActive(); }
+
+async function resampleEverything() {
+  stopSweep();
+  setError('');
+  setInfo('parsing & building…');
+  await new Promise(r => setTimeout(r, 10));
+  try {
+    const poly = parsePoly($('poly').value);
+    if (poly.length === 0) { setError('polynomial is zero'); return; }
+    if (!isHomogeneous(poly)) { setError('polynomial must be homogeneous'); return; }
+    currentPoly = poly;
+    if (affineVisible()) rebuildAffineMesh();
+    if (sliceNeeded())   rebuildSlice();
+    if (affineVisible()) rebuildOverlay();
+    setInfo(`degree ${polyDegree(poly)} · ${sliceComponents.length} slice component${sliceComponents.length===1?'':'s'}`);
+  } catch (e) { setError(e.message); }
+}
+
+// Slice slider: rebuild slice + overlay only (no mesh rebuild needed).
+function onSliceCChange() {
+  $('sliceCV').textContent = parseFloat($('sliceC').value).toFixed(3);
+  if (sliceNeeded())   rebuildSlice();
+  if (affineVisible()) rebuildOverlay();
+}
+
+// Chart / drop / color change: rebuild affine and overlay; slice unaffected
+// since it's chart-independent.
+function onAffineSettingsChange() {
+  if (!affineVisible()) return;
+  rebuildAffineMesh();
+  rebuildOverlay();
+}
+
+// View toggle: hide/show panes, refit canvases, and trigger any rebuilds
+// that the now-visible panes need.
+function onViewModeChange() {
+  applyViewMode();
+  if (!currentPoly) return;
+  if (affineVisible() && !meshObj) rebuildAffineMesh();
+  if (sliceNeeded() && (!sliceTubeGroup || !sliceComponents.length)) rebuildSlice();
+  if (affineVisible()) rebuildOverlay();
+}
+
+// Sweep loop: animate c from 0 to 1 over ~12 seconds.
+let sweepFrame = null, sweepStart = null;
+function startSweep() {
+  if (sweepFrame) return stopSweep();
+  $('sweep').textContent = '■ Stop';
+  sweepStart = performance.now();
+  function tick(now) {
+    const t = ((now - sweepStart) / 12000) % 1;
+    const c = 0.001 + 0.998 * t;
+    $('sliceC').value = c;
+    onSliceCChange();
+    sweepFrame = requestAnimationFrame(tick);
+  }
+  sweepFrame = requestAnimationFrame(tick);
+}
+function stopSweep() {
+  if (sweepFrame) { cancelAnimationFrame(sweepFrame); sweepFrame = null; }
+  $('sweep').textContent = '▶ Sweep c';
+}
+
+// Wire UI
+$('preset').addEventListener('change', e => { $('poly').value = e.target.value; resampleEverything(); });
+$('poly').addEventListener('change', resampleEverything);
+$('poly').addEventListener('keydown', e => { if (e.key === 'Enter') resampleEverything(); });
+$('sliceC').addEventListener('input', onSliceCChange);
+$('chart').addEventListener('change', onAffineSettingsChange);
+$('drop').addEventListener('change', onAffineSettingsChange);
+$('color').addEventListener('change', rebuildAffineMesh);
+$('gridRes').addEventListener('input', e => { $('gridResV').textContent = e.target.value; });
+$('gridRes').addEventListener('change', rebuildAffineMesh);
+$('gridRange').addEventListener('input', e => { $('gridRangeV').textContent = parseFloat(e.target.value).toFixed(1); });
+$('gridRange').addEventListener('change', rebuildAffineMesh);
+$('maxR').addEventListener('input', e => { $('maxRV').textContent = parseFloat(e.target.value).toFixed(1); });
+$('maxR').addEventListener('change', () => { rebuildAffineMesh(); rebuildOverlay(); });
+$('meshOpacity').addEventListener('input', e => {
+  $('meshOpacityV').textContent = parseFloat(e.target.value).toFixed(2);
+  if (meshObj) {
+    const o = parseFloat(e.target.value);
+    meshObj.material.opacity = Math.max(o, 0.5);
+    meshObj.material.transparent = o < 1;
+    meshObj.material.transmission = 0.35 * (1 - o);
+    affineView.state.needsRender = true;
+  }
+});
+$('tubeRadius').addEventListener('input', e => { $('tubeRadiusV').textContent = parseFloat(e.target.value).toFixed(3); });
+$('tubeRadius').addEventListener('change', rebuildSlice);
+$('contStep').addEventListener('input', e => { $('contStepV').textContent = parseFloat(e.target.value).toFixed(3); });
+$('contStep').addEventListener('change', () => { rebuildSlice(); rebuildOverlay(); });
+$('maxComp').addEventListener('input', e => { $('maxCompV').textContent = e.target.value; });
+$('maxComp').addEventListener('change', () => { rebuildSlice(); rebuildOverlay(); });
+$('highColor').addEventListener('change', () => { rebuildSlice(); rebuildOverlay(); });
+$('overlay').addEventListener('change', () => {
+  // Toggling overlay on may newly require slice computation (if previously
+  // hidden); make sure we have one before drawing.
+  if (overlayActive() && sliceComponents.length === 0) rebuildSlice();
+  rebuildOverlay();
+});
+$('viewMode').addEventListener('change', onViewModeChange);
+$('sweep').addEventListener('click', () => { sweepFrame ? stopSweep() : startSweep(); });
+$('resample').addEventListener('click', resampleEverything);
+
+function fitCanvases() {
+  for (const v of [affineView, sliceView]) {
+    const wrap = v.canvas.parentElement;
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    v.renderer.setSize(w, h, false);
+    v.camera.aspect = w / h;
+    v.camera.updateProjectionMatrix();
+    v.state.needsRender = true;
+  }
+}
+window.addEventListener('resize', fitCanvases);
+fitCanvases();
+
+function renderLoop() {
+  if (affineView.state.needsRender) { affineView.state.needsRender = false; affineView.renderer.render(affineView.scene, affineView.camera); }
+  if (sliceView.state.needsRender) { sliceView.state.needsRender = false; sliceView.renderer.render(sliceView.scene, sliceView.camera); }
+  requestAnimationFrame(renderLoop);
+}
+renderLoop();
+
+resampleEverything();
+</script>
+</body>
+</html>

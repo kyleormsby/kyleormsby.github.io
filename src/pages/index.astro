@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import Motif from '../components/Motif.astro';
+import { getCollection } from 'astro:content';
+import { allCourses } from '../lib/courses';
+
+const viz = (await getCollection('viz'))
+  .sort((a, b) => b.data.year - a.data.year)
+  .slice(0, 3);
+
+const courses = allCourses();
+
+let writing: any[] = [];
+try {
+  writing = (await getCollection('writing'))
+    .filter((p) => !p.data.draft)
+    .sort((a, b) => +b.data.date - +a.data.date)
+    .slice(0, 3);
+} catch { /* no posts imported yet */ }
+---
+
+<Base title="Kyle Ormsby" wide>
+  <div style="max-width:52rem">
+    <h1>Kyle Ormsby</h1>
+    <p class="lede" style="margin-top:var(--s5)">
+      I work in homotopy theory — equivariant, motivic, and chromatic — and in
+      the combinatorics that keeps turning up underneath it. I also build small
+      interactive pictures of the objects I think about.
+    </p>
+    <p class="dim" style="margin-top:var(--s4);max-width:var(--measure)">
+      Professor of mathematics. Currently teaching{' '}
+      {courses.map((c, i) => (
+        <>{i > 0 && ', '}<a href={`/${c.slug}/`}>{c.number}</a></>
+      ))}.
+    </p>
+  </div>
+
+  <Motif points={11} />
+
+  <h2 class="rule-label"><span class="label">recent visualizations</span></h2>
+  <ul class="gallery">
+    {viz.map((v) => (
+      <li class="card">
+        <a class="frame" href={v.data.href} aria-label={v.data.title}>
+          {v.data.thumb && <img src={v.data.thumb} alt="" loading="lazy" width="800" height="600" />}
+        </a>
+        <h3><a href={v.data.href}>{v.data.title}</a></h3>
+        <div class="tags label">{v.data.tags.map((t) => <span>{t}</span>)}</div>
+      </li>
+    ))}
+  </ul>
+  <p style="margin-top:var(--s5)"><a class="label" href="/viz/">all visualizations →</a></p>
+
+  {writing.length > 0 && (
+    <>
+      <h2 class="rule-label"><span class="label">writing</span></h2>
+      {writing.map((p) => (
+        <div class="entry">
+          <span class="label">
+            {p.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' }).toLowerCase()}
+          </span>
+          <a href={`/writing/${p.id}/`}>{p.data.title}</a>
+        </div>
+      ))}
+      <p style="margin-top:var(--s5)"><a class="label" href="/writing/">everything →</a></p>
+    </>
+  )}
+</Base>

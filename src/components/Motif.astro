@@ -1,0 +1,129 @@
+---
+/**
+ * A quiet nod to the domain name: n labelled points wandering a rectangle,
+ * never colliding — a path in the configuration space F(R, n).
+ * Static single frame when the visitor prefers reduced motion.
+ */
+interface Props { points?: number; height?: number; }
+const { points = 11, height = 170 } = Astro.props;
+---
+
+<figure class="motif" style={`--motif-h:${height}px`} data-points={points}>
+  <canvas aria-hidden="true"></canvas>
+  <figcaption class="label">
+    a path in <span class="math">F(R,&nbsp;{points})</span> — {points} points that never collide
+  </figcaption>
+</figure>
+
+<style>
+  .motif { margin: var(--s8) 0 0; padding: 0; }
+  .motif canvas {
+    display: block;
+    width: 100%;
+    height: var(--motif-h);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .motif figcaption { margin-top: var(--s3); }
+  .motif .math { font-style: italic; font-family: var(--serif); font-size: 0.9rem; text-transform: none; }
+</style>
+
+<script>
+  const fig = document.querySelector<HTMLElement>('.motif');
+  const canvas = fig?.querySelector('canvas');
+  if (fig && canvas) {
+    const ctx = canvas.getContext('2d')!;
+    const n = Number(fig.dataset.points ?? 7);
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const css = getComputedStyle(document.documentElement);
+    const ink = css.getPropertyValue('--ink').trim() || '#14130F';
+    const accent = css.getPropertyValue('--accent').trim() || '#A93B1B';
+    const rule = css.getPropertyValue('--rule').trim() || '#E3DFD4';
+
+    let w = 0, h = 0, dpr = 1;
+    const pts = Array.from({ length: n }, (_, i) => ({
+      x: Math.random(), y: Math.random(),
+      vx: (Math.random() - 0.5) * 0.0016,
+      vy: (Math.random() - 0.5) * 0.0016,
+      accent: i === 0,
+    }));
+
+    function size() {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = canvas.clientWidth; h = canvas.clientHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function step() {
+      // Mutual repulsion keeps the points distinct — the defining condition
+      // of the configuration space.
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const a = pts[i], b = pts[j];
+          const dx = b.x - a.x, dy = (b.y - a.y) * (h / w);
+          const d2 = dx * dx + dy * dy || 1e-6;
+          if (d2 < 0.02) {
+            const f = 0.0000045 / d2;
+            a.vx -= dx * f; a.vy -= dy * f;
+            b.vx += dx * f; b.vy += dy * f;
+          }
+        }
+      }
+      for (const p of pts) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0.02 || p.x > 0.98) { p.vx *= -1; p.x = Math.min(0.98, Math.max(0.02, p.x)); }
+        if (p.y < 0.06 || p.y > 0.94) { p.vy *= -1; p.y = Math.min(0.94, Math.max(0.06, p.y)); }
+        const s = Math.hypot(p.vx, p.vy);
+        if (s > 0.0022) { p.vx *= 0.0022 / s; p.vy *= 0.0022 / s; }
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      const X = (p: { x: number }) => p.x * w;
+      const Y = (p: { y: number }) => p.y * h;
+
+      ctx.lineWidth = 1;
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const a = pts[i], b = pts[j];
+          const d = Math.hypot(X(a) - X(b), Y(a) - Y(b));
+          const reach = Math.max(180, w * 0.26);
+          if (d < reach) {
+            ctx.globalAlpha = 0.55 * (1 - d / reach);
+            ctx.strokeStyle = rule;
+            ctx.beginPath();
+            ctx.moveTo(X(a), Y(a)); ctx.lineTo(X(b), Y(b));
+            ctx.stroke();
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+      for (const p of pts) {
+        ctx.fillStyle = p.accent ? accent : ink;
+        ctx.globalAlpha = p.accent ? 1 : 0.75;
+        ctx.beginPath();
+        ctx.arc(X(p), Y(p), p.accent ? 4 : 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    size();
+    if (still) {
+      for (let i = 0; i < 400; i++) step();
+      draw();
+    } else {
+      let raf = 0;
+      const loop = () => { step(); draw(); raf = requestAnimationFrame(loop); };
+      const io = new IntersectionObserver(([e]) => {
+        if (e.isIntersecting && !raf) loop();
+        else if (!e.isIntersecting && raf) { cancelAnimationFrame(raf); raf = 0; }
+      });
+      io.observe(canvas);
+    }
+    addEventListener('resize', () => { size(); draw(); });
+  }
+</script>

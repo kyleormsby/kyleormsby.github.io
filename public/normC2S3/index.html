@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Norm N(C₂→S₃) of the swap action — interactive</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#161a23; --panel2:#1f2533; --edge:#39414f;
+    --ink:#e7eaf0; --muted:#9aa4b6; --faint:#6b7486;
+    --a:#2dd4bf; --a-dim:#155e57; --b:#fb923c; --b-dim:#7c4218;
+    --accent:#a78bfa; --accent2:#c4b5fd; --good:#34d399; --warn:#f472b6;
+    --btn:#222a3a; --btnh:#2c3852;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 20px 40px;}
+  h1{font-size:20px;margin:0 0 2px;font-weight:650;letter-spacing:.2px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+  .sub code{color:var(--accent2)}
+  .stage{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .scene{flex:1 1 460px;min-width:320px;background:
+      radial-gradient(120% 120% at 50% 18%, #141925 0%, #0f131c 70%);
+    border:1px solid var(--edge);border-radius:16px;padding:6px}
+  svg{display:block;width:100%;height:auto}
+  .side{flex:1 1 300px;min-width:280px;display:flex;flex-direction:column;gap:14px}
+  .card{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:14px 15px}
+  .card h2{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);margin:0 0 10px;font-weight:700}
+  .btns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  button.act{appearance:none;border:1px solid var(--edge);background:var(--btn);color:var(--ink);
+    border-radius:10px;padding:11px 6px;font-size:15px;cursor:pointer;transition:.12s;font-variant-numeric:tabular-nums}
+  button.act:hover:not(:disabled){background:var(--btnh);border-color:#4a5670}
+  button.act.lit{background:linear-gradient(180deg,#3b2f63,#2a2350);border-color:var(--accent)}
+  button:disabled{opacity:.45;cursor:default}
+  .mini{display:flex;gap:8px;margin-top:10px}
+  button.ghost{flex:1;appearance:none;border:1px solid var(--edge);background:transparent;color:var(--muted);
+    border-radius:9px;padding:8px;font-size:12.5px;cursor:pointer;transition:.12s}
+  button.ghost:hover:not(:disabled){color:var(--ink);border-color:#4a5670}
+  .legend{display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--muted)}
+  .legend .row{display:flex;align-items:center;gap:9px}
+  .dot{width:16px;height:16px;border-radius:50%;flex:none}
+  .dot.a{background:var(--a)} .dot.b{background:var(--b)}
+  .ringkey{width:16px;height:16px;border-radius:50%;flex:none;border:2.5px solid var(--accent);box-shadow:0 0 7px var(--accent)}
+  .info{font-size:13px;color:var(--muted);line-height:1.6}
+  .info b{color:var(--ink);font-weight:600}
+  .info .mono,.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+  .pill{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--edge);
+    font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+  .pill.free{color:var(--good);border-color:#1f5f47}
+  .pill.small{color:var(--warn);border-color:#6a2a52}
+  .twrow{margin-top:6px}
+  .foot{color:var(--faint);font-size:12px;margin-top:16px;line-height:1.6}
+  .foot code{color:var(--muted)}
+  .seclabel{font-family:ui-monospace,Menlo,monospace;font-size:14px;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The norm from C₂ to S₃ of the swap action on 2 points</h1>
+  <p class="sub">
+    K = C₂ = ⟨(1 2)⟩ ≤ S₃ acts on X = {a, b} by the swap. The norm
+    <code>N(X) = Map_K(S₃, X)</code> is modelled on the three right cosets
+    <code>C₂\S₃</code> (the triangle corners): a point of the norm is a choice of one
+    element of X at each corner. S₃ acts by the <b>monomial</b> rule — permute the three
+    fibers, then <b>twist</b> some by the C₂&nbsp;swap (the cocycle). Click the two points of a
+    fiber to edit the section; pick an S₃ element to act.
+  </p>
+
+  <div class="stage">
+    <div class="scene">
+      <svg id="svg" viewBox="0 0 600 560" role="img" aria-label="Triangle of three fibers">
+        <defs>
+          <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="3.2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="softshadow" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.45"/>
+          </filter>
+        </defs>
+        <polygon id="tri" points="300,120 150,410 450,410" fill="none" stroke="var(--edge)" stroke-width="2"/>
+        <!-- coset labels -->
+        <g font-family="ui-monospace,Menlo,monospace" fill="var(--muted)" font-size="15" text-anchor="middle">
+          <text id="lblA" x="300" y="64">C₂</text>
+          <text id="lblB" x="96"  y="452">C₂(1 3)</text>
+          <text id="lblC" x="504" y="452">C₂(2 3)</text>
+        </g>
+        <!-- center section readout -->
+        <g text-anchor="middle">
+          <text x="300" y="296" fill="var(--faint)" font-size="12" letter-spacing="1.5">SECTION φ</text>
+          <text id="secReadout" x="300" y="322" fill="var(--ink)" font-size="22"
+                font-family="ui-monospace,Menlo,monospace">(a, a, a)</text>
+          <text id="orbitReadout" x="300" y="348" fill="var(--good)" font-size="12.5"
+                font-family="ui-monospace,Menlo,monospace">free orbit · |orbit| = 6</text>
+        </g>
+        <g id="cards"></g>
+      </svg>
+    </div>
+
+    <div class="side">
+      <div class="card">
+        <h2>Act by an element of S₃</h2>
+        <div class="btns" id="btns"></div>
+        <div class="mini">
+          <button class="ghost" id="reset">Reset section → (a,a,a)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>What just happened</h2>
+        <div class="info" id="actionInfo">
+          Pick an element above. The fibers will first slide to their permuted corners,
+          then the twisted ones will flip.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Legend</h2>
+        <div class="legend">
+          <div class="row"><span class="dot a"></span> point <b>a</b> of the fiber X</div>
+          <div class="row"><span class="dot b"></span> point <b>b</b> of the fiber X</div>
+          <div class="row"><span class="ringkey"></span> the <b>selected</b> point (= value of the section here)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">
+    Convention: right cosets <code>C₂\S₃</code>, action <code>(h·f)(g)=f(gh)</code>, transversal
+    <code>e, (1 3), (2 3)</code>. The twist at a corner is the cocycle
+    <code>κ(i,h)∈C₂</code> from <code>hᵢ·h = κ(i,h)·h_{i·h}</code>: it swaps that fiber's a and b.
+    As an S₃-set, <code>N(X) ≅ [S₃/1] ⊔ [S₃/A₃]</code> (a free 6-point orbit and a 2-point orbit).
+  </p>
+</div>
+
+<script>
+"use strict";
+/* ---------- S₃ and the verified norm action ---------- */
+const ELEMENTS = [
+  {key:'e',  perm:[1,2,3], label:'e'},
+  {key:'12', perm:[2,1,3], label:'(1 2)'},
+  {key:'13', perm:[3,2,1], label:'(1 3)'},
+  {key:'23', perm:[1,3,2], label:'(2 3)'},
+  {key:'123',perm:[2,3,1], label:'(1 2 3)'},
+  {key:'132',perm:[3,1,2], label:'(1 3 2)'},
+];
+const byKey = Object.fromEntries(ELEMENTS.map(e=>[e.key,e]));
+const SLOTS = ['A','B','C'];
+const REP = {A:[1,2,3], B:[3,2,1], C:[1,3,2]};   // transversal reps for C₂\S₃
+const S = [2,1,3];                                // s = (1 2)
+const eqp=(p,q)=>p[0]===q[0]&&p[1]===q[1]&&p[2]===q[2];
+const mult=(p,q)=>[p[q[0]-1],p[q[1]-1],p[q[2]-1]];          // (pq)(x)=p(q(x))
+const swap=v=> v==='a'?'b':'a';
+function cosetOf(p){
+  for(const sl of SLOTS){
+    if(eqp(p,REP[sl]))            return {slot:sl, twist:false};
+    if(eqp(p,mult(S,REP[sl])))    return {slot:sl, twist:true};
+  }
+}
+// per-element data: for each target corner, which source corner it pulls from + twist
+function actionData(hkey){
+  const h=byKey[hkey].perm, src={}, twist={};
+  for(const sl of SLOTS){ const c=cosetOf(mult(REP[sl],h)); src[sl]=c.slot; twist[sl]=c.twist; }
+  return {src, twist};
+}
+// ground-truth action on a section {A,B,C}->'a'/'b'
+function act(hkey, phi){
+  const d=actionData(hkey), np={};
+  for(const sl of SLOTS) np[sl] = d.twist[sl] ? swap(phi[d.src[sl]]) : phi[d.src[sl]];
+  return np;
+}
+/* orbits of the 8 sections (for the readout) */
+const ALLSECS=[]; for(const A of['a','b'])for(const B of['a','b'])for(const C of['a','b'])ALLSECS.push({A,B,C});
+const sstr=p=>p.A+p.B+p.C;
+const ORBIT={};
+for(const phi of ALLSECS){ const o=new Set(); for(const e of ELEMENTS)o.add(sstr(act(e.key,phi))); ORBIT[sstr(phi)]=o.size; }
+
+/* self-test (left-action axiom) -> console */
+(function(){let ok=true;for(const h1 of ELEMENTS)for(const h2 of ELEMENTS){
+  const pr=ELEMENTS.find(e=>eqp(e.perm,mult(h1.perm,h2.perm))).key;
+  for(const phi of ALLSECS) if(sstr(act(h1.key,act(h2.key,phi)))!==sstr(act(pr,phi)))ok=false;}
+  console.log('[self-test] left-action axiom h·(h′·φ)=(hh′)·φ :', ok?'PASS':'FAIL');})();
+
+/* ---------- geometry ---------- */
+const CORNER = {A:{x:300,y:120}, B:{x:150,y:410}, C:{x:450,y:410}};
+const CENTROID = {x:300, y:(120+410+410)/3};
+const TOP_Y=-26, BOT_Y=26;       // local token slots
+const SVGNS="http://www.w3.org/2000/svg";
+
+/* ---------- state ---------- */
+// three fiber-cards; placement maps corner -> card id; each card has a value & orientation
+let cards = [ {id:0,value:'a',orient:'ab'},{id:1,value:'a',orient:'ab'},{id:2,value:'a',orient:'ab'} ];
+let placement = {A:0,B:1,C:2};
+let busy=false;
+const cardEls={}; // id -> {g, tokA, tokB, ring}
+
+function cornerOfCard(id){ return SLOTS.find(s=>placement[s]===id); }
+function topEl(o){return o[0];}  // 'ab'->'a'
+function botEl(o){return o[1];}
+function valueSlotY(card){ // y of the selected token
+  return (topEl(card.orient)===card.value)?TOP_Y:BOT_Y;
+}
+function currentSection(){ const phi={}; for(const s of SLOTS) phi[s]=cards[placement[s]].value; return phi; }
+
+/* ---------- build DOM ---------- */
+const cardsG=document.getElementById('cards');
+function mkToken(el){
+  const g=document.createElementNS(SVGNS,'g');
+  const c=document.createElementNS(SVGNS,'circle');
+  c.setAttribute('r',22); c.setAttribute('class','tok '+el);
+  c.setAttribute('fill', el==='a'? 'var(--a)':'var(--b)');
+  c.setAttribute('stroke','rgba(255,255,255,.18)'); c.setAttribute('stroke-width','1');
+  c.setAttribute('filter','url(#softshadow)');
+  const t=document.createElementNS(SVGNS,'text');
+  t.setAttribute('text-anchor','middle'); t.setAttribute('dy','5.5');
+  t.setAttribute('font-family','ui-monospace,Menlo,monospace');
+  t.setAttribute('font-size','19'); t.setAttribute('font-weight','700');
+  t.setAttribute('fill','#0c1016'); t.textContent=el;
+  g.appendChild(c); g.appendChild(t);
+  return g;
+}
+cards.forEach(card=>{
+  const g=document.createElementNS(SVGNS,'g'); g.setAttribute('class','cardg');
+  const rect=document.createElementNS(SVGNS,'rect');
+  rect.setAttribute('x',-46);rect.setAttribute('y',-60);rect.setAttribute('width',92);rect.setAttribute('height',120);
+  rect.setAttribute('rx',16); rect.setAttribute('fill','var(--panel2)');
+  rect.setAttribute('stroke','var(--edge)'); rect.setAttribute('stroke-width','1.5');
+  rect.style.cursor='pointer';
+  const ring=document.createElementNS(SVGNS,'circle');
+  ring.setAttribute('r',29); ring.setAttribute('fill','none');
+  ring.setAttribute('stroke','var(--accent)'); ring.setAttribute('stroke-width','3');
+  ring.setAttribute('filter','url(#glow)');
+  const tokA=mkToken('a'), tokB=mkToken('b');
+  g.appendChild(rect); g.appendChild(ring); g.appendChild(tokA); g.appendChild(tokB);
+  cardsG.appendChild(g);
+  cardEls[card.id]={g,tokA,tokB,ring,rect};
+  // click either token to select that point of the fiber
+  [['a',tokA],['b',tokB]].forEach(([el,node])=>{
+    node.style.cursor='pointer';
+    node.addEventListener('click',()=>{ if(busy)return; card.value=el; renderStatic(); flashSection(); });
+  });
+  rect.addEventListener('click',()=>{ if(busy)return; card.value=swap(card.value); renderStatic(); flashSection(); });
+});
+
+/* ---------- rendering ---------- */
+function placeToken(node,x,y){ node.setAttribute('transform',`translate(${x},${y})`); }
+function renderCard(card){
+  const els=cardEls[card.id];
+  const ax = topEl(card.orient)==='a'? TOP_Y:BOT_Y;
+  const bx = topEl(card.orient)==='b'? TOP_Y:BOT_Y;
+  placeToken(els.tokA,0,ax); placeToken(els.tokB,0,bx);
+  // dim the unselected token
+  els.tokA.style.opacity = (card.value==='a')?1:0.34;
+  els.tokB.style.opacity = (card.value==='b')?1:0.34;
+  els.ring.setAttribute('transform',`translate(0,${valueSlotY(card)})`);
+}
+function renderStatic(){
+  for(const s of SLOTS){
+    const card=cards[placement[s]];
+    cardEls[card.id].g.setAttribute('transform',`translate(${CORNER[s].x},${CORNER[s].y})`);
+    renderCard(card);
+  }
+  updateReadout();
+}
+function updateReadout(){
+  const phi=currentSection();
+  document.getElementById('secReadout').textContent=`(${phi.A}, ${phi.B}, ${phi.C})`;
+  const sz=ORBIT[sstr(phi)];
+  const o=document.getElementById('orbitReadout');
+  o.textContent = sz===6? 'free orbit · |orbit| = 6' : 'special orbit · |orbit| = 2';
+  o.setAttribute('fill', sz===6?'var(--good)':'var(--warn)');
+}
+function flashSection(){
+  const t=document.getElementById('secReadout');
+  t.style.transition='none'; t.setAttribute('fill','var(--accent2)');
+  requestAnimationFrame(()=>{ t.style.transition='fill .5s'; t.setAttribute('fill','var(--ink)'); });
+}
+
+/* ---------- animation engine ---------- */
+const easeIO=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+function animate(dur,step){return new Promise(res=>{const t0=performance.now();
+  (function f(now){let p=Math.min(1,(now-t0)/dur);step(easeIO(p));
+    if(p<1)requestAnimationFrame(f);else res();})(performance.now());});}
+function bez(P,C,Q,t){const u=1-t;return{x:u*u*P.x+2*u*t*C.x+t*t*Q.x, y:u*u*P.y+2*u*t*C.y+t*t*Q.y};}
+function rot90(dx,dy){const L=Math.hypot(dx,dy)||1;return{x:-dy/L,y:dx/L};}
+
+async function doAction(hkey){
+  if(busy)return; busy=true; setButtons(true);
+  const data=actionData(hkey);
+  const before=currentSection();
+  showActionInfo(hkey,data,before);
+
+  // ---- Phase 1: permute fibers (corner of each card changes) ----
+  // target corner t pulls from src[t]; so the card now at src[t] travels to t.
+  const newPlacement={};
+  for(const t of SLOTS) newPlacement[t]=placement[data.src[t]];
+  // build per-card path (start corner -> end corner)
+  const startCorner={}, endCorner={};
+  for(const s of SLOTS) startCorner[placement[s]]=s;
+  for(const t of SLOTS) endCorner[newPlacement[t]]=t;
+  const paths={};
+  for(const card of cards){
+    const P=CORNER[startCorner[card.id]], Q=CORNER[endCorner[card.id]];
+    const mid={x:(P.x+Q.x)/2,y:(P.y+Q.y)/2};
+    const n=rot90(Q.x-P.x,Q.y-P.y);
+    const bow = (P.x===Q.x&&P.y===Q.y)?0:64;
+    paths[card.id]={P,Q,C:{x:mid.x+n.x*bow,y:mid.y+n.y*bow}};
+  }
+  const moved = SLOTS.some(s=>placement[s]!==newPlacement[s]);
+  if(moved){
+    await animate(720,e=>{ for(const card of cards){
+      const pt=bez(paths[card.id].P,paths[card.id].C,paths[card.id].Q,e);
+      cardEls[card.id].g.setAttribute('transform',`translate(${pt.x},${pt.y})`);
+    }});
+  }
+  placement=newPlacement;
+  for(const s of SLOTS) cardEls[placement[s]].g.setAttribute('transform',`translate(${CORNER[s].x},${CORNER[s].y})`);
+
+  // ---- Phase 2: twist the flagged fibers (swap their a,b tokens) ----
+  const twistCorners=SLOTS.filter(s=>data.twist[s]);
+  if(twistCorners.length){
+    await new Promise(r=>setTimeout(r,160));
+    const tw=twistCorners.map(s=>cards[placement[s]]);
+    // pulse the rings of twisting fibers
+    tw.forEach(c=>{const rg=cardEls[c.id].ring; rg.setAttribute('stroke','var(--warn)');});
+    await animate(560,e=>{
+      tw.forEach(card=>{
+        const els=cardEls[card.id];
+        const aTop = topEl(card.orient)==='a';
+        // a goes from its slot to the other; b opposite; bow in x so they pass
+        const aFrom=aTop?TOP_Y:BOT_Y, aTo=aTop?BOT_Y:TOP_Y;
+        const bFrom=aTop?BOT_Y:TOP_Y, bTo=aTop?TOP_Y:BOT_Y;
+        const ay=aFrom+(aTo-aFrom)*e, by=bFrom+(bTo-bFrom)*e;
+        const bow=Math.sin(e*Math.PI)*20;
+        placeToken(els.tokA,  bow, ay);
+        placeToken(els.tokB, -bow, by);
+      });
+    });
+    tw.forEach(card=>{ card.orient=swap2(card.orient); card.value=swap(card.value);
+      cardEls[card.id].ring.setAttribute('stroke','var(--accent)'); });
+  }
+
+  // settle to verified ground truth
+  const truth=act(hkey,before);
+  for(const s of SLOTS){ const card=cards[placement[s]];
+    if(card.value!==truth[s]){ card.value=truth[s]; } }
+  renderStatic(); flashSection();
+  busy=false; setButtons(false);
+}
+function swap2(o){return o==='ab'?'ba':'ab';}
+
+/* ---------- info panel ---------- */
+function cyclesOfPerm(src){ // src: target<-source map over {A,B,C}; print as permutation of corners
+  // build forward map f: source -> target
+  const f={}; for(const t of SLOTS) f[src[t]]=t;
+  const seen={}, parts=[];
+  for(const s of SLOTS){ if(seen[s]||f[s]===s)continue; let cyc=[s],x=f[s]; seen[s]=1;
+    while(x!==s){cyc.push(x);seen[x]=1;x=f[x];} parts.push('('+cyc.join(' ')+')'); }
+  return parts.length? parts.join('') : 'id';
+}
+function showActionInfo(hkey,data,before){
+  const after=act(hkey,before);
+  const tw=SLOTS.filter(s=>data.twist[s]);
+  const el=document.getElementById('actionInfo');
+  el.innerHTML =
+    `Acting by <b class="mono">${byKey[hkey].label}</b>.<br>`+
+    `<div class="twrow"><b>Permute fibers</b> (Σ₃ part): <span class="mono">`+
+       SLOTS.map(t=>`${t}←${data.src[t]}`).join('  ')+`</span><br>`+
+       `&nbsp;&nbsp;as a corner permutation: <span class="mono">${cyclesOfPerm(data.src)}</span></div>`+
+    `<div class="twrow"><b>Twist by s=(1 2)</b> (C₂ cocycle) at: <span class="mono">`+
+       `${tw.length?tw.join(', '):'—'}</span></div>`+
+    `<div class="twrow">Section <span class="mono">(${before.A}, ${before.B}, ${before.C})</span> `+
+       `↦ <span class="mono">(${after.A}, ${after.B}, ${after.C})</span> `+
+       `<span class="pill ${ORBIT[sstr(after)]===6?'free':'small'}">|orbit| ${ORBIT[sstr(after)]}</span></div>`;
+}
+
+/* ---------- controls ---------- */
+const btnWrap=document.getElementById('btns'); const actBtns=[];
+ELEMENTS.forEach(e=>{
+  const b=document.createElement('button'); b.className='act'; b.textContent=e.label;
+  b.addEventListener('click',()=>{ litButton(b); doAction(e.key); });
+  btnWrap.appendChild(b); actBtns.push(b);
+});
+function litButton(b){actBtns.forEach(x=>x.classList.remove('lit')); b.classList.add('lit');}
+function setButtons(dis){ actBtns.forEach(b=>b.disabled=dis); document.getElementById('reset').disabled=dis; }
+document.getElementById('reset').addEventListener('click',()=>{ if(busy)return;
+  cards.forEach(c=>{ c.value='a'; c.orient='ab'; });   // mutate in place (click handlers close over these)
+  placement={A:0,B:1,C:2}; actBtns.forEach(x=>x.classList.remove('lit'));
+  renderStatic();
+  document.getElementById('actionInfo').textContent='Section reset to (a, a, a).';
+});
+
+renderStatic();
+</script>
+</body>
+</html>

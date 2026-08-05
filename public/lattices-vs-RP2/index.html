@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Closed geodesics in X_3 (totally real cubic fields)</title>
+<style>
+ :root{--bg:#0e1116;--panel:#171c24;--ink:#e8edf3;--muted:#9aa6b2;--acc:#ffb454;--line:#2a3340;}
+ *{box-sizing:border-box} html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+   font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+ #wrap{display:flex;height:100vh;width:100vw;overflow:hidden}
+ #side{width:308px;min-width:308px;background:var(--panel);border-right:1px solid var(--line);padding:18px;overflow-y:auto}
+ #view{flex:1;position:relative;min-width:0} canvas{display:block}
+ h1{font-size:15px;margin:0 0 3px} .sub{font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.45}
+ .grp{margin:13px 0;border-top:1px solid var(--line);padding-top:11px}
+ .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:7px}
+ select{width:100%;background:#1f2730;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px;font-size:13px}
+ input[type=range]{width:100%;accent-color:var(--acc)}
+ .btn{background:#1f2730;color:var(--ink);border:1px solid var(--line);border-radius:7px;width:36px;height:30px;font-size:14px;cursor:pointer;flex:none;line-height:1}
+ .btn:hover{border-color:var(--acc);color:var(--acc)}
+ .row{display:flex;align-items:center;gap:9px} .scale{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:3px} .scale b{color:var(--acc)}
+ .chk{display:flex;align-items:center;gap:8px;font-size:13px;margin:7px 0;cursor:pointer}.chk input{accent-color:var(--acc);width:16px;height:16px}
+ #readout{font-size:12px;line-height:1.7;color:var(--muted)} #readout b{color:var(--ink)} .big{font-size:22px;color:var(--acc);font-weight:700}
+ .foot{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5}
+ #err{position:absolute;left:50%;top:14px;transform:translateX(-50%);font-size:12px;color:#ffb3b3;background:#3a1a1a;border:1px solid #6b2b2b;padding:6px 11px;border-radius:7px;display:none}
+ .hint{position:absolute;left:14px;bottom:12px;font-size:11px;color:var(--muted);background:#0e1116cc;padding:6px 9px;border-radius:6px;pointer-events:none}
+ #rp2wrap{position:absolute;right:12px;bottom:12px;width:296px;background:#0e1116dd;border:1px solid var(--line);border-radius:10px;padding:8px 8px 6px}
+ #rp2wrap.hidden{display:none} #rp2{display:block;width:280px;height:280px}
+ #rp2cap{font-size:10.5px;color:var(--muted);text-align:center;margin-top:3px;line-height:1.5} #rp2cap b{color:var(--acc)}
+</style></head><body>
+<div id="wrap"><div id="side">
+  <h1>Closed geodesics in X₃</h1>
+  <p class="sub">A periodic orbit of the diagonal flow on the space of unimodular 3-lattices is the
+   Minkowski lattice of a <b>totally real cubic field</b>, deformed by a totally-positive unit:
+   Lₜ = Λ·diag(μᵢᵗ) returns to Λ at t=1. Watch the lattice stretch along the three real embeddings and snap back.</p>
+  <div class="grp"><div class="lbl">Cubic field (closed orbit)</div><select id="field"></select></div>
+  <div class="grp"><div class="lbl">Phase t  (scrub the orbit)</div>
+    <div class="row"><button id="playpause" class="btn" title="play / pause">⏸</button>
+      <input type="range" id="phase" min="0" max="1000" value="0" style="flex:1"/></div>
+    <div class="scale"><span>0</span><b id="phaseval">0.00</b><span>1</span></div>
+    <div class="lbl" style="margin-top:12px">Playback speed</div><input type="range" id="speed" min="0" max="100" value="30"/></div>
+  <div class="grp"><div class="lbl">Show</div>
+    <label class="chk"><input type="checkbox" id="cell" checked/> Voronoi cell (parallelohedron)</label>
+    <label class="chk"><input type="checkbox" id="pts" checked/> lattice points</label>
+    <label class="chk"><input type="checkbox" id="axes"/> reduced basis</label>
+    <label class="chk"><input type="checkbox" id="rp2on" checked/> RP² deep holes (collisions)</label>
+    <label class="chk"><input type="checkbox" id="spin" checked/> auto-rotate</label></div>
+  <div class="grp"><div class="lbl">This orbit</div><div id="readout"></div></div>
+  <div class="foot">Drag to rotate · scroll to zoom. The orbit is closed (period 1); the stretch rates
+   μᵢ=rᵢ² are the squared real conjugates, ∏μᵢ=1 so the covolume (and the Voronoi-cell volume) stay 1.
+   Compact diagonal orbits in X₃ ↔ totally real cubic fields + ideal classes.</div>
+</div><div id="view"><div id="err"></div><div class="hint">closed orbit · period 1 · cell volume ≡ 1</div>
+  <div id="rp2wrap"><canvas id="rp2" width="560" height="560"></canvas><div id="rp2cap"></div></div></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const ORBITS = {"x^3 - 3x + 1   (disc 81, cyclic)": {"W": [[0.4807498567691361, 0.4807498567691361, 0.4807498567691361], [-0.903514185699679, 0.16696267308319654, 0.7365515126164829], [1.6980512261547545, 0.05798552783859305, 1.1284623866214694]], "mu": [3.532088886237955, 0.12061475842818324, 2.347296355333862], "roots": [-1.8793852415718164, 0.3472963553338607, 1.5320888862379565], "disc": 81, "poly": "x^3 - 3x + 1"}, "x^3 - x^2 - 2x + 1   (disc 49, 2cos 2pi/7)": {"W": [[0.5227579585747104, 0.5227579585747104, 0.5227579585747104], [-0.651868512023644, 0.2326491783502817, 0.9419772922480729], [0.8128667387991381, 0.10353862490134767, 1.6973844291730649]], "mu": [1.5549581320873693, 0.19806226419516168, 3.2469796037174663], "roots": [-1.2469796037174663, 0.44504186791262873, 1.801937735804838], "disc": 49, "poly": "x^3 - x^2 - 2x + 1"}, "x^3 - 4x + 1   (disc 229)": {"W": [[0.4042910118679546, 0.4042910118679546, 0.4042910118679546], [-0.8550381099508053, 0.10273102870646274, 0.752307081244343], [1.8083265469849885, 0.026104127841790854, 1.3998974201168548]], "mu": [4.47283390899525, 0.06456766802997024, 3.4625984229747733], "roots": [-2.1149075414767546, 0.2541016883650525, 1.860805853111703], "disc": 229, "poly": "x^3 - 4x + 1"}, "x^3 - 5x + 1   (disc 473)": {"W": [[0.3582529785716185, 0.3582529785716185, 0.3582529785716185], [-0.8347504836970606, 0.072238014426125, 0.762512469270936], [1.9450176598969364, 0.014566049803786478, 1.6229460760154637]], "mu": [5.429173729837133, 0.04065855882583981, 4.530167711337032], "roots": [-2.330058739567982, 0.20163967572340472, 2.1284190638445786], "disc": 473, "poly": "x^3 - 5x + 1"}};
+// ---------- vector helpers ----------
+function sub(a,b){return[a[0]-b[0],a[1]-b[1],a[2]-b[2]]} function add(a,b){return[a[0]+b[0],a[1]+b[1],a[2]+b[2]]}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]} function scl(a,s){return[a[0]*s,a[1]*s,a[2]*s]}
+function crs(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}
+// ---------- Selling reduction of the lattice (obtuse superbase) ----------
+function sellingReduce(V){            // V=[v0..v3] sum 0; make all conorms -v_i.v_j >= 0
+  for(let it=0;it<5000;it++){
+    let best=Infinity,bi=0,bj=1,scale=1e-300;
+    for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){const p=-dot(V[i],V[j]);scale=Math.max(scale,Math.abs(p));if(p<best){best=p;bi=i;bj=j;}}
+    if(best>=-1e-9*scale)break;
+    const kl=[0,1,2,3].filter(x=>x!==bi&&x!==bj),vj=V[bj].slice();
+    V[bj]=scl(vj,-1);V[kl[0]]=add(V[kl[0]],vj);V[kl[1]]=add(V[kl[1]],vj);
+  }
+  return V;
+}
+function superbase(B){return sellingReduce([scl(add(add(B[0],B[1]),B[2]),-1),B[0].slice(),B[1].slice(),B[2].slice()]);}
+function reducedBasis(sb){            // 3 shortest independent superbase vectors
+  const ord=sb.map((v,i)=>[dot(v,v),i]).sort((a,b)=>a[0]-b[0]); const bs=[];
+  for(const [d,i] of ord){const v=sb[i]; if(bs.length===0)bs.push(v);
+    else if(bs.length===1){const c=crs(bs[0],v); if(dot(c,c)>1e-14)bs.push(v);}
+    else if(bs.length===2){const c=crs(bs[0],bs[1]); if(Math.abs(dot(c,v))>1e-9*Math.sqrt(dot(c,c)*dot(v,v)))bs.push(v);} }
+  return bs;
+}
+function reduceFull(B){return reducedBasis(superbase(B));}
+// warm-start the flow: carry the reduced basis between frames so it never becomes a bad basis
+let flowState={field:null,t:-1,B:null};
+function currentBasis(name,W,mu,t){
+  if(flowState.field!==name || t<flowState.t-1e-9 || !flowState.B){     // field change or wrap -> reset
+    flowState.B=reduceFull(basisAt(W,mu,t));
+  } else {                                                              // warm: scale coords by mu^{dt}, re-reduce
+    const D=mu.map(m=>Math.pow(m,t-flowState.t));
+    flowState.B=reduceFull(flowState.B.map(v=>[v[0]*D[0],v[1]*D[1],v[2]*D[2]]));
+  }
+  flowState.field=name; flowState.t=t; return flowState.B;
+}
+// ---------- Voronoi cell of the origin (clip a box by relevant-vector bisectors) ----------
+function cubeFaces(H){const v=[[-H,-H,-H],[H,-H,-H],[H,H,-H],[-H,H,-H],[-H,-H,H],[H,-H,H],[H,H,H],[-H,H,H]];
+ const q=[[0,1,2,3],[7,6,5,4],[0,4,5,1],[1,5,6,2],[2,6,7,3],[3,7,4,0]];return q.map(f=>({verts:f.map(i=>v[i])}))}
+function ring(pts,n){const u=[];for(const p of pts){let d=false;for(const q of u)if(Math.abs(p[0]-q[0])<1e-7&&Math.abs(p[1]-q[1])<1e-7&&Math.abs(p[2]-q[2])<1e-7){d=true;break}if(!d)u.push(p)}
+ if(u.length<3)return u;let c=[0,0,0];for(const p of u)c=add(c,p);c=scl(c,1/u.length);
+ let ax=sub(u[0],c);const al=Math.hypot(...ax);ax=al<1e-12?[1,0,0]:scl(ax,1/al);let ay=crs(n,ax);const ayl=Math.hypot(...ay);ay=ayl<1e-12?crs(n,[0,1,0]):scl(ay,1/ayl);
+ u.sort((p,q)=>Math.atan2(dot(sub(p,c),ay),dot(sub(p,c),ax))-Math.atan2(dot(sub(q,c),ay),dot(sub(q,c),ax)));return u}
+function clip(faces,n,d){const eps=1e-9,kept=[],cap=[];for(const f of faces){const V=f.verts,m=V.length,out=[];
+ for(let i=0;i<m;i++){const A=V[i],B=V[(i+1)%m],da=dot(n,A)-d,db=dot(n,B)-d;if(da<=eps)out.push(A);
+  if((da<-eps&&db>eps)||(da>eps&&db<-eps)){const t=da/(da-db);const P=[A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t,A[2]+(B[2]-A[2])*t];out.push(P);cap.push(P)}}
+  if(out.length>=3)kept.push({verts:out})}if(cap.length>=3){const r=ring(cap,n);if(r.length>=3)kept.push({verts:r})}return kept}
+function voronoiCell(sb){
+  const R=[]; for(let i=0;i<4;i++)R.push(sb[i]); for(let i=0;i<4;i++)for(let j=i+1;j<4;j++)R.push(add(sb[i],sb[j]));
+  let H=0; for(const q of R)H=Math.max(H,Math.hypot(...q)); H=H*1.3+0.3;
+  let poly=cubeFaces(H);
+  for(const q of R){const d2=dot(q,q); if(d2<1e-12)continue;
+    poly=clip(poly,q,d2/2); poly=clip(poly,scl(q,-1),d2/2);}   // bisectors of +-q
+  return poly;
+}
+function l1(v){return Math.abs(v[0])+Math.abs(v[1])+Math.abs(v[2])}
+function latticePoints(bs,R){            // every lattice point in the box [-R,R]^3 (covolume=1)
+ const c0=crs(bs[1],bs[2]),c1=crs(bs[2],bs[0]),c2=crs(bs[0],bs[1]);   // tight bound |x_i| <= R*||cross_i||_1
+ let N0=Math.ceil(R*l1(c0))+1,N1=Math.ceil(R*l1(c1))+1,N2=Math.ceil(R*l1(c2))+1;
+ const prod=(2*N0+1)*(2*N1+1)*(2*N2+1);                              // guard (only triggers if basis not reduced)
+ if(prod>1.5e6){const s=Math.pow(1.5e6/prod,1/3);N0=Math.max(1,Math.floor(N0*s));N1=Math.max(1,Math.floor(N1*s));N2=Math.max(1,Math.floor(N2*s));}
+ const out=[];
+ for(let i=-N0;i<=N0;i++){const ax=i*bs[0][0],ay=i*bs[0][1],az=i*bs[0][2];
+  for(let j=-N1;j<=N1;j++){const bx=ax+j*bs[1][0],by=ay+j*bs[1][1],bz=az+j*bs[1][2];
+   for(let k=-N2;k<=N2;k++){const x=bx+k*bs[2][0],y=by+k*bs[2][1],z=bz+k*bs[2][2];
+    if(x>=-R&&x<=R&&y>=-R&&y<=R&&z>=-R&&z<=R)out.push([x,y,z]);}}}
+ return out}
+function basisAt(W,mu,t){const D=mu.map(m=>Math.pow(m,t)); return W.map(r=>[r[0]*D[0],r[1]*D[1],r[2]*D[2]])}
+// ---------- three.js ----------
+const view=document.getElementById('view');
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(2,devicePixelRatio));view.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0e1116);
+const cam=new THREE.PerspectiveCamera(45,1,0.01,400);scene.add(new THREE.AmbientLight(0xffffff,0.85));
+const dl=new THREE.DirectionalLight(0xffffff,0.5);dl.position.set(2,3,4);scene.add(dl);
+let root=new THREE.Group();scene.add(root);
+let theta=0.7,phi=1.1,radius=30;function place(){cam.position.set(radius*Math.sin(phi)*Math.cos(theta),radius*Math.cos(phi),radius*Math.sin(phi)*Math.sin(theta));cam.up.set(0,1,0);cam.lookAt(0,0,0)}
+function resize(){const w=view.clientWidth,h=view.clientHeight;renderer.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix()}window.addEventListener('resize',resize);
+let drag=false,px=0,py=0;renderer.domElement.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY});window.addEventListener('pointerup',()=>drag=false);
+window.addEventListener('pointermove',e=>{if(!drag)return;theta-=(e.clientX-px)*0.01;phi=Math.max(0.05,Math.min(Math.PI-0.05,phi-(e.clientY-py)*0.01));px=e.clientX;py=e.clientY;place()});
+renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();radius=Math.max(3,Math.min(120,radius*(1+e.deltaY*0.0011)));place()},{passive:false});
+function clr(){for(let i=root.children.length-1;i>=0;i--){const o=root.children[i];root.remove(o);if(o.geometry)o.geometry.dispose();if(o.material&&o.material.dispose)o.material.dispose()}}
+const COL=[0x4ea1ff,0xff6b6b,0x51cf66];
+function build(name,W,mu,t){clr();const bs=currentBasis(name,W,mu,t);const sb=superbase(bs.map(r=>r.slice()));
+ const faces=(showCell||rp2on)?voronoiCell(sb):null;
+ if(showPts){const RB=10;const P=latticePoints(bs,RB);const pos=[],col=[];
+  for(const p of P){pos.push(...p);
+   const fade=Math.max(0,Math.min(1,(RB-Math.max(Math.abs(p[0]),Math.abs(p[1]),Math.abs(p[2])))/2.5));  // soft box boundary
+   const s=Math.min(1,Math.hypot(...p)/RB);
+   col.push((1-0.55*s)*fade,(0.78-0.28*s)*fade,(0.32+0.42*s)*fade)}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  root.add(new THREE.Points(g,new THREE.PointsMaterial({size:2.4,vertexColors:true,sizeAttenuation:false})));
+  const bv=[[-RB,-RB,-RB],[RB,-RB,-RB],[RB,RB,-RB],[-RB,RB,-RB],[-RB,-RB,RB],[RB,-RB,RB],[RB,RB,RB],[-RB,RB,RB]];
+  const BE=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]],ep=[];for(const[a,b]of BE)ep.push(...bv[a],...bv[b]);
+  const bg=new THREE.BufferGeometry();bg.setAttribute('position',new THREE.Float32BufferAttribute(ep,3));
+  root.add(new THREE.LineSegments(bg,new THREE.LineBasicMaterial({color:0x2a3340})))}
+ if(showCell&&faces){const tp=[],lp=[];
+  for(const f of faces){const v=f.verts;for(let k=1;k<v.length-1;k++)tp.push(...v[0],...v[k],...v[k+1]);for(let k=0;k<v.length;k++){const a=v[k],b=v[(k+1)%v.length];lp.push(...a,...b)}}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(tp,3));
+  root.add(new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:0xffb454,transparent:true,opacity:0.14,side:THREE.DoubleSide,depthWrite:false})));
+  const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.Float32BufferAttribute(lp,3));
+  root.add(new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:0xffb454,transparent:true,opacity:0.6})))}
+ if(showAxes){for(let i=0;i<3;i++){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute([0,0,0,...bs[i]],3));
+  root.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:COL[i]})))}}
+ if(rp2on&&faces)drawRP2(deepConfig(faces));
+}
+// ---------- RP^2 deep-hole map: Voronoi-cell vertex (Delaunay circumcentre) directions ----------
+function unit(v){const n=Math.hypot(v[0],v[1],v[2])||1;return[v[0]/n,v[1]/n,v[2]/n]}
+function hemi(u){return(u[2]<-1e-9||(Math.abs(u[2])<1e-9&&(u[0]<-1e-12||(Math.abs(u[0])<1e-12&&u[1]<0))))?[-u[0],-u[1],-u[2]]:u}
+function faceNormals(faces){const ns=[];for(const f of faces){const v=f.verts;if(v.length<3)continue;
+  const n=crs(sub(v[1],v[0]),sub(v[2],v[0]));const L=Math.hypot(n[0],n[1],n[2]);if(L<1e-9)continue;ns.push([n[0]/L,n[1]/L,n[2]/L])}return ns}
+function deepConfig(faces){
+  const ns=faceNormals(faces);                              // facet-pair count, for the type label
+  const fd=[];for(const n of ns){let f=false;for(const d of fd)if(Math.abs(dot(d,n))>0.999){f=true;break}if(!f)fd.push(n)}
+  const vs=[];for(const fc of faces)for(const p of fc.verts){let f=false;
+    for(const q of vs)if(Math.abs(p[0]-q[0])<1e-6&&Math.abs(p[1]-q[1])<1e-6&&Math.abs(p[2]-q[2])<1e-6){f=true;break}
+    if(!f)vs.push(p)}
+  const dh=[];for(const p of vs){const u=hemi(unit(p));let f=false;
+    for(const q of dh)if(Math.abs(dot(u,q))>1-1e-6){f=true;break}
+    if(!f)dh.push(u)}
+  return{dh,fpairs:fd.length}}
+const RP2TYPE={7:'truncated octahedron',6:'rhombic / elong. dodecahedron',4:'hexagonal prism',3:'cube'};
+const DHTYPE={12:'truncated octahedron',9:'elongated dodecahedron',7:'rhombic dodecahedron',6:'hexagonal prism',4:'box'};
+function rp2px(u,C,Rd){return[C+u[0]*Rd,C-u[1]*Rd]}
+function drawRP2(cfg){const cv=document.getElementById('rp2');if(!cv)return;const g=cv.getContext('2d');
+  const S=cv.width,C=S/2,Rd=S/2-34;g.clearRect(0,0,S,S);
+  g.fillStyle='#10151c';g.strokeStyle='#33415480';g.lineWidth=3;g.beginPath();g.arc(C,C,Rd,0,7);g.fill();g.stroke();
+  g.setLineDash([6,8]);g.strokeStyle='#2a3340';g.beginPath();g.arc(C,C,Rd,0,7);g.stroke();g.setLineDash([]);
+  const dh=cfg.dh;
+  for(const u of dh){const xy=rp2px(u,C,Rd);
+    if(u[0]*u[0]+u[1]*u[1]>0.82){g.globalAlpha=0.22;g.fillStyle='#a78bfa';g.beginPath();g.arc(2*C-xy[0],2*C-xy[1],9,0,7);g.fill();g.globalAlpha=1}
+    g.fillStyle='#a78bfa';g.beginPath();g.arc(xy[0],xy[1],11,0,7);g.fill()}
+  for(let i=0;i<dh.length;i++)for(let j=i+1;j<dh.length;j++)if(Math.abs(dot(dh[i],dh[j]))>0.99){
+    const a=rp2px(dh[i],C,Rd),b=rp2px(dh[j],C,Rd);
+    g.lineWidth=4;g.strokeStyle='#ffe066';g.beginPath();g.arc((a[0]+b[0])/2,(a[1]+b[1])/2,24,0,7);g.stroke()}
+  const cap=document.getElementById('rp2cap');
+  if(cap)cap.innerHTML='Deep holes in <b>RP²</b> · <b>'+dh.length+'</b> directions · '+(RP2TYPE[cfg.fpairs]||'crossing a wall')+' ('+cfg.fpairs+' facet-pairs)'+
+    '<br><span style="color:#a78bfa">●</span> Voronoi-cell vertex (Delaunay circumcentre) directions — walls cross by <span style="color:#ffe066">collision</span>, never by vanishing'}
+// ---------- UI ----------
+let cur=Object.keys(ORBITS)[0],showCell=true,showPts=true,showAxes=false,rp2on=true,spin=true,playing=true,scrubbing=false,t=0,last=performance.now(),speed=0.3;
+const sel=document.getElementById('field');Object.keys(ORBITS).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=k;sel.appendChild(o)});
+sel.onchange=e=>{cur=e.target.value;updateReadout()};
+document.getElementById('cell').onchange=e=>showCell=e.target.checked;
+document.getElementById('pts').onchange=e=>showPts=e.target.checked;
+document.getElementById('axes').onchange=e=>showAxes=e.target.checked;
+document.getElementById('rp2on').onchange=e=>{rp2on=e.target.checked;document.getElementById('rp2wrap').classList.toggle('hidden',!rp2on)};
+document.getElementById('spin').onchange=e=>spin=e.target.checked;
+const phaseEl=document.getElementById('phase'),ppEl=document.getElementById('playpause'),pvEl=document.getElementById('phaseval');
+function setPhaseUI(){phaseEl.value=Math.round(t*1000);pvEl.textContent=t.toFixed(2);const tv=document.getElementById('tv');if(tv)tv.textContent=t.toFixed(2)}
+ppEl.onclick=()=>{playing=!playing;ppEl.textContent=playing?'⏸':'▶'};
+phaseEl.oninput=e=>{t=e.target.value/1000;setPhaseUI()};
+phaseEl.addEventListener('pointerdown',()=>scrubbing=true);
+window.addEventListener('pointerup',()=>scrubbing=false);
+document.getElementById('speed').oninput=e=>speed=e.target.value/100;
+function updateReadout(){const o=ORBITS[cur];
+ document.getElementById('readout').innerHTML=`field: <b>${o.poly}</b><br>discriminant: <b>${o.disc}</b><br>`+
+  `real conjugates rᵢ: ${o.roots.map(x=>x.toFixed(3)).join(', ')}<br>`+
+  `stretch rates μᵢ=rᵢ²: ${o.mu.map(x=>x.toFixed(2)).join(', ')}<br>phase t = <span class="big" id="tv">0.00</span> / 1`}
+function tick(){requestAnimationFrame(tick);const now=performance.now();const dt=Math.min(0.05,(now-last)/1000);last=now;
+ if(playing&&!scrubbing){t=(t+dt*speed)%1;setPhaseUI()} if(spin)theta+=dt*0.25;
+ const o=ORBITS[cur];try{build(cur,o.W,o.mu,t);}catch(e){const el=document.getElementById('err');el.style.display='block';el.textContent='err: '+e.message;}
+ place();const tv=document.getElementById('tv');if(tv)tv.textContent=t.toFixed(2);renderer.render(scene,cam)}
+function boot(){if(typeof THREE==='undefined'){const e=document.getElementById('err');e.style.display='block';e.textContent='loading three.js (needs internet)…';return setTimeout(boot,500)}
+ resize();updateReadout();place();tick()}
+boot();
+</script></body></html>

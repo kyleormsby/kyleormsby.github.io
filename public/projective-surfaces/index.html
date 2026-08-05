@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Surfaces in ℝℙ³</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #efe5cc;
+    --bg-darker: #e2d5b6;
+    --paper:     #faf3df;
+    --ink:       #251c10;
+    --ink-mute:  #6a5a3e;
+    --rule:      #9c8866;
+    --curve:     #1a1209;
+    --accent:    #5c3a1e;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--bg); }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: 'EB Garamond', 'Cormorant Garamond', Garamond, Georgia, serif;
+    font-size: 18px;
+    line-height: 1.55;
+    padding: 2.8em 1em 4em;
+    background-image:
+      radial-gradient(circle at 18% 20%, rgba(255,250,235,0.35) 0%, transparent 55%),
+      radial-gradient(circle at 82% 78%, rgba(155,135,95,0.06) 0%, transparent 55%);
+  }
+  .container { max-width: 1180px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 2.2em; }
+  h1 {
+    font-family: 'Cormorant Garamond', Garamond, serif;
+    font-weight: 500;
+    font-size: 2.5em;
+    margin: 0;
+    letter-spacing: 0.045em;
+  }
+  .subtitle {
+    font-style: italic;
+    color: var(--ink-mute);
+    margin-top: 0.45em;
+    font-size: 1.04em;
+    letter-spacing: 0.02em;
+  }
+  .ornament {
+    text-align: center;
+    color: var(--rule);
+    margin: 1.6em 0 0.4em;
+    font-size: 1.3em;
+    letter-spacing: 0.9em;
+    padding-left: 0.9em;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 2em 0;
+    opacity: 0.4;
+  }
+  hr.thin { margin: 1.2em auto; width: 240px; opacity: 0.3; }
+  .equation {
+    text-align: center;
+    font-size: 1.45em;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    margin: 0.4em 0 1.6em;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+    min-height: 1.4em;
+    word-break: break-word;
+  }
+  .controls {
+    display: flex; flex-wrap: wrap;
+    align-items: center; justify-content: center;
+    gap: 0.7em 1.2em;
+    margin: 1.4em 0 0.4em;
+  }
+  .control-row { display: flex; align-items: center; gap: 0.55em; flex-wrap: wrap; justify-content: center; }
+  label { font-style: italic; color: var(--ink-mute); font-size: 0.97em; }
+  select, input[type="text"], button {
+    font-family: inherit; font-size: 1em; background: var(--paper);
+    border: 1px solid var(--rule); color: var(--ink);
+    padding: 0.42em 0.85em; outline: none; border-radius: 1px;
+  }
+  select { min-width: 18em; cursor: pointer; }
+  input[type="text"] { width: 24em; max-width: 100%; font-style: italic; }
+  input[type="text"]::placeholder { color: #b09e7e; font-style: italic; }
+  button {
+    cursor: pointer; letter-spacing: 0.18em; text-transform: uppercase;
+    font-size: 0.78em; font-weight: 500; padding: 0.6em 1.2em;
+  }
+  button:hover { background: var(--bg-darker); }
+
+  .error {
+    color: #8a2c1a; text-align: center; font-style: italic;
+    margin: 0.4em 0; min-height: 1.4em; font-size: 0.95em;
+  }
+
+  /* Sliders */
+  .sliders {
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+    gap: 2.2em; margin: 0.6em auto 1.4em; min-height: 2em;
+  }
+  .slider-control { display: flex; align-items: center; gap: 0.55em; transition: opacity 0.3s ease; }
+  .slider-control.inactive { opacity: 0.3; pointer-events: none; }
+  .slider-control > label {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 1.2em; color: var(--ink); min-width: 2.1em; text-align: right;
+  }
+  .slider-value {
+    font-family: 'EB Garamond', serif; font-size: 0.95em; color: var(--ink-mute);
+    min-width: 3.4em; text-align: left; font-variant-numeric: tabular-nums;
+  }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none; background: transparent;
+    width: 210px; height: 22px; cursor: pointer; outline: none; margin: 0;
+    border: none; padding: 0;
+  }
+  input[type="range"]::-webkit-slider-runnable-track { height: 1px; background: var(--rule); border: none; }
+  input[type="range"]::-moz-range-track { height: 1px; background: var(--rule); border: none; }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 13px; height: 13px;
+    border-radius: 50%; background: var(--accent); border: 1px solid var(--ink);
+    margin-top: -6px; cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 13px; height: 13px; border-radius: 50%; background: var(--accent);
+    border: 1px solid var(--ink); cursor: pointer;
+  }
+
+  .views {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.2em;
+    margin: 1em 0 0;
+  }
+  @media (max-width: 980px) { .views { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .views { grid-template-columns: 1fr; } }
+  .view { text-align: center; }
+  canvas.ball {
+    background: transparent;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    display: block;
+    cursor: grab;
+    touch-action: none;
+  }
+  canvas.ball:active { cursor: grabbing; }
+  .view .center-label {
+    font-style: italic; color: var(--ink-mute);
+    margin-top: 0.5em; font-size: 0.92em; letter-spacing: 0.04em;
+  }
+
+  .animation {
+    text-align: center;
+    margin: 1.4em auto 0;
+    max-width: 560px;
+  }
+  .anim-label {
+    font-style: italic; color: var(--ink-mute); margin-top: 0.55em;
+    font-size: 0.96em; letter-spacing: 0.04em;
+  }
+  .anim-button { margin-top: 1em; min-width: 8em; }
+
+  .info {
+    font-style: italic; color: var(--ink-mute); text-align: center;
+    margin-top: 2.5em; font-size: 0.88em; line-height: 1.7;
+    max-width: 700px; margin-left: auto; margin-right: auto;
+  }
+  code {
+    font-family: 'EB Garamond', serif; background: rgba(155,135,95,0.13);
+    padding: 0.05em 0.32em; border-radius: 2px; font-style: normal;
+  }
+
+  /* Primer */
+  .primer { max-width: 720px; margin: 1.2em auto 0; font-size: 0.97em; line-height: 1.7; }
+  .primer summary {
+    cursor: pointer; color: var(--ink-mute); font-style: italic; text-align: center;
+    letter-spacing: 0.05em; list-style: none; user-select: none;
+  }
+  .primer summary::-webkit-details-marker { display: none; }
+  .primer summary::after  { content: ' ▾'; opacity: 0.55; font-size: 0.8em; }
+  .primer[open] summary::after { content: ' ▴'; }
+  .primer-body {
+    margin: 1em auto 0; padding: 1.1em 1.4em;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+    color: var(--ink); border-color: rgba(156, 132, 100, 0.35);
+  }
+  .primer-body p { margin: 0.55em 0; }
+  .primer-body em { color: var(--accent); font-style: italic; }
+  .primer-body strong { font-weight: 500; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Surfaces in Real Projective 3-Space</h1>
+      <div class="subtitle">A study of zero loci p(x, y, z, w) = 0 in the ball model of &Ropf;&Popf;³</div>
+    </header>
+
+    <details class="primer">
+      <summary>about this visualization</summary>
+      <div class="primer-body">
+        <p>The <strong>real projective 3-space</strong> &Ropf;&Popf;³ is the set of lines through the origin in &Ropf;⁴. A projective point [&thinsp;<em>x</em>:<em>y</em>:<em>z</em>:<em>w</em>&thinsp;] represents the line through the origin and (<em>x</em>,&thinsp;<em>y</em>,&thinsp;<em>z</em>,&thinsp;<em>w</em>), so coordinate triples that scale to one another denote the same point. A homogeneous polynomial <em>p</em>(<em>x</em>,&thinsp;<em>y</em>,&thinsp;<em>z</em>,&thinsp;<em>w</em>) of degree <em>d</em> has a well-defined zero locus in &Ropf;&Popf;³ — an algebraic surface.</p>
+        <p>Each ball shows &Ropf;&Popf;³ via the <strong>ball model</strong>: take the closed upper hemisphere of <em>S</em>³ ⊂ &Ropf;⁴ (relative to a chosen pole) and orthogonally project to its equatorial 3-ball. The interior of the ball represents projective points away from the chosen view's plane at infinity; the boundary 2-sphere represents that plane, with antipodal points identified.</p>
+        <p>The four balls correspond to placing the pole at [&thinsp;1:0:0:0&thinsp;], [&thinsp;0:1:0:0&thinsp;], [&thinsp;0:0:1:0&thinsp;], and [&thinsp;0:0:0:1&thinsp;]. A surface that looks like a sphere in one view can look like a hyperboloid in another. Click and drag any ball to rotate the camera around it; scroll to zoom. The fifth ball animates a cycle through the four views by rotating the chosen pole through &Ropf;⁴.</p>
+        <p>Rendering is by GPU <strong>ray marching</strong>: for each pixel, a ray is cast through the ball; the polynomial is sampled at points along the ray (lifted to the upper hemisphere); a sign change locates the surface; the gradient ∇<em>p</em> gives the normal for shading.</p>
+        <p>A subtle <strong>atmospheric fade</strong> is applied as surface points approach the ball's boundary 2-sphere — equivalently, as the lifted fourth sphere coordinate √(1−|<em>p</em>|²) drops toward zero. The boundary represents the chart's <em>plane at infinity</em>, where the lift's Jacobian becomes degenerate and the surface normal is computed with ever-larger denominators; many surfaces also meet this plane at infinity along curves or in singular points (e.g., the great circles where coordinate hyperplanes exit the chart, or the nodes of the Cayley cubic at the four standard projective points). The fade dissolves these features smoothly to avoid the harsh edges and noisy shading that would otherwise appear there.</p>
+      </div>
+    </details>
+
+    <div class="ornament">·  ·  ·</div>
+
+    <div class="equation" id="eqDisplay">p(x, y, z, w) = 0</div>
+
+    <div class="controls">
+      <div class="control-row">
+        <label for="polynomial">Surface:</label>
+        <select id="polynomial"></select>
+      </div>
+      <div class="control-row">
+        <label for="customPoly">or:</label>
+        <input type="text" id="customPoly" placeholder="enter your own — e.g.  x^3 + y^3 + z^3 + w^3" />
+      </div>
+      <div class="control-row">
+        <button id="render">Plot</button>
+      </div>
+    </div>
+    <div class="error" id="error"></div>
+
+    <div class="sliders" id="slidersBox">
+      <div class="slider-control" id="aControl">
+        <label for="paramA">a&nbsp;=</label>
+        <input type="range" id="paramA" min="-2" max="2" step="0.05" value="1">
+        <span class="slider-value" id="paramAVal">1.00</span>
+      </div>
+      <div class="slider-control" id="bControl">
+        <label for="paramB">b&nbsp;=</label>
+        <input type="range" id="paramB" min="-2" max="2" step="0.05" value="1">
+        <span class="slider-value" id="paramBVal">1.00</span>
+      </div>
+    </div>
+
+    <hr class="thin">
+
+    <div class="views">
+      <div class="view">
+        <canvas class="ball" id="view0" width="500" height="500"></canvas>
+        <div class="center-label">centered at [&thinsp;1:0:0:0&thinsp;]</div>
+      </div>
+      <div class="view">
+        <canvas class="ball" id="view1" width="500" height="500"></canvas>
+        <div class="center-label">centered at [&thinsp;0:1:0:0&thinsp;]</div>
+      </div>
+      <div class="view">
+        <canvas class="ball" id="view2" width="500" height="500"></canvas>
+        <div class="center-label">centered at [&thinsp;0:0:1:0&thinsp;]</div>
+      </div>
+      <div class="view">
+        <canvas class="ball" id="view3" width="500" height="500"></canvas>
+        <div class="center-label">centered at [&thinsp;0:0:0:1&thinsp;]</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="animation">
+      <canvas class="ball" id="anim" width="600" height="600"></canvas>
+      <div class="anim-label" id="animStatus">interpolating views</div>
+      <button id="animate" class="anim-button">Pause</button>
+    </div>
+
+    <div class="ornament">·  ·  ·</div>
+
+    <div class="info">
+      Each ball depicts the upper hemisphere of <em>S</em>³ orthogonally projected to a 3-ball,
+      with antipodal boundary points identified to recover &Ropf;&Popf;³. Drag to rotate, scroll to zoom.
+      Variables <code>x</code>, <code>y</code>, <code>z</code>, <code>w</code>; operators <code>+ &minus; * / ^</code>;
+      implicit multiplication accepted; non-homogeneous inputs are homogenized with <code>w</code>.
+    </div>
+  </div>
+
+<script>
+// =============================================================
+//   Polynomial algebra in ℝ[x, y, z, w]   (4-variable extension)
+// =============================================================
+function normalize(expr) {
+  return expr
+    .replace(/²/g,'^2').replace(/³/g,'^3').replace(/⁴/g,'^4')
+    .replace(/⁵/g,'^5').replace(/⁶/g,'^6').replace(/⁷/g,'^7')
+    .replace(/⁸/g,'^8').replace(/⁹/g,'^9')
+    .replace(/−/g,'-').replace(/–/g,'-').replace(/—/g,'-')
+    .replace(/·/g,'*').replace(/×/g,'*');
+}
+
+// Sparse polynomial in 4 variables (x, y, z, w). Key = "a,b,c,d" exponents.
+class Polynomial {
+  constructor() { this.terms = new Map(); }
+  static fromCoef(c) {
+    const p = new Polynomial();
+    if (Math.abs(c) > 1e-15) p.terms.set('0,0,0,0', c);
+    return p;
+  }
+  static fromVar(v) {
+    const p = new Polynomial();
+    const key = v === 'x' ? '1,0,0,0' : v === 'y' ? '0,1,0,0' : v === 'z' ? '0,0,1,0' : '0,0,0,1';
+    p.terms.set(key, 1);
+    return p;
+  }
+  _set(k, v) {
+    if (Math.abs(v) < 1e-15) this.terms.delete(k);
+    else this.terms.set(k, v);
+  }
+  add(other) {
+    const r = new Polynomial();
+    for (const [k, v] of this.terms) r.terms.set(k, v);
+    for (const [k, v] of other.terms) r._set(k, (r.terms.get(k) || 0) + v);
+    return r;
+  }
+  negate() {
+    const r = new Polynomial();
+    for (const [k, v] of this.terms) r.terms.set(k, -v);
+    return r;
+  }
+  subtract(other) { return this.add(other.negate()); }
+  multiply(other) {
+    const r = new Polynomial();
+    for (const [k1, v1] of this.terms) {
+      const e1 = k1.split(',').map(Number);
+      for (const [k2, v2] of other.terms) {
+        const e2 = k2.split(',').map(Number);
+        const k = `${e1[0]+e2[0]},${e1[1]+e2[1]},${e1[2]+e2[2]},${e1[3]+e2[3]}`;
+        r._set(k, (r.terms.get(k) || 0) + v1 * v2);
+      }
+    }
+    return r;
+  }
+  power(n) {
+    if (!Number.isInteger(n) || n < 0) throw new Error('Exponent must be a non-negative integer');
+    let r = Polynomial.fromCoef(1);
+    for (let i = 0; i < n; i++) r = r.multiply(this);
+    return r;
+  }
+  divide(other) {
+    if (other.terms.size === 0) throw new Error('Division by zero');
+    if (other.terms.size === 1 && other.terms.has('0,0,0,0')) {
+      const c = other.terms.get('0,0,0,0');
+      const r = new Polynomial();
+      for (const [k, v] of this.terms) r.terms.set(k, v / c);
+      return r;
+    }
+    throw new Error('Division only by a constant');
+  }
+  degree() {
+    let d = -1;
+    for (const [k, v] of this.terms) {
+      if (Math.abs(v) < 1e-15) continue;
+      const e = k.split(',').map(Number);
+      d = Math.max(d, e[0]+e[1]+e[2]+e[3]);
+    }
+    return d;
+  }
+  isHomogeneous() {
+    let d = -1;
+    for (const [k, v] of this.terms) {
+      if (Math.abs(v) < 1e-15) continue;
+      const e = k.split(',').map(Number);
+      const td = e[0]+e[1]+e[2]+e[3];
+      if (d === -1) d = td;
+      else if (d !== td) return false;
+    }
+    return true;
+  }
+  // Homogenize by padding low-degree terms with w.
+  homogenize() {
+    const D = this.degree();
+    if (D < 0) return this;
+    const r = new Polynomial();
+    for (const [k, v] of this.terms) {
+      const e = k.split(',').map(Number);
+      const td = e[0]+e[1]+e[2]+e[3];
+      r.terms.set(`${e[0]},${e[1]},${e[2]},${e[3] + D - td}`, v);
+    }
+    return r;
+  }
+  // Symbolic ∂p/∂x_i  (i ∈ {0,1,2,3} = x,y,z,w)
+  derivative(idx) {
+    const r = new Polynomial();
+    for (const [k, v] of this.terms) {
+      const e = k.split(',').map(Number);
+      const ex = e[idx];
+      if (ex === 0) continue;
+      e[idx] = ex - 1;
+      r._set(`${e[0]},${e[1]},${e[2]},${e[3]}`, v * ex);
+    }
+    return r;
+  }
+  // Pretty display
+  toPretty() {
+    const entries = [];
+    for (const [k, v] of this.terms) {
+      if (Math.abs(v) < 1e-15) continue;
+      const e = k.split(',').map(Number);
+      entries.push({ a:e[0], b:e[1], c:e[2], d:e[3], v, td:e[0]+e[1]+e[2]+e[3] });
+    }
+    if (entries.length === 0) return '0 = 0';
+    entries.sort((p, q) => {
+      if (q.td !== p.td) return q.td - p.td;
+      if (q.a !== p.a) return q.a - p.a;
+      if (q.b !== p.b) return q.b - p.b;
+      if (q.c !== p.c) return q.c - p.c;
+      return q.d - p.d;
+    });
+    const fmt = (n) => Number.isInteger(n) ? n.toString() : parseFloat(n.toFixed(4)).toString();
+    const sup = (n) => {
+      if (n === 1) return '';
+      return n.toString().split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[parseInt(d)]).join('');
+    };
+    let s = '';
+    for (let i = 0; i < entries.length; i++) {
+      const t = entries[i];
+      const hasVar = t.a > 0 || t.b > 0 || t.c > 0 || t.d > 0;
+      const absV = Math.abs(t.v);
+      if (i === 0) { if (t.v < 0) s += '−'; }
+      else { s += t.v < 0 ? ' − ' : ' + '; }
+      if (!hasVar) s += fmt(absV);
+      else if (absV !== 1) s += fmt(absV);
+      if (t.a > 0) s += 'x' + sup(t.a);
+      if (t.b > 0) s += 'y' + sup(t.b);
+      if (t.c > 0) s += 'z' + sup(t.c);
+      if (t.d > 0) s += 'w' + sup(t.d);
+    }
+    return s + ' = 0';
+  }
+  // Generate GLSL expression for p(x, y, z, w)
+  toGLSL() {
+    if (this.terms.size === 0) return '0.0';
+    const parts = [];
+    for (const [k, v] of this.terms) {
+      const e = k.split(',').map(Number);
+      const c = v >= 0 ? `(${v.toFixed(8)})` : `(${v.toFixed(8)})`;
+      let s = c;
+      const vars = ['x', 'y', 'z', 'w'];
+      for (let i = 0; i < 4; i++) {
+        const ex = e[i];
+        for (let j = 0; j < ex; j++) s += `*${vars[i]}`;
+      }
+      parts.push(s);
+    }
+    return parts.join('+');
+  }
+}
+
+// Parser. Variables: x, y, z, w. Parameters: a, b.
+function parsePolynomial(str, params) {
+  params = params || {};
+  let i = 0;
+  const skip = () => { while (i < str.length && /\s/.test(str[i])) i++; };
+  const peek = () => { skip(); return str[i]; };
+
+  function parseExpr() {
+    let left = parseUnary();
+    while (true) {
+      const c = peek();
+      if (c === '+') { i++; left = left.add(parseUnary()); }
+      else if (c === '-') { i++; left = left.subtract(parseUnary()); }
+      else break;
+    }
+    return left;
+  }
+  function parseUnary() {
+    const c = peek();
+    if (c === '-') { i++; return parseUnary().negate(); }
+    if (c === '+') { i++; return parseUnary(); }
+    return parseTerm();
+  }
+  function parseTerm() {
+    let left = parseFactor();
+    while (true) {
+      const c = peek();
+      if (c === '*') { i++; left = left.multiply(parseUnary()); }
+      else if (c === '/') { i++; left = left.divide(parseUnary()); }
+      else if (c && /[xyzwab(0-9.]/.test(c)) left = left.multiply(parseFactor());
+      else break;
+    }
+    return left;
+  }
+  function parseFactor() {
+    const base = parsePrimary();
+    if (peek() === '^') {
+      i++;
+      const exp = parseFactor();
+      if (exp.terms.size === 1 && exp.terms.has('0,0,0,0')) {
+        const e = exp.terms.get('0,0,0,0');
+        if (!Number.isInteger(e) || e < 0) throw new Error('Exponent must be a non-negative integer');
+        return base.power(e);
+      }
+      throw new Error('Exponent must be a non-negative integer constant');
+    }
+    return base;
+  }
+  function parsePrimary() {
+    const c = peek();
+    if (c === '(') {
+      i++;
+      const r = parseExpr();
+      if (peek() !== ')') throw new Error('Expected ")"');
+      i++;
+      return r;
+    }
+    if (c !== undefined && /[0-9.]/.test(c)) {
+      let s = '';
+      while (i < str.length && /[0-9.]/.test(str[i])) s += str[i++];
+      const n = parseFloat(s);
+      if (isNaN(n)) throw new Error('Invalid number: ' + s);
+      return Polynomial.fromCoef(n);
+    }
+    if (c === 'x' || c === 'y' || c === 'z' || c === 'w') {
+      i++;
+      return Polynomial.fromVar(c);
+    }
+    if (c === 'a' || c === 'b') {
+      i++;
+      return Polynomial.fromCoef(params[c] !== undefined ? params[c] : 0);
+    }
+    throw new Error('Unexpected character: ' + (c === undefined ? 'end of input' : `'${c}'`));
+  }
+
+  const result = parseExpr();
+  skip();
+  if (i < str.length) throw new Error(`Unexpected character: '${str[i]}'`);
+  return result;
+}
+
+function processPolynomial(expr, params) {
+  const norm = normalize(expr);
+  if (!/^[0-9xyzwabXYZWAB+\-*/^.()\s]*$/.test(norm))
+    throw new Error('Polynomial contains invalid characters');
+  const cleaned = norm.toLowerCase();
+  if (!cleaned.trim()) throw new Error('Empty polynomial');
+  const poly = parsePolynomial(cleaned, params);
+  if (poly.terms.size === 0) throw new Error('Polynomial is identically zero');
+  const hom = poly.homogenize();
+  return {
+    poly: hom,
+    pretty: hom.toPretty(),
+    wasHomogenized: !poly.isHomogeneous(),
+    degree: hom.degree()
+  };
+}
+
+// =============================================================
+//   Surface catalogue
+// =============================================================
+const SURFACES = [
+  { display: 'Clebsch cubic — Σx³ − (Σx)³',
+    expr: 'x^3 + y^3 + z^3 + w^3 - (x + y + z + w)^3' },
+  { display: 'Quadric — x² + y² + z² − aw²',
+    expr: 'x^2 + y^2 + z^2 - a*w^2',
+    params: { a: { def: 1, min: -2, max: 2 } } },
+  { display: 'Hyperboloid — x² + y² − z² − aw²',
+    expr: 'x^2 + y^2 - z^2 - a*w^2',
+    params: { a: { def: 1, min: -2, max: 2 } } },
+  { display: 'Cayley nodal cubic — xyz + xyw + xzw + yzw',
+    expr: 'x*y*z + x*y*w + x*z*w + y*z*w' },
+  { display: 'Fermat cubic — x³ + y³ + z³ + w³',
+    expr: 'x^3 + y^3 + z^3 + w^3' },
+  { display: 'Whitney umbrella — x²w − y²z',
+    expr: 'x^2*w - y^2*z' },
+  { display: 'Plücker conoid — z(x² + y²) − a · xyw',
+    expr: 'z*(x^2 + y^2) - a*x*y*w',
+    params: { a: { def: 1, min: 0.3, max: 2 } } },
+  { display: 'Singular cubic — xyz − aw³',
+    expr: 'x*y*z - a*w^3',
+    params: { a: { def: 0, min: -1, max: 1 } } },
+  { display: 'Steiner Roman surface — x²y² + y²z² + z²x² − a · xyzw',
+    expr: 'x^2*y^2 + y^2*z^2 + z^2*x^2 - a*x*y*z*w',
+    params: { a: { def: 1, min: 0.2, max: 2 } } },
+  { display: 'Torus — (Σx² + aw²)² − 4(x² + y²)w²',
+    expr: '(x^2 + y^2 + z^2 + a*w^2)^2 - 4*(x^2 + y^2)*w^2',
+    params: { a: { def: 0.84, min: 0.05, max: 0.95 } } },
+  { display: 'Kummer-like quartic — (Σx²)² − a · 16xyzw',
+    expr: '(x^2 + y^2 + z^2 + w^2)^2 - a*16*x*y*z*w',
+    params: { a: { def: 2, min: 1, max: 3 } } },
+  { display: 'Cassini-like — Π(x² + y² − a w²) along axes',
+    expr: '(x^2 + y^2 - a*w^2)*(y^2 + z^2 - a*w^2)*(x^2 + z^2 - a*w^2) - b*w^6',
+    params: { a: { def: 1, min: 0.4, max: 2 }, b: { def: 0.5, min: 0, max: 1.5 } } },
+  { display: 'Barth sextic — 4Π(ax² − y²) − b(Σx² − w²)²w²',
+    expr: '4*(a*x^2 - y^2)*(a*y^2 - z^2)*(a*z^2 - x^2) - b*(x^2 + y^2 + z^2 - w^2)^2*w^2',
+    params: { a: { def: 2.618, min: 1.5, max: 3.5 }, b: { def: 4.236, min: 2, max: 6 } } }
+];
+const DEFAULT_SURFACE_INDEX = 0; // Quadric
+
+// =============================================================
+//   View bases. Each view's basis is (E1, E2, E3, N) with N being
+//   the pole at one of [e_i]. The ball lift sends (u, v, w) to
+//   u·E1 + v·E2 + w·E3 + sqrt(1−u²−v²−w²)·N in standard ℝ⁴.
+//
+//   For SLERP cycling 0→1→2→3→0, each leg is a planar rotation by
+//   π/2 in the (e_i, e_{i+1}) plane.
+// =============================================================
+
+// Each row: which 4-vector to take for (E1, E2, E3, N). We store
+// these as 4x4 matrices (column = basis vector). All chosen so that
+// the cyclic sequence below is generated by successive planar π/2
+// rotations starting from V0.
+function makeStaticBases() {
+  // V0: pole e_0; basis (e_1, e_2, e_3, e_0)
+  const V0 = [
+    [0,0,0,1],
+    [1,0,0,0],
+    [0,1,0,0],
+    [0,0,1,0]
+  ];
+  // V1: pole e_1; via R_01(π/2) applied to V0
+  // R_01(π/2): e_0 → e_1, e_1 → −e_0
+  const V1 = [
+    [-1,0,0,0],
+    [ 0,0,0,1],
+    [ 0,1,0,0],
+    [ 0,0,1,0]
+  ];
+  // V2: pole e_2; via R_12(π/2) applied to V1
+  const V2 = [
+    [-1, 0,0,0],
+    [ 0,-1,0,0],
+    [ 0, 0,0,1],
+    [ 0, 0,1,0]
+  ];
+  // V3: pole e_3; via R_23(π/2) applied to V2
+  const V3 = [
+    [-1, 0, 0,0],
+    [ 0,-1, 0,0],
+    [ 0, 0,-1,0],
+    [ 0, 0, 0,1]
+  ];
+  return [V0, V1, V2, V3];
+}
+const VIEWS = makeStaticBases();
+const POLE_LABELS = ['[1:0:0:0]', '[0:1:0:0]', '[0:0:1:0]', '[0:0:0:1]'];
+
+// Planar rotation in (axis_i, axis_j) plane by angle θ, as 4x4 matrix.
+// e_i → cos θ · e_i + sin θ · e_j;  e_j → −sin θ · e_i + cos θ · e_j
+function planarRot(i, j, theta) {
+  const M = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
+  const c = Math.cos(theta), s = Math.sin(theta);
+  M[i][i] = c; M[j][j] = c;
+  M[j][i] = s; M[i][j] = -s;
+  return M;
+}
+function matMul(A, B) {
+  // 4×4 multiplication; A·B with row-major access
+  const R = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+  for (let i = 0; i < 4; i++)
+    for (let j = 0; j < 4; j++) {
+      let s = 0;
+      for (let k = 0; k < 4; k++) s += A[i][k] * B[k][j];
+      R[i][j] = s;
+    }
+  return R;
+}
+// 4×4 rotation by a given axis–angle inside the e₁-e₂-e₃ subspace, fixing e₀.
+function axisAngleSO4(axis, angle) {
+  const L = Math.sqrt(axis[0]*axis[0] + axis[1]*axis[1] + axis[2]*axis[2]);
+  const ax = axis[0]/L, ay = axis[1]/L, az = axis[2]/L;
+  const c = Math.cos(angle), s = Math.sin(angle), C = 1 - c;
+  return [
+    [1, 0,                0,                0               ],
+    [0, c + ax*ax*C,      ax*ay*C - az*s,   ax*az*C + ay*s  ],
+    [0, ay*ax*C + az*s,   c + ay*ay*C,      ay*az*C - ax*s  ],
+    [0, az*ax*C - ay*s,   az*ay*C + ax*s,   c + az*az*C     ]
+  ];
+}
+
+// Animation basis at time t ∈ [0, 5). Legs 0…3 are SO(4) planar rotations cycling
+// the pole e₀→e₁→e₂→e₃→e₀; leg 4 is the SO(3) “closing” rotation that takes the
+// residual basis at the end of leg 3 (which fixes e₀ but permutes e₁, e₂, e₃)
+// back to the original V0, by a 2π/3 rotation about (1, −1, 1)/√3.
+function animBasis(t) {
+  const i = Math.floor(t) % 5;
+  const s = t - Math.floor(t);
+  const sE = 0.5 - 0.5*Math.cos(Math.PI*s);
+  if (i < 4) {
+    const j = (i + 1) % 4;
+    const R = planarRot(i, j, sE * Math.PI / 2);
+    return matMul(R, VIEWS[i]);
+  } else {
+    // basis at end of leg 3→0 (before closing): planarRot(3, 0, π/2) ⋅ V3.
+    const startBasis = matMul(planarRot(3, 0, Math.PI/2), VIEWS[3]);
+    const angle = -sE * 2 * Math.PI / 3;
+    const R = axisAngleSO4([1, -1, 1], angle);
+    return matMul(R, startBasis);
+  }
+}
+// Pole vector for a given basis (column 3 of the 4×4 matrix).
+function poleOf(M) { return [M[0][3], M[1][3], M[2][3], M[3][3]]; }
+
+// =============================================================
+//   WebGL setup. One canvas per ball; each has its own context.
+// =============================================================
+
+const VERT_SHADER = `
+attribute vec2 a_pos;
+void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+`;
+
+function makeFragShader(polyGLSL, gradGLSL) {
+  // gradGLSL is an array of 4 GLSL expressions, one per partial derivative.
+  return `
+#extension GL_OES_standard_derivatives : enable
+precision highp float;
+uniform vec2 u_resolution;
+uniform mat3 u_camRot;     // camera rotation (orbit)
+uniform float u_camDist;   // camera distance from ball center
+uniform mat4 u_basis;      // view basis: columns are (E1, E2, E3, N) in standard ℝ⁴
+
+float poly(float x, float y, float z, float w) {
+  return ${polyGLSL};
+}
+float dpx(float x, float y, float z, float w) { return ${gradGLSL[0]}; }
+float dpy(float x, float y, float z, float w) { return ${gradGLSL[1]}; }
+float dpz(float x, float y, float z, float w) { return ${gradGLSL[2]}; }
+float dpw(float x, float y, float z, float w) { return ${gradGLSL[3]}; }
+
+// Lift ball point (u, v, w) to standard ℝ⁴ via the view basis.
+vec4 lift(vec3 p) {
+  float r2 = dot(p, p);
+  float ww = sqrt(max(0.0, 1.0 - r2));
+  return u_basis * vec4(p, ww);
+}
+
+// Surface intersection of a parametric ray r(t) = ro + t·rd with the
+// unit ball [0, t_max], by sign-change detection.
+bool intersectBall(vec3 ro, vec3 rd, out float tEnter, out float tExit) {
+  float b = dot(ro, rd);
+  float c = dot(ro, ro) - 1.0;
+  float disc = b*b - c;
+  if (disc < 0.0) return false;
+  float sd = sqrt(disc);
+  tEnter = -b - sd;
+  tExit  = -b + sd;
+  if (tExit < 0.0) return false;
+  tEnter = max(tEnter, 0.0);
+  return true;
+}
+
+// Compute the inward-facing normal and amber color at a hit point.
+vec4 shadeHit(vec3 hit, vec4 Phit, vec3 rd) {
+  float ww = sqrt(max(1e-12, 1.0 - dot(hit, hit)));
+  vec4 N4 = u_basis[3];
+  vec4 J1 = u_basis[0] - (hit.x/ww)*N4;
+  vec4 J2 = u_basis[1] - (hit.y/ww)*N4;
+  vec4 J3 = u_basis[2] - (hit.z/ww)*N4;
+  vec4 grad4 = vec4(
+    dpx(Phit.x, Phit.y, Phit.z, Phit.w),
+    dpy(Phit.x, Phit.y, Phit.z, Phit.w),
+    dpz(Phit.x, Phit.y, Phit.z, Phit.w),
+    dpw(Phit.x, Phit.y, Phit.z, Phit.w)
+  );
+  vec3 grad = vec3(dot(grad4, J1), dot(grad4, J2), dot(grad4, J3));
+  vec3 nrm = normalize(grad + 1e-8 * vec3(1.0, 1.0, 1.0));
+  if (dot(nrm, rd) > 0.0) nrm = -nrm;
+
+  // Warm amber palette
+  vec3 amberLight = vec3(0.88, 0.58, 0.26);
+  vec3 amberDark  = vec3(0.30, 0.14, 0.05);
+  vec3 lightDir   = normalize(vec3(0.55, 0.75, 0.45));
+
+  float ndotl = max(0.0, dot(nrm, lightDir));
+  float ndotv = max(0.0, -dot(nrm, rd));
+  vec3 base = mix(amberDark, amberLight, ndotl);
+
+  // Sharp specular highlight for glass feel
+  vec3 H = normalize(lightDir - rd);
+  float spec = pow(max(0.0, dot(nrm, H)), 64.0);
+  vec3 specCol = vec3(1.0, 0.94, 0.78);
+  vec3 color = base + 0.65 * spec * specCol;
+
+  // Fresnel-based opacity: more transparent face-on, more opaque at grazing.
+  float fresnel = pow(1.0 - ndotv, 3.0);
+  float alpha = 0.18 + 0.62 * fresnel;
+
+  // Atmospheric fade: surface contribution decays as we approach the boundary
+  // (the plane at infinity for this chart). This softens the great-circle
+  // features where projective hyperplanes meet ∂B³, and hides the noisy
+  // shading near singular loci where the lift's Jacobian becomes degenerate.
+  float boundaryFade = smoothstep(0.0, 0.1, ww);
+  alpha *= boundaryFade;
+
+  return vec4(color, alpha);
+}
+
+// Cast one ray for a normalized device coordinate and return the final color
+// (surface composited over paper, or pure paper if the ray misses the ball).
+vec3 computeColor(vec2 ndc) {
+  vec3 rdEye = normalize(vec3(ndc.x, ndc.y, -2.0));
+  vec3 rd = u_camRot * rdEye;
+  vec3 ro = u_camRot * vec3(0.0, 0.0, u_camDist);
+
+  vec3 paper = vec3(0.980, 0.954, 0.873);
+
+  float b = dot(ro, rd);
+  float c = dot(ro, ro) - 1.0;
+  float disc = b*b - c;
+  if (disc <= 0.0) return paper;
+
+  float sd = sqrt(disc);
+  float tEnter = max(-b - sd, 0.0);
+  float tExit  = -b + sd;
+  if (tExit <= tEnter) return paper;
+
+  // March from tEnter to tExit, alpha-compositing every sign change so that the
+  // front face lets some light through to the back — a glassy stacked look.
+  const int STEPS = 96;
+  float dt = (tExit - tEnter) / float(STEPS);
+  vec3 startPos = ro + tEnter * rd;
+  vec4 startP4  = lift(startPos);
+  float prevSign = poly(startP4.x, startP4.y, startP4.z, startP4.w) >= 0.0 ? 1.0 : -1.0;
+  float prevT = tEnter;
+  vec4 accum = vec4(0.0);
+  for (int k = 1; k <= STEPS; k++) {
+    float tt = tEnter + float(k) * dt;
+    vec3 pos = ro + tt * rd;
+    vec4 P4 = lift(pos);
+    float v = poly(P4.x, P4.y, P4.z, P4.w);
+    float sgn = v >= 0.0 ? 1.0 : -1.0;
+    if (sgn != prevSign) {
+      float t0 = prevT, t1 = tt;
+      for (int bi = 0; bi < 6; bi++) {
+        float tm = 0.5*(t0 + t1);
+        vec3 pm = ro + tm * rd;
+        vec4 Pm = lift(pm);
+        float vm = poly(Pm.x, Pm.y, Pm.z, Pm.w);
+        float sm = vm >= 0.0 ? 1.0 : -1.0;
+        if (sm == prevSign) t0 = tm; else t1 = tm;
+      }
+      float hitT = 0.5*(t0 + t1);
+      vec3 hit = ro + hitT * rd;
+      vec4 Phit = lift(hit);
+      vec4 hitCol = shadeHit(hit, Phit, rd);
+      accum.rgb += (1.0 - accum.a) * hitCol.rgb * hitCol.a;
+      accum.a   += (1.0 - accum.a) * hitCol.a;
+      if (accum.a > 0.985) break;
+    }
+    prevSign = sgn;
+    prevT = tt;
+  }
+  return accum.rgb + (1.0 - accum.a) * paper;
+}
+
+void main() {
+  vec2 px = gl_FragCoord.xy;
+  vec2 ndc = (px / u_resolution) * 2.0 - 1.0;
+
+  // Detect pixels in the silhouette band. We compute the ball discriminant for
+  // the center ray and use fwidth() to estimate how many pixels we are away
+  // from the disc = 0 silhouette circle.
+  vec3 rdEye = normalize(vec3(ndc.x, ndc.y, -2.0));
+  vec3 rd = u_camRot * rdEye;
+  vec3 ro = u_camRot * vec3(0.0, 0.0, u_camDist);
+  float bb = dot(ro, rd);
+  float cc = dot(ro, ro) - 1.0;
+  float disc = bb*bb - cc;
+  float fw = max(fwidth(disc), 1e-5);
+
+  vec3 col;
+  if (abs(disc) < 4.0 * fw) {
+    // Near the silhouette: 2×2 rotated-grid supersampling. Each sub-ray runs
+    // the full ray-march; averaging gives clean anti-aliasing of the ball
+    // silhouette and of any surface meeting it.
+    vec3 sum = vec3(0.0);
+    sum += computeColor(((px + vec2(-0.25, -0.25)) / u_resolution) * 2.0 - 1.0);
+    sum += computeColor(((px + vec2( 0.25, -0.25)) / u_resolution) * 2.0 - 1.0);
+    sum += computeColor(((px + vec2(-0.25,  0.25)) / u_resolution) * 2.0 - 1.0);
+    sum += computeColor(((px + vec2( 0.25,  0.25)) / u_resolution) * 2.0 - 1.0);
+    col = sum * 0.25;
+  } else {
+    col = computeColor(ndc);
+  }
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+}
+
+function compileShader(gl, type, source) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, source);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    const log = gl.getShaderInfoLog(s);
+    gl.deleteShader(s);
+    throw new Error('Shader compile error: ' + log);
+  }
+  return s;
+}
+function linkProgram(gl, vs, fs) {
+  const p = gl.createProgram();
+  gl.attachShader(p, vs);
+  gl.attachShader(p, fs);
+  gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+    const log = gl.getProgramInfoLog(p);
+    throw new Error('Program link error: ' + log);
+  }
+  return p;
+}
+
+// One BallRenderer per canvas. Holds the GL context, the program,
+// uniforms, and the camera state.
+class BallRenderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    const gl = canvas.getContext('webgl', { antialias: true, premultipliedAlpha: false });
+    if (!gl) throw new Error('WebGL not supported');
+    gl.getExtension('OES_standard_derivatives'); // fwidth() in fragment shader
+    this.gl = gl;
+    this.cam = { yaw: 0.4, pitch: 0.25, dist: 2.6 };
+    this.basis = VIEWS[0]; // overridden
+    this.program = null;
+    this.attribLoc = null;
+    this.posBuffer = null;
+    this._initBuffer();
+  }
+  _initBuffer() {
+    const gl = this.gl;
+    const verts = new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]);
+    this.posBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+  }
+  setShader(polyGLSL, gradGLSL) {
+    const gl = this.gl;
+    if (this.program) gl.deleteProgram(this.program);
+    const vs = compileShader(gl, gl.VERTEX_SHADER, VERT_SHADER);
+    const fs = compileShader(gl, gl.FRAGMENT_SHADER, makeFragShader(polyGLSL, gradGLSL));
+    this.program = linkProgram(gl, vs, fs);
+    gl.deleteShader(vs);
+    gl.deleteShader(fs);
+    this.attribLoc = gl.getAttribLocation(this.program, 'a_pos');
+    this.uniformResolution = gl.getUniformLocation(this.program, 'u_resolution');
+    this.uniformCamRot     = gl.getUniformLocation(this.program, 'u_camRot');
+    this.uniformCamDist    = gl.getUniformLocation(this.program, 'u_camDist');
+    this.uniformBasis      = gl.getUniformLocation(this.program, 'u_basis');
+  }
+  // Build camera rotation matrix from yaw/pitch
+  camMatrix() {
+    const cy = Math.cos(this.cam.yaw), sy = Math.sin(this.cam.yaw);
+    const cp = Math.cos(this.cam.pitch), sp = Math.sin(this.cam.pitch);
+    // Yaw around y, then pitch around x  (applied to looking-down-(-z) gaze)
+    // Camera = Ry(yaw) * Rx(pitch)
+    return new Float32Array([
+       cy,        0,    -sy,
+       sy*sp,     cp,    cy*sp,
+       sy*cp,    -sp,    cy*cp
+    ]);
+  }
+  basisAsFloat32() {
+    // Pack 4x4 column-major.
+    const M = this.basis;
+    const r = new Float32Array(16);
+    for (let i = 0; i < 4; i++)
+      for (let j = 0; j < 4; j++)
+        r[j*4 + i] = M[i][j];
+    return r;
+  }
+  render() {
+    const gl = this.gl;
+    if (!this.program) return;
+    const W = this.canvas.width, H = this.canvas.height;
+    gl.viewport(0, 0, W, H);
+    gl.useProgram(this.program);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+    gl.enableVertexAttribArray(this.attribLoc);
+    gl.vertexAttribPointer(this.attribLoc, 2, gl.FLOAT, false, 0, 0);
+    gl.uniform2f(this.uniformResolution, W, H);
+    gl.uniformMatrix3fv(this.uniformCamRot, false, this.camMatrix());
+    gl.uniform1f(this.uniformCamDist, this.cam.dist);
+    gl.uniformMatrix4fv(this.uniformBasis, false, this.basisAsFloat32());
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+}
+
+// =============================================================
+//   Camera control: drag to orbit, scroll to zoom
+// =============================================================
+function attachCameraControls(renderer, requestRender) {
+  const canvas = renderer.canvas;
+  let dragging = false;
+  let lastX = 0, lastY = 0;
+  canvas.addEventListener('pointerdown', (e) => {
+    dragging = true; lastX = e.clientX; lastY = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    renderer.cam.yaw   -= dx * 0.008;
+    renderer.cam.pitch -= dy * 0.008;
+    const lim = Math.PI/2 - 0.05;
+    renderer.cam.pitch = Math.max(-lim, Math.min(lim, renderer.cam.pitch));
+    requestRender();
+  });
+  canvas.addEventListener('pointerup',   () => { dragging = false; });
+  canvas.addEventListener('pointercancel', () => { dragging = false; });
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const factor = Math.exp(e.deltaY * 0.0015);
+    renderer.cam.dist = Math.max(1.3, Math.min(8.0, renderer.cam.dist * factor));
+    requestRender();
+  }, { passive: false });
+}
+
+// =============================================================
+//   Application
+// =============================================================
+const polySelect    = document.getElementById('polynomial');
+const customInput   = document.getElementById('customPoly');
+const renderBtn     = document.getElementById('render');
+const animateBtn    = document.getElementById('animate');
+const animStatus    = document.getElementById('animStatus');
+const eqDisplay     = document.getElementById('eqDisplay');
+const errorDisplay  = document.getElementById('error');
+const aSlider       = document.getElementById('paramA');
+const bSlider       = document.getElementById('paramB');
+const aValDisplay   = document.getElementById('paramAVal');
+const bValDisplay   = document.getElementById('paramBVal');
+const aControl      = document.getElementById('aControl');
+const bControl      = document.getElementById('bControl');
+
+const viewCanvases = [
+  document.getElementById('view0'),
+  document.getElementById('view1'),
+  document.getElementById('view2'),
+  document.getElementById('view3')
+];
+const animCanvas = document.getElementById('anim');
+
+const viewRenderers = viewCanvases.map(c => new BallRenderer(c));
+const animRenderer = new BallRenderer(animCanvas);
+
+// Initial view bases
+for (let i = 0; i < 4; i++) viewRenderers[i].basis = VIEWS[i];
+animRenderer.basis = VIEWS[0];
+
+let paramA = 1.0, paramB = 1.0;
+let animating = true;
+let animStart = null;
+let lastAnimT = 0;
+
+// Populate dropdown
+SURFACES.forEach((s, i) => {
+  const opt = document.createElement('option');
+  opt.value = String(i);
+  opt.textContent = s.display;
+  polySelect.appendChild(opt);
+});
+polySelect.value = String(DEFAULT_SURFACE_INDEX);
+
+function currentExpr() {
+  const custom = customInput.value.trim();
+  if (custom) return custom;
+  return SURFACES[parseInt(polySelect.value)].expr;
+}
+function currentParams() { return { a: paramA, b: paramB }; }
+function exprUses(expr, name) {
+  return new RegExp(name, 'i').test(normalize(expr));
+}
+function updateSliderActivity(expr) {
+  aControl.classList.toggle('inactive', !exprUses(expr, 'a'));
+  bControl.classList.toggle('inactive', !exprUses(expr, 'b'));
+}
+function setSliderTo(slider, valDisplay, value, range) {
+  if (range) {
+    slider.min = range.min; slider.max = range.max;
+    slider.step = range.step !== undefined ? range.step : 0.05;
+  }
+  slider.value = value;
+  valDisplay.textContent = (+value).toFixed(2);
+}
+function applyDefaults(surf) {
+  if (surf.params && surf.params.a) { paramA = surf.params.a.def; setSliderTo(aSlider, aValDisplay, paramA, surf.params.a); }
+  if (surf.params && surf.params.b) { paramB = surf.params.b.def; setSliderTo(bSlider, bValDisplay, paramB, surf.params.b); }
+}
+
+// Recompile shaders for all 5 renderers from the current polynomial.
+let currentResult = null;
+function rebuildShaders() {
+  const expr = currentExpr();
+  updateSliderActivity(expr);
+  errorDisplay.textContent = '';
+  errorDisplay.style.color = '';
+  errorDisplay.style.fontStyle = '';
+  let result;
+  try {
+    result = processPolynomial(expr, currentParams());
+  } catch (e) {
+    errorDisplay.textContent = 'Error: ' + e.message;
+    return;
+  }
+  currentResult = result;
+  eqDisplay.textContent = result.pretty;
+  if (result.wasHomogenized) {
+    errorDisplay.textContent = '(input was not homogeneous — homogenized with w to degree ' + result.degree + ')';
+    errorDisplay.style.color = '#6a5a3e';
+    errorDisplay.style.fontStyle = 'italic';
+  }
+  const poly = result.poly;
+  const polyGLSL = poly.toGLSL();
+  const gradGLSL = [
+    poly.derivative(0).toGLSL(),
+    poly.derivative(1).toGLSL(),
+    poly.derivative(2).toGLSL(),
+    poly.derivative(3).toGLSL()
+  ];
+  try {
+    for (const r of viewRenderers) r.setShader(polyGLSL, gradGLSL);
+    animRenderer.setShader(polyGLSL, gradGLSL);
+  } catch (e) {
+    errorDisplay.textContent = 'Shader error: ' + e.message;
+    errorDisplay.style.color = '#8a2c1a';
+    errorDisplay.style.fontStyle = 'italic';
+    return;
+  }
+  for (const r of viewRenderers) r.render();
+  animRenderer.render();
+}
+
+// Frame coalescing for slider drags
+let renderPending = false;
+function scheduleRebuild() {
+  if (renderPending) return;
+  renderPending = true;
+  requestAnimationFrame(() => { renderPending = false; rebuildShaders(); });
+}
+
+// Animation loop for the 5th ball
+function animLoop(ts) {
+  if (!animating) return;
+  if (animStart === null) animStart = ts - lastAnimT * 1000 * 2.2;
+  const elapsed = (ts - animStart) / 1000;
+  const dur = 2.2;
+  const t = (elapsed / dur) % 5;
+  lastAnimT = t;
+  animRenderer.basis = animBasis(t);
+  animRenderer.render();
+  const segIdx = Math.floor(t) % 5;
+  if (segIdx < 4) {
+    const nxt = (segIdx + 1) % 4;
+    animStatus.textContent = `${POLE_LABELS[segIdx]}  ⟶  ${POLE_LABELS[nxt]}`;
+  } else {
+    animStatus.textContent = `${POLE_LABELS[0]}  ↻  re-orienting frame`;
+  }
+  requestAnimationFrame(animLoop);
+}
+
+// ---- Event wiring ----
+renderBtn.addEventListener('click', rebuildShaders);
+customInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') rebuildShaders(); });
+polySelect.addEventListener('change', () => {
+  customInput.value = '';
+  applyDefaults(SURFACES[parseInt(polySelect.value)]);
+  rebuildShaders();
+});
+aSlider.addEventListener('input', () => {
+  paramA = parseFloat(aSlider.value);
+  aValDisplay.textContent = paramA.toFixed(2);
+  scheduleRebuild();
+});
+bSlider.addEventListener('input', () => {
+  paramB = parseFloat(bSlider.value);
+  bValDisplay.textContent = paramB.toFixed(2);
+  scheduleRebuild();
+});
+animateBtn.addEventListener('click', () => {
+  if (animating) {
+    animating = false;
+    animateBtn.textContent = 'Animate';
+  } else {
+    animating = true;
+    animStart = null;
+    animateBtn.textContent = 'Pause';
+    requestAnimationFrame(animLoop);
+  }
+});
+
+// Attach camera controls. Each ball has its own.
+for (const r of viewRenderers) attachCameraControls(r, () => r.render());
+attachCameraControls(animRenderer, () => { if (!animating) animRenderer.render(); });
+
+// Initial setup
+applyDefaults(SURFACES[DEFAULT_SURFACE_INDEX]);
+rebuildShaders();
+requestAnimationFrame(animLoop);
+</script>
+</body>
+</html>

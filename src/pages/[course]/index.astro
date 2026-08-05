@@ -1,0 +1,92 @@
+---
+import Base from '../../layouts/Base.astro';
+import { allCourses, loadCourse, inline } from '../../lib/courses';
+
+export function getStaticPaths() {
+  return allCourses().map((c) => ({ params: { course: c.slug } }));
+}
+
+const { course } = Astro.params;
+const { meta, weeks } = loadCourse(course!);
+
+const fmt = (iso: string) => {
+  const d = new Date(`${iso}T12:00:00`);
+  return {
+    day: d.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase(),
+    date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toLowerCase(),
+  };
+};
+
+const kindWord: Record<string, string> = {
+  exam: 'exam',
+  review: 'review',
+  cancelled: 'no class',
+};
+---
+
+<Base title={`${meta.number} · ${meta.title}`} description={meta.blurb} wide>
+  <div class="prose" style="padding:0;width:100%;max-width:var(--measure);margin-inline:0">
+    <p class="label">{meta.term}</p>
+    <h1>{meta.number}<span class="dim"> · </span>{meta.title}</h1>
+    {meta.blurb && <p class="lede dim" style="margin-top:var(--s4)">{meta.blurb}</p>}
+
+    <dl class="facts">
+      {meta.facts.map((f) => (
+        <>
+          <dt class="label">{f.label}</dt>
+          <dd set:html={inline(f.value)} />
+        </>
+      ))}
+    </dl>
+
+    <p style="margin-top:var(--s6)">
+      <a class="label" href="#now" id="jump-now">jump to this week ↓</a>
+    </p>
+  </div>
+
+  <section style="margin-top:var(--s7)">
+    {weeks.map((w) => (
+      <div class="week">
+        <span class="label">{w.label}</span>
+        {w.meetings.map((m) => {
+          const { day, date } = fmt(m.date);
+          return (
+            <div class="meeting" data-type={m.type} data-date={m.date}>
+              <div class="when label">
+                <span class="day">{day} {date}</span>
+                {kindWord[m.type] && <span class="kind">{kindWord[m.type]}</span>}
+              </div>
+              <ul>
+                {m.items.map((it) => (
+                  <li>
+                    <span class="label">{it.label}</span>
+                    <span set:html={it.html} />
+                  </li>
+                ))}
+                {m.items.length === 0 && <li class="dim">—</li>}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
+    ))}
+  </section>
+</Base>
+
+<script>
+  // Mark past meetings and anchor "this week" at read time rather than build
+  // time, so the page stays honest between deploys.
+  const today = new Date().toISOString().slice(0, 10);
+  const meetings = [...document.querySelectorAll<HTMLElement>('.meeting[data-date]')];
+  const next = meetings.find((m) => (m.dataset.date ?? '') >= today);
+
+  for (const m of meetings) {
+    if ((m.dataset.date ?? '') < today) m.classList.add('is-past');
+  }
+  if (next) {
+    next.classList.add('is-next');
+    next.id = 'now';
+  } else {
+    document.getElementById('jump-now')?.remove();
+  }
+</script>
