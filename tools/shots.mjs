@@ -26,6 +26,7 @@ const server = createServer(async (req, res) => {
 
 const targets = [
   ['home',        '/',           1440, 'full'],
+  ['research',    '/research/',  1440, 'full'],
   ['gallery',     '/viz/',       1440, 'full'],
   ['course',      '/113/',       1440, 2100],
   ['course-544',  '/544/',       1440, 1700],

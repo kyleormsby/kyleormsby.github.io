@@ -115,8 +115,8 @@ one.
 Anything the parser cannot classify is preserved in a `note` column rather than
 dropped. Skim that column after an import.
 
-All eight current pages converted: 330 meetings, every date verified as
-strictly increasing and landing on a real class day.
+All eight pages converted: 300 meetings, every date verified as strictly
+increasing and landing on a real class day.
 
 ### Known limitation
 
@@ -141,14 +141,53 @@ npm run thumbs -- nets      # just one
 to click, an element to scroll into view). Commit the PNGs so the site builds
 without a browser.
 
-### One thing to fix before launch
+### No external dependencies
 
-Ten of the eighteen visualizations load three.js from a CDN — `cdnjs` for r128,
-`unpkg` for 0.160 via an importmap. An outage or a removed version at either
-host silently breaks those pages. Vendoring both versions into `public/vendor/`
-and pointing the importmaps at local paths would make the gallery
-self-contained. The thumbnail script already stubs these requests locally, which
-is why it renders offline.
+The visualizations used to load three.js from three different CDNs (cdnjs,
+unpkg, jsdelivr) in two versions, and two of them pulled webfonts from
+fonts.googleapis.com. Any of those hosts changing its mind would have silently
+broken a page, and the font requests disclosed every reader's IP address to a
+third party. Both are now vendored:
+
+```bash
+npm run vendor          # copy libraries in and rewrite the references
+npm run vendor:check    # fail if any external reference reappears
+```
+
+`tools/vendor_three.mjs` copies the r128 and 0.160 builds, walks the addon
+import graph so only reachable modules are included (14 files, not the whole
+33 MB package), and rewrites every spelling of every CDN URL.
+`tools/vendor_fonts.mjs` pulls the exact weights and styles each page asks for
+from `@fontsource` and writes a local `@font-face` sheet.
+
+Verify end to end with `npm run thumbs -- --no-stub`, which renders every
+visualization with no CDN fallbacks at all and reports any offsite request. All
+18 currently pass.
+
+The first pass of this caught only 10 of the 17 references by matching one URL
+spelling — hence `vendor:check`, which greps for the hosts rather than trusting
+a pattern.
+
+## Research
+
+`src/data/research.json` holds 67 items across six sections — papers, student
+papers, published and other exposition, organizing, and talks — imported from
+the old 36 KB markdown page:
+
+```bash
+python3 tools/import_research.py ../kyleormsby.github.io/_pages/research.md \
+  --out src/data/research.json
+```
+
+Each paper carries title, venue, links, abstract, and coauthors as separate
+fields, so an arXiv number is typed once and can be rendered anywhere — this
+page, a per-paper page, a CV, a BibTeX export. Section anchors are the slugified
+headings (`#research-papers`, `#recent-talks`), matching what academicpages
+generated, so existing deep links still resolve.
+
+Titles and abstracts go through `src/lib/markup.ts`, the same small
+markdown-plus-KaTeX renderer the course schedules use, so `$N_\infty$` and
+`$C_{qp^n}$` render as math from inside JSON.
 
 ## Writing
 

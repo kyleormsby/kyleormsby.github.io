@@ -1,5 +1,5 @@
-import katex from 'katex';
 import { parseCsv, type Row } from './csv';
+import { escape, inline } from './markup';
 
 /**
  * A course is two files: a CSV of class meetings and a JSON of metadata.
@@ -53,44 +53,6 @@ const csvFiles = import.meta.glob('../data/courses/*.csv', {
 const metaFiles = import.meta.glob('../data/courses/*.json', {
   import: 'default', eager: true,
 }) as Record<string, CourseMeta>;
-
-/**
- * Minimal inline markdown: [text](url), *em*, **strong**, `code`, ❦, newlines,
- * and $math$. Course schedules really do contain math — Math 411 has "$L^2$
- * and Hilbert spaces", Math 544 has "the fundamental group $\\pi_1$" — so the
- * same KaTeX pass that handles blog posts runs here too, at build time.
- */
-export function inline(src: string): string {
-  if (!src) return '';
-
-  const math: string[] = [];
-  const held = src.replace(/\$\$([^$]+)\$\$|\$([^$\n]+)\$/g, (_m, block, span) => {
-    const tex = block ?? span;
-    try {
-      math.push(katex.renderToString(tex, {
-        displayMode: Boolean(block), output: 'html', throwOnError: false, strict: false,
-      }));
-    } catch {
-      math.push(tex);
-    }
-    return `\u0000${math.length - 1}\u0000`;
-  });
-
-  return held
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/ ❦ /g, '<span class="sep">❦</span>')
-    .replace(/\n/g, '<br>')
-    .replace(/\u0000(\d+)\u0000/g, (_m, i) => math[Number(i)]);
-}
-
-const escape = (s: string) =>
-  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 const longDate = (iso: string) =>
   /^\d{4}-\d{2}-\d{2}$/.test(iso)
@@ -169,6 +131,8 @@ export function allCourses(): CourseMeta[] {
 export function currentCourses(): CourseMeta[] {
   return allCourses().filter((c) => c.current);
 }
+
+export { inline };
 
 export function loadCourse(slug: string): { meta: CourseMeta; weeks: Week[] } {
   const meta = allCourses().find((c) => c.slug === slug);

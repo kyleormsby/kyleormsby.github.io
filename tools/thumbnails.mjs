@@ -51,7 +51,10 @@ const TWEAKS = JSON.parse(
   await readFile(join(import.meta.dirname, 'thumbnails.config.json'), 'utf8').catch(() => '{}'),
 );
 
-const only = process.argv.slice(2);
+// --no-stub disables the local CDN substitutions, so a run doubles as a check
+// that the visualizations are genuinely self-contained.
+const noStub = process.argv.includes('--no-stub');
+const only = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const dirs = (await readdir(PUBLIC, { withFileTypes: true }))
   .filter((d) => d.isDirectory() && !['thumbs', 'images', 'files'].includes(d.name))
   .map((d) => d.name)
@@ -73,17 +76,17 @@ const ctx = await browser.newContext({
   reducedMotion: 'no-preference',
 });
 
-if (existsSync(LOCAL_THREE)) {
+if (!noStub && existsSync(LOCAL_THREE)) {
   const js = await readFile(LOCAL_THREE, 'utf8');
   await ctx.route(CDN, (route) => route.fulfill({ contentType: 'text/javascript', body: js }));
-} else {
+} else if (!noStub) {
   console.warn('! node_modules/three (r128 UMD build) missing; those scenes may render empty');
 }
 
 // Several visualizations use an importmap pointing at unpkg for three 0.160
 // (module build + examples/jsm addons). Serve the vendored copy instead.
 const UNPKG_THREE = join(ROOT, 'vendor', 'three-0.160.0');
-if (existsSync(UNPKG_THREE)) {
+if (!noStub && existsSync(UNPKG_THREE)) {
   await ctx.route('https://unpkg.com/three@0.160.0/**', async (route) => {
     const path = new URL(route.request().url()).pathname
       .replace('/three@0.160.0/', '/');
@@ -94,7 +97,7 @@ if (existsSync(UNPKG_THREE)) {
       await route.abort();
     }
   });
-} else {
+} else if (!noStub) {
   console.warn('! vendor/three-0.160.0 missing; importmap scenes may render empty');
 }
 
@@ -105,6 +108,12 @@ for (const slug of dirs) {
   page.on('pageerror', (e) => errors.push(e.message));
   const tweak = TWEAKS[slug] ?? {};
   try {
+    if (noStub) {
+      page.on('requestfailed', (req) => {
+        const u = req.url();
+        if (!u.startsWith(`http://127.0.0.1:${PORT}`)) errors.push(`offsite: ${u}`);
+      });
+    }
     await page.goto(`http://127.0.0.1:${PORT}/${slug}/`, { waitUntil: 'load', timeout: 30000 });
     if (tweak.click) {
       await page.click(tweak.click, { timeout: 5000 }).catch(() => {});

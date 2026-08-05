@@ -1,0 +1,733 @@
+{
+  "intro": "My research is at the interface of homotopy theory (squishy shapes) and algebraic geometry (polynomial shapes). I have parallel interests in operads (families of compatible operations), mathematics visualization (pretty pictures), and geometric and topological data analysis in neuroimaging (brain shapes). Below, you will find my [research papers](#research-papers), my [students' papers](#student-papers), my [expository writing](#published-expository-writing), [seminars and conferences](#seminars-and-conferences-organized) I have co-organized, and [recent talks](#recent-talks). Here is my [CV](/files/ormsby-cv-2026.pdf), updated February 2026, and here is a [short biography](/bio/).",
+  "sections": [
+    {
+      "id": "research-papers",
+      "title": "research papers",
+      "style": "paper",
+      "note": "",
+      "items": [
+        {
+          "title": "Enumerating submonoids of finite commutative monoids",
+          "meta": "Submitted.",
+          "links": [
+            {
+              "text": "arXiv:2508.20786",
+              "url": "https://arxiv.org/abs/2508.20786"
+            }
+          ],
+          "coauthors": "Caoilainn Kirkpatrick, Amelie el Mahmoud, Angélica M. Osorno, Dale Schandelmeier-Lynch, Riley Shahar, Lixing Yi, Avery Young, and Saron Zhu",
+          "abstract": "Given a finite commutative monoid $M$, we show that submonoids of $M\\times [n]$ — where $[n] = \\{0,1,\\ldots,n\\}$ is equipped with the max operation $\\vee$ — may be enumerated via the transfer matrix method. When $M$ is also idempotent, we show that there are finitely many integers $\\lambda$ and rational numbers $b_\\lambda$ (only depending on $M$) such that the number of submonoids of $M\\times [n]$ is $\\sum_\\lambda b_\\lambda\\lambda^n$. This answers a question of Knuth regarding ternary (and higher order) max-closed relations, and has applications to the enumeration of saturated transfer systems in equivariant infinite loop space theory."
+        },
+        {
+          "title": "Combinatorics of factorization systems on lattices",
+          "meta": "Submitted.",
+          "links": [
+            {
+              "text": "arXiv:2503.22883",
+              "url": "https://arxiv.org/abs/2503.22883"
+            }
+          ],
+          "coauthors": "Jishnu Bose, Tien Chih, Hannah Housden, Legrand Jones II, Chloe Lewis, and Millie Rose",
+          "abstract": "We initiate the combinatorial study of factorization systems on finite lattices, paying special attention to the role that reflective and coreflective factorization systems play in partitioning the poset of factorization systems on a fixed lattice. We ultimately uncover an intricate web of relations with such diverse combinatorial structures as submonoids, monads, Moore systems, transfer systems (from stable equivariant homotopy theory), and poly-Bernoulli numbers."
+        },
+        {
+          "title": "$N_\\infty$ operads, transfer systems, and the combinatorics of bi-incomplete Tambara functors",
+          "meta": "Oberwolfach report.",
+          "links": [
+            {
+              "text": "PDF",
+              "url": "/files/Ninfty.pdf"
+            }
+          ],
+          "abstract": "I summarize the main result of <a href=\"http://arxiv.org/abs/2310.13835\"><i>Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick game</i></a> enumerating transfer systems for rank 2 elementary Abelian $p$-groups, and use this to enumerate compatible pairs of transfer systems (in the sense of bi-incomplete Tambara functors) for the same group of equivariance. Based on joint work with Linus Bao, Christy Hazel, Tia Karkos, Alice Kessler, Austin Nicolas, Jeremie Park, Cait Schleff, and Scotty Tilton via the <a href=\"/eCHT_REU/\">eCHT REU</a>."
+        },
+        {
+          "title": "Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick games",
+          "links": [
+            {
+              "text": "Tunisian Journal of Mathematics",
+              "url": "https://doi.org/10.2140/tunis.2025.7.167"
+            },
+            {
+              "text": "arXiv:2310.13835",
+              "url": "http://arxiv.org/abs/2310.13835"
+            }
+          ],
+          "coauthors": "Linus Bao, Christy Hazel, Tia Karkos, Alice Kessler, Austin Nicolas, Jeremie Park, Cait Schleff, and Scotty Tilton via the <a href=\"/eCHT_REU/\">eCHT REU</a>",
+          "abstract": "We prove that Hill's characteristic function $\\chi$ for transfer systems on a lattice $P$ surjects onto interior operators for $P$. Moreover, the fibers of $\\chi$ have unique maxima which are exactly the saturated transfer systems. In order to apply this theorem in examples relevant to equivariant homotopy theory, we develop the theory of saturated transfer systems on modular lattices, ultimately producing a ``matchstick game'' that puts saturated transfer systems in bijection with certain structured subsets of covering relations. After an interlude developing a recursion for transfer systems on certain combinations of bounded posets, we apply these results to determine the full lattice of transfer systems for rank two elementary Abelian groups."
+        },
+        {
+          "title": "A motivic analogue of the $K(1)$-local sphere spectrum",
+          "links": [
+            {
+              "text": "JEMS",
+              "url": "https://doi.org/10.4171/jems/1641"
+            },
+            {
+              "text": "arXiv:2307.13512",
+              "url": "https://arxiv.org/abs/2307.13512"
+            }
+          ],
+          "coauthors": "William Balderrama and J.D. Quigley",
+          "abstract": "We identify the motivic $KGL/2$-local sphere as the fiber of $\\psi^3-1$ on $(2,\\eta)$-completed Hermitian $K$-theory, over any base scheme containing $1/2$. This is a motivic analogue of the classical resolution of the $K(1)$-local sphere, and extends to a description of the $KGL/2$-localization of any cellular motivic spectrum. Our proof relies on a novel conservativity argument that should be of broad utility in stable motivic homotopy theory."
+        },
+        {
+          "title": "The combinatorics of $N_\\infty$ operads for $C_{qp^n}$ and $D_{p^n}$",
+          "links": [
+            {
+              "text": "Glasgow Mathematics Journal",
+              "url": "https://doi.org/10.1017/S0017089524000211"
+            },
+            {
+              "text": "arXiv:2209.06992",
+              "url": "https://arxiv.org/abs/2209.06992"
+            }
+          ],
+          "coauthors": "Scott Balchin and Ethan MacBrough",
+          "abstract": "We provide a general recursive method for constructing transfer systems on finite lattices. Using this we calculate the number of homotopically distinct $N_\\infty$ operads for dihedral groups $D_{p^n}$, $p>2$ prime, and cyclic groups $C_{qp^n}$, $p\\ne q$ prime. We then further display some of the beautiful combinatorics obtained by restricting to certain homotopically meaningful $N_\\infty$ operads for these groups."
+        },
+        {
+          "title": "Lifting $N_\\infty$ operads from conjugacy data",
+          "links": [
+            {
+              "text": "Tunisian Journal of Mathematics",
+              "url": "https://doi.org/10.2140/tunis.2023.5.479"
+            },
+            {
+              "text": "arXiv:2209.06798",
+              "url": "https://arxiv.org/abs/2209.06798"
+            }
+          ],
+          "coauthors": "Scott Balchin and Ethan MacBrough",
+          "abstract": "We isolate a class of groups — called <i>lossless groups</i> — for which homotopy classes of $G$-$N_\\infty$ operads are in bijection with certain restricted transfer systems on the poset of conjugacy classes $\\operatorname{Sub}(G)/G$."
+        },
+        {
+          "title": "Composition closed premodel structures and the Kreweras lattice",
+          "links": [
+            {
+              "text": "European Journal of Combinatorics",
+              "url": "https://doi.org/10.1016/j.ejc.2023.103879"
+            },
+            {
+              "text": "arXiv:2209.03454",
+              "url": "https://arxiv.org/abs/2209.03454"
+            }
+          ],
+          "coauthors": "Scott Balchin and Ethan MacBrough",
+          "abstract": "We investigate the rich combinatorial structure of premodel structures on finite lattices whose weak equivalences are closed under composition. We prove that there is a natural refinement of the inclusion order of weak factorization systems so that the intervals detect these composition closed premodel structures. In the case that the lattice in question is a finite total order, this natural order retrieves the Kreweras lattice of noncrossing partitions as a refinement of the Tamari lattice, and model structures can be identified with stacked triangulations of a particular shape."
+        },
+        {
+          "title": "Hochschild homology of mod-$p$ motivic cohomology over algebraically closed fields",
+          "links": [
+            {
+              "text": "Communications of the AMS",
+              "url": "https://doi.org/10.1090/cams/36"
+            },
+            {
+              "text": "arXiv:2204.00441",
+              "url": "https://arxiv.org/abs/2204.00441"
+            }
+          ],
+          "coauthors": "Bjørn Dundas, Mike Hill, and Paul Arne Østvær",
+          "abstract": "We perform Hochschild homology calculations in the algebro-geometric setting of motives. The motivic Hochschild homology coefficient ring contains torsion classes which arise from the mod-$p$ motivic Steenrod algebra and from generating functions on the natural numbers with finite non-empty support. Under the Betti realization, we recover Bökstedt's calculation of the topological Hochschild homology of finite prime fields."
+        },
+        {
+          "title": "Saturated and linear isometric transfer systems for cyclic groups of order $p^mq^n$",
+          "links": [
+            {
+              "text": "Topology and its Applications",
+              "url": "https://doi.org/10.1016/j.topol.2022.108162"
+            },
+            {
+              "text": "arXiv:2109.08210",
+              "url": "https://arxiv.org/abs/2109.08210"
+            }
+          ],
+          "coauthors": "Usman Hafeez, Peter Marcus, and Angélica Osorno",
+          "abstract": "Transfer systems are combinatorial objects which classify $N_\\infty$ operads up to homotopy. By results of A. Blumberg and M. Hill, every transfer system associated to a linear isometries operad is also saturated (closed under a particular two-out-of-three property). We investigate saturated and linear isometric transfer systems with equivariance group $C_{p^mq^n}$, the cyclic group of order $p^mq^n$ for $p,q$ distinct primes and $m,n\\ge 0$. We give a complete enumeration of saturated transfer systems for $C_{p^mq^n}$. We also prove J. Rubin's saturation conjecture for $C_{pq^n}$; this says that every saturated transfer system is realized by a linear isometries operad for $p,q$ sufficiently large (greater than $3$ in this case)."
+        },
+        {
+          "title": "Model structures on finite total orders",
+          "links": [
+            {
+              "text": "Mathematische Zeitschrift",
+              "url": "https://doi.org/10.1007/s00209-023-03287-6"
+            },
+            {
+              "text": "arXiv:2109.07803",
+              "url": "https://arxiv.org/abs/2109.07803"
+            }
+          ],
+          "coauthors": "Scott Balchin, Angélica Osorno, and Constanze Roitzheim",
+          "abstract": "We initiate the study of model structures on (categories induced by) lattice posets, a subject we dub homotopical combinatorics. In the case of a finite total order $[n]$, we enumerate all model structures, exhibiting a rich combinatorial structure encoded by Shapiro's Catalan triangle. This is an application of previous work of the authors on the theory of $N_\\infty$-operads for cyclic groups of prime power order, along with new structural insights concerning extending choices of certain model structures on subcategories of $[n]$."
+        },
+        {
+          "title": "Self-duality of the lattice of transfer systems via weak factorization systems",
+          "links": [
+            {
+              "text": "Homology, Homotopy and Applications",
+              "url": "https://dx.doi.org/10.4310/HHA.2022.v24.n2.a6"
+            },
+            {
+              "text": "arXiv:2102.04415",
+              "url": "https://arxiv.org/abs/2102.04415"
+            }
+          ],
+          "coauthors": "Evan E. Franchere, Angélica M Osorno, Weihang Qin, and Riley Waugh",
+          "abstract": "For a finite group $G$, $G$-transfer systems are combinatorial objects which encode the homotopy category of $G$-$N_\\infty$ operads, whose algebras in $G$-spectra are $E_\\infty$ $G$-spectra with a specified collection of multiplicative norms. For $G$ finite Abelian, we demonstrate a correspondence between $G$-transfer systems and weak factorization systems on the poset category of subgroups of $G$. This induces a self-duality on the lattice of $G$-transfer systems."
+        },
+        {
+          "title": "Biased permutative equivariant categories",
+          "links": [
+            {
+              "text": "Homology, Homotopy and Applications",
+              "url": "http://dx.doi.org/10.4310/HHA.2021.v23.n1.a6"
+            },
+            {
+              "text": "arXiv:1907.00933",
+              "url": "https://arxiv.org/abs/1907.00933"
+            }
+          ],
+          "coauthors": "Kayleigh Bangs, Skye Binegar, Young Kim, Angélica M. Osorno, David Tamas-Parris, and Livia Xu",
+          "abstract": "For a finite group $G$, we introduce the complete suboperad $\\mathcal QG$ of the categorical $G$-Barratt-Eccles operad $\\mathcal PG$. We prove that $\\mathcal PG$ is not finitely generated, but $\\mathcal QG$ is finitely generated and is a genuine $E_\\infty$ $G$-operad (i.e. it is $N_\\infty$ and includes all norms). For $G$ cyclic of order 2 or 3, we determine presentations of the object operad of $\\mathcal QG$ and conclude with a discussion of algebras over $\\mathcal QG$, which we call biased permutative equivariant categories."
+        },
+        {
+          "title": "The homotopy groups of the $\\eta$-periodic motivic sphere spectrum",
+          "links": [
+            {
+              "text": "Pacific Journal of Mathematics",
+              "url": "https://doi.org/10.2140/pjm.2020.306.679"
+            },
+            {
+              "text": "arXiv:1906.11670",
+              "url": "https://arxiv.org/abs/1906.11670"
+            }
+          ],
+          "coauthors": "Oliver Röndigs",
+          "abstract": "We compute the homotopy groups of the $\\eta$-periodic motivic sphere spectrum over a finite-dimensional field $k$ with characteristic not 2 and in which $-1$ a sum of four squares. We also study the general characteristic 0 case and show that the $\\eta$-periodic slice spectral sequence over $\\mathbb{Q}$ determines the $\\eta$-periodic slice spectral sequence over all extensions of $\\mathbb{Q}$. This leads to a speculation on the role of a \"connective Witt-theoretic $J$-spectrum\" in $\\eta$-periodic motivic homotopy theory."
+        },
+        {
+          "title": "Vanishing in stable motivic homotopy sheaves",
+          "links": [
+            {
+              "text": "Forum of Mathematics, Sigma",
+              "url": "https://doi.org/10.1017/fms.2018.3"
+            },
+            {
+              "text": "arXiv:1704.04744",
+              "url": "https://arxiv.org/abs/1704.04744"
+            }
+          ],
+          "coauthors": "Oliver Röndigs and Paul Arne Østvær",
+          "abstract": "We determine systematic regions in which the bigraded homotopy sheaves of the motivic sphere spectrum vanish."
+        },
+        {
+          "title": "The stable Galois correspondence for real closed fields",
+          "links": [
+            {
+              "text": "Contemporary Mathematics",
+              "url": "https://doi.org/10.1090/conm/707/14250"
+            },
+            {
+              "text": "arXiv:1701.09099",
+              "url": "https://arxiv.org/abs/1701.09099"
+            }
+          ],
+          "coauthors": "Jeremiah Heller",
+          "abstract": "In previous work, the authors constructed and studied a lift of the Galois correspondence to stable homotopy categories. In particular, if $L/k$ is a finite Galois extension of fields with Galois group $G$, there is a functor $c^∗_{L/k}$ from the $G$-equivariant stable homotopy category to the stable motivic homotopy category over $k$ such that $c^∗_{L/k}(G/H_+)=\\mathrm{Spec}(L^H)_+$. We proved that when $k$ is a real closed field and $L=k[i]$, the restriction of $c^∗_{L/k}$ to the $\\eta$-complete subcategory is full and faithful. Here we \"uncomplete\" this theorem so that it applies to $c^∗_{L/k}$ itself. Our main tools are Bachmann's theorem on the $(2,\\eta)$-periodic stable motivic homotopy category and an isomorphism range for the map on bigraded stable stems induced by $C_2$-equivariant Betti realization."
+        },
+        {
+          "title": "Primes and fields in stable motivic homotopy theory",
+          "links": [
+            {
+              "text": "Geometry & Topology",
+              "url": "https://doi.org/10.2140/gt.2018.22.2187"
+            },
+            {
+              "text": "arXiv:1608.02876",
+              "url": "https://arxiv.org/abs/1608.02876"
+            }
+          ],
+          "coauthors": "Jeremiah Heller",
+          "abstract": "Let $F$ be a field of characteristic different than 2. We establish surjectivity of Balmer's comparison map $\\rho^*$ from the tensor triangular spectrum of the homotopy category of compact motivic spectra to the homogeneous Zariski spectrum of Milnor-Witt $K$-theory. We also comment on the tensor triangular geometry of compact cellular motivic spectra, producing in particular novel field spectra in this category. We conclude with a list of questions about the structure of the tensor triangular spectrum of the stable motivic homotopy category."
+        },
+        {
+          "title": "On the ring of cooperations for 2-primary connective topological modular forms",
+          "links": [
+            {
+              "text": "Journal of Topology",
+              "url": "https://doi.org/10.1112/topo.12094"
+            },
+            {
+              "text": "arXiv:1501.01050",
+              "url": "https://arxiv.org/abs/1501.01050"
+            }
+          ],
+          "coauthors": "Mark Behrens, Nathaniel Stapleton, and Vesna Stojanoska",
+          "abstract": "We analyze the ring $\\mathrm{tmf}_*\\mathrm{tmf}$ of cooperations for the connective spectrum of topological modular forms (at the prime 2) through a variety of perspectives: (1) the $E_2$-term of the Adams spectral sequence for $\\mathrm{tmf} \\wedge \\mathrm{tmf}$ admits a decomposition in terms of Ext groups for $\\mathrm{bo}$-Brown-Gitler modules, (2) the image of $\\mathrm{tmf}_*\\mathrm{tmf}$ in the rationalization of $\\mathrm{TMF}_*\\mathrm{TMF}$ admits a description in terms of 2-variable modular forms, and (3) modulo $v_2$-torsion, $\\mathrm{tmf}_*\\mathrm{tmf}$ injects into a certain product of copies of $\\mathrm{TMF}_0(N)_*$, for various values of $N$. We explain how these different perspectives are related, and leverage these relationships to give complete information on $\\mathrm{tmf}_*\\mathrm{tmf}$ in low degrees. We reprove a result of Davis-Mahowald-Rezk, that a piece of $\\mathrm{tmf} \\wedge \\mathrm{tmf}$ gives a connective cover of $\\mathrm{TMF}_0(3)$, and show that another piece gives a connective cover of $\\mathrm{TMF}_0(5)$. To help motivate our methods, we also review the existing work on $\\mathrm{bo}_*\\mathrm{bo}$, the ring of cooperations for (2-primary) connective $K$-theory, and in the process give some new perspectives on this classical subject matter."
+        },
+        {
+          "title": "Galois equivariance and stable motivic homotopy theory",
+          "links": [
+            {
+              "text": "Transactions of the American Mathematical Society",
+              "url": "https://doi.org/10.1090/tran6647"
+            },
+            {
+              "text": "arXiv:1401.4728",
+              "url": "https://arxiv.org/abs/1401.4728"
+            }
+          ],
+          "coauthors": "Jeremiah Heller",
+          "abstract": "For a finite Galois extension of fields $L/k$ with Galois group $G$, we study a functor from the $G$-equivariant stable homotopy category to the stable motivic homotopy category over $k$ induced by the classical Galois correspondence. We show that after completing at a prime and $\\eta$ (the motivic Hopf map) this results in a full and faithful embedding whenever $k$ is real closed and $L = k[i]$. It is a full and faithful embedding after $\\eta$-completion if a motivic version of Serre's finiteness theorem is valid. We produce strong necessary conditions on the field extension $L/k$ for this functor to be full and faithful. Along the way, we produce several results on the stable $C_2$-equivariant Betti realization functor and prove convergence theorems for the $p$-primary $C_2$-equivariant Adams spectral sequence."
+        },
+        {
+          "title": "Stable motivic $\\pi_1$ of low-dimensional fields",
+          "links": [
+            {
+              "text": "Advances in Mathematics",
+              "url": "https://doi.org/10.1016/j.aim.2014.07.024"
+            },
+            {
+              "text": "arXiv:1310.2970",
+              "url": "https://arxiv.org/abs/1310.2970"
+            }
+          ],
+          "coauthors": "Paul Arne Østvær",
+          "abstract": "Let $k$ be a field with cohomological dimension less than 3; we call such fields low-dimensional. Examples include algebraically closed fields, finite fields and function fields thereof, local fields, and number fields with no real embeddings. We determine the 1-column of the motivic Adams-Novikov spectral sequence over $k$. Combined with rational information we use this to compute the first stable motivic homotopy group of the sphere spectrum over $k$. Our main result affirms Morel's $\\pi_1$-conjecture in the case of low-dimensional fields. We also determine stable motivic $\\pi_1$ in integer weights other than $-2$, $-3$, and $-4$."
+        },
+        {
+          "title": "On the homotopy of $Q(3)$ and $Q(5)$ at the prime 2",
+          "links": [
+            {
+              "text": "Algebraic & Geometric Topology",
+              "url": "https://doi.org/10.2140/agt.2016.16.2459"
+            },
+            {
+              "text": "arXiv:1211.0076",
+              "url": "https://arxiv.org/abs/1211.0076"
+            }
+          ],
+          "coauthors": "Mark Behrens",
+          "abstract": "We study modular approximations $Q(\\ell)$, $\\ell = 3,5$, of the $K(2)$-local sphere at the prime 2 that arise from $\\ell$-power degree isogenies of elliptic curves. We develop Hopf algebroid level tools for working with $Q(\\ell)$ and record Hill, Hopkins, and Ravenel's computation of the homotopy groups of $\\mathrm{TMF}_0(5)$. Using these tools and formulas of Mahowald and Rezk for $Q(3)$ we determine the image of Shimomura's 2-primary divided $\\beta$-family in the Adams-Novikov spectral sequences for $Q(3)$ and $Q(5)$. Finally, we use low-dimensional computations of the homotopy of $Q(3)$ and $Q(5)$ to explore the role of these spectra as approximations to the $K(2)$-local sphere."
+        },
+        {
+          "title": "Motivic Brown-Peterson invariants of the rationals",
+          "links": [
+            {
+              "text": "Geometry & Topology",
+              "url": "https://doi.org/10.2140/gt.2013.17.1671"
+            },
+            {
+              "text": "arXiv:1208.5007",
+              "url": "https://arxiv.org/abs/1208.5007"
+            }
+          ],
+          "coauthors": "Paul Arne Østvær",
+          "abstract": "Fix the base field $\\mathbb{Q}$ of rational numbers and let $\\mathrm{BP}\\langle n\\rangle$ denote the family of motivic truncated Brown-Peterson spectra over $\\mathbb{Q}$. We employ a \"local-to-global\" philosophy in order to compute the motivic Adams spectral sequence converging to the bi-graded homotopy groups of $\\mathrm{BP}\\langle n\\rangle$. Along the way, we provide a new computation of the homotopy groups of $\\mathrm{BP}\\langle n\\rangle$ over the 2-adic rationals, prove a motivic Hasse principle for the spectra $\\mathrm{BP}\\langle n\\rangle$, and deduce several classical and recent theorems about the $K$-theory of particular fields."
+        },
+        {
+          "title": "The homotopy limit problem for Hermitian K-theory, equivariant motivic homotopy theory and motivic real cobordism",
+          "links": [
+            {
+              "text": "Advances in Mathematics",
+              "url": "https://doi.org/10.1016/j.aim.2011.05.019"
+            },
+            {
+              "text": "PDF",
+              "url": "/files/holim_KO.pdf"
+            }
+          ],
+          "coauthors": "Po Hu and Igor Kriz",
+          "abstract": "The homotopy limit problem for Karoubi’s Hermitian $K$-theory was posed by Thomason. There is a canonical map from algebraic Hermitian $K$-theory to the $\\mathbb{Z}/2$-homotopy fixed points of algebraic $K$-theory. The problem asks, roughly, how close this map is to being an isomorphism, specifically after completion at 2. In this paper, we solve this problem completely for fields of characteristic 0 (Theorems 16, 20). We show that the 2-completed map is an isomorphism for fields $F$ of characteristic 0 which satisfy $\\mathrm{cd}_2(F[i]) < \\infty$, but not in general."
+        },
+        {
+          "title": "Motivic invariants of $p$-adic fields",
+          "links": [
+            {
+              "text": "Journal of $K$-theory",
+              "url": "https://doi.org/10.1017/is011004017jkt153"
+            },
+            {
+              "text": "arXiv:1002.5007",
+              "url": "https://arxiv.org/abs/1002.5007"
+            }
+          ],
+          "abstract": "We provide a complete analysis of the motivic Adams spectral sequences converging to the bigraded coefficients of the 2-complete algebraic Johnson-Wilson spectra $\\mathrm{BPGL}\\langle n\\rangle$ over $p$-adic fields. These spectra interpolate between integral motivic cohomology ($n=0$), a connective version of algebraic $K$-theory ($n=1$), and the algebraic Brown-Peterson spectrum. We deduce that, over $p$-adic fields, the 2-complete $\\mathrm{BPGL}\\langle n\\rangle$ split over 2-complete $\\mathrm{BPGL}\\langle 0\\rangle$, implying that the slice spectral sequence for $\\mathrm{BPGL}$ collapses. This is the first in a series of two papers investigating motivic invariants of $p$-adic fields, and it lays the groundwork for an understanding of the motivic Adams-Novikov spectral sequence over such base fields."
+        },
+        {
+          "title": "Convergence of the motivic Adams spectral sequence",
+          "links": [
+            {
+              "text": "Journal of $K$-theory",
+              "url": "https://doi.org/10.1017/is011003012jkt150"
+            },
+            {
+              "text": "PDF",
+              "url": "/files/convergence_mASS.pdf"
+            }
+          ],
+          "coauthors": "Po Hu and Igor Kriz",
+          "abstract": "We prove convergence of the motivic Adams spectral sequence to completions at $p$ and $\\eta$ under suitable conditions. We also discuss further conditions under which $\\eta$ can be removed from the statement."
+        },
+        {
+          "title": "Remarks on motivic homotopy theory over algebraically closed fields",
+          "links": [
+            {
+              "text": "Journal of $K$-theory",
+              "url": "https://doi.org/10.1017/is010001012jkt098"
+            },
+            {
+              "text": "PDF",
+              "url": "/files/algClosedMotivicHomotopy.pdf"
+            }
+          ],
+          "abstract": "We study the motivic Adams and Adams-Novikov spectral sequences and the motivic $J$-homomorphism over algebraically closed characteristic 0 fields."
+        },
+        {
+          "title": "Computations in stable motivic homotopy theory",
+          "links": [
+            {
+              "text": "Ph.D. thesis",
+              "url": "https://deepblue.lib.umich.edu/handle/2027.42/77824"
+            }
+          ],
+          "abstract": "This thesis is concerned with the application of certain computational methods from stable algebraic topology in motivic homotopy theory over $p$-adic fields. My main tools are motivic analogues of the Adams and Adams-Novikov spectral sequences. I determine the coefficients of $2$-complete algebraic cobordism and a type of connective algebraic $K$-theory in the motivic setting. I describe the $E_2$-term of the motivic Adams-Novikov spectral sequence in terms of the $E_2$-term of the topological Adams-Novikov spectral sequence and basic arithmetic information. Within this algebra, I discover a motivic analogue of the $\\alpha$-family and determine its behavior within the motivic Adams-Novikov spectral sequence. This is an \"infinite result\" in the stable motivic homotopy groups of the 2-complete sphere spectrum over a $p$-adic field."
+        }
+      ]
+    },
+    {
+      "id": "student-papers",
+      "title": "student papers",
+      "style": "paper",
+      "note": "I have the pleasure of mentoring student research projects at Reed, both through senior theses and summer research. Some of these result in independent publications, listed here.",
+      "items": [
+        {
+          "title": "Equivariant linear isometries operads over Abelian groups",
+          "by": "Ethan MacBrough",
+          "meta": "Accepted in Transctions of the American Mathematical Society.",
+          "links": [
+            {
+              "text": "arXiv:2311.08797",
+              "url": "https://arxiv.org/abs/2311.08797"
+            }
+          ],
+          "abstract": "$N_\\infty$-operads are an equivariant generalization of $E_\\infty$-operads introduced by Blumberg and Hill to study structural problems in equivariant stable homotopy theory. In the original paper introducing these objects, Blumberg and Hill raised the question of classifying $N_\\infty$-operads that are weakly equivalent to a particularly nice kind of $N_\\infty$-operad called a linear isometries operad. For some groups there is a known classification of linear isometries operads up to weak equivalence in terms of certain combinatorially defined objects called saturated transfer systems, but this classification is known to be invalid in general. Various authors have made incremental progress on understanding the domain of validity for this classification, but even among cyclic groups the validity is unknown in general. We determine essentially all the finite Abelian groups for which the classification is valid using techniques from algebra and extremal combinatorics."
+        },
+        {
+          "title": "The spectrum of the Burnside Tambara functor of a cyclic group",
+          "by": "Maxine Calle and Sam Ginnett",
+          "links": [
+            {
+              "text": "Journal of Pure and Applied Algebra",
+              "url": "https://doi.org/10.1016/j.jpaa.2023.107344"
+            },
+            {
+              "text": "arXiv:2011.04729",
+              "url": "https://arxiv.org/abs/2011.04729"
+            }
+          ],
+          "abstract": "We derive a family of prime ideals of the Burnside Tambara functor for a finite group $G$. In the case of cyclic groups, this family comprises the entire prime spectrum. We include some partial results towards the same result for a larger class of groups."
+        },
+        {
+          "title": "The Tambara structure of the trace ideal for cyclic extensions",
+          "by": "Maxine Calle and Sam Ginnett with an appendix by Harry Chen and Xinling Chen",
+          "links": [
+            {
+              "text": "Journal of Algebra",
+              "url": "https://doi.org/10.1016/j.jalgebra.2020.04.036"
+            },
+            {
+              "text": "arXiv:1910.03029",
+              "url": "https://arxiv.org/abs/1910.03029"
+            }
+          ],
+          "abstract": "This paper explores the Tambara functor structure of the trace ideal of a Galois extension. In the case of a (pro-)cyclic extension, we are able to explicitly determine the generators of the ideal. Furthermore, we show that the absolute trace ideal of a cyclic group is strongly principal when viewed as an ideal of the Burnside Tambara Functor. Applying our results, we calculate the trace ideal for extensions of finite fields. The appendix determines a formula for the norm of a quadratic form over an arbitrary finite extension of a finite field."
+        },
+        {
+          "title": "Injectivity and surjectivity of the Dress map",
+          "by": "Ricardo G",
+          "meta": "Rojas-Echenique.",
+          "links": [
+            {
+              "text": "Journal of Pure and Applied Algebra",
+              "url": "https://doi.org/10.1016/j.jpaa.2016.05.013"
+            },
+            {
+              "text": "arXiv:1602.01010",
+              "url": "https://arxiv.org/abs/1602.01010"
+            }
+          ],
+          "abstract": "For a nontrivial finite Galois extension $L/k$ (where the characteristic of $k$ is different from 2) with Galois group $G$, we prove that the Dress map $h_{L/k}:A(G)\\to GW(k)$ is injective if and only if $L=k(\\sqrt{\\alpha})$ where $\\alpha$ is not a sum of squares in $k^\\times$. Furthermore, we prove that $h_{L/k}$ is surjective if and only if $k$ is quadratically closed in $L$. As a consequence, we give strong necessary conditions for faithfulness of the Heller-Ormsby functor $c^∗_{L/k}:\\mathrm{SH_G}\\to \\mathrm{SH_k}$, as well as strong necessary conditions for fullness of $c^*+{L/k}$."
+        },
+        {
+          "title": "The homogeneous spectrum of Milnor–Witt $K$-theory",
+          "by": "Riley Thornton",
+          "links": [
+            {
+              "text": "Journal of Algebra",
+              "url": "https://doi.org/10.1016/j.jalgebra.2016.04.012"
+            },
+            {
+              "text": "arXiv:1501.08499",
+              "url": "https://arxiv.org/abs/1510.08499"
+            }
+          ],
+          "abstract": "For any field $F$ (of characteristic not equal to 2), we determine the Zariski spectrum of homogeneous prime ideals in $K^{MW}_*(F)$, the Milnor-Witt $K$-theory ring of $F$. As a corollary, we recover Lorenz and Leicht's classical result on prime ideals in the Witt ring of $F$. Our computation can be seen as a first step in Balmer's program for studying the tensor triangular geometry of the stable motivic homotopy category."
+        }
+      ]
+    },
+    {
+      "id": "published-expository-writing",
+      "title": "published expository writing",
+      "style": "paper",
+      "note": "",
+      "items": [
+        {
+          "title": "Homotopical combinatorics",
+          "links": [
+            {
+              "text": "Notices of the AMS",
+              "url": "https://www.ams.org/journals/notices/202402/noti2882/noti2882.html"
+            }
+          ],
+          "abstract": "A survey of recent progress in homotopical combinatorics focused on transfer systems and model structures on posets; also an advertisement for the [2024 Homotopical Combinatorics MRC](https://www.ams.org/programs/research-communities/2024MRC-HomotopicalComb)."
+        }
+      ]
+    },
+    {
+      "id": "other-expository-writing",
+      "title": "other expository writing",
+      "style": "paper",
+      "note": "",
+      "items": [
+        {
+          "title": "Discrete structures",
+          "links": [
+            {
+              "text": "PDF",
+              "url": "/files/113full_text.pdf"
+            }
+          ],
+          "coauthors": "David Perkinson",
+          "abstract": "Draft course notes for Reed's Math 113: Discrete Structures course. Topics include enumerative combinatorics (including graph theory, Joyal's proof of Cayley's formula, and Catalan structures), discrete probability, and elementary number theory. This text is the primary reference for a flipped class focused on collaborative problem-solving."
+        },
+        {
+          "title": "Milnor forms of algebraic singularities",
+          "links": [
+            {
+              "text": "PDF",
+              "url": "/files/A1Milnor.pdf"
+            }
+          ],
+          "abstract": "Notes for the 2021 PCMI [Undergraduate Faculty Program](/ufp/). Informal introduction to hypersurface singularities and their Milnor forms, _i.e._, $\\mathbb{A}^1$-Milnor numbers, including some recollections on classical Milnor numbers, a quick development of the algebraic theory of quadratic forms, and the construction of (local) motivic degree and its relation with the Eisenbud–Levine/Khimshiashvili form. Everything is motivated by the second derivative test from multivariable calculus, and we conclude with some open research problems regarding resolution of singularities over non-algebraically closed fields."
+        },
+        {
+          "title": "Quadratic forms, the Grothendieck-Witt ring, transfers, norms, and restrictions",
+          "links": [
+            {
+              "text": "PDF",
+              "url": "/files/quadratic_TNR.pdf"
+            }
+          ],
+          "abstract": "These notes outline the algebraic theory of quadratic forms and define the Tambara functor structure (restriction, Scharlau transfer, and Rost norm) on the Grothendieck-Witt ring of quadratic forms. They were produced for the summer school portion of the 2019 Collaborative Mathematics Research Group."
+        },
+        {
+          "title": "Project project",
+          "links": [
+            {
+              "text": "Blog",
+              "url": "http://people.reed.edu/~ormsbyk/projectproject/"
+            }
+          ],
+          "abstract": "This is a Reed College summer research <em>Project</em> dedicated to <em>Projecting</em> mathematical ideas into the visual realm. The team consists of Henry Blanchette, Cameron Fish, Chris Henn, Kyle Ormsby, Lana Tollas, and Jalan Ziyad. The blog contains details about what we make, how we make it, and the math underlying all of it."
+        }
+      ]
+    },
+    {
+      "id": "seminars-and-conferences-organized",
+      "title": "seminars and conferences organized",
+      "style": "plain",
+      "note": "",
+      "items": [
+        {
+          "text": "Co-organizer of [Equivariant, Motivic, and Physical Topology in the Midwest](https://cse.umn.edu/math/events/equivariant-motivic-and-physical-topology-midwest) at University of Minnesota, October 24-26, 2025."
+        },
+        {
+          "text": "Co-organizer of a 2024 [Mathematics Research Community](http://www.ams.org/programs/research-communities/mrc) on homotopical combinatorics."
+        },
+        {
+          "text": "Director for the [eCHT REU](/eCHT_REU/) (virtual), June 12 - July 21, 2023."
+        },
+        {
+          "text": "Co-organizer of the [UW Topology Seminar](https://math.washington.edu/events/series/topology-seminar), 2022 - present."
+        },
+        {
+          "text": "Lecturer for the [Undergraduate Faculty Program](/ufp/) at PCMI (virtual), August 2-6, 2021."
+        },
+        {
+          "text": "Organizer of the [Reed College Math Colloquium](https://www.reed.edu/math/seminars/index.html), 2014-2019."
+        },
+        {
+          "text": "Co-organizer of the 59th [Cascade Topology Seminar](http://people.reed.edu/~aosorno/cascadeS19.html) at Portland State University, May 11-12, 2019 with Steve Bleiler and Angélica Osorno."
+        },
+        {
+          "text": "Co-organizer of the AMS special session [Homotopy Theory](http://www.ams.org/meetings/sectional/2251_program_ss48.html#title) at University of Hawaii Manoa, March 23-24, 2019 with Angélica Osorno."
+        },
+        {
+          "text": "Co-organizer of the AMS special session [Motivic Homotopy Theory](http://www.ams.org/meetings/sectional/2248_program_ss6.html#title) at Portland State University, April 14-15, 2018 with Dan Dugger."
+        },
+        {
+          "text": "Local co-organizer of the [Underrepresented Students in Topology and Algebra Research Symposium](https://www.ustars.org/) (USTARS) at Reed College, April 7-9, 2018 with Angélica Osorno."
+        },
+        {
+          "text": "Co-organizer of the conference [Homotopy theory in the ecliptic](https://sites.google.com/site/eclipseconference/home) at Reed College, August 18-21, 2017 with Agnès Beaudry, Irina Bobkova, Safia Chettih, Dan Dugger, Mike Hill, John Lind, and Angélica Osorno."
+        },
+        {
+          "text": "Scientific co-organizer for the [West Coast Algebraic Topology Summer School](https://www.pims.math.ca/scientific-event/160808-wcatss) on homotopy theory and number theory, August 8-13, 2016 with Agnes Beaudry, Mike Hill, Tyler Lawson, Vesna Stojanoska, Jared Weinstein, and Kirsten Wickelgren."
+        },
+        {
+          "text": "Co-organizer of the AIM workshop [Equivariant Derived Algebraic Geometry](http://aimath.org/workshops/upcoming/equideralggeom/), June 13-17, 2016 with Andrew Blumberg, Teena Gerhardt, and Mike Hill."
+        },
+        {
+          "text": "Co-organizer of the 55th [Cascade Topology Seminar](http://people.reed.edu/~ormsbyk/ctsfall15), November 7-8, 2015 with Steve Bleiler and Angélica Osorno."
+        },
+        {
+          "text": "Co-organizer of the conference [Equivariant and motivic homotopy theory](http://people.reed.edu/~ormsbyk/eqmotconf2015), May 30-31, 2015 with Angélica Osorno."
+        },
+        {
+          "text": "Co-organizer of the 2011 [Summer Seminar on QFT](http://people.reed.edu/~ormsbyk/QFT.html) with Chris Schommer-Pries."
+        }
+      ]
+    },
+    {
+      "id": "recent-talks",
+      "title": "recent talks",
+      "style": "talk",
+      "note": "",
+      "items": [
+        {
+          "title": "Homotopical combinatorics and equivariant derived algebraic geometry",
+          "date": "21 October 2025",
+          "venue": "Washington University Algebraic Geometry & Combinatorics Seminar"
+        },
+        {
+          "title": "Poly-Bernoulli numbers and the enumeration of submonoids",
+          "date": "11 September 2025",
+          "venue": "Reed College Mathematics & Statistics Colloquium"
+        },
+        {
+          "title": "Poly-Bernoulli numbers & matchstick games on cylinders",
+          "date": "9 January 2025",
+          "venue": "JMM",
+          "links": [
+            {
+              "text": "Slides",
+              "url": "/files/pB_matches.pdf"
+            }
+          ]
+        },
+        {
+          "title": "Counting model structures",
+          "date": "23 April 2024",
+          "venue": "CU Boulder Topology Day"
+        },
+        {
+          "title": "Transfer systems and the combinatorics of model structures",
+          "date": "20 March 2024",
+          "venue": "UBC Topology Seminar"
+        },
+        {
+          "title": "Factorization systems on posets",
+          "date": "29 February 2024",
+          "venue": "Reed College Math Colloquium"
+        },
+        {
+          "title": "A motivic analogue of the $K(1)$-local sphere spectrum",
+          "date": "26 October 2023",
+          "venue": "UW Topology Seminar"
+        },
+        {
+          "title": "$N_\\infty$ operads and the combinatorics of model structures",
+          "date": "8 August 2023",
+          "venue": "Oberwolfach Research Institute for Mathematics",
+          "links": [
+            {
+              "text": "Report",
+              "url": "/files/Ninfty.pdf"
+            }
+          ]
+        },
+        {
+          "title": "Math and shapes",
+          "date": "1 June 2023",
+          "venue": "B.F. Day Elementary School",
+          "links": [
+            {
+              "text": "Slides",
+              "url": "/files/mathshapes.pdf"
+            }
+          ]
+        },
+        {
+          "title": "Counting in Catalan: handshakes, trees, & paths",
+          "date": "21 May 2023",
+          "venue": "UW Math Hour",
+          "links": [
+            {
+              "text": "Slides",
+              "url": "/files/Math_Hour_UW.pdf"
+            },
+            {
+              "text": "video",
+              "url": "https://www.youtube.com/watch?v=dk01g2fBCmw"
+            }
+          ]
+        },
+        {
+          "title": "Homotopical Combinatorics",
+          "date": "29 April 2023",
+          "venue": "Cascade Topology Seminar, UBC"
+        },
+        {
+          "title": "Some homotopy groups of $S$",
+          "date": "18 April 2023",
+          "venue": "eCHT tmf Seminar, virtual",
+          "links": [
+            {
+              "text": "Slides",
+              "url": "/files/eCHT_18April23.pdf"
+            }
+          ]
+        },
+        {
+          "title": "Transfer Systems and Model Structures for Combinatorialists",
+          "date": "18 January 2023",
+          "venue": "UW Combinatorics and Geometry Seminar",
+          "links": [
+            {
+              "text": "Slides",
+              "url": "/files/UW_Combo.pdf"
+            }
+          ]
+        },
+        {
+          "title": "Homotopical Combinatorics",
+          "date": "25 October 2022",
+          "venue": "UW Topology Seminar",
+          "links": [
+            {
+              "text": "Slides",
+              "url": "/files/UW_Htpy_Combo.pdf"
+            },
+            {
+              "text": "video",
+              "url": "https://youtu.be/UNDN5gUTPZY"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,25 +1,143 @@
 ---
 import Base from '../../layouts/Base.astro';
+import { inline } from '../../lib/markup';
+import research from '../../data/research.json';
+
+interface Link { text: string; url: string }
+interface Item {
+  title?: string; by?: string; meta?: string; links?: Link[];
+  abstract?: string; coauthors?: string; venue?: string; date?: string; text?: string;
+}
+interface Section { id: string; title: string; style: string; note: string; items: Item[] }
+
+const sections = research.sections as Section[];
+const papers = sections.filter((s) => s.style === 'paper');
+const count = sections.reduce((n, s) => n + s.items.length, 0);
 ---
 
-<Base title="Research · Kyle Ormsby">
-  <p class="label">research</p>
-  <h1>Research</h1>
-  <p class="lede dim" style="margin-top:var(--s4)">
-    Equivariant, motivic, and chromatic homotopy theory, and the homotopical
-    combinatorics that grew out of them.
-  </p>
+<Base title="Research · Kyle Ormsby" description="Papers, student work, exposition, and talks in homotopy theory and algebraic geometry." wide>
+  <div style="max-width:var(--measure)">
+    <p class="label">research</p>
+    <h1>Papers &amp; products</h1>
+    <p class="lede" style="margin-top:var(--s5)" set:html={inline(research.intro)} />
+  </div>
 
-  <p style="margin-top:var(--s6)">
-    Placeholder for this prototype. The publication list on the current site is
-    36&nbsp;KB of hand-maintained markdown; it is the next thing to move into
-    structured data — one BibTeX file or CSV, rendered here and on a per-paper
-    page, so arXiv numbers, journal references, and coauthor links are typed
-    once rather than once per place they appear.
-  </p>
-  <p>
-    Math in prose is rendered at build time with KaTeX, so pages ship no math
-    engine to the reader. See <a href="/writing/">writing</a> for a real post
-    with inline and display math carried over from the old site.
-  </p>
+  <nav class="rule-label" style="margin-block:var(--s7) var(--s5);flex-wrap:wrap">
+    {sections.map((s) => <a class="label" href={`#${s.id}`}>{s.title}</a>)}
+    <span class="label dim">{count} items</span>
+  </nav>
+
+  {sections.map((s) => (
+    <section id={s.id} style="margin-top:var(--s8)">
+      <h2 class="rule-label" style="margin-top:0"><span class="label">{s.title}</span></h2>
+      {s.note && <p class="dim" style="max-width:var(--measure)">{s.note}</p>}
+
+      {s.style === 'paper' && (
+        <div>
+          {s.items.map((it) => (
+            <article class="pub">
+              <h3 set:html={inline(it.title ?? '')} />
+              <p class="pub-meta">
+                {it.by && <span class="dim">by {it.by}</span>}
+                {it.meta && <span set:html={inline(it.meta)} />}
+                {(it.links ?? []).map((l) => (
+                  <a href={l.url}>{l.text}</a>
+                ))}
+              </p>
+              {it.abstract && (
+                <details>
+                  <summary class="label">abstract{it.coauthors ? ' and coauthors' : ''}</summary>
+                  <div class="pub-abstract">
+                    <p set:html={inline(it.abstract)} />
+                    {it.coauthors && (
+                      <p class="dim" style="margin:0">
+                        <span class="label">with</span> {it.coauthors}
+                      </p>
+                    )}
+                  </div>
+                </details>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
+
+      {s.style === 'talk' && (
+        <div>
+          {s.items.map((it) => (
+            <div class="entry">
+              <span class="label">{it.date}</span>
+              <div>
+                <em set:html={inline(it.title ?? '')} />
+                {it.venue && <div class="dim" style="font-size:0.94rem;margin-top:var(--s1)">{it.venue}</div>}
+                {(it.links ?? []).length > 0 && (
+                  <div class="tags label" style="margin-top:var(--s1)">
+                    {(it.links ?? []).map((l) => <a href={l.url}>{l.text}</a>)}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {s.style === 'plain' && (
+        <ul class="plain-list">
+          {s.items.map((it) => <li set:html={inline(it.text ?? '')} />)}
+        </ul>
+      )}
+    </section>
+  ))}
 </Base>
+
+<style>
+  .pub {
+    padding: var(--s5) 0;
+    border-top: 1px solid var(--rule);
+    max-width: 58rem;
+  }
+  .pub:last-child { border-bottom: 1px solid var(--rule); }
+  .pub h3 { margin: 0; font-size: 1.15rem; line-height: 1.3; }
+
+  .pub-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s1) var(--s4);
+    margin: var(--s2) 0 0;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  .pub-meta a { color: var(--ink); }
+
+  .pub details { margin-top: var(--s3); }
+  .pub summary {
+    cursor: pointer;
+    width: max-content;
+    list-style: none;
+  }
+  .pub summary::-webkit-details-marker { display: none; }
+  .pub summary::before { content: '+ '; }
+  .pub details[open] summary::before { content: '– '; }
+  .pub summary:hover { color: var(--accent); }
+
+  .pub-abstract {
+    margin-top: var(--s3);
+    padding-left: var(--s4);
+    border-left: 1px solid var(--rule);
+    font-size: 0.96rem;
+    line-height: 1.6;
+  }
+  .pub-abstract p { margin: 0 0 var(--s3); }
+  .pub-abstract p:last-child { margin-bottom: 0; }
+
+  .plain-list { margin: 0; padding: 0; list-style: none; max-width: 58rem; }
+  .plain-list li {
+    padding: var(--s3) 0;
+    border-top: 1px solid var(--rule);
+    font-size: 0.98rem;
+  }
+  .plain-list li:last-child { border-bottom: 1px solid var(--rule); }
+
+  nav.rule-label a[href^='#'] { background-image: none; }
+  nav.rule-label a[href^='#']:hover { color: var(--accent); }
+</style>
