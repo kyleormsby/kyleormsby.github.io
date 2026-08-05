@@ -1,17 +1,48 @@
 ---
 /**
- * A quiet nod to the domain name: n labelled points wandering a rectangle,
- * never colliding — a path in the configuration space F(R, n).
+ * A nod to the domain name: 11 points stirring a rectangle, never colliding —
+ * a loop in the configuration space F(R, 11), drawn alongside the braid word
+ * it spells in pi_1.
+ *
+ * The braid is the alternating "brick wall" stir
+ *
+ *     beta = (s1 s3 s5 s7 s9) (s2 s4 s6 s8 s10)^-1
+ *
+ * whose odd and even generators each commute among themselves, so each half
+ * period happens as five simultaneous swaps. beta is pseudo-Anosov: its
+ * dilatation is the largest root of the reciprocal polynomial
+ *
+ *     x^10 - 19x^9 + 145x^8 - 575x^7 + 1289x^6 - 1683x^5
+ *          + 1289x^4 - 575x^3 + 145x^2 - 19x + 1
+ *
+ * that is, lambda = 5.50071..., with topological entropy log lambda = 1.70488.
+ * See tools/braid.py for the derivation and the numerical cross-check.
+ *
+ * One period permutes the points by an 11-cycle, so beta^11 — 110 letters —
+ * is a pure braid: every point returns to its own starting position, and the
+ * path closes in the ORDERED configuration space.
+ *
  * Static single frame when the visitor prefers reduced motion.
  */
 interface Props { points?: number; height?: number; }
-const { points = 11, height = 170 } = Astro.props;
+const { points = 11, height = 260 } = Astro.props;
+
+const LAMBDA = '5.5007';
+const ENTROPY = '1.7049';
 ---
 
 <figure class="motif" style={`--motif-h:${height}px`} data-points={points}>
   <canvas aria-hidden="true"></canvas>
-  <figcaption class="label">
-    a path in <span class="math">F(R,&nbsp;{points})</span> — {points} points that never collide
+  <figcaption>
+    <span class="label">
+      a loop in <span class="math">F(R,&nbsp;{points})</span> — the pseudo-Anosov stir{' '}
+      <span class="math">(σ₁σ₃σ₅σ₇σ₉ · σ₂⁻¹σ₄⁻¹σ₆⁻¹σ₈⁻¹σ₁₀⁻¹)<sup>11</sup></span>
+    </span>
+    <span class="label dim">
+      dilatation <span class="math">λ ≈ {LAMBDA}</span> · entropy{' '}
+      <span class="math">log λ ≈ {ENTROPY}</span> ·{' '}
+      <span data-word-count>0 of 110</span> letters, then every point is home
+    </span>
   </figcaption>
 </figure>
 
@@ -24,106 +55,273 @@ const { points = 11, height = 170 } = Astro.props;
     border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
   }
-  .motif figcaption { margin-top: var(--s3); }
-  .motif .math { font-style: italic; font-family: var(--serif); font-size: 0.9rem; text-transform: none; }
+  .motif figcaption {
+    margin-top: var(--s3);
+    text-transform: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s2) var(--s5);
+    justify-content: space-between;
+  }
+  .motif figcaption .label { text-transform: none; }
+  .motif .math {
+    font-style: italic;
+    font-family: var(--serif);
+    font-size: 0.9rem;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .motif .math sup { font-size: 0.7em; font-style: normal; }
+  @media (max-width: 34rem) {
+    .motif figcaption { display: block; }
+    .motif figcaption .dim { display: block; margin-top: var(--s2); }
+  }
 </style>
 
 <script>
   const fig = document.querySelector<HTMLElement>('.motif');
   const canvas = fig?.querySelector('canvas');
+
   if (fig && canvas) {
     const ctx = canvas.getContext('2d')!;
-    const n = Number(fig.dataset.points ?? 7);
+    const N = Number(fig.dataset.points ?? 11);
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const css = getComputedStyle(document.documentElement);
-    const ink = css.getPropertyValue('--ink').trim() || '#14130F';
-    const accent = css.getPropertyValue('--accent').trim() || '#A93B1B';
-    const rule = css.getPropertyValue('--rule').trim() || '#E3DFD4';
+    // --- the braid ------------------------------------------------------
+    // Each beat is a set of disjoint adjacent transpositions, all performed
+    // at once. Odd generators first (positive), then even (negative).
+    const ODD  = { pairs: [] as number[][], sign: +1 };
+    const EVEN = { pairs: [] as number[][], sign: -1 };
+    for (let i = 0; i + 1 < N; i += 2) ODD.pairs.push([i, i + 1]);
+    for (let i = 1; i + 1 < N; i += 2) EVEN.pairs.push([i, i + 1]);
+    const BEATS = [ODD, EVEN];
+    const PERIOD = 11;                       // beta^11 is a pure braid
 
+    let theme = { ink: '#14130F', accent: '#A93B1B', rule: '#E3DFD4', muted: '#6B6559' };
+    function readTheme() {
+      const css = getComputedStyle(document.documentElement);
+      const v = (k: string, d: string) => css.getPropertyValue(k).trim() || d;
+      theme = {
+        ink: v('--ink', '#14130F'),
+        accent: v('--accent', '#A93B1B'),
+        rule: v('--rule', '#E3DFD4'),
+        muted: v('--muted', '#6B6559'),
+      };
+    }
+
+    // occupancy[k] = which strand currently sits at site k
+    let occupancy = Array.from({ length: N }, (_, i) => i);
+    let beat = 0;                            // index into BEATS, monotonically increasing
+    const history: { pairs: number[][]; sign: number; siteOf: number[] }[] = [];
+
+    const inverse = (occ: number[]) => {
+      const inv = new Array<number>(occ.length);
+      for (let k = 0; k < occ.length; k++) inv[occ[k]] = k;
+      return inv;
+    };
+
+    function advance() {
+      const b = BEATS[beat % BEATS.length];
+      history.push({ pairs: b.pairs, sign: b.sign, siteOf: inverse(occupancy) });
+      const next = occupancy.slice();
+      for (const [p, q] of b.pairs) { next[p] = occupancy[q]; next[q] = occupancy[p]; }
+      occupancy = next;
+      beat++;
+      if (history.length > 64) history.shift();
+    }
+
+    // --- geometry -------------------------------------------------------
     let w = 0, h = 0, dpr = 1;
-    const pts = Array.from({ length: n }, (_, i) => ({
-      x: Math.random(), y: Math.random(),
-      vx: (Math.random() - 0.5) * 0.0016,
-      vy: (Math.random() - 0.5) * 0.0016,
-      accent: i === 0,
-    }));
+    let padY = 18, boxW = 0, diagX = 0, diagW = 0, gap = 0;
 
     function size() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       w = canvas.clientWidth; h = canvas.clientHeight;
-      canvas.width = w * dpr; canvas.height = h * dpr;
+      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      padY = Math.max(14, h * 0.07);
+      gap = (h - 2 * padY) / (N - 1);
+      // The points only ever move +-gap/2 sideways, so the rectangle wants to
+      // be a narrow strip; everything left over goes to the braid diagram.
+      boxW = Math.min(Math.max(gap * 2.6, 46), 96);
+      diagX = boxW + Math.max(20, w * 0.028);
+      diagW = Math.max(60, w - diagX - 4);
     }
 
-    function step() {
-      // Mutual repulsion keeps the points distinct — the defining condition
-      // of the configuration space.
-      for (let i = 0; i < n; i++) {
-        for (let j = i + 1; j < n; j++) {
-          const a = pts[i], b = pts[j];
-          const dx = b.x - a.x, dy = (b.y - a.y) * (h / w);
-          const d2 = dx * dx + dy * dy || 1e-6;
-          if (d2 < 0.02) {
-            const f = 0.0000045 / d2;
-            a.vx -= dx * f; a.vy -= dy * f;
-            b.vx += dx * f; b.vy += dy * f;
+    const siteY = (k: number) => padY + k * gap;
+    const smooth = (t: number) => t * t * (3 - 2 * t);
+
+    // --- the rectangle: 11 points executing the current beat -------------
+    const trails: { x: number; y: number }[][] = Array.from({ length: N }, () => []);
+
+    function pointPositions(f: number) {
+      // Returns, for each strand, its position in the rectangle at phase f.
+      const b = BEATS[beat % BEATS.length];
+      const cx = boxW / 2;
+      const pos = new Array<{ x: number; y: number; over: boolean }>(N);
+      const swapping = new Set<number>();
+      for (const [p, q] of b.pairs) { swapping.add(p); swapping.add(q); }
+      for (let k = 0; k < N; k++) {
+        if (!swapping.has(k)) {
+          pos[occupancy[k]] = { x: cx, y: siteY(k), over: false };
+        }
+      }
+      for (const [p, q] of b.pairs) {
+        const my = (siteY(p) + siteY(q)) / 2;
+        const r = (siteY(q) - siteY(p)) / 2;
+        const th = b.sign * Math.PI * smooth(f);
+        const ct = Math.cos(th), st = Math.sin(th);
+        // rotate (0, -r) and (0, +r) about the midpoint
+        pos[occupancy[p]] = { x: cx + st * r, y: my - ct * r, over: b.sign > 0 };
+        pos[occupancy[q]] = { x: cx - st * r, y: my + ct * r, over: b.sign < 0 };
+      }
+      return pos;
+    }
+
+    function drawRect(f: number) {
+      const pos = pointPositions(f);
+
+      ctx.strokeStyle = theme.rule; ctx.lineWidth = 1;
+      ctx.strokeRect(0.5, padY - gap * 0.6, boxW, (N - 1) * gap + gap * 1.2);
+
+      for (let s = 0; s < N; s++) {
+        const t = trails[s];
+        t.push({ x: pos[s].x, y: pos[s].y });
+        if (t.length > 26) t.shift();
+        if (t.length > 2) {
+          ctx.strokeStyle = s === 0 ? theme.accent : theme.muted;
+          ctx.lineWidth = 1;
+          for (let i = 1; i < t.length; i++) {
+            ctx.globalAlpha = 0.30 * (i / t.length);
+            ctx.beginPath(); ctx.moveTo(t[i - 1].x, t[i - 1].y); ctx.lineTo(t[i].x, t[i].y); ctx.stroke();
           }
         }
       }
-      for (const p of pts) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0.02 || p.x > 0.98) { p.vx *= -1; p.x = Math.min(0.98, Math.max(0.02, p.x)); }
-        if (p.y < 0.06 || p.y > 0.94) { p.vy *= -1; p.y = Math.min(0.94, Math.max(0.06, p.y)); }
-        const s = Math.hypot(p.vx, p.vy);
-        if (s > 0.0022) { p.vx *= 0.0022 / s; p.vy *= 0.0022 / s; }
+      ctx.globalAlpha = 1;
+
+      const order = [...Array(N).keys()].sort((a, b2) => Number(pos[a].over) - Number(pos[b2].over));
+      for (const s of order) {
+        const p = pos[s];
+        if (p.over) {                        // punch a hole so the pass reads
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.beginPath(); ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2); ctx.fill();
+          ctx.globalCompositeOperation = 'source-over';
+        }
+        ctx.fillStyle = s === 0 ? theme.accent : theme.ink;
+        ctx.globalAlpha = s === 0 ? 1 : 0.8;
+        ctx.beginPath(); ctx.arc(p.x, p.y, s === 0 ? 4 : 3.2, 0, Math.PI * 2); ctx.fill();
       }
+      ctx.globalAlpha = 1;
     }
 
-    function draw() {
+    // --- the braid diagram: the same motion in space-time ----------------
+    const BEAT_W = 46;                       // px per beat
+
+    function drawDiagram(f: number) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(diagX, 0, diagW, h); ctx.clip();
+
+      const rightEdge = diagX + diagW;
+      const now = beat + f;                  // continuous time, in beats
+      const visible = Math.ceil(diagW / BEAT_W) + 2;
+      const xOf = (tau: number) => rightEdge - (now - tau) * BEAT_W;
+
+      // Every completed beat, plus the one currently under way. The clip
+      // rectangle trims the in-progress beat at the right edge, so the diagram
+      // grows continuously instead of a beat at a time.
+      const events = history.concat([{
+        pairs: BEATS[beat % BEATS.length].pairs,
+        sign: BEATS[beat % BEATS.length].sign,
+        siteOf: inverse(occupancy),
+      }]);
+      const start = Math.max(0, events.length - visible);
+      for (let s = 0; s < N; s++) {
+        const isAccent = s === 0;
+        ctx.lineWidth = isAccent ? 1.6 : 1.1;
+        ctx.strokeStyle = isAccent ? theme.accent : theme.ink;
+        ctx.globalAlpha = isAccent ? 1 : 0.62;
+
+        for (let hi = start; hi < events.length; hi++) {
+          const ev = events[hi];
+          const bIndex = beat - (events.length - 1 - hi);
+          const k0 = ev.siteOf[s];
+          if (k0 < 0) continue;
+          let k1 = k0, sign = 0, partner = -1;
+          for (const [p, q] of ev.pairs) {
+            if (p === k0) { k1 = q; sign = ev.sign; partner = q; }
+            else if (q === k0) { k1 = p; sign = ev.sign; partner = p; }
+          }
+          const x0 = xOf(bIndex), x1 = xOf(bIndex + 1);
+          if (x1 < diagX - BEAT_W || x0 > rightEdge) continue;
+
+          // Convention: for a positive generator the strand coming from the
+          // lower-indexed site passes over.
+          const goesOver = sign === 0 ? true : (sign > 0 ? k0 < partner : k0 > partner);
+          drawArc(x0, siteY(k0), x1, siteY(k1), goesOver, 1);
+        }
+      }
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+
+    function drawArc(x0: number, y0: number, x1: number, y1: number, over: boolean, upto: number) {
+      const steps = 22;
+      const gapAt = 0.5, gapHalf = y0 === y1 ? 0 : 0.13;
+      let drawing = false;
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const t = (i / steps) * Math.min(1, Math.max(0, upto));
+        if (t > upto) break;
+        const inGap = !over && Math.abs(t - gapAt) < gapHalf;
+        if (inGap) { drawing = false; continue; }
+        const x = x0 + (x1 - x0) * t;
+        const y = y0 + (y1 - y0) * smooth(t);
+        if (!drawing) { ctx.moveTo(x, y); drawing = true; } else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+
+    // --- run -------------------------------------------------------------
+    const BEAT_MS = 900;
+    let t0 = 0, raf = 0;
+
+    function frame(ts: number) {
+      if (!t0) t0 = ts;
+      let f = (ts - t0) / BEAT_MS;
+      while (f >= 1) { advance(); t0 += BEAT_MS; f -= 1; }
       ctx.clearRect(0, 0, w, h);
-      const X = (p: { x: number }) => p.x * w;
-      const Y = (p: { y: number }) => p.y * h;
-
-      ctx.lineWidth = 1;
-      for (let i = 0; i < n; i++) {
-        for (let j = i + 1; j < n; j++) {
-          const a = pts[i], b = pts[j];
-          const d = Math.hypot(X(a) - X(b), Y(a) - Y(b));
-          const reach = Math.max(180, w * 0.26);
-          if (d < reach) {
-            ctx.globalAlpha = 0.55 * (1 - d / reach);
-            ctx.strokeStyle = rule;
-            ctx.beginPath();
-            ctx.moveTo(X(a), Y(a)); ctx.lineTo(X(b), Y(b));
-            ctx.stroke();
-          }
-        }
+      drawDiagram(f);
+      drawRect(f);
+      const counter = fig!.querySelector('[data-word-count]');
+      if (counter) {
+        counter.textContent = `${(beat % (BEATS.length * PERIOD)) * 5} of 110`;
       }
-      ctx.globalAlpha = 1;
-      for (const p of pts) {
-        ctx.fillStyle = p.accent ? accent : ink;
-        ctx.globalAlpha = p.accent ? 1 : 0.75;
-        ctx.beginPath();
-        ctx.arc(X(p), Y(p), p.accent ? 4 : 3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
+      raf = requestAnimationFrame(frame);
     }
 
+    readTheme();
     size();
+
+    // Pre-run whole periods so the diagram is full from the first frame and the
+    // points still start home: 2*PERIOD beats is beta^11 twice, a pure braid.
+    for (let i = 0; i < BEATS.length * PERIOD * 2; i++) advance();
+    beat = 0;
+
     if (still) {
-      for (let i = 0; i < 400; i++) step();
-      draw();
+      ctx.clearRect(0, 0, w, h);
+      drawDiagram(0); drawRect(0);
     } else {
-      let raf = 0;
-      const loop = () => { step(); draw(); raf = requestAnimationFrame(loop); };
       const io = new IntersectionObserver(([e]) => {
-        if (e.isIntersecting && !raf) loop();
+        if (e.isIntersecting && !raf) { t0 = 0; raf = requestAnimationFrame(frame); }
         else if (!e.isIntersecting && raf) { cancelAnimationFrame(raf); raf = 0; }
       });
       io.observe(canvas);
     }
-    addEventListener('resize', () => { size(); draw(); });
+
+    addEventListener('resize', () => {
+      size();
+      if (still) { ctx.clearRect(0, 0, w, h); drawDiagram(0); drawRect(0); }
+    });
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readTheme);
   }
 </script>

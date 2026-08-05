@@ -271,9 +271,13 @@ pre {
 /* ---- images and tables inside posts --------------------------- */
 
 article img, .prose img { max-width: 100%; height: auto; display: block; }
-figure { margin: var(--s6) 0; text-align: center; }
-figure img { margin-inline: auto; }
-figcaption { margin-top: var(--s3); font-size: 0.9rem; color: var(--muted); }
+/* Scoped to prose: the landing-page motif is a <figure> too, and must not
+   inherit the centring meant for post images. */
+article figure, .prose figure { margin: var(--s6) 0; text-align: center; }
+article figure img, .prose figure img { margin-inline: auto; }
+article figcaption, .prose figcaption {
+  margin-top: var(--s3); font-size: 0.9rem; color: var(--muted);
+}
 
 article table, .prose table {
   width: 100%;

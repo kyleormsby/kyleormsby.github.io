@@ -271,6 +271,52 @@ operator was a raw **⧄ (U+29C4)**, which KaTeX cannot set. KaTeX has no
 `{\square\mkern-11mu\diagup}` — no `\mathbin`, because it appears in
 superscript position (`{}^\boxslash R`).
 
+## The landing-page motif
+
+`src/components/Motif.astro` shows 11 points stirring a rectangle beside the
+braid word the motion spells in \(\pi_1\). The braid is the alternating
+"brick wall" stir
+
+    beta = (s1 s3 s5 s7 s9)(s2 s4 s6 s8 s10)^-1   in B_11
+
+The odd generators commute among themselves and so do the even ones, so each
+half period is five simultaneous swaps — which is why the animation has a
+two-beat rhythm rather than plodding through ten crossings one at a time.
+
+One period permutes the points by an 11-cycle, so `beta^11` — 110 letters — is
+a **pure** braid: every point returns to its own starting position, and the
+path closes in the *ordered* configuration space F(R, 11), which is what the
+caption claims. The counter in the caption tracks progress toward those 110.
+
+`beta` is pseudo-Anosov, and its dilatation is the largest root of
+
+    x^10 - 19x^9 + 145x^8 - 575x^7 + 1289x^6 - 1683x^5
+         + 1289x^4 - 575x^3 + 145x^2 - 19x + 1
+
+a reciprocal polynomial, as a dilatation must be — lambda = 5.50071..., giving
+topological entropy log lambda = 1.70488.
+
+### Why you can believe that number
+
+`tools/braid.py` computes it two independent ways, each first validated on the
+classical 3-rod stir `s1 s2^-1`, whose dilatation is exactly (3+sqrt5)/2:
+
+| method | 3-rod control | verdict |
+|---|---|---|
+| spectral radius of Burau at t = -1 | charpoly `x^2 - 3x + 1`, exact | ✓ |
+| growth rate of an advected material line | 2.61810 vs 2.61803 | ✓ 0.003% |
+
+The line-stretching computation advects a polyline through the very same
+half-twist maps the animation uses, resampling as it stretches, and measures
+the length ratio between successive periods. For 11 rods it converges down
+toward 5.50 from above — agreeing with the Burau value to the precision the
+method has. Two different routes, one answer.
+
+```bash
+python3 tools/braid.py     # prints both, with the controls
+npm run shots:motif        # light, dark, narrow, reduced-motion captures
+```
+
 ## Deploying
 
 `.github/workflows/deploy.yml` builds and publishes to GitHub Pages. Set
