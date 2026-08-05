@@ -245,21 +245,31 @@ then redirects `kyleormsby.github.io` to it, which keeps old links working.
 
 ## Hosting files/
 
-2.0 GB: 374 PDFs (1.77 GB), 2 MP4s (104 MB), and assorted sources. GitHub Pages
-publishes at most 1 GB, so this cannot simply be committed alongside the site.
+2.0 GB: 376 PDFs (1.82 GB), 2 MP4s (104 MB), and assorted sources. GitHub Pages
+publishes at most 1 GB, so this cannot ride along with the site.
 
-Measured Ghostscript results on two representative files, so the tradeoff is
-concrete rather than assumed:
+**Compression was measured on all 376 PDFs, not sampled.** Ghostscript
+`-dPDFSETTINGS=/ebook`:
 
-| file | original | `/ebook` | ratio |
-|---|---|---|---|
-| `113full_text.pdf` (textbook) | 34.1 MB | 3.2 MB | 10.6x |
-| `UW_Htpy_Combo.pdf` (slides) | 42.6 MB | 23.2 MB | 1.8x |
+| | |
+|---|---|
+| before | 1861 MB |
+| after | 1257 MB |
+| ratio | **1.48x** |
+| files ghostscript made *larger* | 5 (+10 MB) |
 
-Image-heavy documents shrink dramatically; vector-heavy slide decks barely move.
-So compression alone probably lands somewhere between 400 MB and 1 GB — under
-the limit, but without much margin.
+That is not enough. With the videos and other assets, a fully compressed
+`files/` is still about **1.4 GB** — over the ceiling.
 
-The alternatives are object storage (Cloudflare R2 has no egress fee) behind
-`files.configuration.space`, or pruning material from courses that no longer
-need to be live. Undecided as of this commit.
+The reason is what the bulk of it is: handwritten lecture notes (544, 545, 546,
+201, 411, 111fall24 alone are 1.1 GB after compression). Those are already
+image-compressed, so `/ebook` only finds ~1.4x. LaTeX-generated documents behave
+completely differently — `113spring26/` goes 46 MB -> 7 MB, and the textbook
+alone is 10.6x. Pushing harder (`/screen`, grayscale downsampling) would start
+degrading handwriting students actually have to read.
+
+So the realistic options are object storage (Cloudflare R2: 10 GB free, no
+egress fees) behind `files.configuration.space`, or pruning — dropping the UW
+lecture-note archives would take the remainder well under the limit.
+
+Raw per-file measurements: `tools/pdf_audit.csv`.
