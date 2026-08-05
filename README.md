@@ -6,7 +6,28 @@ A replacement for `kyleormsby.github.io`, built with [Astro](https://astro.build
 npm install
 npm run dev          # http://localhost:4321
 npm run build        # -> dist/
+npm run preview      # serve dist/ exactly as a static host would
 ```
+
+### The files/ directory
+
+Course PDFs, lecture notes, and slides live in the old repo's `files/` folder —
+2.0 GB across 523 files, which is too much to commit here (GitHub Pages caps a
+published site at 1 GB). The dev server mounts them from wherever they already
+are:
+
+```bash
+FILES_DIR=~/Dropbox/GitHub/kyleormsby.github.io/files npm run dev
+```
+
+The default is `../kyleormsby.github.io/files`, so if the two repos are siblings
+it just works. **Deployment still needs a decision** — see "Hosting files/" at
+the bottom.
+
+`astro dev` also does not resolve a directory to its `index.html` inside
+`public/`, so `/lattice-flow/` would 404 in dev while working in the built site.
+Both gaps are closed by a small dev-only Vite plugin at the top of
+`astro.config.mjs`; neither affects the production build.
 
 ## Layout
 
@@ -221,3 +242,24 @@ can be re-imported losslessly.
 `.github/workflows/deploy.yml` builds and publishes to GitHub Pages. Set
 `configuration.space` as the custom domain in the repository settings; GitHub
 then redirects `kyleormsby.github.io` to it, which keeps old links working.
+
+## Hosting files/
+
+2.0 GB: 374 PDFs (1.77 GB), 2 MP4s (104 MB), and assorted sources. GitHub Pages
+publishes at most 1 GB, so this cannot simply be committed alongside the site.
+
+Measured Ghostscript results on two representative files, so the tradeoff is
+concrete rather than assumed:
+
+| file | original | `/ebook` | ratio |
+|---|---|---|---|
+| `113full_text.pdf` (textbook) | 34.1 MB | 3.2 MB | 10.6x |
+| `UW_Htpy_Combo.pdf` (slides) | 42.6 MB | 23.2 MB | 1.8x |
+
+Image-heavy documents shrink dramatically; vector-heavy slide decks barely move.
+So compression alone probably lands somewhere between 400 MB and 1 GB — under
+the limit, but without much margin.
+
+The alternatives are object storage (Cloudflare R2 has no egress fee) behind
+`files.configuration.space`, or pruning material from courses that no longer
+need to be live. Undecided as of this commit.
