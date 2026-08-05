@@ -338,6 +338,23 @@ python3 tools/braid.py     # prints both, with the controls
 npm run shots:motif        # light, dark, narrow, reduced-motion captures
 ```
 
+### The full teaching record
+
+The teaching page lists every course, grouped by institution, newest first. It
+merges two sources: the courses this site builds, and
+`src/data/teaching-archive.json` — everything taught before this site existed,
+whose pages still live where they always did on `people.reed.edu` or the old
+Jekyll site.
+
+An archive entry with no `href` is one whose host is gone: MIT Stellar was
+decommissioned and `math.lsa.umich.edu` no longer resolves, so those courses
+are listed **without** a link rather than with one that fails. Every link that
+is there was checked. Courses move between the two sources by adding a JSON and
+CSV under `src/data/courses/` and deleting the archive line.
+
+`institution` on a course JSON puts it in the right group; it defaults to
+`reed`.
+
 ### A course that lives somewhere else
 
 Math 342 is a PreTeXt book published from its own repo, so its JSON carries an

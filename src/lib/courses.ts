@@ -38,6 +38,7 @@ export interface CourseMeta {
   blurb?: string;
   preamble?: string;       // markdown shown above the schedule
   current?: boolean;       // show in the "currently teaching" list
+  institution?: string;    // 'reed' (default), 'uw', 'elsewhere'
   /**
    * Set when the course site is published elsewhere — a PreTeXt book, say.
    * Every link to the course then points there, and no local page is built,
@@ -142,6 +143,67 @@ export const localCourses = () => allCourses().filter((c) => !c.href);
 
 export function currentCourses(): CourseMeta[] {
   return allCourses().filter((c) => c.current);
+}
+
+/**
+ * Courses taught before this site existed. Their pages still live where they
+ * always did — Reed's people.reed.edu, or the old Jekyll site — so the record
+ * stays complete by linking out rather than by pretending they are gone. An
+ * entry with no `href` is one whose host has since disappeared (MIT Stellar
+ * was decommissioned; math.lsa.umich.edu no longer resolves), and is listed
+ * without a link rather than as one that 404s.
+ */
+export interface ArchiveEntry {
+  institution: string;
+  number: string;
+  title: string;
+  term: string;
+  href?: string;
+  note?: string;
+}
+
+export interface TeachingRow {
+  number: string;
+  title: string;
+  term: string;
+  href?: string;
+  note?: string;
+  blurb?: string;
+}
+
+const INSTITUTIONS = [
+  { key: 'reed', label: 'at reed' },
+  { key: 'uw', label: 'at uw' },
+  { key: 'elsewhere', label: 'elsewhere' },
+];
+
+/**
+ * Everything taught, grouped by institution and newest first, merging the
+ * courses this site builds with the archived ones it only links to.
+ * `skipCurrent` keeps the current term from appearing twice on the page.
+ */
+export function teachingSections(archive: ArchiveEntry[], skipCurrent = true) {
+  const rows: (TeachingRow & { institution: string })[] = allCourses()
+    .filter((c) => !(skipCurrent && c.current))
+    .map((c) => ({
+      number: c.number,
+      title: c.title,
+      term: c.term,
+      href: courseHref(c),
+      blurb: c.blurb,
+      institution: c.institution ?? 'reed',
+    }));
+
+  for (const e of archive) rows.push({ ...e });
+
+  return INSTITUTIONS
+    .map(({ key, label }) => ({
+      label,
+      rows: rows
+        .filter((r) => r.institution === key)
+        .sort((a, b) => termKey(b.term) - termKey(a.term)),
+    }))
+    .filter((s) => s.rows.length > 0);
 }
 
 export { inline };

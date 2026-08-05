@@ -1,19 +1,21 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { allCourses, courseHref } from '../../lib/courses';
+import { allCourses, courseHref, teachingSections, type ArchiveEntry } from '../../lib/courses';
+import archive from '../../data/teaching-archive.json';
 
-const courses = allCourses();
-const current = courses.filter((c) => c.current);
-const past = courses.filter((c) => !c.current);
+const current = allCourses().filter((c) => c.current);
+const sections = teachingSections(archive as ArchiveEntry[]);
 ---
 
 <Base title="Teaching · Kyle Ormsby">
   <p class="label">teaching</p>
   <h1>Courses</h1>
   <p class="lede dim" style="margin-top:var(--s4)">
-    Every course page is generated from a spreadsheet — one row per class
-    meeting. Readings, worksheets, and homework links stay in sync because there
-    is only one place to edit them.
+    Teaching is an integral part of my work and identity as a scholar. I am
+    particularly interested in inclusive practices, accessibility, flipped
+    classrooms, active lectures, the role of visualization in learning, and the
+    rich interplay between research practice and learning/teaching in
+    mathematics.
   </p>
 
   {current.length > 0 && (
@@ -33,16 +35,34 @@ const past = courses.filter((c) => !c.current);
     </>
   )}
 
-  <h2 class="rule-label"><span class="label">previously</span></h2>
+  {sections.map((s) => (
+    <>
+      <h2 class="rule-label"><span class="label">{s.label}</span></h2>
+      <section>
+        {s.rows.map((r) => (
+          <div class="entry">
+            <span class="label">{r.term}</span>
+            <div>
+              {r.href
+                ? <a href={r.href}>{r.number} · {r.title}</a>
+                : <span>{r.number} · {r.title}</span>}
+              {r.note && <span class="dim"> — {r.note}</span>}
+              {r.blurb && <p class="dim" style="margin:var(--s1) 0 0;font-size:0.94rem">{r.blurb}</p>}
+            </div>
+          </div>
+        ))}
+      </section>
+    </>
+  ))}
+
+  <h2 class="rule-label"><span class="label">educational resources</span></h2>
   <section>
-    {past.map((c) => (
-      <div class="entry">
-        <span class="label">{c.term}</span>
-        <div>
-          <a href={courseHref(c)}>{c.number} · {c.title}</a>
-          {c.blurb && <p class="dim" style="margin:var(--s1) 0 0;font-size:0.94rem">{c.blurb}</p>}
-        </div>
+    <div class="entry">
+      <span class="label">ongoing</span>
+      <div>
+        Contributor to the MIT Math CI Space, now part of the{' '}
+        <a href="https://mathcomm.org/">MAA Mathematical Sciences Digital Library</a>.
       </div>
-    ))}
+    </div>
   </section>
 </Base>
