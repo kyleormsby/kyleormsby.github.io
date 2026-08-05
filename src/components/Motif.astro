@@ -25,14 +25,14 @@
  *
  * Static single frame when the visitor prefers reduced motion.
  */
-interface Props { points?: number; height?: number; }
-const { points = 11, height = 260 } = Astro.props;
+interface Props { points?: number; height?: number; ramp?: string; }
+const { points = 11, height = 260, ramp = 'neutral-accent' } = Astro.props;
 
 const LAMBDA = '5.5007';
 const ENTROPY = '1.7049';
 ---
 
-<figure class="motif" style={`--motif-h:${height}px`} data-points={points}>
+<figure class="motif" style={`--motif-h:${height}px`} data-points={points} data-ramp={ramp}>
   <canvas aria-hidden="true"></canvas>
   <figcaption>
     <span class="label">
@@ -188,9 +188,24 @@ const ENTROPY = '1.7049';
       const c = (x: number, y: number) => toSrgb(x + (y - x) * t);
       return `rgb(${c(ar, br)},${c(ag, bg)},${c(ab, bb)})`;
     }
+    // 'neutral-accent' is what ships: ten strands in a quiet ink-to-grey ramp
+    // with one in --accent. A pure neutral ramp ('neutral') is prettier still
+    // but at this line weight the strands stop being tellable apart, and the
+    // point of colouring them was to make a single point followable.
+    const RAMP_MODE = (fig.dataset.ramp ?? 'neutral-accent') as
+      'ink-accent' | 'neutral' | 'neutral-accent';
+
     let ramp: string[] = [];
     const buildRamp = () => {
-      ramp = Array.from({ length: N }, (_, i) => mix(theme.ink, theme.accent, i / (N - 1)));
+      const t = (i: number) => i / (N - 1);
+      if (RAMP_MODE === 'neutral') {
+        ramp = Array.from({ length: N }, (_, i) => mix(theme.ink, theme.muted, t(i)));
+      } else if (RAMP_MODE === 'neutral-accent') {
+        ramp = Array.from({ length: N }, (_, i) => mix(theme.ink, theme.muted, t(i)));
+        ramp[Math.floor(N / 2)] = theme.accent;
+      } else {
+        ramp = Array.from({ length: N }, (_, i) => mix(theme.ink, theme.accent, t(i)));
+      }
     };
 
     // --- the rectangle: 11 points executing the current beat -------------

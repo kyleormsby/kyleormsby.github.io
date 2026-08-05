@@ -298,11 +298,16 @@ topological entropy log lambda = 1.70488.
 
 ### Reading the picture
 
-Each strand keeps one colour for its whole life, drawn from a ramp between
-`--ink` and `--accent` — white to orange in dark mode, near-black to rust in
-light — mixed in linear light so the middle of the ramp does not go muddy. The
-ramp is rebuilt when the colour scheme changes. A dot and its strand always
-share a colour, so you can follow any single point through the weave.
+Each strand keeps one colour for its whole life. Ten come from a quiet ramp
+between `--ink` and `--muted` — white to grey in dark mode, near-black to warm
+grey in light — mixed in linear light so the middle does not go muddy; the
+eleventh is `--accent`. A dot and its strand always share a colour, so the
+accent one can be followed through the whole weave.
+
+The `ramp` prop switches this: `neutral` drops the accent for a pure grey
+field, `ink-accent` runs the full ramp to the accent colour. Neutral is the
+prettiest of the three and the least useful — at this line weight eleven greys
+are not tellable apart, and a strand you cannot follow is just texture.
 
 Time runs *away* from the rectangle: the instant shown by the dots is the
 diagram's **left** edge, and the past trails off to the right. Getting this
