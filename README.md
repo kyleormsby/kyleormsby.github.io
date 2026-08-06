@@ -1,4 +1,4 @@
-# configuration.space
+# e-infinity.space
 
 A replacement for `kyleormsby.github.io`, built with [Astro](https://astro.build).
 
@@ -306,6 +306,14 @@ That check exists for a specific silent failure: the toggle continuing to work
 while the pre-paint script stops. A screenshot taken after load looks identical
 either way, so the check reads `data-theme` at navigation *commit* instead.
 
+## The feed
+
+`src/pages/rss.xml.ts` generates `/rss.xml` from the writing collection. Every
+page had been advertising that URL in its `<head>` since the site was built,
+with nothing generating it — a 404 no visitor would notice and every feed
+reader would. Hand-rolled rather than adding `@astrojs/rss`; the only fiddly
+part is escaping.
+
 ## Contrast
 
 ```bash
@@ -436,7 +444,7 @@ the repo for exactly that reason.
 ## Deploying
 
 `.github/workflows/deploy.yml` builds and publishes to GitHub Pages. Set
-`configuration.space` as the custom domain in the repository settings; GitHub
+`e-infinity.space` as the custom domain in the repository settings; GitHub
 then redirects `kyleormsby.github.io` to it, which keeps old links working.
 
 ## What is in files/

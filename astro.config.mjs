@@ -65,7 +65,7 @@ function devStatics() {
 
 export default defineConfig({
   vite: { plugins: [devStatics()] },
-  site: 'https://configuration.space',
+  site: 'https://e-infinity.space',
   trailingSlash: 'always',
   markdown: {
     // Math is rendered to HTML at build time, so pages ship no math engine.
