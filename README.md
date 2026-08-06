@@ -37,7 +37,7 @@ Both gaps are closed by a small dev-only Vite plugin at the top of
 src/
   styles/global.css        design tokens — colors, type, spacing. Start here.
   layouts/Base.astro       shell: head, nav, footer
-  components/Motif.astro   the landing-page configuration-space animation
+  components/Motif.astro   the landing-page E-infinity animation
   lib/csv.ts               small CSV reader, no dependencies
   lib/courses.ts           turns CSV rows into rendered class meetings
   data/courses/            <course>.csv  +  <course>.json   ← course content
