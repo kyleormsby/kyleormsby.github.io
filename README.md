@@ -271,6 +271,43 @@ operator was a raw **⧄ (U+29C4)**, which KaTeX cannot set. KaTeX has no
 `{\square\mkern-11mu\diagup}` — no `\mathbin`, because it appears in
 superscript position (`{}^\boxslash R`).
 
+## Checking before you push
+
+```bash
+npm run dev                      # fast loop, http://localhost:4321
+npm run build && npm run preview # serves dist/ — exactly what deploys
+npm run check                    # math, build, theme, contrast
+```
+
+`npm run dev` is for writing. `preview` is for believing: it serves the built
+output, which is where the redirects (`/342/`, `/posts/…`), the canonical URLs,
+and `/rss.xml` actually exist — dev resolves some of those differently.
+
+`npm run check` chains everything and exits non-zero on the first failure, so
+it is the one to run before pushing.
+
+The browser-driven checks need Playwright's Chromium once:
+
+```bash
+npx playwright install chromium
+```
+
+They pass `executablePath: process.env.CHROMIUM_PATH` and fall back to
+Playwright's own browser when that is unset, so no environment variable is
+needed on a normal machine.
+
+**To reproduce what CI does**, including lockfile drift — the classic thing
+that builds locally and fails in Actions:
+
+```bash
+rm -rf node_modules && npm ci && npm run build
+```
+
+Note that `npm run dev` resolves `files/` through `FILES_DIR`, which defaults to
+`../kyleormsby.github.io/files`. The 54x lecture notes and the two videos were
+pruned from this repo to fit under the 1 GB Pages limit, so in dev they come
+from the old repo and in production they are simply absent.
+
 ## Light and dark
 
 **Light is the default outright.** `prefers-color-scheme` is deliberately not
