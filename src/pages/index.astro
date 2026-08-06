@@ -4,8 +4,18 @@ import Motif from '../components/Motif.astro';
 import { getCollection } from 'astro:content';
 import { currentCourses, courseHref } from '../lib/courses';
 
+/**
+ * Nearly every visualization carries the same year, so sorting by year alone
+ * left seventeen entries tied and quietly showed the alphabetically-first
+ * three under a heading that says "recent". `featured` in the schema existed
+ * for this and was wired to nothing; it now decides, with year and title only
+ * breaking ties beneath it.
+ */
 const viz = (await getCollection('viz'))
-  .sort((a, b) => b.data.year - a.data.year)
+  .sort((a, b) =>
+    Number(b.data.featured) - Number(a.data.featured) ||
+    b.data.year - a.data.year ||
+    a.data.title.localeCompare(b.data.title))
   .slice(0, 3);
 
 const courses = currentCourses();

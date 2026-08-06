@@ -271,6 +271,25 @@ operator was a raw **⧄ (U+29C4)**, which KaTeX cannot set. KaTeX has no
 `{\square\mkern-11mu\diagup}` — no `\mathbin`, because it appears in
 superscript position (`{}^\boxslash R`).
 
+## Adding a visualization
+
+Three things, then a build:
+
+1. `public/<slug>/index.html` — self-contained, no CDN references.
+2. `src/content/viz/<slug>.md` — title, `href`, year, thumb, tags, and one
+   sentence of description.
+3. `npm run thumbs -- <slug>` — renders it headless to
+   `public/thumbs/<slug>.png`. Commit the PNG; CI has no browser.
+
+`npm run thumbs -- --no-stub` disables the local CDN substitutions, so a full
+run doubles as a check that every visualization is genuinely self-contained.
+
+**`featured: true`** puts an entry in the three shown on the landing page.
+It decides first, with year and then title only breaking ties beneath it —
+necessary because nearly every entry carries the same year, which used to leave
+seventeen tied and quietly show the alphabetically-first three under a heading
+that says "recent".
+
 ## Checking before you push
 
 ```bash

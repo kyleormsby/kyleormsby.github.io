@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Pentagram Map — Infinite Zoom</title>
+<style>
+  :root{
+    --void:#000000;
+    --bone:#E8E6E1;
+    --grey:#7B8087;
+    --dim:#3A3D42;
+    --hal:#FF2D16;
+    --hal-lo:#5E1207;
+    /* The 2001 main title is Gill Sans Light — slightly condensed for the film,
+       with the oblong zeros swapped for letter O's. Futura appears elsewhere in
+       the picture (other titles, end credits) but not on that card. */
+    --display:"Gill Sans Light","GillSans-Light","Gill Sans","Gill Sans MT",
+              "Futura","Century Gothic","Avenir Next",sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,"Cascadia Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--void); color:var(--bone);
+    font-family:var(--mono); overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #stage{position:fixed; inset:0}
+  canvas#field{position:absolute; inset:0; width:100%; height:100%; display:block; cursor:crosshair}
+  /* the corridor falls away into black at the frame edge */
+  #veil{position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 46%, rgba(0,0,0,.86) 100%);
+  }
+
+  .panel{position:absolute; pointer-events:none; opacity:0; animation:wake 1.1s ease-out .35s forwards}
+  /* the masthead sits over the top of the field; if it caught clicks you could
+     not grab a vertex underneath it */
+  body.editing .panel{opacity:.18; transition:opacity .25s linear}
+  @keyframes wake{to{opacity:1}}
+
+  /* ---- masthead: centred, like a title card ---- */
+  #masthead{top:30px; left:50%; transform:translateX(-50%); text-align:center; width:min(720px,92vw)}
+  .eyebrow{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.48em; text-transform:uppercase;
+    color:var(--grey); margin:0 0 14px; padding-left:.48em;
+  }
+  h1{
+    font-family:var(--display); font-weight:300; font-size:clamp(22px,3.3vw,42px);
+    letter-spacing:.30em; text-transform:uppercase; line-height:1; margin:0;
+    color:var(--bone); padding-left:.30em;
+  }
+  .thesis{
+    margin:16px auto 0; font-size:10.5px; line-height:1.8; color:var(--grey);
+    max-width:62ch; letter-spacing:.02em;
+  }
+  .thesis b{color:var(--bone); font-weight:400}
+
+  /* ---- the cycle legend: what the colours mean ---- */
+  #cycle{margin-top:22px}
+  #cycle .lab{font-size:9px; letter-spacing:.42em; text-transform:uppercase; color:var(--grey); margin-bottom:10px; padding-left:.42em}
+  #swatches{display:flex; gap:5px; justify-content:center}
+  #swatches i{
+    display:block; width:38px; height:3px; opacity:.30;
+    transition:opacity .18s linear, transform .18s linear; transform-origin:center;
+  }
+  #swatches i.live{opacity:1; transform:scaleY(2.8)}
+
+  /* ---- one console across the bottom, like a bridge station ---- */
+  #console{
+    position:fixed; left:0; right:0; bottom:0; z-index:4;
+    border-top:1px solid var(--dim); background:rgba(0,0,0,.86);
+    display:flex; flex-direction:column; gap:8px; padding:11px 24px 9px;
+    opacity:0; animation:wake 1.1s ease-out .35s forwards;
+  }
+  #consolerow{display:flex; justify-content:center}
+  .tele{font-size:9.5px; line-height:1.85; color:var(--grey)}
+  .tele .hd{
+    font-size:8.5px; letter-spacing:.32em; text-transform:uppercase; color:var(--hal);
+    margin-bottom:7px; padding-left:.32em;
+  }
+  #readout{position:absolute; left:30px; top:50%; transform:translateY(-50%); width:330px}
+  #readout .row{display:flex; flex-direction:column; gap:9px; align-items:flex-start}
+  table.mat{border-collapse:collapse; font-size:9px; color:var(--bone)}
+  table.mat td{padding:0 10px 0 0; text-align:right; font-variant-numeric:tabular-nums}
+  .facts span.k{color:var(--dim); display:inline-block; width:12ch}
+  .facts span.v{color:var(--grey); font-variant-numeric:tabular-nums}
+  .facts span.v.gold{color:var(--hal)}
+  #tail{position:absolute; right:30px; top:50%; transform:translateY(-50%); width:230px; text-align:right}
+
+  #rail{display:flex; gap:14px 18px; align-items:center; flex-wrap:wrap; justify-content:center; max-width:min(980px,80vw)}
+  .grp{display:flex; gap:5px; align-items:center}
+  .grp .glab{font-size:8px; letter-spacing:.24em; text-transform:uppercase; color:var(--dim); margin-right:2px}
+  button{
+    font-family:var(--mono); font-size:8.5px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--grey); background:#000; border:1px solid var(--dim);
+    padding:5px 8px; cursor:pointer; white-space:nowrap;
+    transition:color .15s, border-color .15s, background .15s;
+  }
+  button:hover{color:var(--bone); border-color:var(--grey)}
+  button:focus-visible{outline:1px solid var(--hal); outline-offset:2px}
+  button.on{background:var(--hal); border-color:var(--hal); color:#000}
+  label.ctl{display:flex; flex-direction:column; gap:4px; width:80px}
+  label.ctl .lab{
+    display:flex; justify-content:space-between; gap:6px; font-size:7.5px; letter-spacing:.10em;
+    text-transform:uppercase; color:var(--dim); white-space:nowrap;
+  }
+  label.ctl .val{color:var(--grey)}
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; width:100%; height:1px; background:var(--dim);
+    outline:none; cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:9px; height:9px; background:var(--hal);
+    border:2px solid #000; cursor:pointer; border-radius:0;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:9px;height:9px;background:var(--hal);border:2px solid #000;cursor:pointer;border-radius:0
+  }
+  input[type=range]:focus-visible{outline:1px solid var(--hal); outline-offset:4px}
+
+  #hint{
+    font-size:8px; letter-spacing:.26em; text-transform:uppercase; color:var(--dim);
+    pointer-events:none; text-align:center;
+  }
+  #edgewarn{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    font-size:10px; letter-spacing:.22em; text-transform:uppercase; color:var(--hal);
+    background:#000; border:1px solid var(--hal-lo); padding:14px 20px;
+    display:none; text-align:center; max-width:34ch; line-height:1.8;
+  }
+  .collapsed{display:none}
+  #paneltoggle{position:absolute; top:20px; right:16px; display:none; z-index:6}
+
+  @media (max-width:1340px){ #readout{display:none} }
+  @media (max-width:1100px){ #tail{display:none} }
+  @media (max-width:900px){
+    #masthead{top:18px; width:90vw}
+    h1{font-size:clamp(16px,5vw,24px); letter-spacing:.2em}
+    .thesis{display:none}
+    #cycle{margin-top:14px}
+    #swatches i{width:26px}
+    #consolerow{grid-template-columns:1fr}
+    #console{padding:10px 12px 12px; max-height:64vh; overflow-y:auto}
+    #rail{gap:12px}
+    .eyebrow{display:none}
+    #paneltoggle{display:block; font-size:0; padding:8px 10px; line-height:1}
+    #paneltoggle::after{content:'\2261'; font-size:15px; letter-spacing:0; color:var(--grey)}
+    body.railopen #masthead{display:none}
+    #hint{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){ .panel{animation:none; opacity:1} }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="field"></canvas>
+  <div id="veil"></div>
+
+  <header class="panel" id="masthead">
+    <p class="eyebrow">Projective dynamics &nbsp;·&nbsp; <span id="mastn">convex pentagons</span></p>
+    <h1>The Pentagram Map</h1>
+    <p class="thesis">
+      Join each vertex to its second neighbours; the short diagonals cut out a smaller
+      polygon. Iterate forever. <span id="thesisline">A pentagon returns to its own
+      projective class after one step</span>, so the whole tower is powers of a
+      <b>single projective matrix h</b> — no construction is ever repeated.
+    </p>
+    <div id="cycle">
+      <div class="lab">Labelled class &nbsp;·&nbsp; returns every <span id="cyclen">5</span></div>
+      <div id="swatches"></div>
+    </div>
+  </header>
+
+  <button id="paneltoggle">Console</button>
+
+  <section class="panel tele" id="tail">
+    <div class="hd">Periods, in steps</div>
+    <div class="facts" id="tailtext"></div>
+  </section>
+
+  <section class="panel tele" id="readout">
+    <div class="hd">Generator &nbsp;·&nbsp; <span id="rlabel"></span></div>
+    <div class="row"><table class="mat" id="hmat"></table><div class="facts" id="facts"></div></div>
+  </section>
+
+  <div id="console">
+  <div id="consolerow">
+  <section id="rail">
+    <div class="grp">
+      <span class="glab">Run</span>
+      <button id="play">Pause</button>
+      <button id="edit">Edit</button>
+    </div>
+    <div class="grp">
+      <span class="glab">Order</span>
+      <button id="n-5" class="on">Pentagon</button>
+      <button id="n-6">Hexagon</button>
+    </div>
+    <div class="grp">
+      <span class="glab">Seed</span>
+      <button id="preset-regular">Regular</button>
+      <button id="preset-convex">New convex</button>
+    </div>
+    <label class="ctl">
+      <span class="lab"><span>Rate</span><span class="val" id="speedval">1.00×</span></span>
+      <input type="range" id="speed" min="-6" max="6" step="0.05" value="1"
+             title="Descent rate. Negative climbs back out.">
+    </label>
+    <label class="ctl">
+      <span class="lab"><span>Overscan</span><span class="val" id="reachval">9.0×</span></span>
+      <input type="range" id="reach" min="2" max="14" step="0.5" value="9"
+             title="How far past the frame edge polygons keep being drawn, in frame widths. Low: only the polygons near the frame and smaller. High: the huge outer ones sweep their edges across the view.">
+    </label>
+    <label class="ctl">
+      <span class="lab"><span>Glow</span><span class="val" id="glowval">1.0</span></span>
+      <input type="range" id="glow" min="0" max="2.5" step="0.05" value="1"
+             title="Width and strength of the additive halo under each stroke.">
+    </label>
+    <label class="ctl">
+      <span class="lab"><span>Weight</span><span class="val" id="weightval">1.0</span></span>
+      <input type="range" id="weight" min="0.4" max="2.6" step="0.05" value="1.0"
+             title="Core line thickness.">
+    </label>
+    <div class="grp">
+      <span class="glab">Show</span>
+      <button id="t-diag" class="on">Diagonals</button>
+      <button id="t-verts" class="on">Vertices</button>
+      <button id="t-labels">Labels</button>
+    </div>
+  </section>
+
+  </div>
+  <div id="hint">Drag a vertex &nbsp;·&nbsp; 5 / 6 to switch &nbsp;·&nbsp; space to hold &nbsp;·&nbsp; R to reseed</div>
+  </div>
+
+  <div id="edgewarn"></div>
+</div>
+<script>
+"use strict";
+/* ============================================================================
+   3×3 projective linear algebra.  Matrices are row-major length-9 arrays.
+   ========================================================================= */
+const I3 = [1,0,0, 0,1,0, 0,0,1];
+const mul = (A,B) => {
+  const C = new Array(9);
+  for (let i=0;i<3;i++) for (let j=0;j<3;j++){
+    let s=0; for (let k=0;k<3;k++) s += A[3*i+k]*B[3*k+j];
+    C[3*i+j]=s;
+  }
+  return C;
+};
+const det3 = A => A[0]*(A[4]*A[8]-A[5]*A[7]) - A[1]*(A[3]*A[8]-A[5]*A[6]) + A[2]*(A[3]*A[7]-A[4]*A[6]);
+function inv3(A){
+  const d = det3(A);
+  if (!isFinite(d) || Math.abs(d) < 1e-300) return null;
+  const c = [
+    A[4]*A[8]-A[5]*A[7], A[2]*A[7]-A[1]*A[8], A[1]*A[5]-A[2]*A[4],
+    A[5]*A[6]-A[3]*A[8], A[0]*A[8]-A[2]*A[6], A[2]*A[3]-A[0]*A[5],
+    A[3]*A[7]-A[4]*A[6], A[1]*A[6]-A[0]*A[7], A[0]*A[4]-A[1]*A[3]
+  ];
+  return c.map(v=>v/d);
+}
+const mv = (A,v) => [A[0]*v[0]+A[1]*v[1]+A[2]*v[2],
+                     A[3]*v[0]+A[4]*v[1]+A[5]*v[2],
+                     A[6]*v[0]+A[7]*v[1]+A[8]*v[2]];
+const cross = (a,b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+const nrm9  = A => { let s=0; for (const x of A) s+=x*x; s=Math.sqrt(s)||1; return A.map(x=>x/s); };
+
+/* solve A x = b for 3×3 */
+function solve3(A,b){ const Ai = inv3(A); return Ai ? mv(Ai,b) : null; }
+
+/* the projective frame map sending e1,e2,e3,(1,1,1) to a0,a1,a2,a3 */
+function frame(a0,a1,a2,a3){
+  const M = [a0[0],a1[0],a2[0], a0[1],a1[1],a2[1], a0[2],a1[2],a2[2]];
+  const l = solve3(M,a3);
+  if (!l) return null;
+  return [a0[0]*l[0], a1[0]*l[1], a2[0]*l[2],
+          a0[1]*l[0], a1[1]*l[1], a2[1]*l[2],
+          a0[2]*l[0], a1[2]*l[1], a2[2]*l[2]];
+}
+
+/* ============================================================================
+   The pentagram map and its generator.
+   Q_i = (P_{i-1}P_{i+1}) ∩ (P_i P_{i+2}).  Then the unique h in PGL(3,R) with
+   h(P_i) = Q_{i+2} satisfies  T^k(P)_{i+2k} = h^k(P_i)  for every k.
+   ========================================================================= */
+function pentagram(P){
+  const n = P.length, Q = [];
+  for (let i=0;i<n;i++){
+    const l1 = cross(P[(i+n-1)%n], P[(i+1)%n]);
+    const l2 = cross(P[i],         P[(i+2)%n]);
+    Q.push(cross(l1,l2));
+  }
+  return Q;
+}
+/* How many pentagram steps return a polygon to its own projective class.
+   n=5: one step.  n=6: two — T alone moves the class, T² does not. Verified
+   numerically: T^(r·k)(P)_{i+2k} = h^k(P_i) exactly, shift 2 in both cases. */
+const PERIOD = {5:1, 6:2};
+function generator(P){
+  const n = P.length, r = PERIOD[n];
+  let Q = P;
+  for (let s=0;s<r;s++) Q = pentagram(Q);
+  const Rl = [0,1,2,3].map(i => Q[(i+2)%n]);
+  const F1 = frame(Rl[0],Rl[1],Rl[2],Rl[3]);
+  const F0 = frame(P[0],P[1],P[2],P[3]);
+  if (!F1 || !F0) return null;
+  const F0i = inv3(F0);
+  if (!F0i) return null;
+  return nrm9(mul(F1,F0i));
+}
+
+/* ---- roots of a real cubic  λ³ + a2λ² + a1λ + a0 ---- */
+function cubicRoots(a2,a1,a0){
+  const p = a1 - a2*a2/3, q = 2*a2*a2*a2/27 - a2*a1/3 + a0;
+  const D = q*q/4 + p*p*p/27, sh = -a2/3;
+  const cbrt = x => Math.sign(x)*Math.pow(Math.abs(x),1/3);
+  if (D > 1e-13){
+    const s = Math.sqrt(D), u = cbrt(-q/2+s), v = cbrt(-q/2-s);
+    return [{re:u+v+sh, im:0},
+            {re:-(u+v)/2+sh, im:(u-v)*Math.sqrt(3)/2},
+            {re:-(u+v)/2+sh, im:-(u-v)*Math.sqrt(3)/2}];
+  }
+  const m = 2*Math.sqrt(Math.max(-p/3,0));
+  let arg = (Math.abs(p*m) < 1e-300) ? 0 : 3*q/(p*m);
+  arg = Math.max(-1,Math.min(1,arg));
+  const th = Math.acos(arg)/3;
+  return [0,1,2].map(k => ({re:m*Math.cos(th - 2*Math.PI*k/3)+sh, im:0}));
+}
+
+/* ---- null space of a (possibly complex) singular 3×3 ---- */
+function rowsCrossC(A,i,j){                    // A: {re:[9], im:[9]}
+  const r = (M,k)=>[M[3*k],M[3*k+1],M[3*k+2]];
+  const a=r(A.re,i), ai=r(A.im,i), b=r(A.re,j), bi=r(A.im,j);
+  const cm=(x,xi,y,yi)=>[x*y-xi*yi, x*yi+xi*y];
+  const out={re:[0,0,0],im:[0,0,0]};
+  const idx=[[1,2,2,1],[2,0,0,2],[0,1,1,0]];
+  for (let k=0;k<3;k++){
+    const [p,q,s,t]=idx[k];
+    const m1=cm(a[p],ai[p],b[q],bi[q]), m2=cm(a[s],ai[s],b[t],bi[t]);
+    out.re[k]=m1[0]-m2[0]; out.im[k]=m1[1]-m2[1];
+  }
+  return out;
+}
+function nullSpace(M, lam, want){
+  const A = {re:M.slice(), im:[0,0,0,0,0,0,0,0,0]};
+  for (let k=0;k<3;k++){ A.re[4*k] -= lam.re; A.im[4*k] -= lam.im; }
+  let scale=0; for (let k=0;k<9;k++) scale=Math.max(scale, Math.hypot(A.re[k],A.im[k]));
+  scale = scale || 1;
+  let best=null, bn=-1;
+  for (let i=0;i<3;i++) for (let j=i+1;j<3;j++){
+    const c = rowsCrossC(A,i,j);
+    const n = Math.hypot(...c.re) + Math.hypot(...c.im);
+    if (n>bn){ bn=n; best=c; }
+  }
+  const unit = c => {
+    const n = Math.sqrt(c.re.reduce((s,x,k)=>s+x*x+c.im[k]*c.im[k],0)) || 1;
+    return {re:c.re.map(x=>x/n), im:c.im.map(x=>x/n)};
+  };
+  if (want === 1 || bn > 1e-7*scale*scale) return [unit(best)];
+  /* rank 1 → the eigenspace is a plane; take the perp of the dominant row */
+  let ri=0, rn=-1;
+  for (let i=0;i<3;i++){ const n=Math.hypot(A.re[3*i],A.re[3*i+1],A.re[3*i+2]); if(n>rn){rn=n;ri=i;} }
+  const n0=[A.re[3*ri],A.re[3*ri+1],A.re[3*ri+2]];
+  const out=[];
+  for (const e of [[1,0,0],[0,1,0],[0,0,1]]){
+    let v = cross(n0,e);
+    for (const w of out){ const d=v[0]*w.re[0]+v[1]*w.re[1]+v[2]*w.re[2]; v=[v[0]-d*w.re[0],v[1]-d*w.re[1],v[2]-d*w.re[2]]; }
+    const n=Math.hypot(...v);
+    if (n>1e-6){ out.push({re:v.map(x=>x/n), im:[0,0,0]}); }
+    if (out.length===2) break;
+  }
+  return out;
+}
+
+/* ============================================================================
+   Continuous projective powers.  Returns H(t) with H(0)=Id and H(1)=h^m,
+   real for every t, contracting toward the dominant eigendirection.
+   m = 1 unless a negative real eigenvalue forces a two-step loop.
+   ========================================================================= */
+function buildFlow(M){
+  const tr = M[0]+M[4]+M[8];
+  const c1 = (M[0]*M[4]-M[1]*M[3]) + (M[0]*M[8]-M[2]*M[6]) + (M[4]*M[8]-M[5]*M[7]);
+  const ev = cubicRoots(-tr, c1, -det3(M));
+  const sig = Math.max(...ev.map(e=>Math.hypot(e.re,e.im)));
+  if (!(sig>1e-12) || ev.some(e=>!isFinite(e.re)||!isFinite(e.im))) return null;
+  const tol = 1e-8*sig;
+  const reals = ev.filter(e=>Math.abs(e.im)<=tol).map(e=>e.re);
+
+  if (reals.length === 3){
+    const l = reals.slice().sort((a,b)=>Math.abs(b)-Math.abs(a));
+    const m = (l[0]>0)===(l[1]>0) && (l[1]>0)===(l[2]>0) ? 1 : 2;
+    const cols=[], rat=[], used=[false,false,false];
+    for (let i=0;i<3;i++){
+      if (used[i]) continue;
+      const grp=[i];
+      for (let j=i+1;j<3;j++) if (!used[j] && Math.abs(l[j]-l[i])<1e-7*sig) grp.push(j);
+      grp.forEach(j=>used[j]=true);
+      const vs = nullSpace(M,{re:l[i],im:0},grp.length);
+      for (let q=0;q<grp.length;q++){
+        const v = vs[Math.min(q,vs.length-1)];
+        cols.push(v.re); rat.push(Math.abs(l[i])/sig);
+      }
+    }
+    if (cols.length<3) return null;
+    const V = [cols[0][0],cols[1][0],cols[2][0],
+               cols[0][1],cols[1][1],cols[2][1],
+               cols[0][2],cols[1][2],cols[2][2]];
+    const Vi = inv3(V);
+    if (!Vi || !isFinite(Vi[0])) return null;
+    const fix = cols[0];
+    const rho = rat[1];
+    return { m, M:m, ev, fix, rho,
+      H(t){
+        const e = this.M*t;
+        const D = [Math.pow(rat[0],e),0,0, 0,Math.pow(rat[1],e),0, 0,0,Math.pow(rat[2],e)];
+        return mul(mul(V,D),Vi);
+      }};
+  }
+
+  /* one real eigenvalue + a conjugate pair */
+  const lr = ev.find(e=>Math.abs(e.im)<=tol).re;
+  const lc = ev.find(e=>e.im>tol);
+  const m  = lr > 0 ? 1 : 2;
+  const v1 = nullSpace(M,{re:lr,im:0},1)[0].re;
+  const vc = nullSpace(M,lc,1)[0];
+  const B  = [v1[0],vc.re[0],-vc.im[0],
+              v1[1],vc.re[1],-vc.im[1],
+              v1[2],vc.re[2],-vc.im[2]];
+  const Bi = inv3(B);
+  if (!Bi || !isFinite(Bi[0])) return null;
+  const rr = Math.abs(lr)/sig, rc = Math.hypot(lc.re,lc.im)/sig, psi = Math.atan2(lc.im,lc.re);
+  return { m, M:m, ev, fix:v1, rho:rc,
+    H(t){
+      const e = this.M*t;
+      const a = Math.pow(rr,e), p = Math.pow(rc,e), c = Math.cos(e*psi), s = Math.sin(e*psi);
+      const D = [a,0,0, 0,p*c,-p*s, 0,p*s,p*c];
+      return mul(mul(B,D),Bi);
+    }};
+}
+
+/* ============================================================================
+   Model
+   ========================================================================= */
+const S = {
+  n: 5, seed: null, M: null, Mi: null, flow: null,
+  fam: null, kMin:-26, kMax:46,
+  ratio: 0.5, dir: 1,
+  t: 0, gen0: 0, playing: true, editing: false,
+  speed: 0.55, reach: 9, weight: 1.0,
+  showDiag: true, showVerts: true, showLabels: false, glow: 1,
+  drag: -1, view: {cx:0, cy:0, s:1}, ok: true
+};
+
+const regularNgon = n =>
+  Array.from({length:n}, (_,k)=>[Math.cos(2*Math.PI*k/n - Math.PI/2),
+                                 Math.sin(2*Math.PI*k/n - Math.PI/2), 1]);
+
+/* ---- convexity ---------------------------------------------------------- */
+const orient = (A,B,C) => (B[0]-A[0])*(C[1]-A[1]) - (B[1]-A[1])*(C[0]-A[0]);
+function convexSign(pts){
+  const n = pts.length;
+  let pos=0, neg=0;
+  for (let i=0;i<n;i++){
+    const o = orient(pts[(i+n-1)%n], pts[i], pts[(i+1)%n]);
+    if (o > 0) pos++; else if (o < 0) neg++;
+  }
+  if (pos===n) return 1;
+  if (neg===n) return -1;
+  return 0;                       /* not strictly convex */
+}
+const isConvex = pts => convexSign(pts) !== 0;
+function scaleOf(pts){
+  const n = pts.length; let L=0;
+  for (let i=0;i<n;i++) L += Math.hypot(pts[(i+1)%n][0]-pts[i][0], pts[(i+1)%n][1]-pts[i][1]);
+  return L/n;
+}
+/* Clamp a dragged vertex into the region that keeps the polygon strictly convex.
+   Only the three turns that involve vertex i can be broken by moving it, and each
+   is a half-plane in that vertex, so the feasible set is an intersection of three
+   half-planes — project onto whichever are violated until all hold. */
+function constrainConvex(pts, i, target){
+  const n = pts.length, sg = convexSign(pts) || 1;
+  const at = j => pts[(j%n+n)%n];
+  const A = at(i-2), B = at(i-1), Cc = at(i+1), D = at(i+2);
+  const halves = [
+    [ -(B[1]-A[1]),  (B[0]-A[0]),  (B[1]-A[1])*A[0] - (B[0]-A[0])*A[1] ],   /* turn at i-1 */
+    [  (Cc[1]-B[1]), -(Cc[0]-B[0]), -B[0]*(Cc[1]-B[1]) + B[1]*(Cc[0]-B[0]) ],/* turn at i   */
+    [  (Cc[1]-D[1]),  (D[0]-Cc[0]), Cc[0]*D[1] - Cc[1]*D[0] ]                /* turn at i+1 */
+  ].map(([a,b,c])=>[sg*a, sg*b, sg*c]);
+  const eps = 0.045*scaleOf(pts);
+  let x = target[0], y = target[1];
+  for (let pass=0; pass<24; pass++){
+    let moved = false;
+    for (const [a,b,c] of halves){
+      const nn = a*a + b*b;
+      if (!(nn > 1e-18)) continue;
+      const need = eps*Math.sqrt(nn) - (a*x + b*y + c);
+      if (need > 0){ x += a*need/nn; y += b*need/nn; moved = true; }
+    }
+    if (!moved) break;
+  }
+  if (!isFinite(x) || !isFinite(y)) return [pts[i][0], pts[i][1], 1];
+  const cand = pts.map((p,j)=> j===i ? [x,y,1] : p);
+  return isConvex(cand) ? [x,y,1] : [pts[i][0], pts[i][1], 1];
+}
+
+/* principal-axis aspect ratio of one generation */
+function aspectOf(G){
+  if (!G) return NaN;
+  const V = G.map(p => Math.abs(p[2])>1e-300 ? [p[0]/p[2], p[1]/p[2]] : null);
+  if (V.some(v=>!v)) return NaN;
+  const n=V.length; let cx=0, cy=0; V.forEach(v=>{cx+=v[0]/n; cy+=v[1]/n;});
+  let sxx=0, sxy=0, syy=0;
+  V.forEach(v=>{ const dx=v[0]-cx, dy=v[1]-cy; sxx+=dx*dx; sxy+=dx*dy; syy+=dy*dy; });
+  const tr=sxx+syy, dt=sxx*syy-sxy*sxy;
+  const disc=Math.sqrt(Math.max(0,tr*tr/4-dt));
+  const l1=tr/2+disc, l2=tr/2-disc;
+  return l2>1e-300 ? Math.sqrt(l1/l2) : Infinity;
+}
+function radOf(G){
+  if (!G) return NaN;
+  const V = G.map(p => Math.abs(p[2])>1e-300 ? [p[0]/p[2], p[1]/p[2]] : null);
+  if (V.some(v=>!v)) return NaN;
+  const n=V.length; let cx=0, cy=0; V.forEach(v=>{cx+=v[0]/n; cy+=v[1]/n;});
+  let r=0; V.forEach(v=>r=Math.max(r,Math.hypot(v[0]-cx,v[1]-cy)));
+  return r;
+}
+/* score a candidate seed without disturbing the live model:
+   how flat it already is, how fast it flattens, how fast it shrinks */
+function evalSeed(P){
+  const Q = P.map(p=>[p[0],p[1],1]);
+  const M = generator(Q);
+  if (!M || !buildFlow(M)) return null;
+  let A = I3.slice();
+  const gs = [];
+  for (let k=0;k<=16;k++){ gs.push(Q.map(p=>mv(A,p))); A = nrm9(mul(A,M)); }
+  const asp = gs.map(aspectOf), rad = gs.map(radOf);
+  if (asp.some(a=>!isFinite(a)) || rad.some(r=>!isFinite(r)||r<=0)) return null;
+  let s=0, n=0;
+  for (let k=5;k<=16;k++){ s += Math.log(asp[k]/asp[k-1]); n++; }
+  let u=0, m=0;
+  for (let k=1;k<=6;k++){ u += Math.log(rad[k]/rad[k-1]); m++; }
+  const drift = Math.exp(s/n), ratio = Math.exp(u/m);
+  if (!isFinite(drift) || !isFinite(ratio)) return null;
+  /* how far the nest has to travel to reach its accumulation point, in units of
+     the seed's own size: large means a trail of specks, not a nest */
+  const cen = G => { const n=G.length; let x=0,y=0; G.forEach(p=>{x+=p[0]/p[2]/n; y+=p[1]/p[2]/n;}); return [x,y]; };
+  const deep = gs[ratio<1 ? gs.length-1 : 0], near = gs[ratio<1 ? 0 : gs.length-1];
+  const a = cen(deep), c = cen(near), r0 = radOf(near);
+  const offset = (isFinite(a[0])&&isFinite(c[0])&&r0>0) ? Math.hypot(a[0]-c[0],a[1]-c[1])/r0 : 99;
+  return { drift, aspect0: asp[0], ratio, offset };
+}
+/* penalty: 0 is ideal. Rejects seeds that are already slivers, or whose nest
+   barely changes scale (nothing to zoom into). */
+function seedCost(e, driftWeight){
+  if (!e) return Infinity;
+  const r = e.ratio < 1 ? e.ratio : 1/e.ratio;
+  let c = driftWeight*Math.abs(Math.log(e.drift));
+  c += 2.0*Math.max(0, Math.log(e.aspect0/2.2));
+  /* a nest that shrinks by more than ~3x per step shows only three or four
+     layers at once, however elegant its algebra */
+  c += 4.0*Math.max(0, Math.log(0.30/r)) + 3.0*Math.max(0, Math.log(r/0.75));
+  c += 2.5*Math.max(0, Math.log(Math.max(e.offset,0.01)/0.9));
+  return c;
+}
+
+/* Points taken in angular order around an ellipse are convex whatever the radii
+   of the ellipse, and an affine image of a convex polygon is convex. A mild
+   projective nudge widens the range of classes reached; convexity is then
+   checked rather than assumed, since a projective map can break it. */
+function convexProposal(n){
+  let a;
+  for (let tries=0; tries<80; tries++){
+    a = Array.from({length:n},()=>Math.random()*2*Math.PI).sort((x,y)=>x-y);
+    const gaps = a.map((t,i)=>((a[(i+1)%n]-t)+2*Math.PI)%(2*Math.PI));
+    if (Math.min(...gaps) > (n===5 ? 0.72 : 0.55)) break;
+  }
+  const rx = 0.85+Math.random()*0.45, ry = 0.85+Math.random()*0.45;
+  const sk = (Math.random()*2-1)*0.30;
+  const g  = (Math.random()*2-1)*0.16, h2 = (Math.random()*2-1)*0.16;
+  const pts = a.map(t=>{
+    const x = rx*Math.cos(t)+sk*Math.sin(t), y = ry*Math.sin(t);
+    const w = 1 + g*x + h2*y;
+    return (w > 0.25) ? [x/w, y/w, 1] : null;
+  });
+  if (pts.some(p=>!p) || !isConvex(pts)) return null;
+  return pts;
+}
+/* Every convex polygon here has a generator with three real eigenvalues, so its
+   nest always flattens; pick one where that happens slowly enough to watch. */
+function randConvex(n){
+  let best = null, bc = Infinity;
+  for (let i=0;i<300;i++){
+    const P = convexProposal(n);
+    if (!P) continue;
+    const c = seedCost(evalSeed(P), 1.0);
+    if (c < bc){ bc = c; best = P; }
+    if (bc < 0.45) break;
+  }
+  return best || regularNgon(n);
+}
+
+function setSeed(P){
+  S.seed = P.map(p=>[p[0],p[1],1]);
+  S.n = S.seed.length;
+  rebuild();
+}
+function rebuild(){
+  S.ok = false;
+  const n = S.n, r = PERIOD[n];
+  const M = generator(S.seed);
+  if (!M) { S.M=null; failNote("Degenerate polygon — three vertices are collinear."); return; }
+  const Mi = inv3(M);
+  const flow = buildFlow(M);
+  if (!Mi || !flow) { S.M=null; failNote("Degenerate polygon — the generator has no continuous power."); return; }
+  S.M = M; S.Mi = nrm9(Mi); S.flow = flow;
+
+  /* How far one camera loop advances, in h-steps. Colour marks the iterate's
+     position in the cycle — layer (j,k) is the iterate T^(rk+j), hue (rk+j) mod n
+     — so the loop only closes if r·M ≡ 0 (mod n). Vertex labels shift by 2 per
+     h-step, needing 2M ≡ 0 (mod n), and a negative real eigenvalue forces M even.
+     The smallest M meeting all three is always a whole number of colour cycles. */
+  let LM = 1;
+  while (!((flow.m !== 2 || LM % 2 === 0) && (r*LM) % n === 0 && (2*LM) % n === 0)) LM++;
+  flow.M = LM;
+
+  /* The tower splits into r families. h carries T^r, so the iterates
+     P, T(P), … , T^{r-1}(P) each generate their own h-orbit, and the scene is
+     the union. Every family is h-invariant, so the union is too — which is all
+     the seamless loop needs. For pentagons r = 1 and there is a single family. */
+  const seeds = [S.seed.map(p=>p.slice())];
+  for (let j=1;j<r;j++) seeds.push(pentagram(seeds[j-1]).map(q=>[q[0]/q[2], q[1]/q[2], 1]));
+  const fam = seeds.map(()=>new Map());
+  seeds.forEach((sd,j)=>fam[j].set(0, sd.map(p=>p.slice())));
+
+  let A = M.slice(), Bm = S.Mi.slice(), up = 0, dn = 0;
+  const growTo = (kMin,kMax) => {
+    for (; up<kMax; ){ up++; seeds.forEach((sd,j)=>fam[j].set(up, sd.map(p=>mv(A,p)))); A = nrm9(mul(A,M)); }
+    for (; dn>kMin; ){ dn--; seeds.forEach((sd,j)=>fam[j].set(dn, sd.map(p=>mv(Bm,p)))); Bm = nrm9(mul(Bm,S.Mi)); }
+  };
+  growTo(-18, 18);          /* enough to measure the tower's rate */
+  S.fam = fam;
+
+  /* measure the true size ratio per h-step: the eigenvalue bookkeeping alone
+     mis-reports it when the dominant eigenvalue is repeated */
+  const rr = [];
+  for (let k=0;k<8;k++){
+    const a = radOf(fam[0].get(k)), b = radOf(fam[0].get(k+1));
+    if (isFinite(a) && isFinite(b) && a>1e-280 && b>1e-280) rr.push(Math.log(b/a));
+  }
+  const lr = rr.length ? rr.reduce((s,x)=>s+x,0)/rr.length : Math.log(0.5);
+  S.ratio = Math.exp(lr);
+  if (!(S.ratio>1e-9) || !isFinite(S.ratio) || Math.abs(lr) < 1e-6) S.ratio = 0.5;
+  S.ratioStep = Math.pow(S.ratio, 1/r);          /* per pentagram step */
+  S.dir = S.ratio < 1 ? 1 : -1;      /* +t always dives into the shrinking end */
+
+  /* how fast the nest flattens */
+  const asp = [];
+  for (let k=4;k<=16;k++){ const a = aspectOf(fam[0].get(k)); if (isFinite(a)) asp.push(Math.log(a)); }
+  const da = [];
+  for (let i=1;i<asp.length;i++) da.push(asp[i]-asp[i-1]);
+  const anisH = da.length ? Math.exp(da.reduce((s,x)=>s+x,0)/da.length) : 1;
+  S.anis = Math.max(1, Math.pow(isFinite(anisH)?anisH:1, 1/r));
+
+  /* Size the tower from its measured rate, not from a fixed generation count.
+     A slowly shrinking nest needs hundreds of generations before its ends fall
+     outside the visible size band — and if they don't, the loop shows a seam. */
+  const lim = Math.max(W,H) || 1000;
+  const span = Math.log((14*lim)/0.30);                 // widest .. narrowest mark
+  const per  = Math.abs(Math.log(S.ratio)) || Math.log(2);
+  const need = Math.min(900, Math.ceil(span/per) + 14);
+  S.kMin = -need; S.kMax = need;
+  growTo(S.kMin, S.kMax);
+  /* A tower that barely contracts would need more generations than we store, so
+     cap the visible size band at what the stored tower actually spans. Otherwise
+     the band reaches past the last generation and the loop shows that edge. */
+  S.spanMax = 0.30*Math.exp(per*(need-10));
+
+  S.ok = true;
+  hideNote();
+  fitView();
+  writeReadout();
+}
+function computeFit(){
+  const pts = S.seed.map(p=>[p[0]/p[2], p[1]/p[2]]);
+  const n = pts.length;
+  let cx=0, cy=0; pts.forEach(p=>{cx+=p[0]/n; cy+=p[1]/n;});
+
+  /* the nest accumulates somewhere — often nowhere near the seed's centre.
+     Find it by looking far down the shrinking direction, and frame that. */
+  for (const k of [22,18,14,10,7].map(j=>j*S.dir)){
+    const G = S.fam[0].get(k);
+    if (!G) continue;
+    const V = G.map(p => Math.abs(p[2])>1e-280 ? [p[0]/p[2], p[1]/p[2]] : null);
+    if (V.some(v=>!v)) continue;
+    let ax=0, ay=0; V.forEach(v=>{ax+=v[0]/n; ay+=v[1]/n;});
+    if (isFinite(ax) && isFinite(ay)){ cx=ax; cy=ay; break; }
+  }
+  S.acc = [cx, cy];
+
+  let r=0; pts.forEach(p=>r=Math.max(r,Math.hypot(p[0]-cx,p[1]-cy)));
+  if (!(r>0) || !isFinite(r)) r = 1;
+  return {cx, cy, s: r};
+}
+function fitView(){ S.view = computeFit(); S.viewTarget = null; }
+
+/* ============================================================================
+   Canvas
+   ========================================================================= */
+const cv = document.getElementById('field');
+const ctx = cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){
+  DPR = Math.min(window.devicePixelRatio||1, 2);
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize', ()=>{ resize(); if (S.seed) rebuild(); });
+
+/* world → screen: centre the seed, y up */
+function screenMap(){
+  const R = Math.min(W,H)*0.30 / (S.view.s||1);
+  return { toS:(x,y)=>[W/2 + (x-S.view.cx)*R, H/2 - (y-S.view.cy)*R],
+           toW:(sx,sy)=>[(sx-W/2)/R + S.view.cx, -(sy-H/2)/R + S.view.cy], R };
+}
+
+/* One saturated hue per position in the cycle. Because the loop advances a whole
+   number of cycles, a polygon and the polygon that replaces it a loop later carry
+   the same hue — the colouring is exactly as seamless as the geometry. */
+const WHEEL = {
+  5: [[255,30,60],[255,149,0],[61,255,168],[0,212,255],[177,77,255]],
+  6: [[255,30,60],[255,149,0],[255,224,77],[61,255,168],[0,212,255],[177,77,255]]
+};
+const cycleRGB = (p, n) => (WHEEL[n]||WHEEL[5])[((p % n)+n)%n];
+const tint = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+/* clip a homogeneous segment to the visible half-space w ≥ eps */
+function clipSeg(a,b,eps){
+  const wa=a[2], wb=b[2];
+  if (wa>=eps && wb>=eps) return [a,b];
+  if (wa< eps && wb< eps) return null;
+  const t=(eps-wa)/(wb-wa);
+  const m=[a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, eps];
+  return wa>=eps ? [a,m] : [m,b];
+}
+
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  if (!S.ok || !S.M) return;
+
+  const map = screenMap();
+  const C = inv3(S.flow.H(S.t));
+  if (!C) return;
+
+  const NV = S.n, RR = PERIOD[NV];
+  const lim = Math.max(W,H);
+
+  /* Pass 1 — transform and measure. The rendered set is defined purely by
+     on-screen size: walk outwards from an anchor generation and stop as soon as
+     a generation leaves the visible size band. Because the tower is invariant
+     under h, that band selects the same marks at t=0 and at t=1, so the loop
+     closes exactly. Cutting on the generation index instead leaves a seam. */
+  const RMIN = 0.4, RMAX = Math.min(lim*S.reach, S.spanMax || lim*S.reach);
+  const layerAt = (j,k) => {
+    const G = S.fam[j].get(k);
+    if (!G) return null;
+    const Xh = G.map(p=>mv(C,p));
+    let wmax = 0;
+    for (const q of Xh) wmax = Math.max(wmax, Math.abs(q[2]));
+    if (!(wmax>0) || !isFinite(wmax)) return null;
+    const eps = wmax*1e-7;
+    /* Every test below is computed from this layer's own projected points and
+       nothing else. That is what makes the loop close: at t=1 layer k carries
+       exactly the geometry layer k-m had at t=0, so a per-layer rule selects the
+       same marks, shifted. Anything that consults a neighbour, the generation
+       index, or where the stored window ends will show a seam. */
+    if (!Xh.every(q=>q[2]>=eps)) return null;   /* crosses the horizon: unmeasurable */
+    const full = true;
+    const V = Xh.map(q=>map.toS(q[0]/q[2], q[1]/q[2]));
+    if (V.some(v=>!isFinite(v[0])||!isFinite(v[1]))) return null;
+    let cx=0, cy=0; V.forEach(v=>{cx+=v[0]/NV; cy+=v[1]/NV;});
+    let rad=0; V.forEach(v=>rad=Math.max(rad,Math.hypot(v[0]-cx,v[1]-cy)));
+    /* p is the iterate index: family j at generation k is T^(r·k + j) */
+    return {j, k, p: RR*k + j, Xh, eps, full, V, rad};
+  };
+
+  const layers = [];
+  for (let j=0;j<S.fam.length;j++)
+    for (let k=S.kMin; k<=S.kMax; k++){
+      const L = layerAt(j,k);
+      if (!L) continue;
+      if (L.rad >= RMIN && L.rad <= RMAX) layers.push(L);
+    }
+  if (!layers.length) return;
+  layers.sort((a,b)=>b.rad-a.rad);          /* far to near, so near marks sit on top */
+
+  const drawn = [];
+  for (const l of layers){
+    /* Both fades are keyed to on-screen size, never to the generation index.
+       That is what keeps the set of visible marks identical at t=0 and t=1:
+       the k-window's edges must be culled by size, not by where the window ends. */
+    const aIn  = Math.min(1, Math.max(0,(l.rad-RMIN)/5));
+    const aOut = Math.min(1, Math.max(0,(RMAX-l.rad)/(RMAX*0.55)));
+    const alpha = 0.92*aIn*aOut;
+    if (alpha < 0.010) continue;
+    l.alpha = alpha;
+    l.rgb = cycleRGB(l.p, NV);
+    drawn.push(l);
+  }
+
+  /* Liang–Barsky: trim a screen segment to the draw box by moving its endpoints
+     ALONG the line. Clamping x and y separately would bend it instead. */
+  const BX0=-2*lim, BY0=-2*lim, BX1=W+2*lim, BY1=H+2*lim;
+  const clipBox = (p0,p1) => {
+    const dx=p1[0]-p0[0], dy=p1[1]-p0[1];
+    if (!isFinite(dx) || !isFinite(dy)) return null;
+    let t0=0, t1=1;
+    const P=[-dx,dx,-dy,dy], Q=[p0[0]-BX0, BX1-p0[0], p0[1]-BY0, BY1-p0[1]];
+    for (let i=0;i<4;i++){
+      if (P[i]===0){ if (Q[i]<0) return null; continue; }
+      const r=Q[i]/P[i];
+      if (P[i]<0){ if (r>t1) return null; if (r>t0) t0=r; }
+      else       { if (r<t0) return null; if (r<t1) t1=r; }
+    }
+    return [[p0[0]+t0*dx, p0[1]+t0*dy], [p0[0]+t1*dx, p0[1]+t1*dy]];
+  };
+
+  /* stroke the n segments i → i+step (step 1 is the outline, step 2 the short
+     diagonals: a single star for n=5, two triangles for n=6) */
+  const strokeStep = (Xh, eps, step) => {
+    ctx.beginPath();
+    let pen = null;
+    for (let i=0;i<NV;i++){
+      const a = Xh[i], b = Xh[(i+step)%NV];
+      const s = clipSeg(a,b,eps);
+      if (!s) { pen = null; continue; }
+      const p0 = map.toS(s[0][0]/s[0][2], s[0][1]/s[0][2]);
+      const p1 = map.toS(s[1][0]/s[1][2], s[1][1]/s[1][2]);
+      if (!isFinite(p0[0])||!isFinite(p0[1])||!isFinite(p1[0])||!isFinite(p1[1])){ pen=null; continue; }
+      const q = clipBox(p0,p1);
+      if (!q) { pen = null; continue; }
+      if (!pen || pen[0]!==q[0][0] || pen[1]!==q[0][1]) ctx.moveTo(q[0][0],q[0][1]);
+      ctx.lineTo(q[1][0],q[1][1]);
+      pen = q[1];
+    }
+    ctx.stroke();
+  };
+
+  /* Sutherland–Hodgman against the draw box. A generation near the horizon has
+     screen coordinates around 1e12; handing those to the rasteriser exceeds its
+     precision and the filled edges come back visibly crooked. */
+  const clipPoly = poly => {
+    const edges = [
+      [p=>p[0]>=BX0, (a,b)=>(BX0-a[0])/(b[0]-a[0])],
+      [p=>p[0]<=BX1, (a,b)=>(BX1-a[0])/(b[0]-a[0])],
+      [p=>p[1]>=BY0, (a,b)=>(BY0-a[1])/(b[1]-a[1])],
+      [p=>p[1]<=BY1, (a,b)=>(BY1-a[1])/(b[1]-a[1])]
+    ];
+    let out = poly;
+    for (const [inside, cut] of edges){
+      const src = out; out = [];
+      for (let i=0;i<src.length;i++){
+        const a = src[i], b = src[(i+1)%src.length];
+        const ia = inside(a), ib = inside(b);
+        if (ia) out.push(a);
+        if (ia !== ib){
+          const t = cut(a,b);
+          if (isFinite(t)) out.push([a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t]);
+        }
+      }
+      if (!out.length) return null;
+    }
+    return out;
+  };
+
+  /* faintest wash first, so the nest reads as depth rather than wireframe */
+  for (const d of drawn){
+    /* band the wash by on-screen size only, so the set of washed generations is
+       the same at t=0 and t=1 and the loop stays seamless */
+    if (!d.V || d.V.some(v=>!isFinite(v[0])||!isFinite(v[1]))) continue;
+    /* Every threshold fades rather than switches. A last-bit difference in a
+       generation's coordinates then cannot pop a mark on or off between frames. */
+    const f = Math.min(1, Math.max(0,(d.rad-6)/9)) * Math.min(1, Math.max(0,(lim*3-d.rad)/(lim*1.5)));
+    if (f <= 0) continue;
+    const poly = clipPoly(d.V);
+    if (!poly || poly.length < 3) continue;
+    ctx.fillStyle = tint(d.rgb, d.alpha*0.022*f);
+    ctx.beginPath(); ctx.moveTo(poly[0][0], poly[0][1]);
+    for (let i=1;i<poly.length;i++) ctx.lineTo(poly[i][0], poly[i][1]);
+    ctx.closePath(); ctx.fill();
+  }
+
+  /* the short diagonals — the construction that makes the next pentagon */
+  if (S.showDiag){
+    ctx.lineWidth = 0.62*S.weight;
+    for (const d of drawn){
+      const f = Math.min(1, Math.max(0,(d.rad-9)/16)) * Math.min(1, Math.max(0,(lim*4-d.rad)/(lim*2)));
+      if (f <= 0) continue;
+      ctx.strokeStyle = tint(d.rgb, d.alpha*0.30*f);
+      strokeStep(d.Xh, d.eps, 2);
+    }
+  }
+
+  /* The corridor. Two passes, added rather than painted: a wide dim halo and a
+     narrow bright core, so the nest reads as emitted light against the black. */
+  ctx.lineJoin = 'round';
+  ctx.globalCompositeOperation = 'lighter';
+  for (const d of drawn){
+    ctx.lineWidth = S.weight * (3.2 + 1.6*Math.min(1, d.rad/240));
+    ctx.strokeStyle = tint(d.rgb, d.alpha*0.13*S.glow);
+    strokeStep(d.Xh, d.eps, 1);
+  }
+  for (const d of drawn){
+    ctx.lineWidth = S.weight * (0.85 + 0.55*Math.min(1, d.rad/240));
+    ctx.strokeStyle = tint(d.rgb, d.alpha);
+    strokeStep(d.Xh, d.eps, 1);
+  }
+  ctx.globalCompositeOperation = 'source-over';
+
+  /* vertices, optionally carrying the labels that shift by two each step */
+  if (S.showVerts){
+    for (const d of drawn){
+      if (!d.V) continue;
+      const f = Math.min(1, Math.max(0,(d.rad-12)/10));
+      if (f <= 0) continue;
+      const r = Math.max(1.1, Math.min(3.4, d.rad/95));
+      for (let i=0;i<NV;i++){
+        if (Math.abs(d.V[i][0])>lim*3 || Math.abs(d.V[i][1])>lim*3) continue;
+        ctx.fillStyle = S.showLabels
+          ? tint(cycleRGB(i + 2*d.k, NV), 1)
+          : tint(d.rgb, 1);
+        ctx.globalAlpha = d.alpha*f;
+        ctx.beginPath(); ctx.arc(d.V[i][0], d.V[i][1], r, 0, 6.283); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* seed handles */
+  if (S.editing){
+    const G = S.fam[0].get(0);
+    ctx.lineWidth = 1.4;
+    for (let i=0;i<NV;i++){
+      const q = mv(C,G[i]);
+      if (Math.abs(q[2])<1e-14) continue;
+      const [sx,sy] = map.toS(q[0]/q[2], q[1]/q[2]);
+      ctx.strokeStyle = (S.drag===i) ? '#FFFFFF' : '#FF2D16';
+      ctx.fillStyle = 'rgba(0,0,0,.85)';
+      ctx.beginPath(); ctx.arc(sx,sy,7.5,0,6.283); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#FF6A4D';
+      ctx.font = '10px ui-monospace, monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(String(i+1), sx, sy+0.5);
+    }
+  }
+
+  /* whichever polygon is crossing mid-frame right now lights its own bar, so the
+     cycle is legible as a beat rather than as decoration */
+  let live = null, bd = Infinity;
+  const ref = Math.min(W,H)*0.30;
+  for (const d of drawn){
+    const e = Math.abs(Math.log(d.rad/ref));
+    if (e < bd){ bd = e; live = d; }
+  }
+  if (live) markLive(((live.p % NV)+NV)%NV);
+}
+
+/* The class is reported in the telemetry rather than drawn: normalising the
+   first four vertices to the standard frame leaves a complete invariant of the
+   labelled polygon — 2 numbers for a pentagon, 4 for a hexagon. */
+function moduliOf(pts){
+  const F = frame(pts[0],pts[1],pts[2],pts[3]);
+  if (!F) return null;
+  const Fi = inv3(F);
+  if (!Fi) return null;
+  const out = [];
+  for (let j=4;j<pts.length;j++){
+    const v = mv(Fi, pts[j]);
+    if (Math.abs(v[2])<1e-14) return null;
+    out.push(v[0]/v[2], v[1]/v[2]);
+  }
+  return out;
+}
+const fmtModuli = m => m ? '(' + m.map(x=>x.toFixed(3)).join(', ') + ')' : '—';
+
+/* The smallest number of pentagram steps after which the polygon comes back as a
+   translated, positively scaled copy of itself — no rotation allowed. This is a
+   metric question, not a projective one, and for a seed whose nest flattens the
+   answer is simply that it never does. Family j at generation k is the iterate
+   T^(rk+j), so consecutive iterates alternate between the families. */
+function metricPeriod(maxp){
+  const n = S.n, r = PERIOD[n];
+  const P = S.seed.map(q=>[q[0]/q[2], q[1]/q[2]]);
+  let bx=0, by=0; P.forEach(v=>{bx+=v[0]/n; by+=v[1]/n;});
+  for (let p=1;p<=maxp;p++){
+    const G = S.fam[p%r] && S.fam[p%r].get(Math.floor(p/r));
+    if (!G) continue;
+    const A = G.map(q=>[q[0]/q[2], q[1]/q[2]]);
+    if (A.some(v=>!isFinite(v[0])||!isFinite(v[1]))) continue;
+    let ax=0, ay=0; A.forEach(v=>{ax+=v[0]/n; ay+=v[1]/n;});
+    for (let sh=0; sh<n; sh++){
+      let num=0, den=0;
+      for (let i=0;i<n;i++){
+        const u=A[(i+sh)%n][0]-ax, v=A[(i+sh)%n][1]-ay, c=P[i][0]-bx, d=P[i][1]-by;
+        num += u*c + v*d; den += c*c + d*d;
+      }
+      if (!(den>0)) continue;
+      const lam = num/den;
+      if (!(lam>0)) continue;
+      let res=0, nrm=0;
+      for (let i=0;i<n;i++){
+        const u=A[(i+sh)%n][0]-ax-lam*(P[i][0]-bx), v=A[(i+sh)%n][1]-ay-lam*(P[i][1]-by);
+        res += u*u+v*v;
+        const c=A[(i+sh)%n][0]-ax, d=A[(i+sh)%n][1]-ay; nrm += c*c+d*d;
+      }
+      if (nrm>0 && Math.sqrt(res/nrm) < 1e-7) return p;
+    }
+  }
+  return null;
+}
+
+/* ---- the cycle legend: one bar per position, the live one lifted ---------- */
+function buildSwatches(){
+  const box = document.getElementById('swatches');
+  if (box.childElementCount === S.n && box.dataset.n === String(S.n)) return;
+  box.dataset.n = String(S.n);
+  box.innerHTML = '';
+  for (let i=0;i<S.n;i++){
+    const el = document.createElement('i');
+    el.style.background = tint(cycleRGB(i, S.n), 1);
+    box.appendChild(el);
+  }
+  document.getElementById('cyclen').textContent = S.n;
+}
+let liveIdx = -1;
+function markLive(idx){
+  if (idx === liveIdx) return;
+  liveIdx = idx;
+  const box = document.getElementById('swatches');
+  for (let i=0;i<box.children.length;i++) box.children[i].classList.toggle('live', i===idx);
+}
+
+/* ============================================================================
+   Loop
+   ========================================================================= */
+let last = performance.now();
+function tick(now){
+  const dt = Math.min(0.05, (now-last)/1000); last = now;
+  if (S.viewTarget){
+    const T = S.viewTarget, f = 1-Math.exp(-dt*7);
+    S.view = { cx: S.view.cx+(T.cx-S.view.cx)*f,
+               cy: S.view.cy+(T.cy-S.view.cy)*f,
+               s:  Math.exp(Math.log(S.view.s)+(Math.log(T.s)-Math.log(S.view.s))*f) };
+    if (Math.hypot(T.cx-S.view.cx, T.cy-S.view.cy) < 1e-4*T.s &&
+        Math.abs(Math.log(T.s/S.view.s)) < 1e-4){ S.view = T; S.viewTarget = null; }
+  }
+  if (S.playing && S.ok){
+    S.t += dt * S.speed * S.dir * 0.84 / S.flow.M;   /* constant h-steps per second */
+    while (S.t >= 1) S.t -= 1;
+    while (S.t < 0)  S.t += 1;
+  }
+  draw();
+  requestAnimationFrame(tick);
+}
+
+/* ============================================================================
+   Readout
+   ========================================================================= */
+function writeReadout(){
+  const t = document.getElementById('hmat');
+  if (!S.M){ t.innerHTML=''; document.getElementById('facts').innerHTML=''; return; }
+  const A = nrm9(S.M.slice());
+  const sc = 1/(Math.abs(A[0])>1e-9 ? A[0] : 1);
+  t.innerHTML = [0,1,2].map(i=>'<tr>'+[0,1,2].map(j=>{
+    const v = A[3*i+j]*sc;
+    return `<td>${(Math.abs(v)<1e-4?0:v).toFixed(4)}</td>`;
+  }).join('')+'</tr>').join('');
+
+  const f = S.flow;
+  const evs = f.ev.map(e => Math.abs(e.im)<1e-8
+      ? e.re.toFixed(3)
+      : `${e.re.toFixed(3)}${e.im<0?'−':'+'}${Math.abs(e.im).toFixed(3)}i`).join(' , ');
+  const mp = moduliOf(S.seed);
+  const rr = PERIOD[S.n];
+  const rs = S.ratioStep<1 ? S.ratioStep : 1/S.ratioStep;
+  document.getElementById('facts').innerHTML = `
+    <div><span class="k">spectrum</span><span class="v">${evs}</span></div>
+    <div><span class="k">scale</span><span class="v">${rs.toFixed(4)}${S.ratioStep<1?'':' outward'}</span></div>
+    <div><span class="k">drift</span><span class="v">${S.anis<1.03?'1.00 — never flattens':S.anis.toFixed(2)+'× flatter / step'}</span></div>
+    <div><span class="k">loop</span><span class="v gold">${f.M*rr} steps · ${f.M*rr/S.n} colour cycle${f.M*rr/S.n>1?'s':''}</span></div>
+    <div><span class="k">moduli</span><span class="v">${fmtModuli(mp)}</span></div>
+    <div><span class="k">per frame</span><span class="v">1 matrix inverse</span></div>`;
+
+  document.getElementById('rlabel').innerHTML = rr===1
+    ? 'T<sup>k</sup>(P)<sub>i+2k</sub> = h<sup>k</sup>(P<sub>i</sub>)'
+    : 'T<sup>2k</sup>(P)<sub>i+2k</sub> = h<sup>k</sup>(P<sub>i</sub>)';
+  document.getElementById('mastn').textContent = S.n===5 ? 'convex pentagons' : 'convex hexagons';
+  document.getElementById('thesisline').innerHTML = rr===1
+    ? 'A pentagon returns to its own projective class after one step'
+    : 'A hexagon returns to its own projective class after <em style="font-style:normal;color:#F2CE84">two</em> steps';
+  const shapeP = metricPeriod(24);
+  document.getElementById('tailtext').innerHTML =
+    `<div><span class="v">hue = iterate mod <b style="color:var(--hal);font-weight:400">${S.n}</b></span></div>` +
+    `<div><span class="v" style="color:var(--dim)">class, any relabelling &nbsp;${rr}</span></div>` +
+    `<div><span class="v" style="color:var(--dim)">class, labels intact &nbsp;${S.n}</span></div>` +
+    `<div><span class="v" style="color:var(--dim)">shape, no rotation &nbsp;${shapeP===null?'never':shapeP}</span></div>`;
+  buildSwatches();
+}
+function failNote(msg){
+  const el = document.getElementById('edgewarn');
+  el.textContent = msg + " Nudge a vertex.";
+  el.style.display='block';
+  ctx.clearRect(0,0,W,H);
+}
+function hideNote(){ document.getElementById('edgewarn').style.display='none'; }
+
+/* ============================================================================
+   Interaction
+   ========================================================================= */
+function hit(sx,sy){
+  if (!S.ok) return -1;
+  const C = inv3(S.flow.H(S.t)); if (!C) return -1;
+  const map = screenMap(); const G = S.fam[0].get(0);
+  let best=-1, bd=15;
+  for (let i=0;i<S.n;i++){
+    const q = mv(C,G[i]); if (Math.abs(q[2])<1e-14) continue;
+    const [x,y] = map.toS(q[0]/q[2], q[1]/q[2]);
+    const d = Math.hypot(x-sx,y-sy);
+    if (d<bd){ bd=d; best=i; }
+  }
+  return best;
+}
+function pointerPos(e){
+  const r = cv.getBoundingClientRect();
+  return [e.clientX-r.left, e.clientY-r.top];
+}
+cv.addEventListener('pointerdown', e=>{
+  const [x,y] = pointerPos(e);
+  const i = hit(x,y);
+  if (i>=0){
+    if (!S.editing) setEditing(true);
+    S.drag = i; cv.setPointerCapture(e.pointerId);
+  }
+});
+cv.addEventListener('pointermove', e=>{
+  const [x,y] = pointerPos(e);
+  if (S.drag<0){ cv.style.cursor = hit(x,y)>=0 ? 'grab' : 'crosshair'; return; }
+  cv.style.cursor='grabbing';
+  const map = screenMap();
+  const [wx,wy] = map.toW(x,y);
+  const Ht = S.flow.H(S.t);
+  const p = mv(Ht,[wx,wy,1]);                 // undo the camera
+  if (Math.abs(p[2])<1e-14) return;
+  const keep = S.seed.map(v=>v.slice());
+  /* Non-convex seeds make nests that flatten onto a line within a step or two,
+     so the vertex is clamped to the region that keeps the polygon convex rather
+     than being allowed anywhere. */
+  S.seed[S.drag] = constrainConvex(S.seed, S.drag, [p[0]/p[2], p[1]/p[2]]);
+  const savedView = S.view;
+  rebuild();
+  if (!S.ok){ S.seed = keep; rebuild(); }
+  S.view = savedView;                          // hold the frame steady while dragging
+});
+/* Dragging holds the frame still so the pentagon doesn't swim under the cursor,
+   which leaves the framing stale once the new nest accumulates somewhere else.
+   Ease back to the correct frame when the drag ends. */
+const endDrag = ()=>{
+  if (S.drag>=0){
+    S.drag=-1; cv.style.cursor='crosshair';
+    if (S.ok) S.viewTarget = computeFit();
+  }
+};
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', endDrag);
+
+function setPlaying(p){
+  /* Starting the descent ends the editing session — the handles would otherwise
+     sit on a seed that is sliding out from under the cursor. Putting it here
+     rather than on the button covers the space bar and the presets too.
+     No recursion: setEditing only calls back when switching editing on. */
+  if (p && S.editing) setEditing(false);
+  S.playing = p;
+  document.getElementById('play').textContent = p ? 'Pause' : 'Run';
+}
+function setEditing(on){
+  S.editing = on;
+  document.body.classList.toggle('editing', on);
+  document.getElementById('edit').classList.toggle('on', on);
+  document.getElementById('edit').textContent = on ? 'Done' : 'Edit';
+  if (on){ setPlaying(false); S.t = 0; }
+}
+const bind=(id,fn)=>document.getElementById(id).addEventListener('click',fn);
+bind('play', ()=>setPlaying(!S.playing));
+bind('edit', ()=>setEditing(!S.editing));
+bind('preset-regular', ()=>{ setSeed(regularNgon(S.n)); resetRun(); });
+bind('preset-convex',  ()=>{ setSeed(randConvex(S.n)); resetRun(); });
+function setN(n){
+  S.n = n;
+  document.getElementById('n-5').classList.toggle('on', n===5);
+  document.getElementById('n-6').classList.toggle('on', n===6);
+  setSeed(regularNgon(n)); resetRun();
+}
+bind('n-5', ()=>setN(5));
+bind('n-6', ()=>setN(6));
+function resetRun(){ S.t=0; if (S.editing) setEditing(false); setPlaying(true); }
+
+const toggle=(id,key)=>document.getElementById(id).addEventListener('click',function(){
+  S[key]=!S[key]; this.classList.toggle('on',S[key]);
+});
+toggle('t-diag','showDiag'); toggle('t-verts','showVerts');
+toggle('t-labels','showLabels');
+
+const slider=(id,key,fmt,scale)=>{
+  const el=document.getElementById(id), out=document.getElementById(id+'val');
+  const upd=()=>{ S[key]=parseFloat(el.value); out.textContent=fmt(S[key]); if(scale) scale(); };
+  el.addEventListener('input',upd); upd();
+};
+slider('speed','speed', v=>`${v.toFixed(2)}×`);
+slider('glow','glow', v=>v.toFixed(1));
+slider('reach','reach', v=>`${v.toFixed(1)}×`);
+slider('weight','weight', v=>v.toFixed(1));
+
+document.getElementById('paneltoggle').addEventListener('click',()=>{
+  const open = document.getElementById('rail').classList.toggle('collapsed');
+  document.body.classList.toggle('railopen', !open);
+});
+window.addEventListener('keydown', e=>{
+  if (e.target.tagName==='INPUT') return;
+  if (e.code==='Space'){ e.preventDefault(); setPlaying(!S.playing); }
+  if (e.key==='r'||e.key==='R'){ setSeed(randConvex(S.n)); resetRun(); }
+  if (e.key==='5'){ setN(5); }
+  if (e.key==='6'){ setN(6); }
+  if (e.key==='e'||e.key==='E'){ setEditing(!S.editing); }
+});
+
+/* ============================================================================
+   Boot
+   ========================================================================= */
+resize();
+if (window.innerWidth < 900) document.getElementById('rail').classList.add('collapsed');
+else document.body.classList.add('railopen');
+setSeed(regularNgon(5));
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setPlaying(false);
+requestAnimationFrame(t=>{ last=t; tick(t); });
+</script>
+</body>
+</html>
