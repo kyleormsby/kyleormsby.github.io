@@ -7,9 +7,10 @@ import { currentCourses, courseHref } from '../lib/courses';
 /**
  * Nearly every visualization carries the same year, so sorting by year alone
  * left seventeen entries tied and quietly showed the alphabetically-first
- * three under a heading that says "recent". `featured` in the schema existed
- * for this and was wired to nothing; it now decides, with year and title only
- * breaking ties beneath it.
+ * three under a heading that then said "recent". `featured` in the schema
+ * existed for this and was wired to nothing; it now decides, with year and
+ * title only breaking ties beneath it, so among the featured the order is
+ * alphabetical by title.
  */
 const viz = (await getCollection('viz'))
   .sort((a, b) =>
@@ -47,7 +48,7 @@ try {
 
   <Motif points={11} />
 
-  <h2 class="rule-label"><span class="label">recent visualizations</span></h2>
+  <h2 class="rule-label"><span class="label">featured visualizations</span></h2>
   <ul class="gallery">
     {viz.map((v) => (
       <li class="card">

@@ -284,11 +284,14 @@ Three things, then a build:
 `npm run thumbs -- --no-stub` disables the local CDN substitutions, so a full
 run doubles as a check that every visualization is genuinely self-contained.
 
-**`featured: true`** puts an entry in the three shown on the landing page.
-It decides first, with year and then title only breaking ties beneath it —
-necessary because nearly every entry carries the same year, which used to leave
-seventeen tied and quietly show the alphabetically-first three under a heading
-that says "recent".
+**`featured: true`** puts an entry in the three under *featured visualizations*
+on the landing page. It decides first, with year and then title breaking ties
+beneath it — so among the featured the order is alphabetical by title unless
+their years differ.
+
+The flag exists because sorting by year alone did not work: nearly every entry
+carries the same year, which left seventeen tied and quietly showed the
+alphabetically-first three under a heading that then said "recent".
 
 ## Checking before you push
 
