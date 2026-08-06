@@ -271,6 +271,18 @@ operator was a raw **⧄ (U+29C4)**, which KaTeX cannot set. KaTeX has no
 `{\square\mkern-11mu\diagup}` — no `\mathbin`, because it appears in
 superscript position (`{}^\boxslash R`).
 
+## The arXiv link
+
+The footer currently points at an author *search*, which works but matches on a
+name string. The better link is an author identifier, `arxiv.org/a/<id>`, which
+is an exact match. To claim one, sign in at `arxiv.org/user` and either link an
+ORCID iD — the identifier pages work as `arxiv.org/a/0000-0000-0000-0000` once
+linked — or use "create an author identifier" for the classic
+`arxiv.org/a/ormsby_k_1` form. Either way you then confirm which arXiv papers
+are yours.
+
+Once it resolves, swap the URL in `src/layouts/Base.astro`.
+
 ## Adding a visualization
 
 Three things, then a build:
