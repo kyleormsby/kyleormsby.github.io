@@ -3,9 +3,9 @@
  *
  *   npm run build && npm run check:theme
  *
- * The failure this exists to catch is the quiet one: the toggle keeps working
- * while the *pre-paint* script stops, and every page load flashes the wrong
- * palette for a frame. That is invisible in a screenshot taken after load, so
+ * The failure this exists to catch is the quiet one: the switch keeps working
+ * while the *pre-paint* script stops, and every page load flashes light for a
+ * frame before going dark. That is invisible in a screenshot taken after load, so
  * it is checked here by reading the attribute at navigation commit — before
  * the first paint — rather than after everything has settled.
  */
@@ -38,41 +38,45 @@ const check = (name, got, want) => {
 
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH });
 const state = (pg) => pg.evaluate(() => ({
-  label: document.querySelector('[data-theme-toggle]')?.textContent,
+  checked: document.querySelector('[data-theme-toggle]')?.getAttribute('aria-checked'),
   bg: getComputedStyle(document.body).backgroundColor,
 }));
 
-// The toggle overrides the OS in both directions, and 'auto' returns to it.
-for (const [os, osBg] of [['dark', DARK], ['light', LIGHT]]) {
+// Light is the default whatever the OS says, and the switch is a plain toggle.
+for (const os of ['dark', 'light']) {
   const ctx = await browser.newContext({ colorScheme: os });
   const pg = await ctx.newPage();
   await pg.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle' });
 
   let s = await state(pg);
-  check(`os ${os}: initial label`, s.label, 'auto');
-  check(`os ${os}: initial background follows the OS`, s.bg, osBg);
+  check(`os ${os}: defaults to light regardless of the OS`, s.bg, LIGHT);
+  check(`os ${os}: switch starts off`, s.checked, 'false');
 
-  for (const [label, bg] of [['light', LIGHT], ['dark', DARK], ['auto', osBg]]) {
-    await pg.click('[data-theme-toggle]');
-    await pg.waitForTimeout(50);
-    s = await state(pg);
-    check(`os ${os}: label after cycling to ${label}`, s.label, label);
-    check(`os ${os}: background for ${label}`, s.bg, bg);
-  }
+  await pg.click('[data-theme-toggle]');
+  await pg.waitForTimeout(50);
+  s = await state(pg);
+  check(`os ${os}: background after switching on`, s.bg, DARK);
+  check(`os ${os}: switch reads on`, s.checked, 'true');
+
+  await pg.click('[data-theme-toggle]');
+  await pg.waitForTimeout(50);
+  s = await state(pg);
+  check(`os ${os}: background after switching back`, s.bg, LIGHT);
+  check(`os ${os}: switch reads off`, s.checked, 'false');
   await ctx.close();
 }
 
 // The choice survives navigation, and is applied before the first paint.
 {
-  const ctx = await browser.newContext({ colorScheme: 'dark' });
+  const ctx = await browser.newContext({ colorScheme: 'light' });
   const pg = await ctx.newPage();
   await pg.goto(`http://localhost:${PORT}/`, { waitUntil: 'networkidle' });
-  await pg.click('[data-theme-toggle]');                       // auto -> light
+  await pg.click('[data-theme-toggle]');                       // light -> dark
   await pg.goto(`http://localhost:${PORT}/writing/`, { waitUntil: 'commit' });
   const early = await pg.evaluate(() => document.documentElement.dataset.theme || '(none)');
-  check('choice applied pre-paint on the next page', early, 'light');
+  check('choice applied pre-paint on the next page', early, 'dark');
   await pg.waitForLoadState('networkidle');
-  check('choice survives navigation', (await state(pg)).bg, LIGHT);
+  check('choice survives navigation', (await state(pg)).bg, DARK);
   await ctx.close();
 }
 

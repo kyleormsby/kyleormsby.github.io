@@ -38,22 +38,8 @@
   --tracking: 0.08em;
 }
 
-/* The dark mapping, applied two ways: by the OS unless the visitor has asked
-   for light, and by an explicit choice, which always wins. Kept adjacent so
-   they cannot fall out of step. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    color-scheme: dark;
-    --paper:      var(--paper-dark);
-    --paper-sunk: var(--paper-sunk-dark);
-    --ink:        var(--ink-dark);
-    --muted:      var(--muted-dark);
-    --rule:       var(--rule-dark);
-    --accent:     var(--accent-dark);
-    --accent-bg:  var(--accent-bg-dark);
-  }
-}
-
+/* Light is the default outright — prefers-color-scheme is deliberately not
+   consulted. The site is designed light; dark is the option behind the switch. */
 :root[data-theme='dark'] {
   color-scheme: dark;
   --paper:      var(--paper-dark);
@@ -361,29 +347,63 @@ details details { margin-left: var(--s4); }
   .meeting { break-inside: avoid; }
 }
 
-/* ---- colour-scheme toggle ------------------------------------- */
+/* ---- colour-scheme switch ------------------------------------- */
 
-.theme-toggle {
+.theme-switch {
   appearance: none;
   background: none;
   border: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
   padding: 0 0 0 var(--s4);
   margin-left: var(--s2);
   border-left: 1px solid var(--rule);
   color: var(--muted);
   font: inherit;
-  font-family: var(--mono);
-  font-size: var(--label);
-  letter-spacing: var(--tracking);
-  text-transform: lowercase;
   cursor: pointer;
 }
-.theme-toggle:hover { color: var(--accent); }
-.theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.theme-toggle[hidden] { display: none; }
+.theme-switch .label { color: inherit; }
+.theme-switch:hover { color: var(--accent); }
+.theme-switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.theme-switch[hidden] { display: none; }
 
-/* Once the nav wraps, the toggle starts a row of its own and the dividing
+.theme-switch .track {
+  position: relative;
+  width: 28px;
+  height: 15px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--paper-sunk);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+.theme-switch .knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+.theme-switch:hover .track { border-color: var(--accent); }
+
+.theme-switch[aria-checked='true'] .track {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.theme-switch[aria-checked='true'] .knob {
+  transform: translateX(13px);
+  background: var(--paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-switch .track, .theme-switch .knob { transition: none; }
+}
+
+/* Once the nav wraps, the switch starts a row of its own and the dividing
    rule reads as a stray mark rather than a separator. */
 @media (max-width: 34rem) {
-  .theme-toggle { border-left: 0; padding-left: 0; margin-left: 0; }
+  .theme-switch { border-left: 0; padding-left: 0; margin-left: 0; }
 }

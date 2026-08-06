@@ -273,30 +273,24 @@ superscript position (`{}^\boxslash R`).
 
 ## Light and dark
 
-The palette follows the operating system by default, and a toggle in the header
-overrides it. Three states, cycling: **auto → light → dark → auto**.
-
-`auto` is a real state rather than a placeholder. Without it, the first click
-would permanently opt out of following the system, which is wrong for anyone
-whose desktop switches at sunset — they would have to remember to come back and
-flip the site by hand twice a day.
+**Light is the default outright.** `prefers-color-scheme` is deliberately not
+consulted: the site is designed light, and dark is the option behind a switch
+in the header. Two states, no `auto`.
 
 Two details do the work:
 
 - **The choice is applied before first paint**, by an inline `is:inline` script
   in `<head>` that reads `localStorage` and sets `data-theme` on `<html>`. Move
-  that logic into a deferred bundle and the page flashes the wrong palette for
-  a frame on *every* load. It is written in ES5 with `try`/`catch` around
+  that logic into a deferred bundle and a dark-mode visitor gets a frame of
+  light on *every* load. It is written in ES5 with `try`/`catch` around
   storage, because it runs before anything else and must not throw in a private
   window or an embedded webview.
 - **Every colour is written once.** `global.css` defines `--ink-light` and
-  `--ink-dark` and so on, then two short mappings choose between them — one in
-  a `prefers-color-scheme` query scoped to `:not([data-theme='light'])`, one on
-  `[data-theme='dark']`. The hex values never appear twice, so the two paths
-  cannot drift.
+  `--ink-dark` and so on; `:root` maps the light set and `[data-theme='dark']`
+  maps the dark one. The hex values never appear twice.
 
 The motif draws to a canvas and so cannot inherit CSS variables; it listens for
-both the media query and a `themechange` event and repaints.
+a `themechange` event and repaints.
 
 ```bash
 npm run check:theme    # asserts every state, both OS settings, and pre-paint
@@ -322,6 +316,13 @@ npm run check:contrast
 
 Measures every text colour on the main pages, in both schemes, against WCAG AA
 (4.5:1 normal, 3:1 large). All text currently passes; the tightest is 4.57:1.
+
+Dark is reached by setting `data-theme`, not by setting the OS preference —
+since the palette ignores the OS, a `colorScheme` context would silently audit
+light twice. And the audit **waits out the colour transition** before reading:
+links animate over 0.18s, so measuring immediately catches every `<a>` part-way
+between the old ink and the new against an already-switched background, which
+reports dozens of failures that do not exist.
 
 The subtlety it exists for is **`opacity`**. A colour can pass on its own and
 fail in place, because opacity on an ancestor composites it toward the

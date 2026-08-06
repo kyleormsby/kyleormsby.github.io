@@ -39,26 +39,27 @@ const isCurrent = (href: string) => here === href || (href !== '/' && here.start
 
     <script is:inline>
       /* Runs before first paint. Anything deferred here shows the wrong
-         palette for a frame on every single page load. */
+         palette for a frame on every single page load.
+         Light is the default outright — the OS preference is deliberately not
+         consulted, because the site is designed light and dark is the option. */
       (function () {
-        var KEY = 'theme';                 // 'light' | 'dark'; absent = follow the OS
+        var KEY = 'theme';                 // 'dark' when chosen; absent = light
         var root = document.documentElement;
         try {
-          var saved = localStorage.getItem(KEY);
-          if (saved === 'light' || saved === 'dark') root.dataset.theme = saved;
-        } catch (e) { /* private mode, embedded webview: just follow the OS */ }
+          if (localStorage.getItem(KEY) === 'dark') root.dataset.theme = 'dark';
+        } catch (e) { /* private mode, embedded webview: stay light */ }
 
         window.__theme = {
-          get: function () { return root.dataset.theme || 'auto'; },
-          set: function (mode) {
-            if (mode === 'auto') {
+          isDark: function () { return root.dataset.theme === 'dark'; },
+          set: function (dark) {
+            if (dark) {
+              root.dataset.theme = 'dark';
+              try { localStorage.setItem(KEY, 'dark'); } catch (e) {}
+            } else {
               delete root.dataset.theme;
               try { localStorage.removeItem(KEY); } catch (e) {}
-            } else {
-              root.dataset.theme = mode;
-              try { localStorage.setItem(KEY, mode); } catch (e) {}
             }
-            document.dispatchEvent(new CustomEvent('themechange', { detail: mode }));
+            document.dispatchEvent(new CustomEvent('themechange'));
           },
         };
       })();
@@ -75,7 +76,18 @@ const isCurrent = (href: string) => here === href || (href !== '/' && here.start
               {n.label}
             </a>
           ))}
-          <button type="button" class="theme-toggle" data-theme-toggle hidden>auto</button>
+          <button
+            type="button"
+            class="theme-switch"
+            role="switch"
+            aria-checked="false"
+            aria-label="Dark mode"
+            data-theme-toggle
+            hidden
+          >
+            <span class="label">dark</span>
+            <span class="track" aria-hidden="true"><span class="knob"></span></span>
+          </button>
         </nav>
       </header>
     </div>
@@ -94,35 +106,14 @@ const isCurrent = (href: string) => here === href || (href !== '/' && here.start
       </footer>
     </div>
     <script>
-      /* Cycles auto -> light -> dark -> auto. 'auto' is a real state, not a
-         placeholder: without it the first click would permanently opt out of
-         following the OS, which is the wrong default for anyone whose desktop
-         switches at sunset. */
+      /* A two-state switch. There is no 'auto': light is the design, dark is
+         the option, and the OS preference is not consulted. */
       const button = document.querySelector('[data-theme-toggle]');
       const theme = (window as any).__theme;
 
       if (button && theme) {
-        const ORDER = ['auto', 'light', 'dark'];
-        const DESCRIPTION = {
-          auto: 'following your system setting',
-          light: 'always light',
-          dark: 'always dark',
-        };
-
-        const paint = () => {
-          const mode = theme.get();
-          button.textContent = mode;
-          button.setAttribute(
-            'aria-label',
-            `Colour scheme: ${DESCRIPTION[mode as keyof typeof DESCRIPTION]}. Activate to change.`,
-          );
-        };
-
-        button.addEventListener('click', () => {
-          theme.set(ORDER[(ORDER.indexOf(theme.get()) + 1) % ORDER.length]);
-          paint();
-        });
-
+        const paint = () => button.setAttribute('aria-checked', String(theme.isDark()));
+        button.addEventListener('click', () => { theme.set(!theme.isDark()); paint(); });
         paint();
         button.removeAttribute('hidden');
       }

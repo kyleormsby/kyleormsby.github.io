@@ -79,11 +79,22 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PAT
 const failures = [];
 let worst = { cr: Infinity };
 
+// Dark is reached by the switch, not by the OS — the palette deliberately
+// ignores prefers-color-scheme, so setting it on the context would silently
+// audit light twice.
 for (const scheme of ['light', 'dark']) {
-  const ctx = await browser.newContext({ colorScheme: scheme, viewport: { width: 1440, height: 1000 } });
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await ctx.newPage();
   for (const path of PAGES) {
     await page.goto(`http://localhost:${PORT}${path}`, { waitUntil: 'networkidle' });
+    await page.evaluate((s) => {
+      if (s === 'dark') document.documentElement.dataset.theme = 'dark';
+      else delete document.documentElement.dataset.theme;
+    }, scheme);
+    // Links animate colour over 0.18s. Reading now would catch every <a>
+    // part-way between the old ink and the new, against the already-switched
+    // background — which reports as a contrast failure that does not exist.
+    await page.waitForTimeout(400);
     for (const row of await page.evaluate(audit)) {
       if (row.cr < worst.cr) worst = { ...row, scheme, path };
       if (row.cr < row.need) failures.push({ ...row, scheme, path });

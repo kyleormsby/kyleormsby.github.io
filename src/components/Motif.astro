@@ -384,14 +384,12 @@ const ENTROPY = '1.7049';
       size();
       if (still) { ctx.clearRect(0, 0, w, h); drawDiagram(0); drawRect(0); }
     });
-    // The palette can change under us two ways: the OS switches, or the
-    // visitor uses the toggle in the header. The canvas reads its colours from
-    // CSS custom properties, so both need the same response.
-    const repaint = () => {
+    // The canvas reads its colours from CSS custom properties, which it cannot
+    // inherit, so it has to be told when they change. Only the switch changes
+    // them — the palette does not track the OS.
+    document.addEventListener('themechange', () => {
       readTheme(); buildRamp();
       if (still) { ctx.clearRect(0, 0, w, h); drawDiagram(0); drawRect(0); }
-    };
-    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', repaint);
-    document.addEventListener('themechange', repaint);
+    });
   }
 </script>
