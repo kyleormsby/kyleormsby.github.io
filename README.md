@@ -293,6 +293,16 @@ Three things, then a build:
 3. `npm run thumbs -- <slug>` — renders it headless to
    `public/thumbs/<slug>.png`. Commit the PNG; CI has no browser.
 
+`thumb` is **required** by the schema and its file is checked for existence at
+build time, in `src/pages/viz/index.astro`. Both guards exist because a missing
+thumb is otherwise silent: the site builds clean and the gallery just shows an
+empty frame.
+
+If a visualization needs to be driven before it makes a good picture — pressed
+play, given longer to settle — add it to `tools/thumbnails.config.json`.
+Train-track taffy starts as a bare loop, so its entry clicks `#play` and waits
+14s to catch the strands folded.
+
 `npm run thumbs -- --no-stub` disables the local CDN substitutions, so a full
 run doubles as a check that every visualization is genuinely self-contained.
 

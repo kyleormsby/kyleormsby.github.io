@@ -7,7 +7,7 @@ const viz = defineCollection({
     title: z.string(),
     href: z.string(),
     year: z.number(),
-    thumb: z.string().optional(),
+    thumb: z.string(),        // required: a missing one renders a blank card
     tags: z.array(z.string()).default([]),
     featured: z.boolean().default(false),
   }),

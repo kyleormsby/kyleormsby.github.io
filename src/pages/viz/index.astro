@@ -1,6 +1,20 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+// A thumb path that points at nothing builds without complaint and leaves a
+// blank frame in the gallery. Fail the build instead.
+for (const e of await getCollection('viz')) {
+  const file = resolve('public', e.data.thumb.replace(/^\//, ''));
+  if (!existsSync(file)) {
+    throw new Error(
+      `viz/${e.id}: thumb "${e.data.thumb}" does not exist. ` +
+      `Run: npm run thumbs -- ${e.id}`,
+    );
+  }
+}
 
 const items = (await getCollection('viz')).sort(
   (a, b) => b.data.year - a.data.year || a.data.title.localeCompare(b.data.title),

@@ -13,7 +13,7 @@ The pun turned out to be load-bearing in a way I hadn't planned. The animation o
 
 ## What's here
 
-**[Visualizations](/viz/).** Nineteen of them, all running in your browser and phoning home to nobody: closed geodesics on the space of unimodular 3-lattices, a free group of rank two sitting inside $SO(3)$, nets of four-dimensional polytopes, and — newest — the [Schwartz pentagram map](/pentagram-map/), which on a pentagon returns you to a projectively equivalent copy of where you began, so the picture falls inward forever.
+**[Visualizations](/viz/).** Twenty of them, all running in your browser and phoning home to nobody: closed geodesics on the space of unimodular 3-lattices, a free group of rank two sitting inside $SO(3)$, nets of four-dimensional polytopes, the [Schwartz pentagram map](/pentagram-map/), and — newest — [train-track taffy](/train-track-taffy/), which drags a loop through a braid word until its intersection numbers grow like Fibonacci.
 
 **[Teaching](/teaching/).** Every course I've taught, forty-three of them going back to Michigan in 2006. The recent ones have full schedules; the older ones link out to wherever they still live.
 

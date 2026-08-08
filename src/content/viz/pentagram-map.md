@@ -3,7 +3,6 @@ title: "The pentagram map"
 href: /pentagram-map/
 year: 2026
 thumb: /thumbs/pentagram-map.png
-featured: true
 tags:
   - dynamics
   - projective geometry

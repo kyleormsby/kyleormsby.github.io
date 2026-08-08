@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Train-track taffy</title>
+<style>
+  :root {
+    --paper: #faf8f3;
+    --ink: #1a1611;
+    --faint: #c9c2b4;
+    --mid: #7a7263;
+  }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--paper); }
+  body { font-family: Georgia, 'Times New Roman', serif; color: var(--ink); }
+  #canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #hud { position: absolute; top: 14px; left: 18px; pointer-events: none; }
+  #hud h1 { font-size: 15px; font-weight: normal; font-style: italic; margin: 0 0 3px 0; letter-spacing: .02em; }
+  #hud .sub { font-size: 12.5px; color: var(--mid); }
+  #stageinfo { position: absolute; top: 14px; right: 18px; text-align: right; pointer-events: none; }
+  #stageinfo .big { font-size: 13.5px; }
+  #stageinfo .cnt { font-size: 12.5px; color: var(--mid); margin-top: 2px; }
+  #bar {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    bottom: 14px; display: flex; align-items: center; gap: 9px;
+    background: rgba(250,248,243,.92); border: 1px solid var(--faint);
+    border-radius: 6px; padding: 7px 12px; font-size: 12.5px; white-space: nowrap;
+  }
+  #bar button {
+    font-family: inherit; font-size: 13px; color: var(--ink);
+    background: none; border: 1px solid var(--faint); border-radius: 4px;
+    width: 30px; height: 26px; cursor: pointer; line-height: 1;
+  }
+  #bar button:hover { border-color: var(--mid); }
+  #bar button.wide { width: auto; padding: 0 9px; }
+  #scrub { width: 230px; accent-color: var(--ink); }
+  #bar input[type="text"], #bar input[type="number"] {
+    font-family: inherit; font-size: 12.5px; color: var(--ink);
+    background: none; border: none; border-bottom: 1px solid var(--faint);
+    text-align: center; outline: none;
+  }
+  #bar #word { width: 78px; }
+  #bar input[type="number"] { width: 26px; }
+  #bar select {
+    font-family: inherit; font-size: 12.5px; color: var(--ink);
+    background: none; border: 1px solid var(--faint); border-radius: 4px; padding: 2px;
+  }
+  #bar .lbl { color: var(--mid); }
+  #overlay {
+    position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+    background: rgba(250,248,243,.7); font-style: italic; font-size: 14px; color: var(--mid);
+  }
+  #note { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #a33; display: none; }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div id="hud">
+  <h1>Train-track taffy — tight strands</h1>
+  <div class="sub" id="wordlabel"></div>
+</div>
+<div id="stageinfo">
+  <div class="big" id="stagelabel"></div>
+  <div class="cnt" id="countlabel"></div>
+</div>
+<div id="bar">
+  <button id="prev" title="previous stage (←)">&#8676;</button>
+  <button id="play" title="play / pause (space)">&#9654;</button>
+  <button id="next" title="next stage (→)">&#8677;</button>
+  <input type="range" id="scrub" min="0" max="12" step="0.002" value="0">
+  <select id="speed" title="speed">
+    <option value="0.5">&#189;&times;</option>
+    <option value="1" selected>1&times;</option>
+    <option value="2">2&times;</option>
+    <option value="4">4&times;</option>
+  </select>
+  <button id="dots" title="show / hide the rod markers (d)">&#9679;</button>
+  <span class="lbl" title="number of punctures">rods</span>
+  <input type="number" id="npunct" min="2" max="8" value="3">
+  <span class="lbl" title="the starting curve is a small loop around rods k, k+1">loop</span>
+  <input type="number" id="pair" min="1" max="7" value="2">
+  <span class="lbl">word</span>
+  <input type="text" id="word" value="1 -2"
+    title="braid word: tokens 1..n-1, minus or capital S = inverse (e.g. '1 -2' for &sigma;&#8321;&sigma;&#8322;&#8315;&#185;)">
+  <span class="lbl">steps</span>
+  <input type="number" id="steps" min="1" max="24" value="12">
+  <button id="rebuild" class="wide">rebuild</button>
+</div>
+<div id="note"></div>
+<div id="overlay">computing…</div>
+<script>
+'use strict';
+// ============================================================================
+// Train-track taffy engine, v3 — drifting punctures.
+//
+// A simple closed curve in a disk with 3 punctures on the horizontal axis is
+// stored as a chord diagram: its transverse intersection points with the
+// axis in order ALONG THE CURVE, the side (+1/-1) of each excursion, plus the
+// current puncture positions and the current arc spacing delta.
+//
+// Canonical stages: ALL crossing points form (per group) arithmetic
+// progressions with ONE global spacing delta; punctures sit centered in a
+// constant clearance DELTA = PUNCT_PAD*delta between groups.  Nested
+// semicircles are therefore exactly concentric with constant gap delta, and
+// the punctures drift from stage to stage as the Fibonacci counts grow.
+//
+// One braid generator step: model half-twist supported on an annulus whose
+// radii are computed per step from the stage layout (rigid rotation inside,
+// smoothstep taper), then bigon reduction (safety net), rounding, and the
+// slide to the next canonical layout.  The renderer blends these into a
+// single global motion.
+// ============================================================================
+
+const PUNCT_PAD = 8;        // puncture clearance = (PUNCT_PAD/2)*delta per side
+const DMAX = 0.16;          // cap on delta (early sparse stages)
+const HALF_USABLE = 1.70;   // configuration confined to [-HALF_USABLE, HALF_USABLE]
+const DISK_R = 2.0;
+const EPSY = 1e-12;
+
+let QUALITY = 1;
+function setQuality(q) { QUALITY = q; }
+function samplesForRadius(r) {
+  return Math.max(10, Math.min(Math.ceil(120 * QUALITY), Math.ceil(r * 160 * QUALITY)));
+}
+
+function gapOf(x, punct) {
+  let g = 0;
+  while (g < punct.length && x > punct[g]) g++;
+  return g;
+}
+function puncBetween(a, b, punct) {
+  const lo = Math.min(a, b), hi = Math.max(a, b);
+  for (let i = 0; i < punct.length; i++) if (punct[i] > lo && punct[i] < hi) return true;
+  return false;
+}
+
+// --------------------------------------------------------------------------
+// Layout: given per-gap crossing counts, produce axis positions for all
+// crossings (axis order) and the three punctures, with unit delta, then
+// scale to fit and center.  Returns { groupStarts, punct, delta }.
+// Spacing (in units of delta): point-point 1, point-puncture PUNCT_PAD/2,
+// puncture-puncture PUNCT_PAD (empty group between).
+// --------------------------------------------------------------------------
+function layoutFromCounts(counts) {
+  const nP = counts.length - 1;      // number of punctures
+  const PADH = PUNCT_PAD / 2;
+  let cursor = 0;
+  const groupStarts = new Array(counts.length).fill(0);
+  const punct = new Array(nP).fill(0);
+  let prev = null;  // 'pt' | 'punct'
+  for (let g = 0; g < counts.length; g++) {
+    if (counts[g] > 0) {
+      if (prev === 'punct') cursor += PADH;
+      groupStarts[g] = cursor;
+      cursor += counts[g] - 1;
+      prev = 'pt';
+    }
+    if (g < nP) {
+      if (prev === 'pt') cursor += PADH;
+      else if (prev === 'punct') cursor += PUNCT_PAD;
+      punct[g] = cursor;
+      prev = 'punct';
+    }
+  }
+  const width = cursor;
+  const delta = Math.min(DMAX, (2 * HALF_USABLE) / Math.max(width, 1e-9));
+  const shift = -0.5 * width;
+  return {
+    delta,
+    punct: punct.map(p => (p + shift) * delta),
+    groupStarts: groupStarts.map(s => (s + shift) * delta),
+  };
+}
+
+// --------------------------------------------------------------------------
+// Diagram: { xs, sides, punct, delta }
+// --------------------------------------------------------------------------
+function initialCurve(pair, nP = 3) {
+  // small loop around punctures pair, pair+1  (1 <= pair <= nP-1)
+  const counts = new Array(nP + 1).fill(0);
+  counts[pair - 1] += 1;
+  counts[pair + 1] += 1;
+  const L = layoutFromCounts(counts);
+  const xL = L.groupStarts[pair - 1], xR = L.groupStarts[pair + 1];
+  return { xs: [xL, xR], sides: [1, -1], punct: L.punct, delta: L.delta };
+}
+
+// --------------------------------------------------------------------------
+// Canonical polyline with explicit crossing vertices.
+// --------------------------------------------------------------------------
+function canonicalPolyline(diagram) {
+  const m = diagram.xs.length;
+  const X = [], Y = [], cross = [];
+  for (let k = 0; k < m; k++) {
+    const xa = diagram.xs[k], xb = diagram.xs[(k + 1) % m];
+    const side = diagram.sides[k];
+    const c = 0.5 * (xa + xb), r = 0.5 * Math.abs(xb - xa);
+    const n = samplesForRadius(r);
+    cross.push(X.length);
+    const a0 = xa < xb ? Math.PI : 0, a1 = xa < xb ? 0 : Math.PI;
+    for (let j = 0; j < n; j++) {
+      const th = a0 + (a1 - a0) * (j / n);
+      X.push(c + r * Math.cos(th));
+      Y.push(j === 0 ? 0 : side * r * Math.sin(th));
+    }
+  }
+  return { X, Y, cross };
+}
+
+// --------------------------------------------------------------------------
+// The twist. cfg = { cx, R0, R1, sign } computed per step from the layout.
+// --------------------------------------------------------------------------
+function twistConfig(diagram, gen) {
+  const pa = diagram.punct[gen.i - 1], pb = diagram.punct[gen.i];
+  const cx = 0.5 * (pa + pb);
+  const halfSpan = 0.5 * (pb - pa);
+  // taper spans the puncture clearance: nearest outside crossings sit at
+  // halfSpan + c, so [R0, R1] = [halfSpan + 0.15c, halfSpan + 0.85c] keeps
+  // every crossing rotating by exactly pi or 0 while maximizing taper width
+  const c = 0.5 * PUNCT_PAD * diagram.delta;
+  return { cx, R0: halfSpan + 0.15 * c, R1: halfSpan + 0.85 * c, sign: gen.sign };
+}
+function smoothstep(u) { return u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u); }
+function twistAngle(r, t, cfg) {
+  if (r >= cfg.R1) return 0;
+  const prof = r <= cfg.R0 ? 1
+    : cfg.log ? Math.log(cfg.R1 / r) / Math.log(cfg.R1 / cfg.R0)   // Teichmüller pitch
+    : smoothstep((cfg.R1 - r) / (cfg.R1 - cfg.R0));
+  return cfg.sign * Math.PI * t * prof;
+}
+// The wide "stir": same rigid core, but the taper spans the whole disk with
+// the log-linear (constant-shear, extremal) profile.  Used for the VISIBLE
+// motion only; the narrow taut-landing map remains the combinatorial engine.
+function wideConfig(cfg) {
+  return { cx: cfg.cx, R0: cfg.R0, R1: 1.90, sign: cfg.sign, log: true };
+}
+function applyTwist(X, Y, t, cfg, outX, outY) {
+  const n = X.length, cx = cfg.cx;
+  for (let i = 0; i < n; i++) {
+    const dx = X[i] - cx, y = Y[i];
+    const r = Math.hypot(dx, y);
+    const a = twistAngle(r, t, cfg);
+    if (a === 0) { outX[i] = X[i]; outY[i] = y; continue; }
+    const ca = Math.cos(a), sa = Math.sin(a);
+    outX[i] = cx + dx * ca - y * sa;
+    outY[i] = dx * sa + y * ca;
+  }
+}
+function invConfig(cfg) { return { cx: cfg.cx, R0: cfg.R0, R1: cfg.R1, sign: -cfg.sign }; }
+function twistPt(x, y, t, cfg) {
+  const dx = x - cfg.cx, r = Math.hypot(dx, y);
+  const a = twistAngle(r, t, cfg);
+  if (a === 0) return [x, y];
+  const ca = Math.cos(a), sa = Math.sin(a);
+  return [cfg.cx + dx * ca - y * sa, dx * sa + y * ca];
+}
+
+// Adaptive refinement against the twist image: subdivide each edge until its
+// image under the FULL twist is short and close to straight.
+function refineForTwist(poly, cfgs, tol) {
+  if (!Array.isArray(cfgs)) cfgs = [cfgs];
+  const { X, Y, cross } = poly;
+  const n = X.length;
+  const nX = [], nY = [], nCross = [];
+  let ci = 0;
+  for (let i = 0; i < n; i++) {
+    if (ci < cross.length && cross[ci] === i) { nCross.push(nX.length); ci++; }
+    nX.push(X[i]); nY.push(Y[i]);
+    const j = (i + 1) % n;
+    subdivide(X[i], Y[i], X[j], Y[j], 0);
+  }
+  function bad(ax, ay, bx, by, mx, my) {
+    for (const cfg of cfgs) {
+      const pa = twistPt(ax, ay, 1, cfg);
+      const pb = twistPt(bx, by, 1, cfg);
+      const pm = twistPt(mx, my, 1, cfg);
+      const chord = Math.hypot(pb[0] - pa[0], pb[1] - pa[1]);
+      const dev = Math.hypot(pm[0] - 0.5 * (pa[0] + pb[0]), pm[1] - 0.5 * (pa[1] + pb[1]));
+      if (chord > tol || dev > tol * 0.25) return true;
+    }
+    return false;
+  }
+  function subdivide(ax, ay, bx, by, depth) {
+    if (depth > 16) return;
+    const mx = 0.5 * (ax + bx), my = 0.5 * (ay + by);
+    if (!bad(ax, ay, bx, by, mx, my)) return;
+    subdivide(ax, ay, mx, my, depth + 1);
+    nX.push(mx); nY.push(my);
+    subdivide(mx, my, bx, by, depth + 1);
+  }
+  return { X: nX, Y: nY, cross: nCross };
+}
+
+// Ensure each excursion has at least the vertex count its chord-semicircle
+// target would need.
+function densifyExcursions(poly) {
+  const { X, Y, cross } = poly;
+  const n = X.length, m = cross.length;
+  const nX = [], nY = [], nCross = [];
+  for (let k = 0; k < m; k++) {
+    const a = cross[k];
+    const b = k + 1 < m ? cross[k + 1] : n;
+    const endV = b % n;
+    const count = b - a;
+    const r = 0.5 * Math.abs(X[endV] - X[a]);
+    const need = samplesForRadius(r);
+    nCross.push(nX.length);
+    if (count >= need) {
+      for (let i = a; i < b; i++) { nX.push(X[i]); nY.push(Y[i]); }
+    } else {
+      const idx = [];
+      for (let i = a; i < b; i++) idx.push(i);
+      idx.push(endV);
+      const L = [0];
+      for (let q = 1; q < idx.length; q++) {
+        const u = idx[q - 1], v = idx[q];
+        L.push(L[q - 1] + Math.hypot(X[v] - X[u], Y[v] - Y[u]));
+      }
+      const total = L[L.length - 1] || 1;
+      let seg = 0;
+      for (let j = 0; j < need; j++) {
+        const s = (j / need) * total;
+        while (seg < L.length - 2 && L[seg + 1] < s) seg++;
+        const u = idx[seg], v = idx[seg + 1];
+        const f = (s - L[seg]) / ((L[seg + 1] - L[seg]) || 1);
+        nX.push(X[u] + f * (X[v] - X[u]));
+        nY.push(Y[u] + f * (Y[v] - Y[u]));
+      }
+    }
+  }
+  return { X: nX, Y: nY, cross: nCross };
+}
+
+// --------------------------------------------------------------------------
+// Rebuild crossing structure from a raw closed polyline.
+// --------------------------------------------------------------------------
+function structure(X, Y) {
+  const n = X.length;
+  const sgn = i => (Y[i] > EPSY ? 1 : Y[i] < -EPSY ? -1 : 0);
+  for (let i = 0; i < n; i++) {
+    if (sgn(i) === 0) {
+      let p = (i - 1 + n) % n, q = (i + 1) % n;
+      let guard = 0;
+      while (sgn(p) === 0 && guard++ < n) p = (p - 1 + n) % n;
+      guard = 0;
+      while (sgn(q) === 0 && guard++ < n) q = (q + 1) % n;
+      if (sgn(p) === sgn(q)) Y[i] = sgn(p) * 1e-11;
+      else Y[i] = 0;
+    }
+  }
+  const nX = [], nY = [], isCross = [];
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    nX.push(X[i]); nY.push(Y[i]); isCross.push(Y[i] === 0);
+    if (Y[i] !== 0 && Y[j] !== 0 && ((Y[i] > 0) !== (Y[j] > 0))) {
+      const t = Y[i] / (Y[i] - Y[j]);
+      nX.push(X[i] + t * (X[j] - X[i])); nY.push(0); isCross.push(true);
+    }
+  }
+  let start = isCross.indexOf(true);
+  if (start < 0) throw new Error('curve does not meet the axis');
+  const N = nX.length;
+  const rX = [], rY = [], cross = [];
+  for (let k = 0; k < N; k++) {
+    const i = (start + k) % N;
+    if (isCross[i]) cross.push(rX.length);
+    rX.push(nX[i]); rY.push(nY[i]);
+  }
+  return { X: rX, Y: rY, cross };
+}
+
+function sideOfExcursion(poly, k) {
+  const { X, Y, cross } = poly;
+  const a = cross[k];
+  const b = k + 1 < cross.length ? cross[k + 1] : X.length;
+  for (let i = a + 1; i < b; i++) if (Y[i] !== 0) return Y[i] > 0 ? 1 : -1;
+  throw new Error('degenerate excursion');
+}
+
+// --------------------------------------------------------------------------
+// Bigon reduction (safety net; the model twist of a taut stage stays taut
+// for the standard words).
+// --------------------------------------------------------------------------
+function excursionRange(poly, k) {
+  const m = poly.cross.length;
+  const a = poly.cross[k];
+  const b = k + 1 < m ? poly.cross[k + 1] : poly.X.length;
+  return [a, b];
+}
+function arclengthResample(X, Y, i0, i1, targetFn) {
+  const n = X.length;
+  const idx = [];
+  for (let i = i0; ; i = (i + 1) % n) { idx.push(i); if (i === i1) break; }
+  const L = [0];
+  for (let k = 1; k < idx.length; k++) {
+    const a = idx[k - 1], b = idx[k];
+    L.push(L[k - 1] + Math.hypot(X[b] - X[a], Y[b] - Y[a]));
+  }
+  const total = L[L.length - 1] || 1;
+  const out = [];
+  for (let k = 0; k < idx.length; k++) out.push(targetFn(L[k] / total));
+  return { idx, out };
+}
+function semicircleFn(xa, xb, side) {
+  const c = 0.5 * (xa + xb), r = 0.5 * Math.abs(xb - xa);
+  const a0 = xa < xb ? Math.PI : 0, a1 = xa < xb ? 0 : Math.PI;
+  return u => {
+    const th = a0 + (a1 - a0) * u;
+    return [c + r * Math.cos(th), side * r * Math.sin(th)];
+  };
+}
+function segmentFn(xa, xb) { return u => [xa + (xb - xa) * u, 0]; }
+
+function reduce(poly, punct) {
+  const rounds = [];
+  let cur = poly;
+  let guard = 0;
+  while (guard++ < 200) {
+    const m = cur.cross.length;
+    if (m <= 2) break;
+    const xs = cur.cross.map(v => cur.X[v]);
+    const order = xs.map((x, i) => i).sort((a, b) => xs[a] - xs[b]);
+    const rank = new Array(m);
+    order.forEach((ci, r) => { rank[ci] = r; });
+    const removable = [];
+    for (let k = 0; k < m; k++) {
+      const k2 = (k + 1) % m;
+      if (Math.abs(rank[k] - rank[k2]) === 1 && !puncBetween(xs[k], xs[k2], punct)) removable.push(k);
+    }
+    if (removable.length === 0) break;
+    const picked = [];
+    const dist = (a, b) => { const d = Math.abs(a - b); return Math.min(d, m - d); };
+    for (const k of removable) {
+      if (picked.every(j => dist(j, k) >= 3)) picked.push(k);
+    }
+    const A = { X: cur.X.slice(), Y: cur.Y.slice() };
+    const B = { X: cur.X.slice(), Y: cur.Y.slice() };
+    const C = { X: null, Y: null };
+    const n = cur.X.length;
+    for (const k of picked) {
+      const [a, b] = excursionRange(cur, k);
+      const endV = b % n;
+      const { idx, out } = arclengthResample(cur.X, cur.Y, a, endV,
+        segmentFn(cur.X[a], cur.X[endV]));
+      idx.forEach((vi, j) => { B.X[vi] = out[j][0]; B.Y[vi] = out[j][1]; });
+    }
+    C.X = B.X.slice(); C.Y = B.Y.slice();
+    for (const k of picked) {
+      const m2 = cur.cross.length;
+      const kPrev = (k - 1 + m2) % m2;
+      const kNext = (k + 1) % m2;
+      const a = cur.cross[kPrev];
+      const b = (kNext + 1 < m2 ? cur.cross[kNext + 1] : cur.X.length) % n;
+      const side = sideOfExcursion(cur, kPrev);
+      const { idx, out } = arclengthResample(B.X, B.Y, a, b,
+        semicircleFn(B.X[a], B.X[b], side));
+      idx.forEach((vi, j) => { C.X[vi] = out[j][0]; C.Y[vi] = out[j][1]; });
+    }
+    rounds.push({ A, B, C });
+    cur = densifyExcursions(structure(C.X, C.Y));
+  }
+  return { rounds, poly: cur };
+}
+
+function roundKeyframe(poly) {
+  const n = poly.X.length, m = poly.cross.length;
+  const D = { X: poly.X.slice(), Y: poly.Y.slice() };
+  for (let k = 0; k < m; k++) {
+    const [a, b] = excursionRange(poly, k);
+    const endV = b % n;
+    const side = sideOfExcursion(poly, k);
+    const { idx, out } = arclengthResample(poly.X, poly.Y, a, endV,
+      semicircleFn(poly.X[a], poly.X[endV], side));
+    idx.forEach((vi, j) => { D.X[vi] = out[j][0]; D.Y[vi] = out[j][1]; });
+  }
+  return D;
+}
+
+// --------------------------------------------------------------------------
+// Next canonical layout from the taut curve: crossings grouped by the
+// CURRENT punctures, then re-laid-out with one new global delta and NEW
+// (drifted) puncture positions.  Returns { targets (curve order), punct,
+// delta }.
+// --------------------------------------------------------------------------
+function layoutTargets(poly, punct) {
+  const m = poly.cross.length;
+  const xs = poly.cross.map(v => poly.X[v]);
+  const order = xs.map((x, i) => i).sort((a, b) => xs[a] - xs[b]);
+  const nG = punct.length + 1;
+  const counts = new Array(nG).fill(0);
+  const perGap = Array.from({ length: nG }, () => []);
+  for (const ci of order) {
+    const g = gapOf(xs[ci], punct);
+    counts[g]++;
+    perGap[g].push(ci);
+  }
+  const L = layoutFromCounts(counts);
+  const targets = new Array(m);
+  for (let g = 0; g < nG; g++) {
+    perGap[g].forEach((ci, k) => { targets[ci] = L.groupStarts[g] + k * L.delta; });
+  }
+  return { targets, punct: L.punct, delta: L.delta };
+}
+
+// --------------------------------------------------------------------------
+// One full generator step.
+// --------------------------------------------------------------------------
+// Pure combinatorics: compute the image diagram of one braid generator.
+// (The model-twist polyline pipeline is used internally to carry out the
+// braid action exactly; the renderer never sees these polylines.)
+function computeStep(diagram, gen) {
+  const cfg = twistConfig(diagram, gen);
+  const base = refineForTwist(canonicalPolyline(diagram), cfg, 0.006 / QUALITY);
+  const n = base.X.length;
+  const tX = new Array(n), tY = new Array(n);
+  applyTwist(base.X, base.Y, 1, cfg, tX, tY);
+  const twisted = densifyExcursions(structure(tX, tY));
+  const { rounds, poly: taut } = reduce(twisted, diagram.punct);
+  const LT = layoutTargets(taut, diagram.punct);
+  const sides = taut.cross.map((_, k) => sideOfExcursion(taut, k));
+  const nextDiagram = { xs: LT.targets.slice(), sides, punct: LT.punct, delta: LT.delta };
+  return { gen, cfg, rounds: rounds.length, nextDiagram };
+}
+
+// --------------------------------------------------------------------------
+// Word parsing / diagnostics
+// --------------------------------------------------------------------------
+function parseWord(s, nP = 3) {
+  const gens = [];
+  const toks = s.trim().split(/[\s,]+/).filter(Boolean);
+  for (const t of toks) {
+    const m1 = /^(-?)([sS]?)(-?)(\d+)$/.exec(t);
+    if (!m1) throw new Error('bad word token: ' + t);
+    const i = parseInt(m1[4], 10);
+    if (i < 1 || i > nP - 1) throw new Error('generator s' + i + ' needs 1..' + (nP - 1));
+    const neg = m1[1] === '-' || m1[3] === '-' || m1[2] === 'S';
+    gens.push({ i, sign: neg ? -1 : 1 });
+  }
+  return gens;
+}
+
+function describeDiagram(d) {
+  const m = d.xs.length;
+  const upper = d.sides.filter(s => s > 0).length;
+  const lower = m - upper;
+  const gc = new Array(d.punct.length + 1).fill(0);
+  d.xs.forEach(x => gc[gapOf(x, d.punct)]++);
+  const xs = d.xs;
+  const order = xs.map((x, i) => i).sort((a, b) => xs[a] - xs[b]);
+  const rank = new Array(m); order.forEach((ci, r) => rank[ci] = r);
+  let rainbow = true;
+  for (let k = 0; k < m; k++) {
+    if (d.sides[k] > 0) {
+      const k2 = (k + 1) % m;
+      if (rank[k] + rank[k2] !== m - 1) { rainbow = false; break; }
+    }
+  }
+  return { crossings: m, upper, lower, gaps: gc, upperRainbow: rainbow };
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = {
+    PUNCT_PAD, DMAX, HALF_USABLE, DISK_R,
+    gapOf, puncBetween, layoutFromCounts, initialCurve, canonicalPolyline,
+    twistConfig, wideConfig, twistAngle, applyTwist, invConfig, twistPt, refineForTwist,
+    densifyExcursions, structure, reduce, roundKeyframe, layoutTargets,
+    computeStep, parseWord, describeDiagram, samplesForRadius, setQuality,
+    semicircleFn,
+  };
+}
+
+'use strict';
+// ============================================================================
+// Tight rubber-band mode.
+//
+// At every instant the curve is drawn as its TAUT representative rel the
+// instantaneous rod positions: circular arcs around rods (radius = base +
+// slot*delta, slots by nesting) joined by common tangent segments — the
+// exact geometry of an ideal inextensible band with strand spacing delta.
+//
+// Structure: a cyclic list of "visits" (rod, dir, slot).  Geometry per frame
+// is closed-form (oriented common tangents).  As the two active rods orbit,
+// visits are born (a tangent segment collides with a rod's stack) and die
+// (an arc's sweep shrinks to zero) — these tangency events are detected on
+// a fine substep grid and logged, so any time can be reconstructed exactly.
+// ============================================================================
+
+const TIGHT_BASE = 0.5;       // innermost arc radius, in units of delta.
+                              // 0.5 is forced, not chosen: an innermost u-turn
+                              // puts strand at +BASE*delta above the axis and
+                              // -BASE*delta below, so the corridor along the
+                              // axis through a rod is 2*BASE*delta wide.  Only
+                              // BASE = 1/2 makes that corridor equal delta and
+                              // the picture uniform everywhere.
+const TIGHT_SUBSTEPS = 240;
+const ORBIT_END = 0.92;       // rod motion completes here; radii settle after
+
+// ---------------------------------------------------------------------------
+// Oriented common tangent between circles (c1,r1,dir1) -> (c2,r2,dir2).
+// dir = +1 ccw, -1 cw.  Returns { t1, t2 } contact points, or null.
+// ---------------------------------------------------------------------------
+function orientedTangent(c1x, c1y, r1, d1, c2x, c2y, r2, d2) {
+  const Dx = c2x - c1x, Dy = c2y - c1y;
+  const L2 = Dx * Dx + Dy * Dy;
+  if (L2 < 1e-20) return null;
+  let best = null;
+  for (let s1 = 1; s1 >= -1; s1 -= 2) {
+    const s2 = s1 * d1 * d2;
+    const rho = s2 * r2 - s1 * r1;
+    const disc = L2 - rho * rho;
+    if (disc < 0) continue;
+    const root = Math.sqrt(disc);
+    for (let sgn = 1; sgn >= -1; sgn -= 2) {
+      const nx = (rho * Dx - sgn * root * Dy) / L2;
+      const ny = (rho * Dy + sgn * root * Dx) / L2;
+      const t1x = c1x - s1 * r1 * nx, t1y = c1y - s1 * r1 * ny;
+      const t2x = c2x - s2 * r2 * nx, t2y = c2y - s2 * r2 * ny;
+      const wx = t2x - t1x, wy = t2y - t1y;
+      // travel direction at t1 must match traversal: v = -d1*s1*perp(n)
+      const vx = d1 * s1 * ny, vy = -d1 * s1 * nx;
+      if (wx * vx + wy * vy > 1e-12) {
+        best = { t1x, t1y, t2x, t2y };
+      }
+    }
+  }
+  return best;
+}
+
+// ---------------------------------------------------------------------------
+// Initial visit word from a canonical diagram (collinear rods).
+// Visit: { id, peg (0..2), dir (+1/-1), slot, sweep (maintained later) }
+// ---------------------------------------------------------------------------
+let VISIT_ID = 1;
+function tightWord(diagram) {
+  const m = diagram.xs.length;
+  const xs = diagram.xs, sides = diagram.sides, punct = diagram.punct;
+  const raw = [];   // in curve order: {peg, dir, key}
+  for (let k = 0; k < m; k++) {
+    const x = xs[k];
+    const xPrev = xs[(k - 1 + m) % m], xNext = xs[(k + 1) % m];
+    const sIn = sides[(k - 1 + m) % m];       // side of incoming excursion
+    // u-turn at crossing k?
+    const nP = punct.length;
+    if (xPrev > x && xNext > x) {
+      // both neighbors right: wrap the rod just right of x
+      let peg = 0; while (peg < nP && punct[peg] < x) peg++;
+      if (peg < nP && punct[peg] > x) {
+        // dir: incoming from below (sIn=-1) wrapping left side bottom->top = cw
+        raw.push({ peg, dir: sIn === -1 ? -1 : 1, key: Math.abs(punct[peg] - x) });
+      }
+    } else if (xPrev < x && xNext < x) {
+      // both neighbors left: wrap the rod just left of x; mirror image of the
+      // right case, so the orientation flips: from below -> ccw (+1)
+      let peg = nP - 1; while (peg >= 0 && punct[peg] > x) peg--;
+      if (peg >= 0 && punct[peg] < x) {
+        raw.push({ peg, dir: sIn === -1 ? 1 : -1, key: Math.abs(punct[peg] - x) });
+      }
+    }
+    // pass-over visits of the outgoing excursion k -> k+1
+    const xa = x, xb = xNext, s = sides[k];
+    const lo = Math.min(xa, xb), hi = Math.max(xa, xb);
+    const dirPass = -s * Math.sign(xb - xa);
+    const mid = 0.5 * (xa + xb), R = 0.5 * Math.abs(xb - xa);
+    const pegsBetween = [];
+    for (let j = 0; j < punct.length; j++) if (punct[j] > lo && punct[j] < hi) pegsBetween.push(j);
+    if (xb < xa) pegsBetween.reverse();       // traversal order
+    for (const j of pegsBetween) {
+      raw.push({ peg: j, dir: dirPass, key: R - Math.abs(mid - punct[j]) });
+    }
+  }
+  // merge cyclically-consecutive visits to the same peg with same dir
+  const merged = [];
+  for (const v of raw) {
+    const last = merged[merged.length - 1];
+    if (last && last.peg === v.peg && last.dir === v.dir) {
+      last.key = Math.min(last.key, v.key);
+    } else {
+      merged.push({ peg: v.peg, dir: v.dir, key: v.key });
+    }
+  }
+  while (merged.length > 1) {
+    const first = merged[0], last = merged[merged.length - 1];
+    if (first.peg === last.peg && first.dir === last.dir) {
+      first.key = Math.min(first.key, last.key);
+      merged.pop();
+    } else break;
+  }
+  // slots per peg by nesting key
+  for (let j = 0; j < punct.length; j++) {
+    const mine = merged.filter(v => v.peg === j).sort((a, b) => a.key - b.key);
+    mine.forEach((v, i) => { v.slot = i; });
+  }
+  return merged.map(v => ({ id: VISIT_ID++, peg: v.peg, dir: v.dir, slot: v.slot, sweep: null }));
+}
+
+// ---------------------------------------------------------------------------
+// Geometry of a visit list at given rod positions & radii function.
+// Returns { ok, tang: [ {t1x,t1y,t2x,t2y} per gap after visit v ],
+//           sweeps: [signed arc sweep per visit] }
+// ---------------------------------------------------------------------------
+function tightGeometry(visits, pegPos, radiusOf) {
+  const n = visits.length;
+  const tang = new Array(n);
+  const sweeps = new Array(n);
+  if (n === 1) return { ok: false, tang, sweeps };
+  for (let k = 0; k < n; k++) {
+    const a = visits[k], b = visits[(k + 1) % n];
+    const pa = pegPos[a.peg], pb = pegPos[b.peg];
+    let ra = radiusOf(a), rb = radiusOf(b);
+    let T = orientedTangent(pa[0], pa[1], ra, a.dir, pb[0], pb[1], rb, b.dir);
+    if (!T) {
+      // marginal degeneracies — physically the strands compress a little:
+      //  * internal tangent (opposite dirs): radii sum exceeds rod distance
+      //  * external tangent (same dirs): radius difference exceeds distance
+      // squeeze the offending radii just enough to fit.
+      const dist = Math.hypot(pb[0] - pa[0], pb[1] - pa[1]);
+      if (dist > 1e-9) {
+        let ra2 = ra, rb2 = rb;
+        if (a.dir !== b.dir && ra + rb > dist && (ra + rb - dist) < 0.5 * (ra + rb)) {
+          const sc = (dist - 1e-6) / (ra + rb);
+          ra2 = ra * sc; rb2 = rb * sc;
+        } else if (a.dir === b.dir && Math.abs(ra - rb) > dist - 1e-6 &&
+                   Math.abs(ra - rb) - dist < 0.5 * Math.max(ra, rb)) {
+          if (rb > ra) rb2 = ra + dist - 1e-6;
+          else ra2 = rb + dist - 1e-6;
+        }
+        if (ra2 !== ra || rb2 !== rb) {
+          T = orientedTangent(pa[0], pa[1], ra2, a.dir, pb[0], pb[1], rb2, b.dir);
+        }
+      }
+    }
+    if (!T) return { ok: false, tang, sweeps, failAt: k };
+    tang[k] = T;
+  }
+  for (let k = 0; k < n; k++) {
+    const v = visits[k];
+    const p = pegPos[v.peg];
+    const Tin = tang[(k - 1 + n) % n], Tout = tang[k];
+    const aIn = Math.atan2(Tin.t2y - p[1], Tin.t2x - p[0]);
+    const aOut = Math.atan2(Tout.t1y - p[1], Tout.t1x - p[0]);
+    let sw = v.dir > 0 ? aOut - aIn : aIn - aOut;
+    sw = ((sw % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    if (v.sweep === null || v.sweep === undefined) {
+      // first measurement: take the raw positive branch
+      sweeps[k] = sw;
+    } else {
+      // unwrap toward the previous value (structures change slowly)
+      const prev = v.sweep;
+      const cands = [sw, sw - 2 * Math.PI, sw + 2 * Math.PI];
+      let bestC = sw, bd = Infinity;
+      for (const c of cands) { const d = Math.abs(c - prev); if (d < bd) { bd = d; bestC = c; } }
+      sweeps[k] = bestC;
+    }
+  }
+  return { ok: true, tang, sweeps };
+}
+
+// does segment cross the drawn circular arc {center p, radius arc.r,
+// from arc.aIn sweeping arc.sweep in direction arc.dir}?
+function segCrossesArc(seg, p, arc) {
+  const ax = seg.t1x - p[0], ay = seg.t1y - p[1];
+  const dx = seg.t2x - seg.t1x, dy = seg.t2y - seg.t1y;
+  const A = dx * dx + dy * dy;
+  if (A < 1e-24) return false;
+  const B = 2 * (ax * dx + ay * dy);
+  const C = ax * ax + ay * ay - arc.r * arc.r;
+  const disc = B * B - 4 * A * C;
+  if (disc <= 0) return false;
+  const rt = Math.sqrt(disc);
+  for (const t of [(-B - rt) / (2 * A), (-B + rt) / (2 * A)]) {
+    if (t < 0 || t > 1) continue;
+    const th = Math.atan2(ay + t * dy, ax + t * dx);
+    const start = arc.dir > 0 ? arc.aIn : arc.aIn - arc.sweep;
+    let rel = th - start;
+    rel = ((rel % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+    if (rel <= arc.sweep) return true;
+  }
+  return false;
+}
+
+function ptSegDist2(px, py, ax, ay, bx, by) {
+  const vx = bx - ax, vy = by - ay;
+  const L2v = vx * vx + vy * vy || 1e-30;
+  let t = ((px - ax) * vx + (py - ay) * vy) / L2v;
+  t = Math.max(0, Math.min(1, t));
+  const dx = px - (ax + t * vx), dy = py - (ay + t * vy);
+  return dx * dx + dy * dy;
+}
+
+// relax a visit list at fixed rod positions: drop non-touching visits,
+// insert missed wraps; updates sweeps in place.  Returns { visits, events }.
+function relax(visits, pegPos, radiusOf, maxSlotByPeg, log, u) {
+  let changed = true, guard = 0;
+  while (changed && guard++ < 60) {
+    changed = false;
+    const G = tightGeometry(visits, pegPos, radiusOf);
+    if (!G.ok) {
+      // degenerate tangent — usually consecutive same-peg visits after a
+      // removal; merge them and retry
+      if (visits.length > 1 && G.failAt !== undefined) {
+        const k = G.failAt, n = visits.length;
+        const a = visits[k], b = visits[(k + 1) % n];
+        if (a.peg === b.peg && a.dir === b.dir) {
+          a.slot = Math.min(a.slot, b.slot);
+          if (log) log.push({ u, type: 'del', id: b.id });
+          visits.splice(visits.indexOf(b), 1);
+          changed = true;
+          continue;
+        }
+      }
+      return { visits, ok: false };
+    }
+    for (let k = 0; k < visits.length; k++) visits[k].sweep = G.sweeps[k];
+    // removals
+    for (let k = visits.length - 1; k >= 0; k--) {
+      if (visits.length <= 2) break;
+      if (visits[k].sweep < -0.004) {
+        if (log) log.push({ u, type: 'del', id: visits[k].id });
+        visits.splice(k, 1);
+        changed = true;
+      }
+    }
+    if (changed) continue;
+    // insertions — physical catch test: a strand catches rod j only when its
+    // tangent segment actually crosses one of j's DRAWN arcs (or j's bare
+    // core), and it lands just outside the outermost arc it crosses.  The
+    // stack is NOT a solid disk: strands may thread through open sectors.
+    const n = visits.length;
+    const arcsByPeg = Array.from({ length: pegPos.length }, () => []);
+    for (let k = 0; k < n; k++) {
+      const v = visits[k];
+      const p = pegPos[v.peg];
+      const Tin = G.tang[(k - 1 + n) % n];
+      const aIn = Math.atan2(Tin.t2y - p[1], Tin.t2x - p[0]);
+      arcsByPeg[v.peg].push({ r: radiusOf(v), aIn, sweep: Math.max(0, G.sweeps[k]), dir: v.dir, slot: v.slot });
+    }
+    for (const l of arcsByPeg) l.sort((a2, b2) => b2.r - a2.r);
+    const inserts = [];
+    for (let k = 0; k < n; k++) {
+      const seg = G.tang[k];
+      const a = visits[k], b = visits[(k + 1) % n];
+      for (let j = 0; j < pegPos.length; j++) {
+        // for the segment's own endpoint pegs, only arcs strictly OUTSIDE the
+        // strand's own contact radius can catch it (a strand leaving a stack
+        // tangentially may still sweep across that rod's outer arcs)
+        let rMin = -Infinity;
+        if (j === a.peg) rMin = Math.max(rMin, radiusOf(a));
+        if (j === b.peg) rMin = Math.max(rMin, radiusOf(b));
+        const p = pegPos[j];
+        const d2 = ptSegDist2(p[0], p[1], seg.t1x, seg.t1y, seg.t2x, seg.t2y);
+        // strand thickness: a segment coming within delta of an arc RESTS on
+        // it (radial stacking), so test against the arc inflated by delta
+        const del = radiusOf({ peg: j, slot: 1 }) - radiusOf({ peg: j, slot: 0 });
+        let hitSlot = null;
+        for (const arc of arcsByPeg[j]) {
+          if (arc.r <= rMin + 0.55 * del) break;           // own/inner arcs
+          const rInf = arc.r + del - 1e-9;
+          if (rInf * rInf <= d2) continue;                 // (sorted desc, but rMin break handles exit)
+          if (segCrossesArc(seg, p, { ...arc, r: rInf })) { hitSlot = arc.slot; break; }
+        }
+        if (hitSlot === null && rMin === -Infinity) {
+          const rBase = radiusOf({ peg: j, slot: 0 });
+          if (d2 < (rBase - 1e-9) * (rBase - 1e-9)) hitSlot = -1;
+        }
+        if (hitSlot === null && rMin === -Infinity && arcsByPeg[j].length) {
+          // sweep-through catch: a FOREIGN segment (both endpoints outside
+          // this rod's whole stack envelope) that penetrates the envelope is
+          // being pushed by the moving bundle — it lands on the outer layer.
+          // (Push is transmitted through the layers; the open-sector arc test
+          // cannot see it.)
+          const outer = arcsByPeg[j][0];              // sorted desc by radius
+          const Renv = outer.r + del;
+          const e1 = Math.hypot(seg.t1x - p[0], seg.t1y - p[1]);
+          const e2 = Math.hypot(seg.t2x - p[0], seg.t2y - p[1]);
+          if (e1 > Renv + 0.1 * del && e2 > Renv + 0.1 * del &&
+              d2 < (Renv - 1e-9) * (Renv - 1e-9)) {
+            hitSlot = outer.slot;
+          }
+        }
+        if (hitSlot !== null) {
+          const cross = (seg.t2x - seg.t1x) * (p[1] - seg.t1y) - (seg.t2y - seg.t1y) * (p[0] - seg.t1x);
+          inserts.push({ k, peg: j, dir: cross > 0 ? 1 : -1, slot: hitSlot + 1, beforeId: b.id });
+          break;
+        }
+      }
+    }
+    for (let q = inserts.length - 1; q >= 0; q--) {
+      const ins = inserts[q];
+      const nv = { id: VISIT_ID++, peg: ins.peg, dir: ins.dir, slot: ins.slot, sweep: 0 };
+      if (log) log.push({ u, type: 'ins', id: nv.id, peg: ins.peg, dir: ins.dir, slot: ins.slot, beforeId: ins.beforeId });
+      visits.splice(ins.k + 1, 0, nv);
+      changed = true;
+    }
+  }
+  return { visits, ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Rod paths within a step.
+// ---------------------------------------------------------------------------
+function rodPositions(stepT, u) {
+  const te = (x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x))(Math.min(1, u / ORBIT_END));
+  const { p0, p1, gen } = stepT;
+  const ia = gen.i - 1, ib = gen.i;
+  const m0 = 0.5 * (p0[ia] + p0[ib]), m1 = 0.5 * (p1[ia] + p1[ib]);
+  const h0 = 0.5 * (p0[ib] - p0[ia]), h1 = 0.5 * (p1[ib] - p1[ia]);
+  const mm = m0 + te * (m1 - m0);
+  const hh = h0 + te * (h1 - h0);
+  const phi = gen.sign * Math.PI * te;
+  const out = [];
+  for (let j = 0; j < p0.length; j++) {
+    if (j === ia || j === ib) {
+      const sgn = j === ia ? -1 : 1;
+      out.push([mm + sgn * hh * Math.cos(phi), sgn * hh * Math.sin(phi)]);
+    } else {
+      out.push([p0[j] + te * (p1[j] - p0[j]), 0]);
+    }
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// Precompute one step of the tight animation.
+// diagram/nextDiagram: canonical diagrams; gen: generator.
+// ---------------------------------------------------------------------------
+function computeTightStep(diagram, nextDiagram, gen) {
+  const stepT = { p0: diagram.punct.slice(), p1: nextDiagram.punct.slice(), gen };
+  const d0 = diagram.delta, d1 = nextDiagram.delta;
+  const deltaAt = u => d0 + (u >= ORBIT_END ? 1 : (x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x))(u / ORBIT_END)) * (d1 - d0);
+  const visits0 = tightWord(diagram);
+  const maxSlotByPeg = {};
+  for (const v of visits0) {
+    if (maxSlotByPeg[v.peg] === undefined || v.slot > maxSlotByPeg[v.peg]) maxSlotByPeg[v.peg] = v.slot;
+  }
+  // relax the initial word (drop pass-over visits that don't actually touch)
+  let visits = visits0.map(v => ({ ...v }));
+  const preLog = [];
+  let r0 = relax(visits, rodPositions(stepT, 0), v => (TIGHT_BASE + v.slot) * d0, maxSlotByPeg, null, 0);
+  if (!r0.ok) return { stepT, error: 'initial relax failed' };
+  const initial = visits.map(v => ({ ...v }));
+  // event sweep
+  const log = [];
+  const snapshots = [];   // periodic {u, sweeps:[[id,sweep]...]} for unwrap seeding
+  for (let k = 1; k <= TIGHT_SUBSTEPS; k++) {
+    const u = (k / TIGHT_SUBSTEPS) * ORBIT_END;
+    const pos = rodPositions(stepT, u);
+    const del = deltaAt(u);
+    const rr = relax(visits, pos, v => (TIGHT_BASE + v.slot) * del, maxSlotByPeg, log, u);
+    if (rr.ok && (k % 8 === 0 || k === TIGHT_SUBSTEPS)) {
+      snapshots.push({ u, sweeps: visits.map(v => [v.id, v.sweep]) });
+    }
+    if (!rr.ok) {
+      // diagnostics: which consecutive pair has no tangent
+      const G = tightGeometry(visits, pos, v => (TIGHT_BASE + v.slot) * del);
+      let detail = '';
+      if (G.failAt !== undefined) {
+        const a = visits[G.failAt], b = visits[(G.failAt + 1) % visits.length];
+        const pa = pos[a.peg], pb = pos[b.peg];
+        const dist = Math.hypot(pb[0] - pa[0], pb[1] - pa[1]);
+        detail = ` pair (peg${a.peg},d${a.dir},s${a.slot})->(peg${b.peg},d${b.dir},s${b.slot})` +
+          ` ra=${((TIGHT_BASE + a.slot) * del).toFixed(3)} rb=${((TIGHT_BASE + b.slot) * del).toFixed(3)} dist=${dist.toFixed(3)}`;
+      }
+      return { stepT, error: 'relax failed at u=' + u.toFixed(3) + detail, initial, log };
+    }
+  }
+  // final evolved word vs clean word of the next stage
+  const cleanRaw = tightWord(nextDiagram);
+  const cleanMax = {};
+  for (const v of cleanRaw) {
+    if (cleanMax[v.peg] === undefined || v.slot > cleanMax[v.peg]) cleanMax[v.peg] = v.slot;
+  }
+  const clean = cleanRaw.map(v => ({ ...v }));
+  const cleanPos = nextDiagram.punct.map(p => [p, 0]);
+  relax(clean, cleanPos, v => (TIGHT_BASE + v.slot) * d1, cleanMax, null, 1);
+  // rod identities swapped for the active pair during the orbit:
+  // evolved words use ORIGINAL peg indices; positions of ia/ib swapped at u=1.
+  // Relabel evolved pegs to position-order for comparison & settle radii.
+  const ia = gen.i - 1, ib = gen.i;
+  const relabel = j => (j === ia ? ib : j === ib ? ia : j);
+  const evolvedRel = visits.map(v => ({ peg: relabel(v.peg), dir: v.dir }));
+  // cyclic alignment of (peg,dir) sequences
+  let align = -1;
+  const nn = clean.length;
+  if (evolvedRel.length === nn) {
+    for (let off = 0; off < nn; off++) {
+      let good = true;
+      for (let k = 0; k < nn; k++) {
+        const c = clean[(k + off) % nn], e = evolvedRel[k];
+        if (c.peg !== e.peg || c.dir !== e.dir) { good = false; break; }
+      }
+      if (good) { align = off; break; }
+    }
+  }
+  // settle radii: per evolved visit, the clean slot it should relax to
+  const settleSlot = visits.map((v, k) => align >= 0 ? clean[(k + align) % nn].slot : v.slot);
+  return {
+    stepT, d0, d1, deltaAt, initial, log, align, snapshots,
+    finalVisits: visits.map(v => ({ ...v })),
+    settleSlot,
+    wordMatch: align >= 0,
+    counts: { initial: initial.length, final: visits.length, clean: clean.length, events: log.length },
+  };
+}
+
+// Rebuild the visit list at time u from initial + log, seeding sweeps from
+// the latest precomputed snapshot at or before u (anchors angle unwrapping).
+function visitsAt(tstep, u) {
+  const list = tstep.initial.map(v => ({ ...v, sweep: null }));
+  for (const ev of tstep.log) {
+    if (ev.u > u) break;
+    if (ev.type === 'del') {
+      const i = list.findIndex(v => v.id === ev.id);
+      if (i >= 0) list.splice(i, 1);
+    } else {
+      let i = list.findIndex(v => v.id === ev.beforeId);
+      if (i < 0) i = list.length;
+      list.splice(i, 0, { id: ev.id, peg: ev.peg, dir: ev.dir, slot: ev.slot, sweep: 0 });
+    }
+  }
+  let snap = null;
+  if (tstep.snapshots) {
+    for (const s of tstep.snapshots) {
+      if (s.u <= u) snap = s; else break;
+    }
+  }
+  if (snap) {
+    const m = new Map(snap.sweeps);
+    for (const v of list) if (m.has(v.id)) v.sweep = m.get(v.id);
+  }
+  return list;
+}
+
+// Radii at time u, including the settle window to clean slots.
+function tightRadiusFn(tstep, u, list) {
+  const del = tstep.deltaAt(u);
+  if (u <= 0.90 || !tstep.wordMatch) {
+    return v => (TIGHT_BASE + v.slot) * del;
+  }
+  const s = Math.min(1, (u - 0.90) / 0.10);
+  const e = s * s * (3 - 2 * s);
+  // settleSlot is indexed by position in the FINAL list; align by id
+  const slotById = new Map();
+  tstep.finalVisits.forEach((v, k) => slotById.set(v.id, tstep.settleSlot[k]));
+  return v => {
+    const target = slotById.has(v.id) ? slotById.get(v.id) : v.slot;
+    const slot = v.slot + e * (target - v.slot);
+    return (TIGHT_BASE + slot) * del;
+  };
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = {
+    TIGHT_BASE, TIGHT_SUBSTEPS, ORBIT_END,
+    orientedTangent, tightWord, tightGeometry, relax, rodPositions,
+    computeTightStep, visitsAt, tightRadiusFn,
+  };
+}
+
+</script>
+<script>
+'use strict';
+// ===========================================================================
+// Renderer — tight rubber bands only.
+// ===========================================================================
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const noteEl = document.getElementById('note');
+
+const INK = '#1a1611';
+const FAINT = '#ddd7ca';
+
+// ---- world <-> screen -----------------------------------------------------
+let W = 0, H = 0, DPR = 1, SCALE = 1, OX = 0, OY = 0;
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = Math.round(W * DPR);
+  canvas.height = Math.round(H * DPR);
+  const margin = 40;
+  SCALE = Math.min((W - margin) / (2 * DISK_R), (H - margin - 60) / (2 * DISK_R));
+  OX = W / 2; OY = H / 2 - 8;
+  draw();
+}
+window.addEventListener('resize', resize);
+const sx = x => OX + SCALE * x;
+const sy = y => OY - SCALE * y;
+
+// ---- model state ----------------------------------------------------------
+let NP = 3;             // number of punctures
+let GENS = [];
+let DIAGRAMS = [];
+let META = [];
+let NSTEPS = 12;
+let playhead = 0;
+let playing = false;
+let speed = 1;
+const BASE_STEP_SECONDS = 4.5;
+const HOLD = 0.06;
+const CROSSING_CAP = 1300;   // stop building steps beyond this density
+
+// ---- tight-mode caches ------------------------------------------------------
+const tightSteps = new Map();
+const tightStages = new Map();
+function tightGetStep(k) {
+  if (tightSteps.has(k)) return tightSteps.get(k);
+  const ts = computeTightStep(DIAGRAMS[k], DIAGRAMS[k + 1], GENS[k]);
+  tightSteps.set(k, ts);
+  return ts;
+}
+function tightGetStage(k) {
+  if (tightStages.has(k)) return tightStages.get(k);
+  const d = DIAGRAMS[k];
+  const visits = tightWord(d);
+  const pos = d.punct.map(p => [p, 0]);
+  const maxS = {};
+  for (const v of visits) if (maxS[v.peg] === undefined || v.slot > maxS[v.peg]) maxS[v.peg] = v.slot;
+  const radiusOf = v => (TIGHT_BASE + v.slot) * d.delta;
+  relax(visits, pos, radiusOf, maxS, null, 0);
+  const st = { visits, pos, radiusOf };
+  tightStages.set(k, st);
+  return st;
+}
+let chainRunning = false;
+function prefetchChain() {
+  if (chainRunning) return;
+  chainRunning = true;
+  let k = 0;
+  const mine = DIAGRAMS;
+  const go = () => {
+    if (DIAGRAMS === mine && k < NSTEPS) {
+      tightGetStep(k); k++;
+      setTimeout(go, 25);
+    } else chainRunning = false;
+  };
+  setTimeout(go, 40);
+}
+
+// ---- fibonacci labels -------------------------------------------------------
+const FIBS = (() => { const f = [1, 1]; while (f.length < 40) f.push(f.at(-1) + f.at(-2)); return f; })();
+function fibName(x) {
+  const i = FIBS.indexOf(x);
+  return i >= 0 ? `F<sub>${i + 1}</sub>` : null;
+}
+function lowerFamilySizes(d) {
+  const m = d.xs.length, xs = d.xs;
+  const order = xs.map((x, i) => i).sort((a, b) => xs[a] - xs[b]);
+  const rank = new Array(m); order.forEach((ci, r) => rank[ci] = r);
+  const arcs = [];
+  for (let k = 0; k < m; k++) if (d.sides[k] < 0) {
+    const k2 = (k + 1) % m;
+    arcs.push([Math.min(rank[k], rank[k2]), Math.max(rank[k], rank[k2])]);
+  }
+  arcs.sort((a, b) => a[0] - b[0] || b[1] - a[1]);
+  const fams = []; let cov = -1;
+  for (const [lo, hi] of arcs) {
+    if (lo > cov) { fams.push(0); cov = hi; }
+    fams[fams.length - 1]++;
+  }
+  return fams;
+}
+function stageMeta(d) {
+  const upper = d.sides.filter(s => s > 0).length;
+  return { upper, lowerFams: lowerFamilySizes(d) };
+}
+
+// ---- build ------------------------------------------------------------------
+const SUBS = '₀₁₂₃₄₅₆₇₈₉';
+function subDigits(i) { return String(i).split('').map(c => SUBS[+c]).join(''); }
+function genLabel(g) { return `σ${subDigits(g.i)}${g.sign < 0 ? '⁻¹' : ''}`; }
+
+function rebuild() {
+  const nP = Math.max(2, Math.min(8, parseInt(document.getElementById('npunct').value, 10) || 3));
+  document.getElementById('npunct').value = nP;
+  const wordStr = document.getElementById('word').value;
+  let word;
+  try { word = parseWord(wordStr, nP); } catch (e) { showNote(e.message); return; }
+  if (!word.length) { showNote('empty word'); return; }
+  let pair = Math.max(1, Math.min(nP - 1, parseInt(document.getElementById('pair').value, 10) || 1));
+  document.getElementById('pair').value = pair;
+  const reps = Math.max(1, Math.min(24, parseInt(document.getElementById('steps').value, 10) || 12));
+  document.getElementById('steps').value = reps;
+  overlay.style.display = 'flex';
+  noteEl.style.display = 'none';
+  setTimeout(() => {
+    try {
+      setQuality(1);
+      NP = nP;
+      GENS = []; DIAGRAMS = []; META = [];
+      tightSteps.clear(); tightStages.clear();
+      let d = initialCurve(pair, nP);
+      DIAGRAMS.push(d); META.push(stageMeta(d));
+      let capped = false;
+      for (let s = 0; s < reps; s++) {
+        const g = word[s % word.length];
+        const st = computeStep(d, g);
+        if (st.nextDiagram.xs.length > CROSSING_CAP) { capped = true; break; }
+        GENS.push(g);
+        d = st.nextDiagram;
+        DIAGRAMS.push(d); META.push(stageMeta(d));
+      }
+      NSTEPS = GENS.length;
+      if (NSTEPS === 0) throw new Error('no steps computed');
+      document.getElementById('scrub').max = NSTEPS;
+      playhead = 0; playing = false;
+      document.getElementById('play').innerHTML = '&#9654;';
+      document.getElementById('wordlabel').innerHTML =
+        `${word.map(genLabel).join('')} on a loop around rods ${pair},${pair + 1} of ${nP}` +
+        (capped ? ` &middot; stopped at ${NSTEPS} steps (strands sub-pixel)` : '');
+      prefetchChain();
+    } catch (e) {
+      showNote('build failed: ' + e.message);
+    }
+    overlay.style.display = 'none';
+    draw();
+  }, 20);
+}
+function showNote(msg) { noteEl.textContent = msg; noteEl.style.display = 'block'; }
+
+// ---- drawing ----------------------------------------------------------------
+let LINEW = 1.15;
+function updateLineWidth(stageIdx) {
+  const d = DIAGRAMS[Math.min(Math.max(stageIdx + 1, 0), DIAGRAMS.length - 1)];
+  const px = (d.delta || 1) * SCALE;
+  LINEW = Math.max(0.35, Math.min(1.15, px * 0.55));
+}
+function clear() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.fillStyle = '#faf8f3';
+  ctx.fillRect(0, 0, W, H);
+  ctx.beginPath();
+  ctx.arc(OX, OY, SCALE * DISK_R, 0, 2 * Math.PI);
+  ctx.strokeStyle = FAINT;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+function strokeCurve() {
+  ctx.strokeStyle = INK;
+  ctx.lineWidth = LINEW;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+}
+function pathTight(visits, pos, radiusOf) {
+  const G = tightGeometry(visits, pos, radiusOf);
+  if (!G.ok) return false;
+  const n = visits.length;
+  ctx.beginPath();
+  let first = true;
+  for (let k = 0; k < n; k++) {
+    const v = visits[k];
+    const p = pos[v.peg];
+    const Tin = G.tang[(k - 1 + n) % n];
+    const aIn = Math.atan2(Tin.t2y - p[1], Tin.t2x - p[0]);
+    let sw = G.sweeps[k];
+    const r = radiusOf(v);
+    if (sw > 1e-4) {
+      const Tout2 = G.tang[k];
+      const rIn = Math.hypot(Tin.t2x - p[0], Tin.t2y - p[1]);
+      const rOut = Math.hypot(Tout2.t1x - p[0], Tout2.t1y - p[1]);
+      const dth = Math.max(0.02, Math.min(0.5, Math.sqrt(2.4 / Math.max(1e-6, r * SCALE))));
+      const steps = Math.max(2, Math.ceil(sw / dth));
+      for (let q = 0; q <= steps; q++) {
+        const f = q / steps;
+        const th = aIn + v.dir * sw * f;
+        const g1 = (1 - f) * (1 - f) * (1 - f), g2 = f * f * f;
+        const rr = r + (rIn - r) * g1 + (rOut - r) * g2;
+        const px2 = sx(p[0] + rr * Math.cos(th)), py2 = sy(p[1] + rr * Math.sin(th));
+        if (first) { ctx.moveTo(px2, py2); first = false; } else ctx.lineTo(px2, py2);
+      }
+    }
+    const Tout = G.tang[k];
+    if (first) { ctx.moveTo(sx(Tout.t1x), sy(Tout.t1y)); first = false; }
+    else ctx.lineTo(sx(Tout.t1x), sy(Tout.t1y));
+    ctx.lineTo(sx(Tout.t2x), sy(Tout.t2y));
+  }
+  ctx.closePath();
+  return true;
+}
+let SHOW_RODS = true;
+function drawRods(pos, delta) {
+  if (!SHOW_RODS) return;
+  // keep the mark well inside the innermost strand, which sits at delta/2
+  const r = Math.max(0.6, Math.min(2.2, 0.28 * (delta || 0.02) * SCALE));
+  ctx.fillStyle = INK;
+  for (const [px, py] of pos) {
+    ctx.beginPath();
+    ctx.arc(sx(px), sy(py), r, 0, 2 * Math.PI);
+    ctx.fill();
+  }
+}
+function updateHud(stage, applying) {
+  const el = document.getElementById('stagelabel');
+  const cl = document.getElementById('countlabel');
+  if (applying) el.innerHTML = `stage ${stage} &rarr; ${stage + 1} &nbsp;(applying ${applying})`;
+  else el.innerHTML = `stage ${stage}`;
+  const showM = META[Math.min(stage, META.length - 1)];
+  if (!showM) { cl.innerHTML = ''; return; }
+  const up = showM.upper;
+  const fn = fibName(up);
+  let s = `${up}${fn ? ' = ' + fn : ''} strand${up === 1 ? '' : 's'} above`;
+  if (showM.lowerFams.length > 1) {
+    const parts = showM.lowerFams.map(x => {
+      const f = fibName(x); return f ? `${x} (${f})` : `${x}`;
+    });
+    s += ` &middot; ${parts.join(' + ')} below`;
+  } else {
+    s += ` &middot; ${showM.lowerFams[0] || 0} below`;
+  }
+  cl.innerHTML = s;
+}
+
+function draw() {
+  clear();
+  if (!DIAGRAMS.length || !GENS.length) return;
+  const p = Math.min(playhead, NSTEPS);
+  const k = Math.min(Math.floor(p), NSTEPS - 1);
+  const u = p - k;
+  if (p >= NSTEPS || (u === 0 && !playing && p === Math.floor(p))) {
+    const kk = Math.round(p);
+    updateLineWidth(kk - 1);
+    const st = tightGetStage(kk);
+    pathTight(st.visits, st.pos, st.radiusOf);
+    strokeCurve();
+    drawRods(st.pos, DIAGRAMS[kk].delta);
+    updateHud(kk, null);
+    return;
+  }
+  updateLineWidth(k);
+  const ts = tightGetStep(k);
+  if (ts.error) {
+    const st = tightGetStage(k);
+    pathTight(st.visits, st.pos, st.radiusOf);
+    strokeCurve();
+    drawRods(st.pos, DIAGRAMS[k].delta);
+    updateHud(k, genLabel(GENS[k]));
+    return;
+  }
+  const visits = visitsAt(ts, Math.min(u, ORBIT_END));
+  const pos = rodPositions(ts.stepT, u);
+  const radiusOf = tightRadiusFn(ts, u, visits);
+  pathTight(visits, pos, radiusOf);
+  strokeCurve();
+  drawRods(pos, ts.deltaAt(u));
+  updateHud(k, u < HOLD ? null : genLabel(GENS[k]));
+  if (k + 1 < NSTEPS && u > 0.15 && u < 0.6 && !tightSteps.has(k + 1)) {
+    setTimeout(() => { if (Math.floor(playhead) === k) tightGetStep(k + 1); }, 0);
+  }
+}
+
+// ---- playback ---------------------------------------------------------------
+let lastT = 0;
+function tick(ts) {
+  if (playing) {
+    const dt = lastT ? (ts - lastT) / 1000 : 0;
+    lastT = ts;
+    playhead += dt * speed / BASE_STEP_SECONDS;
+    if (playhead >= NSTEPS) { playhead = NSTEPS; setPlaying(false); }
+    document.getElementById('scrub').value = playhead;
+    draw();
+  } else {
+    lastT = ts;
+  }
+  requestAnimationFrame(tick);
+}
+function setPlaying(v) {
+  playing = v;
+  document.getElementById('play').innerHTML = v ? '&#10073;&#10073;' : '&#9654;';
+  if (v && playhead >= NSTEPS) playhead = 0;
+}
+
+// ---- controls -----------------------------------------------------------------
+document.getElementById('play').onclick = () => setPlaying(!playing);
+document.getElementById('prev').onclick = () => {
+  setPlaying(false);
+  playhead = Math.max(0, Math.ceil(playhead - 1e-9) - 1);
+  document.getElementById('scrub').value = playhead; draw();
+};
+document.getElementById('next').onclick = () => {
+  setPlaying(false);
+  playhead = Math.min(NSTEPS, Math.floor(playhead + 1e-9) + 1);
+  document.getElementById('scrub').value = playhead; draw();
+};
+document.getElementById('scrub').oninput = e => {
+  setPlaying(false);
+  playhead = parseFloat(e.target.value);
+  draw();
+};
+document.getElementById('speed').onchange = e => { speed = parseFloat(e.target.value); };
+document.getElementById('rebuild').onclick = rebuild;
+document.getElementById('dots').onclick = () => {
+  SHOW_RODS = !SHOW_RODS;
+  document.getElementById('dots').innerHTML = SHOW_RODS ? '&#9679;' : '&#9675;';
+  draw();
+};
+window.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); setPlaying(!playing); }
+  else if (e.code === 'ArrowLeft') document.getElementById('prev').onclick();
+  else if (e.code === 'ArrowRight') document.getElementById('next').onclick();
+  else if (e.code === 'KeyD') document.getElementById('dots').onclick();
+});
+
+// ---- go -----------------------------------------------------------------------
+resize();
+rebuild();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
