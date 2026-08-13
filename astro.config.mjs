@@ -89,8 +89,26 @@ export default defineConfig({
     '/posts/2021/11/aha/': '/writing/aha/',
     '/posts/2021/09/homotopical-combinatorics/': '/writing/homotopical-combinatorics/',
     '/posts/2021/06/farewell-bright-obvious/': '/writing/farewell-bright-obvious/',
-    // math 342 is a PreTeXt book published from its own repo.
-    '/342/': 'https://kyleormsby.github.io/math342spring26/course/frontmatter.html',
+    // math 342 is a PreTeXt book published from its own repo. Now that this is
+    // the user site and carries the custom domain, that repo's project pages
+    // are served under it, so the path is local — no trip through github.io.
+    '/342/': '/math342spring26/course/frontmatter.html',
+    // The Jekyll site's /about/ was the home page and /blog/ is now /writing/.
+    // Both are live URLs that github.io now forwards here, so they must land.
+    '/about/': '/bio/',
+    '/blog/': '/writing/',
+    // academicpages' generated archive pages. The content they indexed lives on
+    // the research and writing pages now; /portfolio/ only ever held the
+    // theme's two placeholder items, so it points at the real gallery.
+    '/publications/': '/research/#research-papers',
+    '/talks/': '/research/#recent-talks',
+    '/portfolio/': '/viz/',
+    '/year-archive/': '/writing/',
+    '/categories/': '/writing/',
+    '/tags/': '/writing/',
+    '/collection-archive/': '/research/',
+    '/page-archive/': '/teaching/',
+    '/sitemap/': '/',
   },
   build: { format: 'directory' },
 });

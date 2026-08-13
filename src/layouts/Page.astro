@@ -1,0 +1,85 @@
+---
+import Base from './Base.astro';
+
+/**
+ * Wrapper for the standalone markdown pages in src/pages/*.md — the ones
+ * carried over from the Jekyll site that are prose or a flat schedule rather
+ * than structured course data (past courses at other institutions, program
+ * pages for the REU / PCMI UFP / summer research group).
+ *
+ * They stay markdown rather than becoming .astro so the body keeps going
+ * through the configured remark-math + KaTeX pipeline, and so headings keep
+ * getting slugged ids — /583/#week-6 and /ufp/#resources are old anchors.
+ *
+ * Frontmatter: title (required), label, lede, wide.
+ */
+interface Props {
+  frontmatter: {
+    title: string;
+    label?: string;
+    lede?: string;
+    description?: string;
+    wide?: boolean;
+  };
+}
+
+const { title, label, lede, description, wide = false } = Astro.props.frontmatter;
+---
+
+<Base title={`${title} · Kyle Ormsby`} description={description ?? lede} wide={wide}>
+  <div style={wide ? 'max-width:var(--measure)' : undefined}>
+    {label && <p class="label">{label}</p>}
+    <h1 style={label ? 'margin-top:var(--s3)' : undefined}>{title}</h1>
+    {lede && <p class="lede dim" style="margin-top:var(--s4)">{lede}</p>}
+  </div>
+
+  <div class="page-body" style="margin-top:var(--s7)">
+    <slot />
+  </div>
+</Base>
+
+<style is:global>
+  /* Markdown bodies bring their own headings and lists; the rest of the site
+     builds those per-page, so the shared stylesheet has nothing for them. */
+  .page-body h2 {
+    font-size: 1.5rem;
+    margin-top: var(--s7);
+    margin-bottom: var(--s4);
+    padding-bottom: var(--s2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .page-body h3 {
+    font-size: 1.15rem;
+    margin-top: var(--s5);
+    margin-bottom: var(--s3);
+  }
+  .page-body ul { margin: 0 0 var(--s4); padding-left: var(--s5); }
+  .page-body li { margin-bottom: var(--s2); line-height: 1.55; }
+  .page-body li > ul { margin-top: var(--s2); }
+  .page-body hr { margin: var(--s6) 0; }
+  .page-body img { max-width: 100%; height: auto; }
+
+  .page-body details {
+    border-top: 1px solid var(--rule);
+    margin: 0;
+    padding: var(--s3) 0;
+  }
+  .page-body details:last-of-type { border-bottom: 1px solid var(--rule); }
+  .page-body summary { font-family: var(--mono); font-size: 0.9rem; }
+  .page-body details p { margin: var(--s3) 0 0; }
+
+  .page-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--s5) 0;
+    font-size: 0.9rem;
+  }
+  .page-body th,
+  .page-body td {
+    border: 1px solid var(--rule);
+    padding: var(--s2) var(--s3);
+    text-align: left;
+    vertical-align: top;
+  }
+  .page-body th { font-family: var(--mono); font-size: 0.8rem; font-weight: 500; }
+</style>

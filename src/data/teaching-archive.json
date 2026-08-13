@@ -1,6 +1,6 @@
 [
-  { "institution": "reed", "number": "math 113", "title": "discrete structures", "term": "spring 2025", "href": "https://kyleormsby.github.io/113spring25/" },
-  { "institution": "reed", "number": "math 111", "title": "calculus", "term": "fall 2024", "href": "https://kyleormsby.github.io/111fall24/" },
+  { "institution": "reed", "number": "math 113", "title": "discrete structures", "term": "spring 2025", "href": "/113spring25/" },
+  { "institution": "reed", "number": "math 111", "title": "calculus", "term": "fall 2024", "href": "/111fall24/" },
   { "institution": "reed", "number": "math 342", "title": "topology", "term": "spring 2021", "href": "http://people.reed.edu/~ormsbyk/342" },
   { "institution": "reed", "number": "math 201", "title": "linear algebra", "term": "spring 2021", "href": "http://people.reed.edu/~ormsbyk/201" },
   { "institution": "reed", "number": "math 113", "title": "discrete structures", "term": "fall 2020", "href": "http://people.reed.edu/~ormsbyk/113" },
@@ -23,8 +23,8 @@
   { "institution": "reed", "number": "math 332", "title": "abstract algebra", "term": "spring 2015", "href": "http://people.reed.edu/~ormsbyk/332/" },
   { "institution": "reed", "number": "math 111", "title": "calculus", "term": "fall 2014", "href": "http://people.reed.edu/~ormsbyk/111/" },
 
-  { "institution": "uw", "number": "math 583B", "title": "topological data analysis", "term": "spring 2024", "href": "https://kyleormsby.github.io/583/" },
-  { "institution": "uw", "number": "math 224", "title": "multivariable calculus", "term": "winter 2024", "href": "https://kyleormsby.github.io/224/" },
+  { "institution": "uw", "number": "math 583B", "title": "topological data analysis", "term": "spring 2024", "href": "/583/" },
+  { "institution": "uw", "number": "math 224", "title": "multivariable calculus", "term": "winter 2024", "href": "/224/" },
 
   { "institution": "elsewhere", "number": "18.02", "title": "multivariable calculus", "term": "fall 2012", "note": "MIT, recitation leader" },
   { "institution": "elsewhere", "number": "18.A39", "title": "freshman advising seminar", "term": "fall 2012", "note": "MIT, knot theory, knot practice", "href": "http://people.reed.edu/~ormsbyk/knots.html" },

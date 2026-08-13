@@ -1,0 +1,96 @@
+---
+import Base from '../layouts/Base.astro';
+
+/**
+ * The Jekyll site had this at /bio/ and the URL is in the wild — CV cover
+ * letters, colloquium pages, conference programs. Nothing on the new site
+ * linked to it, so the migration dropped it and the address 404'd.
+ *
+ * The text is the old page's, third person and all, with three changes:
+ * the CV now points at the 2026 file rather than the 2024 one, the three
+ * trail-running writeups link to the posts as they live here rather than to
+ * the retired WordPress blog, and the Park City link is plain text because
+ * /ufp/ has not been ported.
+ *
+ * Note on the {' '} sprinkled below: the compiler drops a newline that sits
+ * directly against a tag, so a line broken right before an <a> silently
+ * renders as "theReed College". Every space that lands on a line boundary
+ * next to a link has to be written out.
+ */
+---
+
+<Base
+  title="Biography · Kyle Ormsby"
+  description="Kyle Ormsby — algebraic topologist at Reed College, undergraduate research mentor, trail runner."
+>
+  <p class="label">biography</p>
+  <h1 style="margin-top:var(--s3)">Kyle Ormsby</h1>
+  <p class="lede dim" style="margin-top:var(--s4);margin-bottom:var(--s7)">
+    in which I describe my past in the third person
+  </p>
+
+  <p>
+    Kyle Ormsby grew up near St. Louis, Missouri and always suspected the world
+    was stranger than people were letting on. He earned a BA in mathematics from
+    the University of Chicago in 2006 and a PhD in mathematics from the
+    University of Michigan–Ann Arbor in 2010. After an NSF Postdoctoral Research
+    Fellowship at MIT, he joined the{' '}
+    <a href="https://www.reed.edu/math-stats/">Reed College</a> faculty in 2014.
+    He has also had visiting appointments at the University of Oslo, the{' '}
+    <a href="https://www.slmath.org/">Simons Laufer Mathematical Sciences Institute</a>,
+    the University of Washington, and the{' '}
+    <a href="https://naccdata.org/">National Alzheimer's Coordinating Center</a>,
+    and he currently serves as the chair of Reed's Department of Mathematics
+    &amp; Statistics. His work has been supported by a number of NSF and NIA
+    grants.
+  </p>
+
+  <p>
+    Ormsby's training is as an algebraic topologist, and his thesis work studied
+    ways in which tools from stable homotopy theory can be applied in algebraic
+    geometry via Morel and Voevodsky's motivic homotopy theory. Ormsby's work
+    continues to use the perspective and tools of algebraic topology to explore
+    other domains, including symmetry, combinatorics, category theory, and
+    applied work in medical image analysis. His mathematics research appears in
+    peer-reviewed journals including{' '}
+    <a href="https://doi.org/10.1016/j.aim.2011.05.019">Advances in Mathematics</a>,{' '}
+    <a href="https://doi.org/10.2140/gt.2018.22.2187">Geometry &amp; Topology</a>,{' '}
+    <a href="https://doi.org/10.1017/fms.2018.3">Forum of Mathematics Sigma</a>,{' '}
+    <a href="https://doi.org/10.1007/s00209-023-03287-6">Mathematische Zeitschrift</a>,
+    and{' '}
+    <a href="https://ems.press/journals/jems/articles/forthcoming">Journal of the European Mathematical Society</a>.
+  </p>
+
+  <p>
+    Ormsby is also a passionate leader of undergraduate research and research
+    development, primarily through Reed's Collaborative Mathematics Research
+    Group, which he co-directs with{' '}
+    <a href="https://people.reed.edu/~aosorno/">Angélica Osorno</a>. He has
+    coauthored seven research papers with Reed undergraduates and has mentored
+    an additional five papers authored solely by undergraduates. He also
+    organized the 2021 Park City Mathematics Institute Undergraduate Faculty
+    Program, co-organized a 2024 AMS{' '}
+    <a href="https://www.ams.org/programs/research-communities/2024MRC-HomotopicalComb">Mathematics Research Community</a>{' '}
+    on homotopical combinatorics, and led{' '}
+    <a href="https://people.reed.edu/~ormsbyk/projectproject/">Project Project</a>,
+    a Reed-based initiative dedicated to projecting mathematical ideas into the
+    visual realm.
+  </p>
+
+  <p>
+    Extra-mathematically, Ormsby is an accomplished and joyful trail runner who
+    has circumnavigated Mounts{' '}
+    <a href="/writing/fall-race-report-3-x-50k-in-the-nw-mountain-trail-series/">Saint Helens</a>{' '}
+    and Hood, completed the{' '}
+    <a href="/writing/teton-crested/">Teton Crest Trail</a> and Joshua Tree
+    Traverse, and took fourth place in the 100-mile{' '}
+    <a href="/writing/a-journey-is-an-hallucination/">Idaho Mountain Trail Ultra Festival</a>.
+    He also enjoys skiing with his family and reading expansively.
+  </p>
+
+  <p class="dim" style="margin-top:var(--s6)">
+    For further information, please see Ormsby's{' '}
+    <a href="/files/ormsby-cv-2026.pdf">CV</a> (pdf, updated February 2026) or
+    contact him at <a href="mailto:ormsbyk@reed.edu">ormsbyk@reed.edu</a>.
+  </p>
+</Base>
