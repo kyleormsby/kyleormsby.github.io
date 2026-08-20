@@ -161,8 +161,8 @@ npm run thumbs -- nets      # just one
 ```
 
 `tools/thumbnails.config.json` holds per-project tweaks (settling time, a button
-to click, an element to scroll into view). Commit the PNGs so the site builds
-without a browser.
+to click, an element to scroll into view, a viewport to shoot at). Commit the
+PNGs so the site builds without a browser.
 
 ### No external dependencies
 
@@ -182,6 +182,14 @@ import graph so only reachable modules are included (14 files, not the whole
 33 MB package), and rewrites every spelling of every CDN URL.
 `tools/vendor_fonts.mjs` pulls the exact weights and styles each page asks for
 from `@fontsource` and writes a local `@font-face` sheet.
+
+`vendor_fonts.mjs` reads the faces already in `public/vendor/fonts/fonts.css`
+before it scans the pages, and regenerates the union. It has to: rewriting a
+page *removes* its Google Fonts link, so on a later run the HTML no longer says
+what that page needs. Building the sheet from the HTML alone meant that adding
+one new font-using visualization deleted Cormorant Garamond and EB Garamond from
+under the two pages already using them — silently, since the sheet is still
+there and still loads, just without them.
 
 Verify end to end with `npm run thumbs -- --no-stub`, which renders every
 visualization with no CDN fallbacks at all and reports any offsite request. All
@@ -302,6 +310,13 @@ If a visualization needs to be driven before it makes a good picture — pressed
 play, given longer to settle — add it to `tools/thumbnails.config.json`.
 Train-track taffy starts as a bare loop, so its entry clicks `#play` and waits
 14s to catch the strands folded.
+
+Shots are taken at 800x600 and a device scale of 1.5, which lands the PNG at
+1200x900. A page whose layout has a breakpoint *above* 800px would therefore be
+photographed in its phone layout — the belt trick collapses to a stacked column
+under 840px, so the thumbnail was two-thirds control panel. `viewport` and
+`scale` override the pair for one entry; keep the viewport at 4:3 and
+`width x scale` at 1200 so every thumb stays the same size.
 
 `npm run thumbs -- --no-stub` disables the local CDN substitutions, so a full
 run doubles as a check that every visualization is genuinely self-contained.

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Δ⁴ = 1 in Bₙ(S²)</title>
+<link rel="stylesheet" href="/vendor/fonts/fonts.css">
+<style>
+  :root{
+    --void:#0B111C; --paper:#E7EAEE; --paper-2:#D6DBE2;
+    --ink:#111721; --ink-2:#4B5768; --rule:#BFC6D0; --brass:#E8B23A;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--void);color:var(--ink);
+    font-family:"Newsreader",Georgia,serif;font-size:15px;line-height:1.6;overflow:hidden}
+  #wrap{display:flex;height:100vh;height:100dvh;width:100vw}
+  #stage{position:relative;flex:1;min-width:0;
+    background:radial-gradient(ellipse at 50% 42%, #16202F 0%, #0B111C 72%)}
+  #c{display:block;width:100%;height:100%;touch-action:none}
+  #hud{position:absolute;left:20px;top:16px;font-family:"Spline Sans Mono",monospace;
+    font-size:11.5px;color:#7D8899;letter-spacing:.02em;pointer-events:none;line-height:1.8}
+  #hud b{color:var(--brass);font-weight:500}
+  #tag{position:absolute;right:20px;bottom:16px;font-family:"Spline Sans Mono",monospace;
+    font-size:11.5px;color:#7D8899;pointer-events:none;text-align:right;line-height:1.8}
+  #tag b{color:#A8BBD4;font-weight:500}
+
+  aside{width:356px;flex:none;background:var(--paper);border-left:1px solid #000;
+    overflow-y:auto;padding:24px 24px 44px}
+  h1{font-weight:400;font-size:30px;line-height:1.12;margin:0 0 4px;letter-spacing:-.01em}
+  .kicker{font-family:"Spline Sans Mono",monospace;font-size:10.5px;text-transform:uppercase;
+    letter-spacing:.14em;color:var(--ink-2);margin-bottom:12px}
+  p{margin:0 0 12px;color:var(--ink-2);font-size:13.5px;line-height:1.62}
+  p i{color:var(--ink)}
+  hr{border:0;border-top:1px solid var(--rule);margin:20px 0}
+  .lbl{font-family:"Spline Sans Mono",monospace;font-size:10.5px;text-transform:uppercase;
+    letter-spacing:.13em;color:var(--ink-2);display:flex;justify-content:space-between;margin:0 0 9px}
+  .lbl b{color:var(--ink);font-weight:500}
+  .row{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  input[type=range]{flex:1;accent-color:#2C3646;height:18px}
+  input[type=range]:disabled{opacity:.32}
+  button{font-family:"Spline Sans Mono",monospace;font-size:11px;letter-spacing:.05em;
+    border:1px solid var(--rule);background:transparent;color:var(--ink);
+    padding:7px 11px;cursor:pointer;border-radius:0;transition:.13s;white-space:nowrap}
+  button:hover:not(:disabled){background:var(--paper-2)}
+  button:disabled{opacity:.32;cursor:default}
+  button:focus-visible{outline:2px solid var(--brass);outline-offset:1px}
+  .seg{display:flex;gap:5px;margin-bottom:8px}
+  .seg button{flex:1;text-align:center}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .note{font-size:12px;color:var(--ink-2);margin:-1px 0 14px;min-height:3.1em;line-height:1.5}
+  .readout{font-family:"Spline Sans Mono",monospace;font-size:11.5px;line-height:1.95;
+    border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:9px 0;margin:0 0 18px}
+  .readout div{display:flex;justify-content:space-between;gap:10px;color:var(--ink-2)}
+  .readout span:last-child{color:var(--ink)}
+  .yes{color:#1C6B52!important} .no{color:#A8324C!important}
+  #lift{display:block;width:100%;height:168px;margin:0 0 6px}
+  .toggles{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--ink-2);margin-top:10px}
+  .toggles label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  @media (max-width:840px){
+    #wrap{flex-direction:column}
+    #stage{flex:0 0 46vh;flex-basis:46dvh;min-height:0}
+    aside{width:100%;flex:1 1 auto;border-left:0;border-top:1px solid #000;
+      max-height:none;padding:18px 18px 36px;-webkit-overflow-scrolling:touch}
+    h1{font-size:26px}
+    #hud{left:12px;top:10px;font-size:10.5px}
+    #tag{right:12px;bottom:10px;font-size:10.5px}
+    button{padding:10px 12px}
+    input[type=range]{height:30px}
+    .toggles{gap:10px 18px;font-size:13.5px}
+    .toggles input{width:17px;height:17px}
+  }
+  @media (prefers-reduced-motion:reduce){ *{scroll-behavior:auto} }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <canvas id="c"></canvas>
+    <div id="hud">S² × [0,1] &nbsp;·&nbsp; inner sphere <b>t = 0</b> &nbsp;·&nbsp; outer sphere <b>t = 1</b><br>
+      drag background to orbit &nbsp;·&nbsp; drag the <b>gold handle</b> to move the axis &nbsp;·&nbsp; pinch or scroll to zoom</div>
+    <div id="tag"></div>
+  </div>
+
+  <aside>
+    <div class="kicker">Belt trick in the sphere braid group</div>
+    <h1>Δ⁴ = 1 in B<sub>n</sub>(S²)</h1>
+    <p>Spinning S² by 2π drags any configuration of <i>n</i> points around a braid: the full twist Δ². Spinning by 4π gives Δ⁴, and that one comes undone — because the loop lifts to a closed loop in the simply connected S³.</p>
+
+    <div class="lbl"><span>Strands</span><b id="nVal">6</b></div>
+    <div class="row">
+      <input type="range" id="nSlide" min="2" max="14" value="6">
+      <button id="bShuffle">Shuffle</button>
+    </div>
+
+    <div class="lbl"><span>Rotation axis</span><span id="axVal"></span></div>
+    <div class="row">
+      <button id="bRandom" style="flex:1;text-align:center">Random axis</button>
+      <button id="bPolar">Through a point</button>
+    </div>
+
+    <div class="lbl"><span>Turns</span></div>
+    <div class="seg" id="turns">
+      <button data-k="1">2π &nbsp;→&nbsp; Δ²</button>
+      <button data-k="2" aria-pressed="true">4π &nbsp;→&nbsp; Δ⁴</button>
+    </div>
+
+    <div class="readout">
+      <div><span>lift ends at</span><span id="rLift">1</span></div>
+      <div><span>class in B<sub>n</sub>(S²)</span><span id="rClass" class="yes">trivial</span></div>
+      <div><span>Δ² itself</span><span id="rDelta">order 2</span></div>
+    </div>
+
+    <div class="lbl"><span>Develop the braid</span></div>
+    <div class="row">
+      <input type="range" id="tSlide" min="0" max="1000" value="1000">
+      <button id="tPlay">Trace</button>
+    </div>
+    <div class="note">Level t rises from the inner sphere to the outer one, carrying the configuration with it.</div>
+
+    <div class="lbl"><span>Untangle</span><b id="sVal">0.00</b></div>
+    <div class="row">
+      <input type="range" id="sSlide" min="0" max="1000" value="0">
+      <button id="sPlay">Untangle</button>
+    </div>
+    <div class="note" id="sNote"></div>
+
+    <hr>
+    <div class="lbl"><span>The lift in S³</span></div>
+    <canvas id="lift"></canvas>
+    <p style="font-size:12.5px">Rotations at each level lift to unit quaternions starting at 1. The 4π loop closes up into a great circle, and the untangling is that circle shrinking to the basepoint. The 2π path only reaches −1, so there is no loop to contract.</p>
+
+    <div class="toggles">
+      <label><input type="checkbox" id="tgShell" checked> shell</label>
+      <label><input type="checkbox" id="tgLevel" checked> level sphere</label>
+      <label><input type="checkbox" id="tgAxis" checked> axis</label>
+      <label><input type="checkbox" id="tgSpin"> slow spin</label>
+    </div>
+  </aside>
+</div>
+
+<script src="/vendor/three/r128/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ------------------------------------------------------------------
+   S² × [0,1] is drawn as a spherical shell: the level S² × {t} sits at
+   radius r(t) = R0 + (R1-R0)t.  Strand j is  t ↦ r(t)·R_s(t)·v_j.
+
+   R_s(t) is read off a path of unit quaternions.  For K turns the base
+   path is  q(t) = exp(π K t · â),  an arc from 1 to exp(πK·â).
+
+     K = 1 : ends at −1.  Not a loop.  This is Δ², of order 2.
+     K = 2 : ends at 1.   A great circle in span(1, â) ⊂ S³.
+
+   For K = 2 contract the great circle through circles that still pass
+   through the basepoint 1.  With ρ = (1−s)π/2 and φ = π − 2πt, and any
+   unit imaginary b̂ ⊥ â,
+
+       q_s(t) = (cos²ρ − sin²ρ cos φ)
+              + (sin ρ sin φ)              â
+              + (cos ρ sin ρ (1 + cos φ))  b̂.
+
+   s = 0 recovers exp(2πt·â); s = 1 is constantly 1; and φ = ±π (that is,
+   t = 0 and t = 1) gives q = 1 for every s, so both boundary spheres are
+   held fixed.  Applying R_s(t)R_0(t)⁻¹ to each level is therefore an
+   ambient isotopy of S² × (0,1) rel ∂ — no strand ever crosses another.
+
+   Everything above lives in span(1, â, b̂), a 2-sphere, which is why the
+   inset can draw the entire homotopy.
+   ------------------------------------------------------------------ */
+
+var R0 = 1.00, R1 = 2.12;
+var TOUCH = window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
+var SMALL = Math.min(screen.width, screen.height) < 820;
+var LOW   = TOUCH || SMALL;
+var SEG = LOW ? 140 : 220, RAD = LOW ? 6 : 8, TUBER = 0.030;
+var X = new THREE.Vector3(1,0,0), Y = new THREE.Vector3(0,1,0);
+
+// ---- state ----
+var N = 6, K = 2, S = 0, T = 1;
+var axis = new THREE.Vector3(0.35,0.82,0.45).normalize();
+var perp = new THREE.Vector3();
+var V = [];                       // base configuration on S²
+var spin = false, showLevel = true;
+
+function refreshPerp(){
+  var ref = Math.abs(axis.x) < 0.9 ? X : Y;
+  perp.crossVectors(ref, axis).normalize();
+}
+
+// ---- configurations ----
+function fibonacci(n){
+  var out = [], ga = Math.PI*(3-Math.sqrt(5));
+  for (var k=0;k<n;k++){
+    var z = 1 - 2*(k+0.5)/n, r = Math.sqrt(Math.max(0,1-z*z)), a = k*ga;
+    out.push(new THREE.Vector3(r*Math.cos(a), z, r*Math.sin(a)));
+  }
+  return out;
+}
+function randomConfig(n){
+  var out = [];
+  while (out.length < n){
+    var v = new THREE.Vector3(gauss(),gauss(),gauss());
+    if (v.lengthSq() < 1e-6) continue;
+    v.normalize();
+    var ok = true;
+    for (var i=0;i<out.length;i++) if (v.distanceTo(out[i]) < 0.34) { ok = false; break; }
+    if (ok) out.push(v);
+  }
+  return out;
+}
+function gauss(){
+  var u = 1-Math.random(), v = Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+// ---- the quaternion path ----
+function quatAt(t, s, out){
+  if (K === 2 && s > 0){
+    var rho = (1-s)*Math.PI/2, phi = Math.PI - 2*Math.PI*t;
+    var c = Math.cos(rho), sr = Math.sin(rho), C = Math.cos(phi), Sf = Math.sin(phi);
+    var ca = sr*Sf, cb = c*sr*(1+C);
+    return out.set(
+      ca*axis.x + cb*perp.x,
+      ca*axis.y + cb*perp.y,
+      ca*axis.z + cb*perp.z,
+      c*c - sr*sr*C
+    );
+  }
+  var th = Math.PI*K*t, st = Math.sin(th);
+  return out.set(st*axis.x, st*axis.y, st*axis.z, Math.cos(th));
+}
+function radiusAt(t){ return R0 + (R1-R0)*t; }
+
+// ---- renderer ----
+var canvas = document.getElementById('c');
+var renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, LOW ? 1.5 : 2));
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera(42,1,0.1,120);
+scene.add(new THREE.AmbientLight(0xffffff,0.58));
+var key = new THREE.DirectionalLight(0xffffff,0.82); key.position.set(3,5,4); scene.add(key);
+var rim = new THREE.DirectionalLight(0x88aaff,0.34); rim.position.set(-4,-2,-3); scene.add(rim);
+
+var world = new THREE.Group(); scene.add(world);
+
+var shell = new THREE.Group(); world.add(shell);
+[[R0,0.10],[R1,0.065]].forEach(function(sp){
+  shell.add(new THREE.Mesh(new THREE.SphereGeometry(sp[0],48,32),
+    new THREE.MeshBasicMaterial({color:0x6E8AB0,transparent:true,opacity:sp[1],side:THREE.BackSide})));
+  shell.add(new THREE.LineSegments(
+    new THREE.WireframeGeometry(new THREE.SphereGeometry(sp[0],24,12)),
+    new THREE.LineBasicMaterial({color:0x51688A,transparent:true,opacity:0.20})));
+});
+
+var levelSphere = new THREE.Mesh(new THREE.SphereGeometry(1,40,26),
+  new THREE.MeshBasicMaterial({color:0xA8C4E8,transparent:true,opacity:0.075}));
+var levelWire = new THREE.LineSegments(
+  new THREE.WireframeGeometry(new THREE.SphereGeometry(1,20,10)),
+  new THREE.LineBasicMaterial({color:0x9DBBE0,transparent:true,opacity:0.19}));
+world.add(levelSphere); world.add(levelWire);
+
+// axis line + draggable handle
+var RH = R1*1.20;
+var axisGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]);
+var axisLine = new THREE.Line(axisGeo, new THREE.LineDashedMaterial(
+  {color:0xE8B23A,transparent:true,opacity:0.40,dashSize:0.12,gapSize:0.10}));
+world.add(axisLine);
+var handle = new THREE.Mesh(new THREE.SphereGeometry(TOUCH?0.17:0.115,20,14),
+  new THREE.MeshStandardMaterial({color:0xE8B23A,roughness:0.3,emissive:0x3a2a05}));
+world.add(handle);
+var handleTail = new THREE.Mesh(new THREE.SphereGeometry(TOUCH?0.10:0.06,14,10),
+  new THREE.MeshStandardMaterial({color:0x7A5F1C,roughness:0.5}));
+world.add(handleTail);
+// invisible, finger-sized pick targets
+var pickGeo = new THREE.SphereGeometry(TOUCH?0.48:0.22,10,8);
+var pickMat = new THREE.MeshBasicMaterial({visible:false});
+var pickA = new THREE.Mesh(pickGeo,pickMat), pickB = new THREE.Mesh(pickGeo,pickMat);
+world.add(pickA); world.add(pickB);
+
+function placeAxis(){
+  var p = axis.clone().multiplyScalar(RH), q = p.clone().negate();
+  var a = axisGeo.attributes.position;
+  a.setXYZ(0,q.x,q.y,q.z); a.setXYZ(1,p.x,p.y,p.z); a.needsUpdate = true;
+  axisLine.computeLineDistances();
+  handle.position.copy(p); handleTail.position.copy(q);
+  pickA.position.copy(p); pickB.position.copy(q);
+  document.getElementById('axVal').textContent =
+    '(' + axis.x.toFixed(2) + ', ' + axis.y.toFixed(2) + ', ' + axis.z.toFixed(2) + ')';
+}
+
+// ---- strands: hand-rolled tubes with reusable buffers ----
+function Strand(color){
+  var VC = (SEG+1)*(RAD+1);
+  this.pos = new Float32Array(VC*3);
+  this.nor = new Float32Array(VC*3);
+  this.geo = new THREE.BufferGeometry();
+  this.geo.setAttribute('position', new THREE.BufferAttribute(this.pos,3));
+  this.geo.setAttribute('normal',   new THREE.BufferAttribute(this.nor,3));
+  var idx = new Uint32Array(SEG*RAD*6), o = 0;
+  for (var i=0;i<SEG;i++) for (var k=0;k<RAD;k++){
+    var a=i*(RAD+1)+k, b=(i+1)*(RAD+1)+k, c=(i+1)*(RAD+1)+k+1, d=i*(RAD+1)+k+1;
+    idx[o++]=a; idx[o++]=b; idx[o++]=d; idx[o++]=b; idx[o++]=c; idx[o++]=d;
+  }
+  this.geo.setIndex(new THREE.BufferAttribute(idx,1));
+  this.geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), R1*1.4);
+  this.mesh = new THREE.Mesh(this.geo,
+    new THREE.MeshStandardMaterial({color:color,roughness:0.42,metalness:0.04}));
+  this.mesh.frustumCulled = false;
+}
+var _P = [], _q = new THREE.Quaternion(), _t = new THREE.Vector3(),
+    _n = new THREE.Vector3(), _b = new THREE.Vector3(), _tmp = new THREE.Vector3();
+for (var i=0;i<=SEG;i++) _P.push(new THREE.Vector3());
+
+Strand.prototype.update = function(v){
+  var i,k;
+  for (i=0;i<=SEG;i++){
+    var t = i/SEG;
+    quatAt(t, S, _q);
+    _P[i].copy(v).applyQuaternion(_q).multiplyScalar(radiusAt(t));
+  }
+  // seed a normal transverse to the first tangent
+  _t.subVectors(_P[1],_P[0]).normalize();
+  _n.set(0,0,1); if (Math.abs(_n.dot(_t)) > 0.9) _n.set(1,0,0);
+  _n.addScaledVector(_t, -_n.dot(_t)).normalize();
+
+  var pos = this.pos, nor = this.nor, o = 0;
+  for (i=0;i<=SEG;i++){
+    if (i===0)       _t.subVectors(_P[1],_P[0]).normalize();
+    else if (i===SEG)_t.subVectors(_P[SEG],_P[SEG-1]).normalize();
+    else             _t.subVectors(_P[i+1],_P[i-1]).normalize();
+    // parallel transport the frame one step
+    _n.addScaledVector(_t, -_n.dot(_t));
+    if (_n.lengthSq() < 1e-8){ _n.set(0,0,1); if (Math.abs(_n.dot(_t))>0.9) _n.set(1,0,0);
+                               _n.addScaledVector(_t,-_n.dot(_t)); }
+    _n.normalize();
+    _b.crossVectors(_t,_n);
+    var px=_P[i].x, py=_P[i].y, pz=_P[i].z;
+    for (k=0;k<=RAD;k++){
+      var a = 2*Math.PI*k/RAD, ca = Math.cos(a), sa = Math.sin(a);
+      var nx = ca*_n.x + sa*_b.x, ny = ca*_n.y + sa*_b.y, nz = ca*_n.z + sa*_b.z;
+      nor[o]   = nx;            nor[o+1] = ny;            nor[o+2] = nz;
+      pos[o]   = px + TUBER*nx; pos[o+1] = py + TUBER*ny; pos[o+2] = pz + TUBER*nz;
+      o += 3;
+    }
+  }
+  this.geo.attributes.position.needsUpdate = true;
+  this.geo.attributes.normal.needsUpdate = true;
+};
+
+var strands = [], beadsIn = [], beadsOut = [], dots = [];
+var strandGroup = new THREE.Group(); world.add(strandGroup);
+
+function hue(j,n){ return 'hsl(' + Math.round(18 + 320*j/Math.max(1,n)) + ',58%,62%)'; }
+
+function buildStrands(){
+  strandGroup.clear();
+  strands.forEach(function(s){ s.geo.dispose(); s.mesh.material.dispose(); });
+  beadsIn.concat(beadsOut,dots).forEach(function(m){ m.geometry.dispose(); m.material.dispose(); });
+  strands = []; beadsIn = []; beadsOut = []; dots = [];
+  var bg = new THREE.SphereGeometry(0.068,18,12), dg = new THREE.SphereGeometry(0.088,18,12);
+  for (var j=0;j<N;j++){
+    var col = new THREE.Color(hue(j,N));
+    var s = new Strand(col); strandGroup.add(s.mesh); strands.push(s);
+    var mi = new THREE.Mesh(bg,new THREE.MeshStandardMaterial({color:col,roughness:0.35}));
+    var mo = new THREE.Mesh(bg,new THREE.MeshStandardMaterial({color:col,roughness:0.35}));
+    mi.position.copy(V[j]).multiplyScalar(R0);
+    mo.position.copy(V[j]).multiplyScalar(R1);
+    strandGroup.add(mi); strandGroup.add(mo); beadsIn.push(mi); beadsOut.push(mo);
+    var d = new THREE.Mesh(dg,new THREE.MeshBasicMaterial({color:col}));
+    strandGroup.add(d); dots.push(d);
+  }
+}
+function updateStrands(){
+  for (var j=0;j<N;j++) strands[j].update(V[j]);
+  applyDrawRange();
+}
+function applyDrawRange(){
+  var segs = Math.max(1, Math.round(T*SEG));
+  for (var j=0;j<N;j++) strands[j].geo.setDrawRange(0, segs*RAD*6);
+}
+function updateMoving(){
+  quatAt(T, S, _q);
+  var r = radiusAt(T), live = showLevel && T < 0.999;
+  for (var j=0;j<N;j++){
+    _tmp.copy(V[j]).applyQuaternion(_q).multiplyScalar(r);
+    dots[j].position.copy(_tmp);
+    dots[j].visible = live;
+    beadsOut[j].visible = T > 0.999;
+  }
+  levelSphere.scale.setScalar(r); levelWire.scale.setScalar(r);
+  levelSphere.visible = levelWire.visible = live;
+  document.getElementById('tag').innerHTML =
+    'n = <b>' + N + '</b> &nbsp;·&nbsp; t = <b>' + T.toFixed(2) +
+    '</b> &nbsp;·&nbsp; s = <b>' + S.toFixed(2) + '</b>';
+}
+function refreshAll(){ updateStrands(); updateMoving(); drawLift(); }
+
+// ---- camera + pointer ----
+var az = 0.75, pol = 1.14, dist = 7.2, mode = null, px = 0, py = 0;
+function placeCamera(){
+  camera.position.set(dist*Math.sin(pol)*Math.cos(az), dist*Math.cos(pol), dist*Math.sin(pol)*Math.sin(az));
+  camera.lookAt(0,0,0);
+}
+var raycaster = new THREE.Raycaster(), ndc = new THREE.Vector2();
+function setNDC(e){
+  var r = canvas.getBoundingClientRect();
+  ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+}
+function raySphere(R){
+  var o = raycaster.ray.origin, d = raycaster.ray.direction;
+  var b = 2*o.dot(d), c = o.lengthSq()-R*R, disc = b*b-4*c;
+  if (disc < 0) return null;
+  var t = (-b-Math.sqrt(disc))/2; if (t < 0) t = (-b+Math.sqrt(disc))/2;
+  return t < 0 ? null : d.clone().multiplyScalar(t).add(o);
+}
+// distance at which the outer sphere fits BOTH screen dimensions — portrait
+// phones have a narrow horizontal field of view, so vertical fit is not enough
+function fitDistance(){
+  var need = R1*1.34, vf = camera.fov*Math.PI/180;
+  var dv = need/Math.tan(vf/2);
+  var dh = need/Math.tan(Math.atan(Math.tan(vf/2)*Math.max(camera.aspect,0.15)));
+  return Math.max(dv, dh);
+}
+function clampDist(d){ var f = fitDistance(); return Math.max(f*0.42, Math.min(f*3.2, d)); }
+
+var pointers = new Map(), pinch0 = 0, dist0 = 0, userZoomed = false;
+function pickAxis(e){
+  setNDC(e); raycaster.setFromCamera(ndc, camera);
+  var hit = raycaster.intersectObjects([pickA, pickB], false);
+  return hit.length ? (hit[0].object === pickA ? 'axis' : 'axis-') : null;
+}
+canvas.addEventListener('pointerdown', function(e){
+  canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (pointers.size === 2){
+    var p = Array.from(pointers.values());
+    pinch0 = Math.hypot(p[0].x-p[1].x, p[0].y-p[1].y);
+    dist0 = dist; mode = 'pinch'; return;
+  }
+  if (pointers.size > 2) return;
+  mode = (axisLine.visible && pickAxis(e)) || 'orbit';
+  px = e.clientX; py = e.clientY;
+});
+function endPointer(e){
+  pointers.delete(e.pointerId);
+  if (pointers.size === 0) mode = null;
+  else if (mode === 'pinch' && pointers.size === 1){
+    var p = pointers.values().next().value;
+    px = p.x; py = p.y; mode = 'orbit';
+  }
+}
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', endPointer);
+canvas.addEventListener('pointermove', function(e){
+  if (!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if (mode === 'pinch'){
+    var p = Array.from(pointers.values());
+    if (p.length < 2) return;
+    var d = Math.max(8, Math.hypot(p[0].x-p[1].x, p[0].y-p[1].y));
+    if (pinch0 > 8){ dist = clampDist(dist0*pinch0/d); userZoomed = true; placeCamera(); }
+    return;
+  }
+  if (mode === 'orbit'){
+    az -= (e.clientX-px)*0.007;
+    pol = Math.max(0.12, Math.min(Math.PI-0.12, pol-(e.clientY-py)*0.007));
+    px = e.clientX; py = e.clientY; placeCamera();
+  } else if (mode === 'axis' || mode === 'axis-'){
+    setNDC(e); raycaster.setFromCamera(ndc, camera);
+    var q = raySphere(RH);
+    if (!q) return;
+    axis.copy(q).normalize();
+    if (mode === 'axis-') axis.negate();
+    refreshPerp(); placeAxis(); refreshAll();
+  }
+});
+canvas.addEventListener('wheel', function(e){
+  e.preventDefault(); userZoomed = true;
+  dist = clampDist(dist*(1+Math.sign(e.deltaY)*0.09));
+  placeCamera();
+}, {passive:false});
+
+var lastW = 0, lastH = 0;
+function resize(){
+  var w = canvas.clientWidth, h = canvas.clientHeight;
+  if (!w || !h || (w === lastW && h === lastH)) return;
+  lastW = w; lastH = h;
+  renderer.setSize(w,h,false); camera.aspect = w/h; camera.updateProjectionMatrix();
+  if (!userZoomed) dist = fitDistance();
+  placeCamera();
+}
+window.addEventListener('resize', function(){ resize(); drawLift(); });
+
+// ---- lift inset: the 2-sphere span(1, â, b̂) ----
+var lc = document.getElementById('lift'), lx = lc.getContext('2d'), TILT = 0.62;
+function proj(w,al,be){
+  return { x: al,
+           y: -(w*Math.cos(TILT) + be*Math.sin(TILT)),
+           z: -w*Math.sin(TILT) + be*Math.cos(TILT) };
+}
+function drawLift(){
+  var dpr = Math.min(window.devicePixelRatio,2), W = lc.clientWidth, H = lc.clientHeight;
+  if (!W || !H) return;
+  lc.width = W*dpr; lc.height = H*dpr; lx.setTransform(dpr,0,0,dpr,0,0);
+  lx.clearRect(0,0,W,H);
+  var cx = W/2, cy = H/2, R = Math.min(W,H)/2 - 15;
+  var P = function(p){ return [cx+p.x*R, cy+p.y*R]; };
+
+  lx.lineWidth = 1; lx.strokeStyle = '#BFC6D0';
+  lx.beginPath(); lx.arc(cx,cy,R,0,2*Math.PI); lx.stroke();
+  lx.strokeStyle = '#D6DBE2'; lx.beginPath();
+  for (var e=0;e<=140;e++){
+    var th = 2*Math.PI*e/140, pt = P(proj(Math.cos(th),0,Math.sin(th)));
+    e ? lx.lineTo(pt[0],pt[1]) : lx.moveTo(pt[0],pt[1]);
+  }
+  lx.stroke();
+
+  var q = new THREE.Quaternion(), M = 220;
+  lx.lineWidth = 2.4; lx.lineCap = 'round';
+  for (var i=0;i<M;i++){
+    quatAt(i/M, S, q);
+    var a = proj(q.w, q.x*axis.x+q.y*axis.y+q.z*axis.z, q.x*perp.x+q.y*perp.y+q.z*perp.z);
+    quatAt((i+1)/M, S, q);
+    var b = proj(q.w, q.x*axis.x+q.y*axis.y+q.z*axis.z, q.x*perp.x+q.y*perp.y+q.z*perp.z);
+    lx.strokeStyle = ((a.z+b.z)/2 < 0) ? 'rgba(43,54,70,0.20)' : '#2B3646';
+    var pa = P(a), pb = P(b);
+    lx.beginPath(); lx.moveTo(pa[0],pa[1]); lx.lineTo(pb[0],pb[1]); lx.stroke();
+  }
+  function dot(w,al,be,fill,label,dy){
+    var pt = P(proj(w,al,be));
+    lx.fillStyle = fill; lx.beginPath(); lx.arc(pt[0],pt[1],4.2,0,2*Math.PI); lx.fill();
+    if (label){ lx.fillStyle = '#4B5768'; lx.font = '500 11px "Spline Sans Mono",monospace';
+                lx.textAlign = 'center'; lx.fillText(label, pt[0], pt[1]+dy); }
+  }
+  dot(1,0,0,'#111721','1',-9);
+  dot(-1,0,0,'#BFC6D0','−1',16);
+  quatAt(1, S, q);
+  dot(q.w, q.x*axis.x+q.y*axis.y+q.z*axis.z, q.x*perp.x+q.y*perp.y+q.z*perp.z,
+      K===2 ? '#1C6B52' : '#A8324C', null, 0);
+}
+
+// ---- panel ----
+var nSlide = document.getElementById('nSlide'), nOut = document.getElementById('nVal');
+var sSlide = document.getElementById('sSlide'), sOut = document.getElementById('sVal');
+var tSlide = document.getElementById('tSlide');
+var sPlay = document.getElementById('sPlay'), tPlay = document.getElementById('tPlay');
+var sNote = document.getElementById('sNote');
+var tAnim = null, sAnim = null;
+
+function stopAnims(){
+  if (tAnim){ cancelAnimationFrame(tAnim); tAnim = null; tPlay.textContent = 'Trace'; }
+  if (sAnim){ cancelAnimationFrame(sAnim); sAnim = null; sPlay.textContent = 'Untangle'; }
+}
+function resetS(){ S = 0; sSlide.value = 0; sOut.textContent = '0.00'; }
+
+function syncTurns(){
+  Array.prototype.forEach.call(document.querySelectorAll('#turns button'), function(b){
+    b.setAttribute('aria-pressed', (+b.dataset.k === K) ? 'true' : 'false');
+  });
+  var closed = (K === 2);
+  sSlide.disabled = !closed; sPlay.disabled = !closed;
+  document.getElementById('rLift').textContent = closed ? '1' : '−1';
+  var rc = document.getElementById('rClass');
+  rc.textContent = closed ? 'trivial' : 'Δ² (full twist)';
+  rc.className = closed ? 'yes' : 'no';
+  var rd = document.getElementById('rDelta');
+  if (N <= 2){ rd.textContent = 'trivial (n ≤ 2)'; rd.className = 'no'; }
+  else { rd.textContent = 'order 2'; rd.className = 'yes'; }
+
+  if (!closed){
+    sNote.textContent = N <= 2
+      ? 'The 2π path stops at −1, so this rotation cannot be undone by spinning. For n ≤ 2 the braid is still trivial, but only because F(S², 1) and F(S², 2) are simply connected — undoing it needs the points to slide, not the sphere to turn.'
+      : 'The 2π path stops at −1, not 1. There is no loop to contract, and Δ² is the unique element of order 2 in Bₙ(S²).';
+  } else {
+    sNote.textContent = 'Each level S² × {t} is rotated by a shrinking amount. Both boundary spheres stay fixed, so this is an ambient isotopy of S² × (0,1) rel ∂.';
+  }
+}
+
+nSlide.addEventListener('input', function(){
+  stopAnims(); resetS();
+  N = +nSlide.value; nOut.textContent = N;
+  V = fibonacci(N); buildStrands(); syncTurns(); refreshAll();
+});
+document.getElementById('bShuffle').addEventListener('click', function(){
+  stopAnims(); resetS(); V = randomConfig(N); buildStrands(); refreshAll();
+});
+document.getElementById('bRandom').addEventListener('click', function(){
+  stopAnims(); resetS();
+  axis.set(gauss(),gauss(),gauss()).normalize();
+  refreshPerp(); placeAxis(); refreshAll();
+});
+document.getElementById('bPolar').addEventListener('click', function(){
+  stopAnims(); resetS();
+  axis.copy(V[Math.floor(Math.random()*N)]);
+  refreshPerp(); placeAxis(); refreshAll();
+});
+Array.prototype.forEach.call(document.querySelectorAll('#turns button'), function(b){
+  b.addEventListener('click', function(){
+    stopAnims(); resetS(); K = +b.dataset.k; syncTurns(); refreshAll();
+  });
+});
+sSlide.addEventListener('input', function(){
+  if (sAnim){ cancelAnimationFrame(sAnim); sAnim = null; sPlay.textContent = 'Untangle'; }
+  S = +sSlide.value/1000; sOut.textContent = S.toFixed(2); refreshAll();
+});
+tSlide.addEventListener('input', function(){
+  if (tAnim){ cancelAnimationFrame(tAnim); tAnim = null; tPlay.textContent = 'Trace'; }
+  T = +tSlide.value/1000; applyDrawRange(); updateMoving();
+});
+tPlay.addEventListener('click', function(){
+  if (tAnim){ cancelAnimationFrame(tAnim); tAnim = null; tPlay.textContent = 'Trace'; return; }
+  tPlay.textContent = 'Stop';
+  var t0 = performance.now(), dur = 4400;
+  (function step(now){
+    var p = Math.min(1,(now-t0)/dur);
+    T = p; tSlide.value = Math.round(p*1000);
+    applyDrawRange(); updateMoving();
+    if (p < 1) tAnim = requestAnimationFrame(step);
+    else { tAnim = null; tPlay.textContent = 'Trace'; }
+  })(t0);
+});
+sPlay.addEventListener('click', function(){
+  if (sAnim){ cancelAnimationFrame(sAnim); sAnim = null; sPlay.textContent = 'Untangle'; return; }
+  if (T < 0.999){ T = 1; tSlide.value = 1000; applyDrawRange(); }
+  var from = S >= 0.999 ? 0 : S;
+  sPlay.textContent = 'Stop';
+  var t0 = performance.now(), dur = 5600, lastBuild = 0;
+  (function step(now){
+    var p = Math.min(1,(now-t0)/dur);
+    S = from + (1-from)*p;
+    sSlide.value = Math.round(S*1000); sOut.textContent = S.toFixed(2);
+    if (!LOW || p >= 1 || now-lastBuild > 26){ lastBuild = now; refreshAll(); }
+    if (p < 1) sAnim = requestAnimationFrame(step);
+    else { sAnim = null; sPlay.textContent = 'Untangle'; }
+  })(t0);
+});
+document.getElementById('tgShell').addEventListener('change', function(e){ shell.visible = e.target.checked; });
+document.getElementById('tgAxis').addEventListener('change', function(e){
+  axisLine.visible = handle.visible = handleTail.visible = e.target.checked;
+});
+document.getElementById('tgLevel').addEventListener('change', function(e){
+  showLevel = e.target.checked; updateMoving();
+});
+document.getElementById('tgSpin').addEventListener('change', function(e){ spin = e.target.checked; });
+
+// ---- boot ----
+V = fibonacci(N); refreshPerp(); placeAxis(); buildStrands(); syncTurns();
+placeCamera(); resize(); refreshAll();
+T = 0; tSlide.value = 0; applyDrawRange(); updateMoving();
+setTimeout(function(){ tPlay.click(); }, 420);
+
+var last = performance.now();
+(function loop(now){
+  var dt = (now-last)/1000; last = now;
+  if (spin && mode !== 'orbit'){ az += dt*0.15; placeCamera(); }
+  resize();
+  renderer.render(scene,camera);
+  requestAnimationFrame(loop);
+})(last);
+
+})();
+</script>
+</body>
+</html>

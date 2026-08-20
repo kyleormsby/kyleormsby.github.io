@@ -69,44 +69,64 @@ await new Promise((r) => server.listen(PORT, r));
 // not match the Playwright build this project pins).
 const exe = process.env.CHROMIUM_PATH;
 const browser = await chromium.launch(exe ? { executablePath: exe } : {});
-const ctx = await browser.newContext({
-  viewport: VIEW,
-  deviceScaleFactor: SCALE,
-  colorScheme: 'light',
-  reducedMotion: 'no-preference',
-});
 
-if (!noStub && existsSync(LOCAL_THREE)) {
-  const js = await readFile(LOCAL_THREE, 'utf8');
-  await ctx.route(CDN, (route) => route.fulfill({ contentType: 'text/javascript', body: js }));
-} else if (!noStub) {
+const LOCAL_THREE_JS = !noStub && existsSync(LOCAL_THREE)
+  ? await readFile(LOCAL_THREE, 'utf8') : null;
+if (!noStub && !LOCAL_THREE_JS) {
   console.warn('! node_modules/three (r128 UMD build) missing; those scenes may render empty');
 }
 
 // Several visualizations use an importmap pointing at unpkg for three 0.160
 // (module build + examples/jsm addons). Serve the vendored copy instead.
 const UNPKG_THREE = join(ROOT, 'vendor', 'three-0.160.0');
-if (!noStub && existsSync(UNPKG_THREE)) {
-  await ctx.route('https://unpkg.com/three@0.160.0/**', async (route) => {
-    const path = new URL(route.request().url()).pathname
-      .replace('/three@0.160.0/', '/');
-    try {
-      const body = await readFile(join(UNPKG_THREE, path), 'utf8');
-      await route.fulfill({ contentType: 'text/javascript', body });
-    } catch {
-      await route.abort();
-    }
-  });
-} else if (!noStub) {
+const HAS_UNPKG = !noStub && existsSync(UNPKG_THREE);
+if (!noStub && !HAS_UNPKG) {
   console.warn('! vendor/three-0.160.0 missing; importmap scenes may render empty');
 }
 
+/**
+ * A page laid out for a wide screen renders its narrow layout at the default
+ * 800px and the thumbnail then shows the phone version. `viewport` and `scale`
+ * let such a page be shot at its real breakpoint; keep width/height at 4:3 and
+ * width x scale at 1200 so every thumb still lands at 1200x900.
+ */
+async function makeContext(viewport = VIEW, scale = SCALE) {
+  const c = await browser.newContext({
+    viewport,
+    deviceScaleFactor: scale,
+    colorScheme: 'light',
+    reducedMotion: 'no-preference',
+  });
+  if (LOCAL_THREE_JS) {
+    await c.route(CDN, (route) =>
+      route.fulfill({ contentType: 'text/javascript', body: LOCAL_THREE_JS }));
+  }
+  if (HAS_UNPKG) {
+    await c.route('https://unpkg.com/three@0.160.0/**', async (route) => {
+      const path = new URL(route.request().url()).pathname
+        .replace('/three@0.160.0/', '/');
+      try {
+        const body = await readFile(join(UNPKG_THREE, path), 'utf8');
+        await route.fulfill({ contentType: 'text/javascript', body });
+      } catch {
+        await route.abort();
+      }
+    });
+  }
+  return c;
+}
+
+const ctx = await makeContext();
+
 let ok = 0;
 for (const slug of dirs) {
-  const page = await ctx.newPage();
+  const tweak = TWEAKS[slug] ?? {};
+  const own = (tweak.viewport || tweak.scale)
+    ? await makeContext(tweak.viewport ?? VIEW, tweak.scale ?? SCALE)
+    : null;
+  const page = await (own ?? ctx).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  const tweak = TWEAKS[slug] ?? {};
   try {
     if (noStub) {
       page.on('requestfailed', (req) => {
@@ -130,6 +150,7 @@ for (const slug of dirs) {
     console.error(`  ${slug}  FAILED: ${e.message.split('\n')[0]}`);
   }
   await page.close();
+  if (own) await own.close();
 }
 
 await browser.close();

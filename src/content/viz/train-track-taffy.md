@@ -3,7 +3,6 @@ title: "Train-track taffy"
 href: /train-track-taffy/
 year: 2026
 thumb: /thumbs/train-track-taffy.png
-featured: true
 tags:
   - dynamics
   - braids

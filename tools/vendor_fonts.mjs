@@ -11,6 +11,14 @@
  *   node tools/vendor_fonts.mjs --check   # report remaining remote font links
  *
  * Latin subsets only; re-run with --subsets if a page ever needs more.
+ *
+ * The rewrite in step 3 replaces a page's Google Fonts link with the local
+ * sheet, so on a second run that page no longer advertises what it needs.
+ * Regenerating from the HTML alone would therefore drop every face vendored
+ * by an earlier run the moment a new font-using page is added — the sheet
+ * would still be there, still be loaded, and simply stop containing
+ * Cormorant Garamond. Step 0 seeds the set from the sheet itself, which makes
+ * the whole script additive and idempotent.
  */
 import { readFile, writeFile, mkdir, readdir, cp } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -90,8 +98,25 @@ if (process.argv.includes('--check')) {
   process.exit(hits ? 1 : 0);
 }
 
-// ---- 1. collect every family/weight actually requested --------------------
 const wanted = new Map();   // slug -> {family, faces:Set<"style weight">}
+
+// ---- 0. seed from what is already vendored --------------------------------
+// Families whose pages were rewritten on an earlier run no longer name a
+// Google Fonts URL anywhere, so the existing sheet is the only record of them.
+const FACE = /@font-face\{font-family:'([^']+)';font-style:(\w+);font-weight:(\d+)/g;
+const sheet = join(OUT, 'fonts.css');
+if (existsSync(sheet)) {
+  for (const m of (await readFile(sheet, 'utf8')).matchAll(FACE)) {
+    const [, family, style, weight] = m;
+    const slug = family.toLowerCase().replace(/\s+/g, '-');
+    const rec = wanted.get(slug) ?? { family, faces: new Set() };
+    rec.faces.add(`${style} ${weight}`);
+    wanted.set(slug, rec);
+  }
+  if (wanted.size) console.log(`  carried over ${wanted.size} family/families already vendored`);
+}
+
+// ---- 1. collect every family/weight actually requested --------------------
 for (const f of files) {
   const html = await readFile(f, 'utf8');
   for (const m of html.matchAll(GF_LINK)) {
@@ -105,7 +130,7 @@ for (const f of files) {
   }
 }
 if (wanted.size === 0) {
-  console.log('no Google Fonts links found');
+  console.log('no Google Fonts links found and nothing already vendored');
   process.exit(0);
 }
 

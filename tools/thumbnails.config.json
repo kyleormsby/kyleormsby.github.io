@@ -1,5 +1,10 @@
 {
-  "_comment": "Per-visualization capture tweaks. wait = extra ms before the shot; click = selector to press first; scrollTo = selector to bring into view. Anything not listed uses the defaults.",
+  "_comment": "Per-visualization capture tweaks. wait = extra ms before the shot; click = selector to press first; scrollTo = selector to bring into view; viewport/scale = shoot at a different CSS size (keep width x scale = 1200 so the PNG stays 1200x900). Anything not listed uses the defaults.",
+  "belt-trick-braids": {
+    "viewport": { "width": 1200, "height": 900 },
+    "scale": 1,
+    "wait": 7000
+  },
   "nets": {
     "wait": 9000
   },
