@@ -49,10 +49,12 @@ const meetings = weeks.reduce((n, w) => n + w.meetings.length, 0);
       <p class="dim" style="margin-top:var(--s5);font-size:0.95rem" set:html={inline(meta.preamble)} />
     )}
 
-    <p style="margin-top:var(--s6);display:flex;gap:var(--s5);align-items:baseline">
-      <a class="label" href="#now" id="jump-now">jump to this week ↓</a>
-      <span class="label">{meetings} meetings</span>
-    </p>
+    {meetings > 0 && (
+      <p style="margin-top:var(--s6);display:flex;gap:var(--s5);align-items:baseline">
+        <a class="label" href="#now" id="jump-now">jump to this week ↓</a>
+        <span class="label">{meetings} meetings</span>
+      </p>
+    )}
   </div>
 
   <section style="margin-top:var(--s7)">

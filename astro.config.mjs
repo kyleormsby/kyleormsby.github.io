@@ -93,6 +93,9 @@ export default defineConfig({
     // the user site and carries the custom domain, that repo's project pages
     // are served under it, so the path is local — no trip through github.io.
     '/342/': '/math342spring26/course/frontmatter.html',
+    // /111/ was the bare slug of whichever calculus section was running.
+    // It now follows the current one; each term keeps its own dated URL.
+    '/111/': '/111fall26/',
     // The Jekyll site's /about/ was the home page and /blog/ is now /writing/.
     // Both are live URLs that github.io now forwards here, so they must land.
     '/about/': '/bio/',

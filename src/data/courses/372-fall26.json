@@ -1,0 +1,28 @@
+{
+  "slug": "372fall26",
+  "number": "math 372",
+  "title": "combinatorics",
+  "term": "fall 2026",
+  "schedule": "372-fall26.csv",
+  "filesBase": "/files/372fall26/",
+  "current": true,
+  "blurb": "Algebraic and analytic combinatorics — counting with matrices and power series.",
+  "preamble": "**Under construction.** Syllabus, schedule, and course logistics will appear here before the term begins.",
+  "facts": [],
+  "render": [
+    {
+      "col": "topic",
+      "kind": "md"
+    },
+    {
+      "col": "resources",
+      "kind": "md",
+      "label": "links"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
+    }
+  ]
+}

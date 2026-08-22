@@ -6,7 +6,7 @@
   "schedule": "113-spring26.csv",
   "filesBase": "/files/113spring26/",
   "panoptoBase": "https://reedcollege.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=",
-  "current": true,
+  "current": false,
   "blurb": "Counting, graphs, recursion, and number theory — a first course in reading and writing mathematics.",
   "preamble": "- review session Th 1:30-2:20pm in Lib 389 - usual office hours (Tu 1-2pm & Th 2:30-3:30pm)",
   "facts": [

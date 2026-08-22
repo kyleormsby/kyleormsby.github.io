@@ -1,0 +1,27 @@
+{
+  "slug": "111fall26",
+  "number": "math 111",
+  "title": "calculus",
+  "term": "fall 2026",
+  "schedule": "111-fall26.csv",
+  "filesBase": "/files/111fall26/",
+  "current": true,
+  "preamble": "**Under construction.** Syllabus, schedule, and course logistics will appear here before the term begins.",
+  "facts": [],
+  "render": [
+    {
+      "col": "topic",
+      "kind": "md"
+    },
+    {
+      "col": "resources",
+      "kind": "md",
+      "label": "links"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
+    }
+  ]
+}
