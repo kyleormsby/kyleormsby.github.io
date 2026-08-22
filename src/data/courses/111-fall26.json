@@ -6,6 +6,7 @@
   "schedule": "111-fall26.csv",
   "filesBase": "/files/111fall26/",
   "current": true,
+  "blurb": "An active introduction to limits, derivatives, and integrals, plus a preview of Taylor series.",
   "preamble": "**Under construction.** Syllabus, schedule, and course logistics will appear here before the term begins.",
   "facts": [],
   "render": [
