@@ -7,8 +7,41 @@
   "filesBase": "/files/111fall26/",
   "current": true,
   "blurb": "An active introduction to limits, derivatives, and integrals, plus a preview of Taylor series.",
-  "preamble": "**Under construction.** Syllabus, schedule, and course logistics will appear here before the term begins.",
-  "facts": [],
+  "preamble": "**Draft.** Classes begin Monday, August 31. Office hours, problem sessions, and Zulip and Gradescope links will be posted before then. Syllabus, course policies, and schedule are tentative.",
+  "facts": [
+    {
+      "label": "syllabus",
+      "value": "[Syllabus](/files/111fall26/111_syllabus.pdf)"
+    },
+    {
+      "label": "textbook",
+      "value": "[Active Calculus](https://activecalculus.org/acs2e/)"
+    },
+    {
+      "label": "video",
+      "value": "[Chapters 1-4](https://www.youtube.com/playlist?list=PL9bIjQJDwfGuXQHuS5Jkmum_CFILoCZX-), [Chapters 5-6](https://www.youtube.com/playlist?list=PL9bIjQJDwfGtewW75Nw7PnGNSkfqwAm3v)"
+    },
+    {
+      "label": "meetings",
+      "value": "F03: MWF 10-10:50 in Eliot 207\nF04: MWF 12-12:50 in Chem 301"
+    },
+    {
+      "label": "office hours",
+      "value": "TBA"
+    },
+    {
+      "label": "scheduling",
+      "value": "[Scheduling link](https://calendar.notion.so/meet/kyleormsby/office)"
+    },
+    {
+      "label": "problem session",
+      "value": "TBA"
+    },
+    {
+      "label": "drop-in tutoring",
+      "value": "TBA"
+    }
+  ],
   "render": [
     {
       "col": "topic",
@@ -18,6 +51,20 @@
       "col": "resources",
       "kind": "md",
       "label": "links"
+    },
+    {
+      "col": "hw",
+      "kind": "pdf",
+      "label": "assigned",
+      "text": "homework",
+      "due": "hw_due"
+    },
+    {
+      "col": "submit",
+      "kind": "pdf",
+      "label": "due",
+      "text": "homework",
+      "by": "submit_by"
     },
     {
       "col": "note",

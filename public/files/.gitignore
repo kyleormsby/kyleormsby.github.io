@@ -1,0 +1,34 @@
+# LaTeX build artifacts.
+#
+# Course PDFs are compiled in place in these folders, which scatters auxiliary
+# files through public/. Those should not be committed.
+#
+# The .tex sources MUST stay tracked: course syllabi tell students they can find
+# the source for any .pdf on the site by changing the suffix to .tex, so the
+# sources are published deliberately, not by accident.
+
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.dvi
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.xdv
+
+# Never ignore the published sources or output.
+!*.tex
+!*.pdf

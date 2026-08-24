@@ -1,1 +1,44 @@
-week,date,display,type,topic,resources,note
+week,date,display,type,topic,resources,hw,hw_due,submit,submit_by,note
+1,2026-08-31,,class,Welcome and warm up,,,,,,no reading
+1,2026-09-02,,class,"Varying quantities: units, estimation, and covariation",,,,,,no reading
+1,2026-09-04,,class,[How do we measure velocity?](https://activecalculus.org/single2e/sec-1-1-vel.html),,,,,,
+2,2026-09-07,,break,Labor Day — no class,,,,,,
+2,2026-09-09,,class,[The derivative of a function at a point](https://activecalculus.org/single2e/sec-1-3-derivative-pt.html),,,,,,"includes the limit language from 1.2 ❦ homework 1 (forthcoming) — due Friday, September 18"
+2,2026-09-11,,class,[The derivative function](https://activecalculus.org/single2e/sec-1-4-derivative-fxn.html),,,,,,
+3,2026-09-14,,class,"[Interpreting, estimating, and using the derivative](https://activecalculus.org/single2e/sec-1-5-units.html)",,,,,,
+3,2026-09-16,,class,[The second derivative](https://activecalculus.org/single2e/sec-1-6-second-d.html),,,,,,
+3,2026-09-18,,class,"[Limits, continuity, and differentiability](https://activecalculus.org/single2e/sec-1-7-lim-cont-diff.html)",,,,,,homework 1 due by 10pm
+4,2026-09-21,,class,[The tangent line approximation](https://activecalculus.org/single2e/sec-1-8-tan-line-approx.html),,,,,,
+4,2026-09-23,,review,Review,,,,,,practice exam posted one week ahead ❦ bring questions
+4,2026-09-25,,exam,Exam 1,,,,,,in class ❦ covers everything through the tangent line approximation
+5,2026-09-28,,class,[Elementary derivative rules](https://activecalculus.org/single2e/sec-2-1-elem-rules.html),,,,,,"homework 2 (forthcoming) — due Friday, October 9"
+5,2026-09-30,,class,[The sine and cosine functions](https://activecalculus.org/single2e/sec-2-2-sin-cos.html),,,,,,
+5,2026-10-02,,class,[The product and quotient rules](https://activecalculus.org/single2e/sec-2-3-prod-quot.html),,,,,,tangent and secant derivatives in passing (1.2 and 2.4 are not assigned)
+6,2026-10-05,,class,[The chain rule](https://activecalculus.org/single2e/sec-2-5-chain.html),,,,,,
+6,2026-10-07,,class,[Derivatives of inverse functions](https://activecalculus.org/single2e/sec-2-6-inverse.html),,,,,,
+6,2026-10-09,,class,[Related rates](https://activecalculus.org/single2e/sec-3-1-rel-rates.html),,,,,,homework 2 due by 10pm
+7,2026-10-12,,class,[Using derivatives to identify extreme values](https://activecalculus.org/single2e/sec-3-3-tests.html),,,,,,"homework 3 (forthcoming) — due Friday, October 30, after fall break ❦ no work expected during the break"
+7,2026-10-14,,review,Review,,,,,,practice exam posted one week ahead ❦ bring questions
+7,2026-10-16,,exam,Exam 2,,,,,,"in class ❦ cumulative, with the derivative rules as the new material"
+fall break,,October 17-25,break,Fall break 🍂,,,,,,
+8,2026-10-26,,class,[Using derivatives to describe families of functions](https://activecalculus.org/single2e/sec-3-4-families.html),,,,,,
+8,2026-10-28,,class,[Applied optimization](https://activecalculus.org/single2e/sec-3-6-applied-opt.html),,,,,,
+8,2026-10-30,,class,[Determining distance traveled from velocity](https://activecalculus.org/single2e/sec-4-1-velocity-distance.html),,,,,,homework 3 due by 10pm
+9,2026-11-02,,class,[Riemann sums](https://activecalculus.org/single2e/sec-4-2-Riemann.html),,,,,,"homework 4 (forthcoming) — due Friday, November 13"
+9,2026-11-04,,class,[The definite integral](https://activecalculus.org/single2e/sec-4-3-definite-integral.html),,,,,,
+9,2026-11-06,,class,[Numerical integration](https://activecalculus.org/single2e/sec-5-6-num-int.html),,,,,,
+10,2026-11-09,,class,[The Fundamental Theorem of Calculus](https://activecalculus.org/single2e/sec-4-4-FTC.html),,,,,,
+10,2026-11-11,,class,[Constructing accurate graphs of antiderivatives](https://activecalculus.org/single2e/sec-5-1-antid-graphs.html),,,,,,
+10,2026-11-13,,class,[The Second Fundamental Theorem of Calculus](https://activecalculus.org/single2e/sec-5-2-FTC2.html),,,,,,homework 4 due by 10pm
+11,2026-11-16,,class,[Integration by substitution](https://activecalculus.org/single2e/sec-5-3-substitution.html),,,,,,
+11,2026-11-18,,review,Review: rate and accumulation as inverse problems,,,,,,"synthesis, not drill ❦ practice exam posted one week ahead"
+11,2026-11-20,,exam,Exam 3,,,,,,"in class ❦ cumulative, with accumulation and the Fundamental Theorems as the new material"
+12,2026-11-23,,class,[Using definite integrals to find area and length](https://activecalculus.org/single2e/sec-6-1-area.html),,,,,,"homework 5 (forthcoming) — due Friday, December 4"
+12,2026-11-25,,class,[Using definite integrals to find volume](https://activecalculus.org/single2e/sec-6-2-volume.html),,,,,,
+12,2026-11-27,,break,Thanksgiving break 🦃,,,,,,
+13,2026-11-30,,class,"[Density, mass, and center of mass](https://activecalculus.org/single2e/sec-6-3-mass.html)",,,,,,
+13,2026-12-02,,class,"[Physics applications: work, force, and pressure](https://activecalculus.org/single2e/sec-6-4-physics.html)",,,,,,
+13,2026-12-04,,class,[Extending local linearization](https://activecalculus.org/single2e/sec-8-1-linear-poly.html),,,,,,homework 5 due by 10pm
+14,2026-12-07,,class,[Taylor polynomials](https://activecalculus.org/single2e/sec-8-2-taylor-poly.html),,,,,,
+14,2026-12-09,,class,[Quantifying the accuracy of approximations](https://activecalculus.org/single2e/sec-8-6-accuracy-of-approx.html),,,,,,the Lagrange Error Bound only (8.6.3) — we are skipping the series material earlier in the section ❦ course evaluations (bring your laptop 💻) ❦ where this goes next: Math 112
+finals week,,December 14-17,final,Final exam,,,,,,cumulative ❦ time and room to be scheduled by the registrar
