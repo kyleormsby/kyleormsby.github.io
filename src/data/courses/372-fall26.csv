@@ -1,1 +1,44 @@
-week,date,display,type,topic,resources,note
+week,date,display,type,topic,reading,resources,note
+1,2026-08-31,,class,"Course architecture: matrices and power series, the two languages",Stanley §1,,
+1,2026-09-02,,class,The spectral theorem does combinatorics: $\operatorname{tr}A^n=\sum_i\lambda_i^n$,Stanley §1,,
+1,2026-09-04,,class,"Worked spectra: $K_n$, cycles, and the cube",Stanley §1,,
+2,2026-09-07,,break,Labor Day — no class,,,
+2,2026-09-09,,class,Cubes and the Radon transform I,Stanley §2,,
+2,2026-09-11,,class,Cubes and the Radon transform II: the spectrum of $Q_n$,Stanley §2,,problem set 1 due by 10pm
+3,2026-09-14,,class,Random walks on graphs,Stanley §3,,computational lab 1 assigned
+3,2026-09-16,,class,"Posets, rank symmetry, and the Sperner property",Stanley §4,,
+3,2026-09-18,,class,Order-raising operators and the linear algebra method,Stanley §4,,
+4,2026-09-21,,class,The Sperner property for $B_n$; contrast with Dilworth,Stanley §4,,
+4,2026-09-23,,class,Group actions on Boolean algebras,Stanley §5,,
+4,2026-09-25,,class,Quotient posets $B_n/G$,Stanley §5,,problem set 2 due by 10pm
+5,2026-09-28,,class,The Sperner property for quotients,Stanley §5,,computational lab 1 due ❦ project menu released
+5,2026-09-30,,class,The Matrix-Tree Theorem: Laplacians and the statement,Stanley §9,,board presentations
+5,2026-10-02,,class,Matrix-Tree via Cauchy–Binet,Stanley §9,,
+6,2026-10-05,,class,Cayley's formula; spanning trees of $K_n$ and $Q_n$,Stanley §9,,
+6,2026-10-07,,class,Act I synthesis: it was all a rank computation,,,
+6,2026-10-09,,class,"Combinatorial classes, size, and ordinary generating functions",FS I.1,,problem set 3 due by 10pm
+7,2026-10-12,,class,"The admissible constructions: sum, product, sequence",FS I.2,,board presentations
+7,2026-10-14,,class,Integer partitions; specification to generating function as an algorithm,FS I.3,,
+7,2026-10-16,,class,Young diagrams and $q$-binomial coefficients I,Stanley §6,,project proposal and five-minute pitch
+fall break,,October 17-25,break,Fall break 🍂,,,
+8,2026-10-26,,class,"$q$-binomials II: unimodality, and the Sperner callback",Stanley §6,,board presentation
+8,2026-10-28,,class,Words and regular languages: the seed of the transfer matrix,FS I.4,,
+8,2026-10-30,,class,Tree structures and the Catalan numbers,FS I.5,,problem set 4 due by 10pm
+9,2026-11-02,,class,"Labelled classes, exponential generating functions, the labelled product",FS II.1–II.2,,board presentations
+9,2026-11-04,,class,"Surjections, set partitions, permutations; the exp–log pattern",FS II.3–II.4,,computational lab 2 assigned
+9,2026-11-06,,class,Pólya theory as the multiset construction: the cycle index,Stanley §7 ❦ FS I.6,,annotated bibliography and computation prospectus due
+10,2026-11-09,,class,Transfer matrices: Act I and Act II are the same theorem,FS V.5–V.6,,
+10,2026-11-11,,class,Partial fractions and exact asymptotics: poles are reciprocal eigenvalues,FS IV.5,,
+10,2026-11-13,,class,"Perron–Frobenius, growth constants, and supercritical sequences",FS V.2,,problem set 5 due by 10pm
+11,2026-11-16,,class,Complex differentiability; generating functions as analytic objects,FS IV.1–IV.2,,individual project meetings this week
+11,2026-11-18,,class,Contour integration and Cauchy's integral formula,FS IV.2,,problem set 6 due by 10pm
+11,2026-11-20,,class,Residues and the exponential growth formula,FS IV.3,,computational lab 2 due
+12,2026-11-23,,class,Catch-up and worked examples,,,
+12,2026-11-25,,class,The standard scale $(1-z)^{-\alpha}$: singularity analysis and transfer,FS VI.1–VI.4,,
+12,2026-11-27,,break,Thanksgiving — no class,,,
+13,2026-11-30,,class,Singularity analysis in practice: the process and multiple singularities,FS VI.4–VI.5,,
+13,2026-12-02,,class,Simple varieties of trees: the square-root singularity and the universal $n^{-3/2}$,FS VII.3,,full project draft distributed for peer review
+13,2026-12-04,,review,Problem session: singularity analysis at the board,,,
+14,2026-12-07,,class,"Course synthesis: the completed dictionary, end to end",,,peer reviews due
+14,2026-12-09,,class,"The edge: meanders, growth constants, and what is not known",FS VII.7–VII.8,,"final paper due Friday, December 11 by 10pm"
+finals week,,December 14-17,final,MATH 372 Symposium,,,fifteen-minute talks ❦ time and room to be scheduled by the registrar

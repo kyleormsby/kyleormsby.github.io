@@ -1,0 +1,157 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, libertine, hyperref,xcolor,booktabs,longtable,microtype}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{$\cdot$}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+%   \definecolor{dark-blue}{rgb}{0.15,0.15,0.4}
+%   \definecolor{medium-blue}{rgb}{0,0,0.5}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{1}
+\hypersetup{
+    colorlinks, linkcolor=dark-red,
+    citecolor=dark-red, urlcolor=dark-red
+}
+
+\title{Math 372: Combinatorics}
+\author[Math 372: Combinatorics]{Fall 2026}
+
+\begin{document}
+\maketitle
+
+%\vspace{-5mm}
+
+\begin{center}
+\fbox{
+\begin{minipage}{4.75in}
+\begin{tabular}{rl}
+Place:  &Eliot 207\\
+Time: &MWF, 9:00--9:50\textsc{a.m.}\\
+Instructor: &Kyle Ormsby (\href{mailto:ormsbyk@reed.edu}{ormsbyk@reed.edu})\\
+Office Hours: &TBD\\
+Textbooks: &\href{https://link-springer-com.reed.idm.oclc.org/book/10.1007/978-3-319-77173-1}{\emph{Algebraic Combinatorics: Walks, Trees, Tableaux, and More}}\\
+&(2nd ed.) by Richard Stanley\\
+&\href{https://ac.cs.princeton.edu/home/AC.pdf}{\emph{Analytic Combinatorics}}\\
+&by Philippe Flajolet \& Robert Sedgewick\\
+Website: &\href{https://e-infinity.space/372fall26/}{e-infinity.space/372fall26/}
+\end{tabular}
+\end{minipage}
+}
+\end{center}
+
+\smallskip
+
+\subsection*{Course description}
+We will learn how to use linear algebra (matrices) and analysis (power series) to count families of objects. No prior experience with complex analysis will be assumed, but MATH 113 and 201 are prerequisites.
+
+\subsection*{Course structure}
+The course is a play in three acts over our thirty-nine course meetings:
+\begin{itemize}
+  \item \textsc{Act I} --- Matrices (meetings 1--16),
+  \item \textsc{Act II} --- Power Series (meetings 17--26),
+  \item \textsc{Act III} --- Unification (meetings 27--39).
+\end{itemize}
+Student work will consist of the following:
+\begin{itemize}
+  \item Readings assigned from our textbooks in advance of each course meeting;
+  \item In-class attention and participation;
+  \item Six problem sets;
+  \item Two computational labs;
+  \item A short OEIS Fishing Expedition report at the board;
+  \item A problem set solution presentation at the board;
+  \item An individual project culminating in an 8--12 page paper and 15-minute symposium talk.
+\end{itemize}
+Details and deadlines can be found below.
+
+\subsection*{Participation}
+I will deliver interactive in-person lectures. This course does not have a formal attendance policy, but I will use your engagement to assess the participation portion of your grade. If you miss a class, it is your responsibility to catch up with the material via the readings and discussions with peers.
+
+\subsection*{Texts}
+The course will draw content and assign readings from \href{https://link-springer-com.reed.idm.oclc.org/book/10.1007/978-3-319-77173-1}{\emph{Algebraic Combinatorics: Walks, Trees, Tableaux, and More}} (2nd ed.) by Richard Stanley and \href{https://ac.cs.princeton.edu/home/AC.pdf}{\emph{Analytic Combinatorics}} by Philippe Flajolet \& Robert Sedgewick. Both texts are available from the campus bookstore, but you are also welcome to use the free PDFs linked in the previous sentence.
+
+\subsection*{Problem sets}
+Students will submit problem sets via Gradescope on the following Fridays by 10\textsc{p.m.}: September 11, September 25, October 9, October 30, November 13. A sixth problem set is due via Gradescope on Wednesday November 18 by 10\textsc{p.m.}
+
+Good solutions can take many forms, but they share the following characteristics:
+\begin{itemize}
+\item they are written as explanations for other students in the course; in particular, they fully explain all of their reasoning and do not assume that the reader will fill in details;
+\item when graphical reasoning is called for, they include large, carefully drawn and labelled diagrams;
+\item they are neatly written or typeset;\footnote{Interested students are 
+encouraged to prepare solutions in the \LaTeX~document preparation 
+system.  Nearly all of the \texttt{.pdf} files on the course website are produced by \LaTeX; you can find their associated source files by changing the \texttt{.pdf} suffix to \texttt{.tex} in the URL.} and
+\item they use complete sentences, even when formulas or symbols are involved.
+\end{itemize}
+
+Homework problems can earn up to five points for mathematical content and up to two points for writing.
+
+\subsection*{Computational labs}
+The course will feature two computational lab assignments. The first will be assigned on Monday September 14 and due Monday September 28. The second will be assigned Wednesday November 4 and due Friday November 20. For each lab, students will receive a scaffolded SageMath notebook that they will fill in and report on the outcome of the experiments and computations. Prior experience with SageMath is not required.
+
+The notebooks you submit for computational labs should work when the ``Restart \& Run All'' button is pushed. That's how I will run your notebook and assess your work.
+
+Students will be given access to \href{https://cocalc.ai/}{CoCalc} and thus need not install SageMath locally.
+
+\subsection*{Board presentations}
+You will give precisely two short presentations at the chalkboard during the term. The first is a rotating five-minute \href{https://oeis.org/}{OEIS} Fishing Expedition report that will happen at the start of class on Fridays: find a sequence in the wild and share what you find about it on the OEIS. You may display the OEIS page during this presentation, but you still need to define and discuss things at the board.
+
+The second presentation is an assigned ten-minute problem set solution. I will assign it after grading each problem set, and you will have at least three days' notice. You may not use notes when presenting your solution, and you must present at the chalkboard.
+
+\subsection*{Project}
+Each student will complete an individual project, culminating in an 8--12 page paper and 15-minute symposium talk. The following schedule for the project helps illuminate its contours:
+\begin{itemize}
+  \item Monday September 28 --- project menu released, project mechanics explained;
+  \item Friday October 16 --- project proposal, five-minute pitch;
+  \item Friday November 6 --- annotated bibliography, computation prospectus;
+  \item week of November 16 --- 15-minute individual meetings;
+  \item Wednesday December 2 --- full draft distributed for peer review;
+  \item Monday December 7 --- peer reviews due / returned;
+  \item Friday December 11 --- final paper (8--12 pages) due;
+  \item finals week (as scheduled by registrar) --- 15-minute symposium talk.
+\end{itemize}
+
+Your final paper must include a section on attempted approaches that failed, and you must also submit a computation log appendix (that is not part of the page count).
+
+\subsection*{Extensions}
+Students may request up to two 48-hour extensions, no questions asked. Requests should be submitted by email \emph{before} the assignment deadline. Additional extensions are unlikely and at the discretion of the instructor.  Two project deadlines are not eligible: the full draft due December 2, because a late draft spends your peer reviewer's time rather than your own, and the final paper due December 11, because the symposium follows immediately and is scheduled by the registrar.
+
+\subsection*{Collaboration}
+You are permitted and encouraged to work with your peers on problem sets and computational labs.  You must cite those with whom you worked, and you must write up solutions independently.  \textbf{Duplicated solutions will not be accepted and constitute a violation of the Honor Principle.}
+
+\subsection*{Joint expectations}
+As members of a communal learning environment, we should all expect consideration, fairness, patience, and curiosity from each other.  Our aim is to all learn through cooperation and genuine listening and sharing, not to compete or show off.  I expect diligence and academic and intellectual honesty from each of you.  You should expect that I will do my best to focus the course on interesting, pertinent topics, and that I will provide feedback and guidance which will help you excel as a student.
+
+\subsection*{Help}
+Everyone is welcome and encouraged to attend my office hours, times TBD, in Library 306.  If you are unable to make these times, I am happy to schedule alternate times at which to meet with you.
+
+\subsection*{Zulip}
+Our section of MATH 372 has a \href{https://math372fall26.zulipchat.com/}{Zulip workspace}.  Use the Zulip workspace to ask questions (of me or the class), collaborate on problems, and share resources. The Zulip workspace is an extension of our classroom and the above joint expectations extend to this setting.
+
+I will email students an invitation link to join our Zulip workspace. Please use channels and threads to keep conversations organized.
+
+\subsection*{Technology, ``AI'', \& the Internet}
+The use of electronic devices (cell phones, computers, tablets, 
+calculators, \emph{etc}.) is prohibited in the classroom without prior authorization from the instructor.  That said, legitimate uses 
+of technology (\emph{e.g.}, note-taking) will be accommodated --- 
+just talk to me first.  No prior arrangement is needed on days when we are computing together, for your OEIS Fishing Expedition report, or whenever I ask you to bring a laptop.
+
+The following policy applies to collaborations, the Internet, and AI: You may not submit prose you did not write. You may not submit mathematics you cannot verify. You may use a computer to do computation you understand and whose output you can verify. When in doubt, ask me.
+
+For additional course policies and thoughts on (the learning of) mathematics in the age of AI, see \href{https://e-infinity.space/372ai/}{this page}. Further, note that this course's AI policies may differ from the policies enacted in other courses.
+
+\subsection*{Academic accommodations}
+If you have a documented disability requiring academic accommodation, please have  Disability \& Accessibility Resources (DAR)  provide a letter during the first week of classes.  I will then contact you to schedule a meeting during which we can discuss your accommodations.  If you believe you have an undocumented disability and that accommodations would ensure equal access to your Reed education, I would be happy to help you contact DAR.
+
+\subsection*{Grades}
+Your grade will reflect a composite assessment of the work you produce for the class, weighted in the following fashion:  $r$\% problem sets, $s$\% computational labs, $t$\% board presentations and participation, and $u$\% project (paper and symposium talk), where $r+s+t+u = 100$ and $r,s,t,u\ge 0$. We will discuss and decide upon the values of $r,s,t,u$ in class during the second week of the term.  As a starting point for that conversation, I propose $r=35$, $s=10$, $t=15$, and $u=40$.
+
+These weights describe how I will weigh the evidence; they are not a formula I will execute.  Your final grade is my considered judgment of the whole body of work you produce for this course.
+
+\bigskip \bigskip
+
+\begin{center}
+Remember: \emph{Math is hard, but we'll get through this together!}
+\end{center}
+
+
+\end{document}

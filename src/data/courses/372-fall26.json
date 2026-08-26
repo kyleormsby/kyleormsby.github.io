@@ -7,12 +7,42 @@
   "filesBase": "/files/372fall26/",
   "current": true,
   "blurb": "Algebraic and analytic combinatorics — counting with matrices and power series.",
-  "preamble": "**Under construction.** Syllabus, schedule, and course logistics will appear here before the term begins.",
-  "facts": [],
+  "preamble": "The schedule below is provisional and will be updated as the term proceeds. Readings should be done before the meeting they are listed under.",
+  "facts": [
+    {
+      "label": "syllabus",
+      "value": "[Syllabus](/files/372fall26/372syllabus.pdf)"
+    },
+    {
+      "label": "meetings",
+      "value": "MWF 9–9:50 in Eliot 207"
+    },
+    {
+      "label": "office hours",
+      "value": "TBD, in Library 306"
+    },
+    {
+      "label": "discussion",
+      "value": "[Zulip workspace](https://math372fall26.zulipchat.com/)"
+    },
+    {
+      "label": "computing",
+      "value": "[CoCalc](https://cocalc.ai/)"
+    },
+    {
+      "label": "ai policy",
+      "value": "[Policies and thoughts](/372ai/)"
+    }
+  ],
   "render": [
     {
       "col": "topic",
       "kind": "md"
+    },
+    {
+      "col": "reading",
+      "kind": "md",
+      "label": "reading"
     },
     {
       "col": "resources",
