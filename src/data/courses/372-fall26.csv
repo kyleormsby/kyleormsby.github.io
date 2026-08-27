@@ -14,12 +14,12 @@ week,date,display,type,topic,reading,resources,note
 5,2026-09-28,,class,The Sperner property for quotients,Stanley §5,,computational lab 1 due ❦ project menu released
 5,2026-09-30,,class,The Matrix-Tree Theorem: Laplacians and the statement,Stanley §9,,board presentations
 5,2026-10-02,,class,Matrix-Tree via Cauchy–Binet,Stanley §9,,
-6,2026-10-05,,class,Cayley's formula; spanning trees of $K_n$ and $Q_n$,Stanley §9,,
+6,2026-10-05,,class,Cayley's formula; spanning trees of $K_n$ and $Q_n$,Stanley §9,,board presentations
 6,2026-10-07,,class,Act I synthesis: it was all a rank computation,,,
 6,2026-10-09,,class,"Combinatorial classes, size, and ordinary generating functions",FS I.1,,problem set 3 due by 10pm
-7,2026-10-12,,class,"The admissible constructions: sum, product, sequence",FS I.2,,board presentations
-7,2026-10-14,,class,Integer partitions; specification to generating function as an algorithm,FS I.3,,
-7,2026-10-16,,class,Young diagrams and $q$-binomial coefficients I,Stanley §6,,project proposal and five-minute pitch
+7,2026-10-12,,class,"The admissible constructions: sum, product, sequence",FS I.2,,
+7,2026-10-14,,class,Integer partitions; specification to generating function as an algorithm,FS I.3,,project pitches (four students)
+7,2026-10-16,,class,Young diagrams and $q$-binomial coefficients I,Stanley §6,,project proposal due ❦ project pitches (three students)
 fall break,,October 17-25,break,Fall break 🍂,,,
 8,2026-10-26,,class,"$q$-binomials II: unimodality, and the Sperner callback",Stanley §6,,board presentation
 8,2026-10-28,,class,Words and regular languages: the seed of the transfer matrix,FS I.4,,

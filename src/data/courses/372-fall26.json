@@ -22,16 +22,12 @@
       "value": "TBD, in Library 306"
     },
     {
+      "label": "texts",
+      "value": "[Stanley, *Algebraic Combinatorics*](https://link.springer.com/book/10.1007/978-3-319-77173-1) ❦ [Flajolet & Sedgewick, *Analytic Combinatorics*](https://ac.cs.princeton.edu/home/AC.pdf)"
+    },
+    {
       "label": "discussion",
       "value": "[Zulip workspace](https://math372fall26.zulipchat.com/)"
-    },
-    {
-      "label": "computing",
-      "value": "[CoCalc](https://cocalc.ai/)"
-    },
-    {
-      "label": "ai policy",
-      "value": "[Policies and thoughts](/372ai/)"
     }
   ],
   "render": [

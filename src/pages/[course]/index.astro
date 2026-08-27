@@ -25,7 +25,16 @@ const kindWord: Record<string, string> = {
   break: 'break',
 };
 
-const meetings = weeks.reduce((n, w) => n + w.meetings.length, 0);
+/**
+ * Class meetings only. Breaks and cancelled days are not meetings, and the
+ * registrar-scheduled final sits outside the meeting pattern a syllabus counts
+ * — MATH 372 tells students it is "a play in three acts over our thirty-nine
+ * course meetings", and this is the number that has to agree with that.
+ * Exams and review days do count: those are class meetings.
+ */
+const SKIP = new Set(['break', 'cancelled', 'final']);
+const meetings = weeks.reduce(
+  (n, w) => n + w.meetings.filter((m) => !SKIP.has(m.type)).length, 0);
 ---
 
 <Base title={`${meta.number} · ${meta.title}`} description={meta.blurb} wide>
