@@ -105,7 +105,7 @@ function itemsFor(r: Row, meta: CourseMeta): Item[] {
     for (const extra of rule.also ?? []) {
       const v = (r[extra.col] ?? '').trim();
       if (!v) continue;
-      html += `<span class="sep">❦</span>${link(v, extra.text ?? extra.col, extra.kind ?? kind, meta)}`;
+      html += `<span class="sep">⋄</span>${link(v, extra.text ?? extra.col, extra.kind ?? kind, meta)}`;
     }
 
     const dim = (s: string) => ` <span class="dim">${escape(s)}</span>`;
