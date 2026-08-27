@@ -32,3 +32,4 @@
 # Never ignore the published sources or output.
 !*.tex
 !*.pdf
+*.tmp

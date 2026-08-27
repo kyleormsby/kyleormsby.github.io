@@ -7,7 +7,7 @@
   "filesBase": "/files/111fall26/",
   "current": true,
   "blurb": "An active introduction to limits, derivatives, and integrals, plus a preview of Taylor series.",
-  "preamble": "**Draft.** Classes begin Monday, August 31. Office hours, problem sessions, and Zulip and Gradescope links will be posted before then. Syllabus, course policies, and schedule are tentative.",
+  "preamble": "Classes begin Monday, August 31. Office hours, problem sessions, and the Gradescope link will be posted before then.",
   "facts": [
     {
       "label": "syllabus",
@@ -40,6 +40,10 @@
     {
       "label": "drop-in tutoring",
       "value": "TBA"
+    },
+    {
+      "label": "zulip",
+      "value": "[math111fall26.zulipchat.com](https://math111fall26.zulipchat.com/)"
     }
   ],
   "render": [
