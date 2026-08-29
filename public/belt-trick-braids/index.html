@@ -93,6 +93,17 @@
       <button id="bShuffle">Shuffle</button>
     </div>
 
+    <div class="lbl"><span>Arrangement</span><b id="arrVal">even</b></div>
+    <div class="seg" id="arr">
+      <button data-a="even" aria-pressed="true">Even</button>
+      <button data-a="random">Random</button>
+      <button data-a="cap">Near axis</button>
+    </div>
+    <div class="row">
+      <input type="range" id="capSlide" min="4" max="70" value="18" disabled>
+    </div>
+    <div class="note" id="aNote" style="min-height:0"></div>
+
     <div class="lbl"><span>Rotation axis</span><span id="axVal"></span></div>
     <div class="row">
       <button id="bRandom" style="flex:1;text-align:center">Random axis</button>
@@ -169,6 +180,17 @@
 
    Everything above lives in span(1, â, b̂), a 2-sphere, which is why the
    inset can draw the entire homotopy.
+
+   The n points may be spread evenly, scattered, or gathered into a cap around
+   the axis.  That last arrangement is the disc braid group sitting inside the
+   sphere's: n points in a disc, turned once, is the full twist generating the
+   centre of Bₙ(D²) — infinite order there, order 2 once the disc is a cap on
+   S².  The cap is built in a canonical frame about +z and carried onto the
+   axis, so dragging the axis takes the cluster with it rigidly instead of
+   leaving it stranded on the equator.
+
+   Crowding the points also crowds the tubes, so the strand radius is tied to
+   the closest pair rather than fixed.
    ------------------------------------------------------------------ */
 
 var R0 = 1.00, R1 = 2.12;
@@ -176,7 +198,7 @@ var TOUCH = window.matchMedia && window.matchMedia('(pointer:coarse)').matches;
 var SMALL = Math.min(screen.width, screen.height) < 820;
 var LOW   = TOUCH || SMALL;
 var SEG = LOW ? 140 : 220, RAD = LOW ? 6 : 8, TUBER = 0.030;
-var X = new THREE.Vector3(1,0,0), Y = new THREE.Vector3(0,1,0);
+var X = new THREE.Vector3(1,0,0), Y = new THREE.Vector3(0,1,0), Z = new THREE.Vector3(0,0,1);
 
 // ---- state ----
 var N = 6, K = 2, S = 0, T = 1;
@@ -184,6 +206,10 @@ var axis = new THREE.Vector3(0.35,0.82,0.45).normalize();
 var perp = new THREE.Vector3();
 var V = [];                       // base configuration on S²
 var spin = false, showLevel = true;
+var ARR = 'even', CAP = 18*Math.PI/180;
+var pattern = [];                 // {u, phi} in the unit disc, for the cap arrangement
+var frame = new THREE.Quaternion();
+var tubeR = TUBER;
 
 function refreshPerp(){
   var ref = Math.abs(axis.x) < 0.9 ? X : Y;
@@ -214,6 +240,60 @@ function randomConfig(n){
 function gauss(){
   var u = 1-Math.random(), v = Math.random();
   return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+/* n separated points of the unit disc, kept as (u, phi) with u = r² so the
+   sampling is by area.  Storing the pattern rather than the points is what
+   lets the spread slider scale the cluster continuously instead of re-rolling
+   it on every tick. */
+function discPattern(n){
+  var out = [], tries = 0, thresh = 0.62/Math.sqrt(n);
+  while (out.length < n){
+    var u = Math.random(), phi = 2*Math.PI*Math.random();
+    var r = Math.sqrt(u), x = r*Math.cos(phi), y = r*Math.sin(phi), ok = true;
+    for (var i=0;i<out.length;i++){
+      var dx = x-out[i].x, dy = y-out[i].y;
+      if (dx*dx + dy*dy < thresh*thresh){ ok = false; break; }
+    }
+    if (ok) out.push({u:u, phi:phi, x:x, y:y});
+    else if (++tries > 2500){ thresh *= 0.85; tries = 0; }
+  }
+  return out;
+}
+
+/* Lift the pattern into the spherical cap of angular radius CAP about the
+   axis.  cos θ is affine in u, so the points stay area-uniform in the cap. */
+function capConfig(){
+  var k = 1 - Math.cos(CAP);
+  frame.setFromUnitVectors(Z, axis);
+  return pattern.map(function(p){
+    var th = Math.acos(1 - k*p.u), st = Math.sin(th);
+    return new THREE.Vector3(st*Math.cos(p.phi), st*Math.sin(p.phi), Math.cos(th))
+      .applyQuaternion(frame);
+  });
+}
+
+/* Two points δ apart on the unit sphere are at least δ·R0 apart at every
+   level, so hold the tube clear of half that. */
+function tuneScale(){
+  var d = Infinity;
+  for (var i=0;i<V.length;i++)
+    for (var j=i+1;j<V.length;j++) d = Math.min(d, V[i].distanceTo(V[j]));
+  if (!isFinite(d)) d = 2;
+  tubeR = Math.max(0.006, Math.min(TUBER, 0.34*d*R0));
+}
+
+function rebuildConfig(){
+  if (ARR === 'cap'){ pattern = discPattern(N); V = capConfig(); }
+  else if (ARR === 'random'){ V = randomConfig(N); }
+  else { V = fibonacci(N); }
+  tuneScale();
+}
+
+// the axis moved, or the spread changed: carry the same cluster onto it
+function reframe(){
+  if (ARR !== 'cap') return;
+  V = capConfig(); tuneScale(); placeBeads();
 }
 
 // ---- the quaternion path ----
@@ -342,7 +422,7 @@ Strand.prototype.update = function(v){
       var a = 2*Math.PI*k/RAD, ca = Math.cos(a), sa = Math.sin(a);
       var nx = ca*_n.x + sa*_b.x, ny = ca*_n.y + sa*_b.y, nz = ca*_n.z + sa*_b.z;
       nor[o]   = nx;            nor[o+1] = ny;            nor[o+2] = nz;
-      pos[o]   = px + TUBER*nx; pos[o+1] = py + TUBER*ny; pos[o+2] = pz + TUBER*nz;
+      pos[o]   = px + tubeR*nx; pos[o+1] = py + tubeR*ny; pos[o+2] = pz + tubeR*nz;
       o += 3;
     }
   }
@@ -366,11 +446,20 @@ function buildStrands(){
     var s = new Strand(col); strandGroup.add(s.mesh); strands.push(s);
     var mi = new THREE.Mesh(bg,new THREE.MeshStandardMaterial({color:col,roughness:0.35}));
     var mo = new THREE.Mesh(bg,new THREE.MeshStandardMaterial({color:col,roughness:0.35}));
-    mi.position.copy(V[j]).multiplyScalar(R0);
-    mo.position.copy(V[j]).multiplyScalar(R1);
     strandGroup.add(mi); strandGroup.add(mo); beadsIn.push(mi); beadsOut.push(mo);
     var d = new THREE.Mesh(dg,new THREE.MeshBasicMaterial({color:col}));
     strandGroup.add(d); dots.push(d);
+  }
+  placeBeads();
+}
+// beads follow V and the strand radius, so a moved or tightened cluster needs
+// no new geometry
+function placeBeads(){
+  var f = tubeR/TUBER;
+  for (var j=0;j<beadsIn.length;j++){
+    beadsIn[j].position.copy(V[j]).multiplyScalar(R0);
+    beadsOut[j].position.copy(V[j]).multiplyScalar(R1);
+    beadsIn[j].scale.setScalar(f); beadsOut[j].scale.setScalar(f); dots[j].scale.setScalar(f);
   }
 }
 function updateStrands(){
@@ -396,7 +485,7 @@ function updateMoving(){
     'n = <b>' + N + '</b> &nbsp;·&nbsp; t = <b>' + T.toFixed(2) +
     '</b> &nbsp;·&nbsp; s = <b>' + S.toFixed(2) + '</b>';
 }
-function refreshAll(){ updateStrands(); updateMoving(); drawLift(); }
+function refreshAll(){ placeBeads(); updateStrands(); updateMoving(); drawLift(); }
 
 // ---- camera + pointer ----
 var az = 0.75, pol = 1.14, dist = 7.2, mode = null, px = 0, py = 0;
@@ -474,7 +563,7 @@ canvas.addEventListener('pointermove', function(e){
     if (!q) return;
     axis.copy(q).normalize();
     if (mode === 'axis-') axis.negate();
-    refreshPerp(); placeAxis(); refreshAll();
+    refreshPerp(); placeAxis(); reframe(); refreshAll();
   }
 });
 canvas.addEventListener('wheel', function(e){
@@ -548,6 +637,23 @@ var sSlide = document.getElementById('sSlide'), sOut = document.getElementById('
 var tSlide = document.getElementById('tSlide');
 var sPlay = document.getElementById('sPlay'), tPlay = document.getElementById('tPlay');
 var sNote = document.getElementById('sNote');
+var capSlide = document.getElementById('capSlide');
+var arrVal = document.getElementById('arrVal'), aNote = document.getElementById('aNote');
+
+function syncArr(){
+  Array.prototype.forEach.call(document.querySelectorAll('#arr button'), function(b){
+    b.setAttribute('aria-pressed', b.dataset.a === ARR ? 'true' : 'false');
+  });
+  var cap = (ARR === 'cap');
+  capSlide.disabled = !cap;
+  bShuffle.disabled = (ARR === 'even');
+  arrVal.textContent = cap ? ('within ' + Math.round(CAP*180/Math.PI) + '°')
+                           : (ARR === 'random' ? 'scattered' : 'even');
+  aNote.style.display = cap ? '' : 'none';
+  aNote.textContent = cap
+    ? 'Every point is in one cap around the axis, so a 2π turn is the full twist of the disc braid group pushed onto the sphere. In Bₙ(D²) that element has infinite order; here it squares to 1.'
+    : '';
+}
 var tAnim = null, sAnim = null;
 
 function stopAnims(){
@@ -582,20 +688,35 @@ function syncTurns(){
 nSlide.addEventListener('input', function(){
   stopAnims(); resetS();
   N = +nSlide.value; nOut.textContent = N;
-  V = fibonacci(N); buildStrands(); syncTurns(); refreshAll();
+  rebuildConfig(); buildStrands(); syncTurns(); refreshAll();
 });
-document.getElementById('bShuffle').addEventListener('click', function(){
-  stopAnims(); resetS(); V = randomConfig(N); buildStrands(); refreshAll();
+var bShuffle = document.getElementById('bShuffle');
+bShuffle.addEventListener('click', function(){
+  if (ARR === 'even') return;          // disabled there; the spread is deterministic
+  stopAnims(); resetS();
+  rebuildConfig(); buildStrands(); refreshAll();
 });
 document.getElementById('bRandom').addEventListener('click', function(){
   stopAnims(); resetS();
   axis.set(gauss(),gauss(),gauss()).normalize();
-  refreshPerp(); placeAxis(); refreshAll();
+  refreshPerp(); placeAxis(); reframe(); refreshAll();
 });
 document.getElementById('bPolar').addEventListener('click', function(){
   stopAnims(); resetS();
   axis.copy(V[Math.floor(Math.random()*N)]);
-  refreshPerp(); placeAxis(); refreshAll();
+  refreshPerp(); placeAxis(); reframe(); refreshAll();
+});
+Array.prototype.forEach.call(document.querySelectorAll('#arr button'), function(b){
+  b.addEventListener('click', function(){
+    stopAnims(); resetS();
+    ARR = b.dataset.a;
+    rebuildConfig(); buildStrands(); syncArr(); refreshAll();
+  });
+});
+capSlide.addEventListener('input', function(){
+  stopAnims(); resetS();
+  CAP = +capSlide.value*Math.PI/180;
+  reframe(); syncArr(); refreshAll();
 });
 Array.prototype.forEach.call(document.querySelectorAll('#turns button'), function(b){
   b.addEventListener('click', function(){
@@ -647,7 +768,7 @@ document.getElementById('tgLevel').addEventListener('change', function(e){
 document.getElementById('tgSpin').addEventListener('change', function(e){ spin = e.target.checked; });
 
 // ---- boot ----
-V = fibonacci(N); refreshPerp(); placeAxis(); buildStrands(); syncTurns();
+refreshPerp(); placeAxis(); rebuildConfig(); buildStrands(); syncTurns(); syncArr();
 placeCamera(); resize(); refreshAll();
 T = 0; tSlide.value = 0; applyDrawRange(); updateMoving();
 setTimeout(function(){ tPlay.click(); }, 420);
