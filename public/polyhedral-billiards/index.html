@@ -177,6 +177,7 @@ details.sec>summary::-webkit-details-marker{display:none}
     <button id="pause">pause</button>
     <button id="spin" class="on">auto-spin</button>
     <button id="lab">face labels</button>
+    <button id="proj">orthographic</button>
   </div>
   <div class="hint">The orbit-trail length applies to the periodic presets. A free launch (random, or click a face) keeps its whole path — up to 60,000 bounces — so density and equidistribution are visible; the face-hit gauge appears at bottom left.</div>
 </details>
@@ -202,16 +203,26 @@ const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
 renderer.setClearColor(0x080d16,1);
 const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(38,1,0.01,100);
+const perspCam=new THREE.PerspectiveCamera(38,1,0.01,100);
+const orthoCam=new THREE.OrthographicCamera(-1,1,1,-1,-50,100);
+let camera=perspCam, ortho=false;
 let camR=4.1, camTh=0.9, camPh=1.16, spin=true;
 function placeCam(){
-  camera.position.set(camR*Math.sin(camPh)*Math.cos(camTh), camR*Math.cos(camPh), camR*Math.sin(camPh)*Math.sin(camTh));
-  camera.lookAt(0,0,0);
+  const x=camR*Math.sin(camPh)*Math.cos(camTh), y=camR*Math.cos(camPh), z=camR*Math.sin(camPh)*Math.sin(camTh);
+  perspCam.position.set(x,y,z); perspCam.lookAt(0,0,0);
+  orthoCam.position.set(x,y,z); orthoCam.lookAt(0,0,0);
+  const s=camR*Math.tan(19*Math.PI/180), a=innerWidth/innerHeight;
+  orthoCam.left=-s*a; orthoCam.right=s*a; orthoCam.top=s; orthoCam.bottom=-s;
+  orthoCam.updateProjectionMatrix();
+}
+function setProjection(on){
+  ortho=on; camera=ortho?orthoCam:perspCam; placeCam();
 }
 function resize(){
   const w=innerWidth,h=innerHeight;
   renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
-  renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w,h,false); perspCam.aspect=w/h; perspCam.updateProjectionMatrix();
+  placeCam();
 }
 addEventListener('resize',resize);
 
@@ -732,6 +743,8 @@ function init(){
   $('pause').onclick=e=>{ paused=!paused; e.target.classList.toggle('on',paused); e.target.textContent=paused?'resume':'pause'; };
   $('spin').onclick=e=>{ spin=!spin; e.target.classList.toggle('on',spin); };
   $('lab').onclick=e=>{ e.target.classList.toggle('on'); labelsFor(); };
+  $('proj').onclick=e=>{ const on=!e.target.classList.contains('on');
+    e.target.classList.toggle('on',on); setProjection(on); };
   $('spd').addEventListener('input',e=>speed=+e.target.value);
   $('trail').addEventListener('input',e=>{trailMax=+e.target.value;});
   $('vol').addEventListener('input',e=>{ if(master) master.gain.value=+e.target.value; });
