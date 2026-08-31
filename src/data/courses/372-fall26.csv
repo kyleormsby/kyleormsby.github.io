@@ -1,5 +1,5 @@
 week,date,display,type,topic,reading,resources,note
-1,2026-08-31,,class,"Course architecture: matrices and power series, the two languages",Stanley §1,,
+1,2026-08-31,,class,"Course architecture: matrices and power series, the two languages",Stanley §1,[demo](https://cocalc.ai/share/math372-31Aug),
 1,2026-09-02,,class,The spectral theorem does combinatorics: $\operatorname{tr}A^n=\sum_i\lambda_i^n$,Stanley §1,,
 1,2026-09-04,,class,"Worked spectra: $K_n$, cycles, and the cube",Stanley §1,,
 2,2026-09-07,,break,Labor Day — no class,,,
