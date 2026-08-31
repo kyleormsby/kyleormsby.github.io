@@ -48,6 +48,14 @@
     {
       "label": "zulip",
       "value": "[math111fall26.zulipchat.com](https://math111fall26.zulipchat.com/)"
+    },
+    {
+      "label": "math trailhead",
+      "value": "[Math Trailhead](https://e-infinity.space/math-th/)"
+    },
+    {
+      "label": "self-diagnostic",
+      "value": "[Math 111 readiness diagnostic](https://mrobinso314.github.io/MathTHClone/math-111.html)"
     }
   ],
   "render": [
