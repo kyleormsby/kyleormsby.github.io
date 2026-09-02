@@ -45,6 +45,14 @@ export interface CourseMeta {
    * so there is no half-filled duplicate to drift out of date.
    */
   href?: string;
+  /**
+   * Set when a course's problem sets are no longer published. Every generated
+   * pdf link (worksheets, solutions, homework) resolves here instead of into
+   * files/, so the schedule still reads as a record of what was assigned while
+   * the files themselves are gone. Hand-written links inside `note` cells are
+   * markdown and are not affected — edit those in the CSV.
+   */
+  filesGone?: string;
   facts: { label: string; value: string }[];
   render?: RenderRule[];
 }
@@ -70,7 +78,7 @@ const longDate = (iso: string) =>
 function href(value: string, kind: Kind, meta: CourseMeta): string {
   if (/^(https?:)?\/\//.test(value) || value.startsWith('/')) return value;
   if (kind === 'panopto') return `${meta.panoptoBase ?? ''}${value}`;
-  if (kind === 'pdf') return `${meta.filesBase}${value}.pdf`;
+  if (kind === 'pdf') return meta.filesGone ?? `${meta.filesBase}${value}.pdf`;
   return value;
 }
 

@@ -8,6 +8,11 @@
 #   pruned      544/notes, 545/notes, 546/notes   (94 handwritten notes, 859 MB)
 #               *.mp4                             (2 recordings, 103 MB)
 #               *.aux *.log *.out *.gz .DS_Store  (build artifacts)
+#               113spring26 worksheets, solutions, homework, practice exams
+#                                                 (130 files; withdrawn from the
+#                                                 site so the problems can be
+#                                                 reused — the course page links
+#                                                 to /unavailable/ instead)
 #   compressed  PDFs over 5 MB, ghostscript /ebook
 #   verbatim    everything else
 #
@@ -38,6 +43,9 @@ find "$SRC" -type f \
   ! -path "$SRC/544/notes/*" ! -path "$SRC/545/notes/*" ! -path "$SRC/546/notes/*" \
   ! -iname '*.mp4' ! -iname '*.aux' ! -iname '*.log' ! -iname '*.out' \
   ! -iname '*.gz' ! -name '.DS_Store' \
+  ! -path "$SRC/113spring26/*-group.pdf" ! -path "$SRC/113spring26/*-group-sol.pdf" \
+  ! -path "$SRC/113spring26/*-hw.pdf" ! -path "$SRC/113spring26/*-hw.tex" \
+  ! -path "$SRC/113spring26/*_practice.pdf" \
   -printf '%s\t%P\n' | sort -k1 -rn > "$LOG/manifest.tsv"
 
 echo "$(wc -l < "$LOG/manifest.tsv") files to place"

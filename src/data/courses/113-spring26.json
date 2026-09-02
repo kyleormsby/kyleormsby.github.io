@@ -5,6 +5,7 @@
   "term": "spring 2026",
   "schedule": "113-spring26.csv",
   "filesBase": "/files/113spring26/",
+  "filesGone": "/unavailable/",
   "panoptoBase": "https://reedcollege.hosted.panopto.com/Panopto/Pages/Viewer.aspx?id=",
   "current": false,
   "blurb": "Counting, graphs, recursion, and number theory — a first course in reading and writing mathematics.",
