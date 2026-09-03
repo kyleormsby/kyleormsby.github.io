@@ -1,10 +1,10 @@
 week,date,display,type,topic,reading,resources,note
 1,2026-08-31,,class,"Course architecture: matrices and power series, the two languages",Stanley §1,[demo](https://cocalc.ai/share/math372-31Aug),
 1,2026-09-02,,class,The spectral theorem does combinatorics: $\operatorname{tr}A^n=\sum_i\lambda_i^n$,Stanley §1,,[anonymous AI survey](https://docs.google.com/forms/d/e/1FAIpQLSf1XyN1pvRszsL5eLmeiEfqrwp7W7NyBAKkl9DVIyH-NG5flg/viewform)
-1,2026-09-04,,class,"Worked spectra: $K_n$, cycles, and the cube",Stanley §1,,
+1,2026-09-04,,class,"Worked spectra: $K_n$, cycles, and the cube",Stanley §1,[problem set 1](/files/372fall26/372hw01.pdf),"problem set 1 — due Friday, September 11"
 2,2026-09-07,,break,Labor Day — no class ☭,,,
 2,2026-09-09,,class,Cubes and the Radon transform I,Stanley §2,,
-2,2026-09-11,,class,Cubes and the Radon transform II: the spectrum of $Q_n$,Stanley §2,,problem set 1 due by 10pm
+2,2026-09-11,,class,Cubes and the Radon transform II: the spectrum of $Q_n$,Stanley §2,[problem set 1](/files/372fall26/372hw01.pdf),problem set 1 due by 10pm
 3,2026-09-14,,class,Random walks on graphs,Stanley §3,,computational lab 1 assigned
 3,2026-09-16,,class,"Posets, rank symmetry, and the Sperner property",Stanley §4,,
 3,2026-09-18,,class,Order-raising operators and the linear algebra method,Stanley §4,,

@@ -1,0 +1,159 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage{caption}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{obs}[prop]{Observation}
+\newtheorem{app}[prop]{Application}
+\newtheorem*{MainThm}{Main Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\newtheorem{conj}[prop]{Conjecture}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem*{rmk*}{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem*{bonus*}{Bonus Problem}
+\newtheorem{exc}{Exercise}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\theoremstyle{definition}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\FF}{\mathbb{F}}
+
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\defeq}{:=}
+\newcommand{\sm}{\smallsetminus}
+\newcommand{\lra}{\longrightarrow}
+\newcommand{\ol}[1]{\overline{#1}}
+\newcommand{\spec}{\operatorname{spec}}
+\newcommand{\Awalks}[1]{w_{#1}}
+
+\title{Math 372: Combinatorics\\ Homework 01}
+
+\author{Due Friday, 11 September, 10\textsc{p.m.}, via Gradescope}
+
+\begin{document}
+
+\maketitle
+
+\begin{rmk*}
+\textbf{Conventions.} All graphs here are finite and undirected, and they are allowed to have
+loops. If $G$ has vertex set $\{v_1,\dots,v_p\}$, its \emph{adjacency matrix} $A(G)$ is the
+$p\times p$ matrix whose $(i,j)$ entry is the number of edges joining $v_i$ to $v_j$; a loop at
+$v_i$ contributes $1$ to the $(i,i)$ entry. A \emph{walk of length $\ell$} from $u$ to $v$ is a
+sequence $u=u_0,u_1,\dots,u_\ell=v$ of vertices in which each consecutive pair is joined by an
+edge, and the walk is \emph{closed} if $u=v$. Since $A(G)$ is a real symmetric matrix, its
+eigenvalues are real; the \emph{spectrum} $\spec(G)$ is the multiset of those eigenvalues, listed
+with multiplicity. Throughout, $\ell\ge 1$.
+\end{rmk*}
+
+\begin{rmk*}
+\textbf{On these solutions.} Each problem is worth up to five points for mathematical content
+and up to two points for writing. Write your solutions as explanations addressed to another
+student in this course: say what you are going to show before you show it, justify each step,
+and use complete sentences even when symbols are doing most of the work. End your submission
+with a short \emph{Methods and tools} note --- three or four sentences saying what software you
+used and for what, and how you checked anything a machine produced for you.
+\end{rmk*}
+
+%%% Problem 1 %%%
+\begin{prob}
+Let $D$ be the graph on four vertices pictured below, with adjacency matrix $A$ taken with
+respect to the ordering $a,b,c,d$:
+\begin{center}
+\begin{tikzpicture}[every node/.style={circle,draw,inner sep=1.6pt,fill=black}]
+  \node[label=left:$a$]  (a) at (0,1) {};
+  \node[label=right:$b$] (b) at (2,1) {};
+  \node[label=left:$c$]  (c) at (0,0) {};
+  \node[label=right:$d$] (d) at (2,0) {};
+  \draw (a)--(b); \draw (a)--(c); \draw (a)--(d);
+  \draw (b)--(c); \draw (b)--(d);
+\end{tikzpicture}
+\qquad
+$A=\begin{pmatrix} 0&1&1&1\\ 1&0&1&1\\ 1&1&0&0\\ 1&1&0&0 \end{pmatrix}$
+\end{center}
+\begin{enumerate}[(a)]
+\item Determine $\spec(D)$.
+\item Determine the number of closed walks of length $4$ in $D$ in two genuinely different ways:
+once using your answer to (a), and once by a computation that does not use the eigenvalues at
+all. Confirm that the two answers agree.
+\end{enumerate}
+The mathematics here is routine, and that is deliberate. This problem exists so that we can agree
+on what a written solution in this course looks like, so spend your effort on the exposition: a
+reader who has not seen $D$ should be able to follow your work from beginning to end without
+supplying anything themselves.
+\end{prob}
+
+%%% Problem 2 %%%
+\begin{prob}
+Suppose $G$ is a graph with $15$ vertices, and suppose that for every $\ell\ge 1$ the number of
+closed walks of length $\ell$ in $G$ is
+\[
+8^{\ell} \;+\; 2\cdot 3^{\ell} \;+\; 3\cdot(-1)^{\ell} \;+\; (-6)^{\ell} \;+\; 5^{\ell}.
+\]
+Let $G'$ be the graph obtained from $G$ by adding a loop at every vertex, in addition to whatever
+loops $G$ already has. How many closed walks of length $\ell$ does $G'$ have?
+
+\smallskip
+Give a complete justification, not merely the formula. (Linear-algebraic reasoning is the
+intended route. If you would also like to think about what the answer says combinatorially, you
+are welcome to, but it is not required.)
+\end{prob}
+
+%%% Problem 3 %%%
+\begin{prob}
+Let $r,s\ge 1$. The \emph{complete bipartite graph} $K_{r,s}$ has vertices
+$u_1,\dots,u_r,v_1,\dots,v_s$, with exactly one edge joining $u_i$ to $v_j$ for every $i$ and $j$,
+and no other edges. (So $K_{r,s}$ has $r+s$ vertices and $rs$ edges.)
+\begin{enumerate}[(a)]
+\item By purely combinatorial reasoning --- that is, by counting walks directly, without
+computing any eigenvalues --- determine the number of closed walks of length $\ell$ in $K_{r,s}$.
+\item Deduce $\spec(K_{r,s})$ from your answer to (a).
+\end{enumerate}
+Part (b) runs in the opposite direction from everything we did in class this week: there we
+computed a spectrum and read off walk counts, and here you are asked to compute walk counts and
+read off a spectrum. Say clearly what makes that deduction valid.
+\end{prob}
+
+%%% Problem 4 %%%
+\begin{prob}
+A graph $G$ is \emph{bipartite} if its vertex set can be written as a disjoint union
+$V = X \sqcup Y$ in such a way that every edge of $G$ joins a vertex of $X$ to a vertex of $Y$.
+(In particular a bipartite graph has no loops.)
+
+\smallskip
+Show that if $G$ is bipartite, then its nonzero eigenvalues come in pairs $\pm\lambda$: that is,
+for each $\lambda\neq 0$, the eigenvalue $\lambda$ and the eigenvalue $-\lambda$ occur in
+$\spec(G)$ with the same multiplicity.
+
+\smallskip
+Give a \emph{walk-counting} argument. There is a slicker proof available using eigenvectors, and
+you are welcome to find it and include it as a remark, but the argument you submit should proceed
+by counting walks.
+\end{prob}
+
+%%% Bonus %%%
+\begin{bonus*}
+Let $G$ be a graph and let $\Delta$ be the largest degree of any vertex of $G$, where the
+\emph{degree} of $v$ is the number of edges incident to $v$. Let $\lambda_1$ be the largest
+eigenvalue of $A(G)$. Show that $\lambda_1 \le \Delta$.
+\end{bonus*}
+
+\end{document}

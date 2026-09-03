@@ -36,6 +36,10 @@
     {
       "label": "discussion",
       "value": "[Zulip workspace](https://math372fall26.zulipchat.com/)"
+    },
+    {
+      "label": "submissions",
+      "value": "[Gradescope](https://www.gradescope.com/courses/1385853)"
     }
   ],
   "render": [
