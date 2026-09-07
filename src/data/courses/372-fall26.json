@@ -58,6 +58,20 @@
       "label": "links"
     },
     {
+      "col": "hw",
+      "kind": "pdf",
+      "label": "assigned",
+      "text": "problem set",
+      "due": "hw_due"
+    },
+    {
+      "col": "submit",
+      "kind": "pdf",
+      "label": "due",
+      "text": "problem set",
+      "by": "submit_by"
+    },
+    {
       "col": "note",
       "kind": "md",
       "label": "note"
