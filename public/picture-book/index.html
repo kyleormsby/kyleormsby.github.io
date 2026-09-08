@@ -262,7 +262,7 @@
     <p>T. Saito, T. Takahashi, &ldquo;Comprehensible Rendering of 3-D Shapes,&rdquo; <i>SIGGRAPH 1990</i>, pp. 197&ndash;206 &mdash; edge extraction from normal and depth buffers (the optional Sobel edge filter).</p>
     <p>W.&thinsp;E. Lorensen, H.&thinsp;E. Cline, &ldquo;Marching Cubes,&rdquo; <i>SIGGRAPH 1987</i>; A. Doi, A. Koide, &ldquo;An Efficient Method of Triangulating Equi-Valued Surfaces by Using Tetrahedral Cells,&rdquo; <i>IEICE Trans.</i> E74(1), 1991 &mdash; the implicit surfaces are polygonized by the tetrahedral variant.</p>
     <p>T. M&ouml;ller, B. Trumbore, &ldquo;Fast, Minimum Storage Ray-Triangle Intersection,&rdquo; <i>J. Graphics Tools</i> 2(1), 1997 &mdash; the segment&ndash;triangle test behind the double-curve computation.</p>
-    <p>R. Kusner, &ldquo;Conformal Geometry and Complete Minimal Surfaces,&rdquo; <i>Bull. Amer. Math. Soc.</i> 17(2), 1987 &mdash; source of the Bryant&ndash;Kusner parametrization used for Boy&rsquo;s surface (checked here numerically: antipodal boundary gluing and threefold symmetry hold to machine precision). See also F. Ap&eacute;ry, <i>Models of the Real Projective Plane</i>, Vieweg, 1987.</p>
+    <p>R. Kusner, &ldquo;Conformal Geometry and Complete Minimal Surfaces,&rdquo; <i>Bull. Amer. Math. Soc.</i> 17(2), 1987 &mdash; source of the Bryant&ndash;Kusner parametrization used for Boy&rsquo;s surface (checked here numerically: antipodal boundary gluing and threefold symmetry hold to machine precision). The general-p form used by <span class="mono">kusner()</span> has denominator w<sup>2p</sup> + &kappa;<sub>p</sub>w<sup>p</sup> &minus; 1 with &kappa;<sub>p</sub> = 2&radic;(2p&minus;1)/(p&minus;1) and prefactor p/(p&minus;1); the constant was fixed by checking numerically that the pre-inversion surface is minimal (a circulating p = 2 version with &radic;3 in place of 2&radic;3 is not). See also F. Ap&eacute;ry, <i>Models of the Real Projective Plane</i>, Vieweg, 1987, whose Cartesian family (as tabulated on R. Ferr&eacute;ol&rsquo;s <i>mathcurve.com</i>, &ldquo;Morin surface&rdquo;) gives the Morin preset and, with n&nbsp;=&nbsp;3, a second model of Boy&rsquo;s surface.</p>
     <p class="small" style="text-indent:0;padding-left:0">Related reading: D. DeCarlo et&thinsp;al., &ldquo;Suggestive Contours for Conveying Shape,&rdquo; SIGGRAPH 2003; R. Kalnins et&thinsp;al., &ldquo;WYSIWYG NPR,&rdquo; SIGGRAPH 2002.</p>
   </details>
 
@@ -277,6 +277,11 @@
       as <span class="mono">[x,y,z]</span> (u = radius in [0,1], v = angle).
       <span class="mono">torusknot(u,v,p,q,R,r,a)</span> returns the tube of radius a about the (p,q) torus
       knot on the torus of radii R, r (defaults 2, 3, 2.2, 1, 0.42); u runs once along the knot, v around the tube.
+      <span class="mono">apery(u,v,n,k)</span> is Ap&eacute;ry&rsquo;s Cartesian family with u &isin; [&minus;&pi;/2, &pi;/2]:
+      n = 2, k = 1 is Morin&rsquo;s surface (v &isin; [0, 2&pi;]); n = 3, k = 1 is Boy&rsquo;s surface (v &isin; [0, &pi;]).
+      <span class="mono">kusner(u,v,p,d)</span> is the Kusner&ndash;Bryant family, w = tan(&pi;u/4)&thinsp;e<sup>iv</sup>:
+      u &isin; [0, 2] is the whole sphere (p = 2 is Morin&rsquo;s surface), u &isin; [0, 1] covers &#8477;&#8473;&sup2; once for odd p
+      (p = 3 is <span class="mono">boy</span>); d shifts the centre of inversion (default &minus;&frac12;).
     </p>
   </details>
 </div>
@@ -319,7 +324,24 @@ const PREAMBLE =
   "const n0=cq*cp,n1=cq*sp,n2=sqv;" +
   "let b0=t1*n2-t2*n1,b1=t2*n0-t0*n2,b2=t0*n1-t1*n0;const L=Math.hypot(b0,b1,b2);b0/=L;b1/=L;b2/=L;" +
   "const cv=Math.cos(v),sv=Math.sin(v);" +
-  "return [w*cp+a*(cv*n0+sv*b0), w*sp+a*(cv*n1+sv*b1), r*sqv+a*(cv*n2+sv*b2)];};";
+  "return [w*cp+a*(cv*n0+sv*b0), w*sp+a*(cv*n1+sv*b1), r*sqv+a*(cv*n2+sv*b2)];};" +
+  /* Apéry's Cartesian family: n=2,k=1 is Morin's surface (u∈[-π/2,π/2], v∈[0,2π]);
+     n=3,k=1 is Boy's surface (v∈[0,π] covers RP² once) */
+  "const apery=(u,v,n=2,k=1)=>{const K=Math.cos(u)/(Math.SQRT2-k*Math.sin(2*u)*Math.sin(n*v));" +
+  "const c=2/(n-1);return [K*(c*Math.cos(u)*Math.cos((n-1)*v)+Math.SQRT2*Math.sin(u)*Math.cos(v))," +
+  "K*(c*Math.cos(u)*Math.sin((n-1)*v)-Math.SQRT2*Math.sin(u)*Math.sin(v)), K*Math.cos(u)];};" +
+  /* Kusner–Bryant family, general p: inversion of the minimal immersion with 2p planar ends.
+     w = tan(πu/4)·e^{iv}: u∈[0,2] is the whole Riemann sphere (even p → immersed sphere, p=2 Morin),
+     u∈[0,1] is the disk that covers RP² once for odd p (p=3 Boy). c_p = p/(p−1), κ_p = 2√(2p−1)/(p−1). */
+  "const kusner=(u,v,p=2,d=-0.5)=>{const r=Math.tan(Math.PI/4*u),wr=r*Math.cos(v),wi=r*Math.sin(v);" +
+  "const pw=(n)=>{let ar=1,ai=0;for(let k=0;k<n;k++){const t=ar*wr-ai*wi;ai=ar*wi+ai*wr;ar=t;}return [ar,ai];};" +
+  "const kp=2*Math.sqrt(2*p-1)/(p-1),c=p/(p-1),wp=pw(p),w2=pw(2*p),wm=pw(2*p-2);" +
+  "const Dr=w2[0]+kp*wp[0]-1,Di=w2[1]+kp*wp[1],dd=Dr*Dr+Di*Di;" +
+  "const dv=(a,b)=>[(a*Dr+b*Di)/dd,(b*Dr-a*Di)/dd];" +
+  "const A=dv(wr*(1-wm[0])+wi*wm[1], wi*(1-wm[0])-wr*wm[1]);" +
+  "const B=dv(wr*(1+wm[0])-wi*wm[1], wi*(1+wm[0])+wr*wm[1]);" +
+  "const C=dv(1+w2[0], w2[1]);" +
+  "const g1=-c*A[1],g2=-c*B[0],g3=C[1]+d,ss=g1*g1+g2*g2+g3*g3;return [g1/ss,g2/ss,g3/ss];};";
 function compileExpr(expr, vars){
   const clean = String(expr).replace(/\^/g, '**');
   const body = PREAMBLE + "return (" + vars.join(',') + ")=>(" + clean + ");";
@@ -350,6 +372,12 @@ const PAR_PRESETS = [
   { key:'boy', name:'Boy’s surface (Bryant–Kusner immersion of ℝℙ²)',
     fx:'boy(u,v)[0]', fy:'boy(u,v)[1]', fz:'boy(u,v)[2]',
     u0:'0.0001', u1:'1', v0:'0', v1:'2*pi', su:120, sv:360, rep:[30,120] },
+  { key:'morinkb', name:'Morin’s surface (Kusner–Bryant, inverted minimal surface)',
+    fx:'kusner(u,v,2)[0]', fy:'kusner(u,v,2)[1]', fz:'kusner(u,v,2)[2]',
+    u0:'0', u1:'2', v0:'0', v1:'2*pi', su:200, sv:400, rep:[60,120] },
+  { key:'morin', name:'Morin’s surface (Apéry’s halfway model of the sphere eversion)',
+    fx:'apery(u,v,2,1)[0]', fy:'apery(u,v,2,1)[1]', fz:'apery(u,v,2,1)[2]',
+    u0:'-pi/2', u1:'pi/2', v0:'0', v1:'2*pi', su:200, sv:400, rep:[60,120] },
   { key:'trefoil', name:'A knotted torus (tube of the (2,3) torus knot)',
     fx:'torusknot(u,v,2,3)[0]', fy:'torusknot(u,v,2,3)[1]', fz:'torusknot(u,v,2,3)[2]',
     u0:'0', u1:'2*pi', v0:'0', v1:'2*pi', su:480, sv:40, rep:[260,18] },
