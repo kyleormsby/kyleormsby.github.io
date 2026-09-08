@@ -3,7 +3,6 @@ title: "The belt trick in Bₙ(S²)"
 href: /belt-trick-braids/
 year: 2026
 thumb: /thumbs/belt-trick-braids.png
-featured: true
 tags:
   - braids
   - configuration spaces

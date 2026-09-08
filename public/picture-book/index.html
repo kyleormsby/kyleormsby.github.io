@@ -1,0 +1,2124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Topological Picture Book, Rendered</title>
+<link rel="stylesheet" href="/vendor/fonts/fonts.css">
+<style>
+  :root{
+    --paper:#f5eedd; --paper2:#efe6d0; --ink:#2b2620; --rule:#c9bfa6; --accent:#7a4a2b;
+  }
+  html,body{margin:0;height:100%;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    display:flex; overflow:hidden;
+  }
+  #stage{
+    flex:1 1 auto; position:relative; min-width:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+  }
+  #wrap{ position:relative; width:100%; height:100%; }
+  canvas#c{ position:absolute; inset:0; width:100%; height:100%; display:block; cursor:grab; }
+  canvas#c:active{ cursor:grabbing; }
+  #caption{
+    position:absolute; left:0; right:0; bottom:14px; text-align:center;
+    font-style:italic; font-size:15px; pointer-events:none; letter-spacing:0.02em;
+    text-shadow:0 0 6px var(--paper);
+  }
+  #caption b{ font-style:normal; font-variant:small-caps; letter-spacing:0.08em; }
+  #status{
+    position:absolute; top:10px; left:14px; font-size:13px; font-style:italic; opacity:0.75;
+    max-width:60%; white-space:pre-wrap;
+  }
+  #status.err{ color:#8c2f19; opacity:1; font-style:normal; }
+  #panel{
+    flex:0 0 330px; height:100%; overflow-y:auto; box-sizing:border-box;
+    padding:16px 18px 40px; border-left:1px solid var(--rule);
+    background:linear-gradient(90deg, var(--paper2), var(--paper) 14px);
+    font-size:13.5px; line-height:1.45;
+  }
+  h1{ font-size:17px; font-weight:normal; font-variant:small-caps; letter-spacing:0.12em;
+      margin:2px 0 2px; }
+  .sub{ font-style:italic; font-size:12.5px; opacity:0.8; margin:0 0 12px; }
+  fieldset{ border:none; border-top:1px solid var(--rule); margin:14px 0 0; padding:10px 0 0; }
+  legend{ font-variant:small-caps; letter-spacing:0.1em; font-size:12.5px; padding-right:8px; }
+  label{ display:block; margin:7px 0 2px; }
+  .row{ display:flex; gap:8px; align-items:center; }
+  .row label{ margin:0; flex:0 0 auto; }
+  input[type=text]{
+    width:100%; box-sizing:border-box; font-family:'Courier New',monospace; font-size:12.5px;
+    background:transparent; color:var(--ink); border:none; border-bottom:1px solid var(--rule);
+    padding:3px 1px; outline:none;
+  }
+  input[type=text]:focus{ border-bottom-color:var(--accent); }
+  input[type=range]{ width:100%; accent-color:var(--accent); }
+  input[type=number]{ width:64px; background:transparent; border:none; border-bottom:1px solid var(--rule);
+    color:var(--ink); font-family:'Courier New',monospace; font-size:12.5px; }
+  select,button{
+    font-family:inherit; font-size:13px; background:transparent; color:var(--ink);
+    border:1px solid var(--rule); border-radius:2px; padding:3px 8px; cursor:pointer;
+  }
+  select{ width:100%; }
+  button:hover{ border-color:var(--accent); color:var(--accent); }
+  .btnrow{ display:flex; gap:8px; margin-top:10px; }
+  .small{ font-size:11.5px; opacity:0.75; font-style:italic; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:4px 14px; }
+  .grid2 > div{ min-width:0; }
+  details{ margin-top:16px; border-top:1px solid var(--rule); padding-top:8px; }
+  summary{ cursor:pointer; font-variant:small-caps; letter-spacing:0.1em; font-size:12.5px; }
+  #sources p{ margin:8px 0; font-size:12px; line-height:1.45; text-indent:-14px; padding-left:14px; }
+  .mono{ font-family:'Courier New',monospace; }
+  .swatches{ display:flex; gap:10px; align-items:center; margin-top:6px; }
+  input[type=color]{ width:34px; height:22px; border:1px solid var(--rule); background:none; padding:0; }
+  .hide{ display:none !important; }
+  .cb{ margin:6px 0 0; }
+  #overlay{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  #leaders{ position:absolute; inset:0; width:100%; height:100%; }
+  .lbl{
+    position:absolute; transform:translate(-4px,-60%); pointer-events:auto; cursor:move; user-select:none;
+    font-family:'Caveat','Segoe Script','Bradley Hand',cursive; font-weight:500; font-size:27px; line-height:1;
+    color:var(--ink); white-space:nowrap; padding:2px 4px;
+    transition:opacity .15s;
+  }
+  .lbl.hidden{ opacity:0.32; }
+  .lbl.hidden::after{ content:''; }
+  canvas#c.placing{ cursor:crosshair; }
+  .mini{ display:flex; gap:6px; align-items:center; margin-top:6px; }
+  .mini input[type=text]{ flex:1 1 auto; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wrap">
+    <canvas id="c"></canvas>
+    <div id="overlay"><svg id="leaders"></svg></div>
+    <div id="status"></div>
+    <div id="caption"><b>Plate I.</b> <span id="capText">The torus.</span></div>
+  </div>
+</div>
+
+<div id="panel">
+  <h1>A Topological Picture Book</h1>
+  <p class="sub">Hand-hatched surfaces after the mid-century manner of Francis, Ap&eacute;ry, Hilbert&ndash;Cohn-Vossen. Drag to turn the model freely (shift-drag to roll it); scroll to approach.</p>
+
+  <fieldset>
+    <legend>Surface</legend>
+    <div class="row">
+      <label><input type="radio" name="mode" value="par" checked> parametric</label>
+      <label><input type="radio" name="mode" value="imp"> implicit</label>
+    </div>
+    <label>Preset</label>
+    <select id="preset"></select>
+
+    <div id="parBox">
+      <label>x(u,v)</label><input type="text" id="fx">
+      <label>y(u,v)</label><input type="text" id="fy">
+      <label>z(u,v)</label><input type="text" id="fz">
+      <div class="grid2">
+        <div><label>u from / to</label>
+          <div class="row"><input type="text" id="u0"><input type="text" id="u1"></div></div>
+        <div><label>v from / to</label>
+          <div class="row"><input type="text" id="v0"><input type="text" id="v1"></div></div>
+        <div><label>u segments</label><input type="number" id="su" min="8" max="800" step="8" value="256"></div>
+        <div><label>v segments</label><input type="number" id="sv" min="8" max="800" step="8" value="96"></div>
+      </div>
+      <label class="row cb"><input type="checkbox" id="dbl" checked> trace the double curve (self-intersection)</label>
+    </div>
+
+    <div id="impBox" class="hide">
+      <label>f(x,y,z) = 0</label><input type="text" id="ff">
+      <div class="grid2">
+        <div><label>box half-width</label><input type="text" id="bb"></div>
+        <div><label>grid resolution</label><input type="number" id="res" min="24" max="160" step="4" value="72"></div>
+      </div>
+      <p class="small">The zero set is triangulated by marching tetrahedra; normals are taken from &nabla;f.</p>
+    </div>
+
+    <div class="btnrow">
+      <button id="redraw">Redraw</button>
+      <button id="savePng">Save engraving (PNG)</button>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Pen &amp; hatching</legend>
+    <label>Hatching</label>
+    <select id="hatchMode">
+      <option value="3">strokes along principal curvature</option>
+      <option value="1">stripes along parameter lines (u,v)</option>
+      <option value="2">stripes from plane sections of space</option>
+      <option value="0">stripes in the picture plane (screen)</option>
+    </select>
+    <div class="grid2">
+      <div><label>spacing</label>
+        <input type="range" id="spacing" min="0.15" max="2.6" step="0.01" value="1"></div>
+      <div><label>pen width (px)</label>
+        <input type="range" id="pen" min="0.4" max="3" step="0.05" value="1.1"></div>
+      <div><label>hand wobble</label>
+        <input type="range" id="wobble" min="0" max="2" step="0.01" value="0.7"></div>
+      <div><label>broad nib</label>
+        <input type="range" id="nib" min="0" max="1" step="0.01" value="0.4"></div>
+      <div><label>ink weight</label>
+        <input type="range" id="inkw" min="0.4" max="1" step="0.01" value="0.92"></div>
+      <div><label>edge filter (Sobel)</label>
+        <input type="range" id="outw" min="0" max="3" step="0.05" value="0"></div>
+    </div>
+    <label class="row cb"><input type="checkbox" id="cross" checked> cross-hatch the shadows</label>
+    <label class="row cb"><input type="checkbox" id="fine"> fine rendering (2&times; supersample)</label>
+    <p class="small">Stroke spacing re-traces the hatching when you release the slider.</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Contours</legend>
+    <label class="row cb"><input type="checkbox" id="contours" checked> draw silhouettes, folds &amp; boundaries</label>
+    <div class="grid2">
+      <div><label>contour weight (px)</label>
+        <input type="range" id="cw" min="0.5" max="4" step="0.05" value="1.8"></div>
+      <div><label>hidden lines</label>
+        <select id="hidden">
+          <option value="dashed">dashed</option>
+          <option value="faint">faint</option>
+          <option value="none">omitted</option>
+        </select></div>
+    </div>
+    <label class="row cb"><input type="checkbox" id="halo" checked> haloes where lines cross</label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Ink &amp; lettering</legend>
+    <div class="grid2">
+      <div><label>overshoot at ends</label>
+        <input type="range" id="over" min="0" max="1" step="0.01" value="0.45"></div>
+      <div><label>ink pooling</label>
+        <input type="range" id="pool" min="0" max="1" step="0.01" value="0.5"></div>
+      <div><label>bleed into paper</label>
+        <input type="range" id="bleed" min="0" max="1" step="0.01" value="0.35"></div>
+      <div><label>contour smoothing</label>
+        <input type="range" id="smooth" min="0" max="4" step="1" value="2"></div>
+    </div>
+    <div class="mini">
+      <input type="text" id="labelText" placeholder="label text (A, p, ∂M …)" value="A">
+      <button id="placeLabel" title="then click a point on the surface">place</button>
+      <button id="clearLabels">clear</button>
+    </div>
+    <p class="small">Labels are hand-lettered, pinned to the surface, drag to move them, double-click to remove; they dim when their point is hidden.</p>
+  </fieldset>
+
+  <fieldset>
+    <legend>Light &amp; tone</legend>
+    <div class="grid2">
+      <div><label>light bearing</label>
+        <input type="range" id="laz" min="-180" max="180" step="1" value="-55"></div>
+      <div><label>light height</label>
+        <input type="range" id="lel" min="5" max="85" step="1" value="42"></div>
+      <div><label>contrast</label>
+        <input type="range" id="contrast" min="0.5" max="2.6" step="0.01" value="1.15"></div>
+      <div><label>ambient</label>
+        <input type="range" id="ambient" min="0" max="0.7" step="0.01" value="0.30"></div>
+      <div><label>silhouette shading</label>
+        <input type="range" id="rim" min="0" max="0.8" step="0.01" value="0.33"></div>
+    </div>
+    <div class="swatches">
+      <label>ink</label><input type="color" id="inkc" value="#2b2620">
+      <label>paper</label><input type="color" id="paperc" value="#f5eedd">
+    </div>
+  </fieldset>
+
+  <details id="sources">
+    <summary>Sources &amp; method</summary>
+    <p class="small" style="text-indent:0;padding-left:0">
+      The drawing is made of strokes, not pixels. Silhouettes are the zero set of n&middot;v on the
+      mesh (found with interpolated normals, so they chain into smooth curves), boundaries and the
+      double curve of an immersion are added as further chains, and all of them are drawn as tapered
+      ribbons with a broad-nib pen model, weight that grows on the shadow side and toward the viewer,
+      and coherent hand wobble. Visibility is settled on the GPU: a hidden-line pass draws the occluded
+      parts dashed, and a one-sided paper halo under each near contour cuts the lines behind it.
+      Hatching is a set of streamlines of the principal-curvature line field, traced at build time in
+      three nested densities (the second along the other principal direction, for cross-hatching);
+      tone selects which family is inked and where each stroke feathers out. Highlights stay bare paper.
+      The principal directions are ordered by signed curvature, not magnitude, so the two families stay
+      continuous across the loci where &kappa;&#8321; = &minus;&kappa;&#8322;.
+      Contour chains are lightly smoothed before inking. Strokes overshoot their ends a little in the
+      manner of sketchy line rendering; the ink pooling at stroke starts and the ragged bleed into the
+      paper grain are hand-tuned effects of this page (a widened ribbon whose fringe is gated by a
+      fibre-like noise), not taken from a paper. Labels are hand-lettered, pinned to points of the surface
+      with a leader line, and dimmed when their point is hidden.
+    </p>
+    <p>G.&thinsp;K. Francis, <i>A Topological Picture Book</i>, Springer, 1987 &mdash; the style target: contour drawing with cusps, double curves, hidden lines, and sparing hatched bands.</p>
+    <p>P. B&eacute;nard, A. Hertzmann, &ldquo;Line Drawings from 3D Models: A Tutorial,&rdquo; <i>Foundations and Trends in Computer Graphics and Vision</i> 11(1&ndash;2), 2019 &mdash; the contour pipeline: smooth silhouettes as n&middot;v = 0, chaining, visibility, stylization.</p>
+    <p>A. Hertzmann, &ldquo;Introduction to 3D Non-Photorealistic Rendering: Silhouettes and Outlines,&rdquo; <i>SIGGRAPH 99 Course Notes</i> &mdash; silhouettes from interpolated vertex normals (marching-triangles on n&middot;v).</p>
+    <p>A. Hertzmann, D. Zorin, &ldquo;Illustrating Smooth Surfaces,&rdquo; <i>SIGGRAPH 2000</i>, pp. 517&ndash;526 &mdash; hatching along principal curvature directions, cross-hatching only in dark regions, blank highlights, undercuts.</p>
+    <p>B. Jobard, W. Lefer, &ldquo;Creating Evenly-Spaced Streamlines of Arbitrary Density,&rdquo; <i>Visualization in Scientific Computing</i>, 1997 &mdash; the separation-distance rule used to trace the hatch streamlines.</p>
+    <p>A. Appel, F.&thinsp;J. Rohlf, A.&thinsp;J. Stein, &ldquo;The Haloed Line Effect for Hidden Line Elimination,&rdquo; <i>SIGGRAPH 1979</i> &mdash; the paper haloes at line crossings.</p>
+    <p>J.&thinsp;D. Northrup, L. Markosian, &ldquo;Artistic Silhouettes: A Hybrid Approach,&rdquo; <i>NPAR 2000</i> &mdash; chaining silhouette segments and rendering them as stylized strokes with tapering and width variation.</p>
+    <p>T. Strothotte, B. Preim, A. Raab, J. Schumann, D.&thinsp;R. Forsey, &ldquo;How to Render Frames and Influence People,&rdquo; <i>Computer Graphics Forum</i> 13(3) (Eurographics 1994) &mdash; sketch-like line rendering: lines that overshoot their endpoints and wiggle, drawn with a pen model whose width varies along the stroke.</p>
+    <p>M.&thinsp;P. Salisbury, S.&thinsp;E. Anderson, R. Barzel, D.&thinsp;H. Salesin, &ldquo;Interactive Pen-and-Ink Illustration,&rdquo; <i>SIGGRAPH 1994</i>, pp. 101&ndash;108 &mdash; stroke textures and the placement of hand-character strokes to reach a target tone.</p>
+    <p>E. Praun, H. Hoppe, M. Webb, A. Finkelstein, &ldquo;Real-Time Hatching,&rdquo; <i>SIGGRAPH 2001</i> &mdash; nested tone levels of hatching; here realized with object-space strokes so the hatching never swims.</p>
+    <p>G. Winkenbach, D.&thinsp;H. Salesin, &ldquo;Computer-Generated Pen-and-Ink Illustration,&rdquo; <i>SIGGRAPH 1994</i>, pp. 91&ndash;100 &mdash; tone by stroke density and thickness; stroke textures.</p>
+    <p>G. Elber, &ldquo;Line Art Rendering via a Coverage of Isoparametric Curves,&rdquo; <i>IEEE TVCG</i> 1(3), 1995 &mdash; hatching along isoparametric curves (the parameter-line stripes mode).</p>
+    <p>T. Saito, T. Takahashi, &ldquo;Comprehensible Rendering of 3-D Shapes,&rdquo; <i>SIGGRAPH 1990</i>, pp. 197&ndash;206 &mdash; edge extraction from normal and depth buffers (the optional Sobel edge filter).</p>
+    <p>W.&thinsp;E. Lorensen, H.&thinsp;E. Cline, &ldquo;Marching Cubes,&rdquo; <i>SIGGRAPH 1987</i>; A. Doi, A. Koide, &ldquo;An Efficient Method of Triangulating Equi-Valued Surfaces by Using Tetrahedral Cells,&rdquo; <i>IEICE Trans.</i> E74(1), 1991 &mdash; the implicit surfaces are polygonized by the tetrahedral variant.</p>
+    <p>T. M&ouml;ller, B. Trumbore, &ldquo;Fast, Minimum Storage Ray-Triangle Intersection,&rdquo; <i>J. Graphics Tools</i> 2(1), 1997 &mdash; the segment&ndash;triangle test behind the double-curve computation.</p>
+    <p>R. Kusner, &ldquo;Conformal Geometry and Complete Minimal Surfaces,&rdquo; <i>Bull. Amer. Math. Soc.</i> 17(2), 1987 &mdash; source of the Bryant&ndash;Kusner parametrization used for Boy&rsquo;s surface (checked here numerically: antipodal boundary gluing and threefold symmetry hold to machine precision). See also F. Ap&eacute;ry, <i>Models of the Real Projective Plane</i>, Vieweg, 1987.</p>
+    <p class="small" style="text-indent:0;padding-left:0">Related reading: D. DeCarlo et&thinsp;al., &ldquo;Suggestive Contours for Conveying Shape,&rdquo; SIGGRAPH 2003; R. Kalnins et&thinsp;al., &ldquo;WYSIWYG NPR,&rdquo; SIGGRAPH 2002.</p>
+  </details>
+
+  <details>
+    <summary>Notation</summary>
+    <p class="small" style="text-indent:0;padding-left:0">
+      Formulas are JavaScript expressions; <span class="mono">^</span> is accepted for powers.
+      Available: <span class="mono">sin cos tan asin acos atan atan2 sinh cosh tanh exp log
+      sqrt cbrt abs sign pow min max floor hypot pi tau e sq(x)</span>.
+      Range boxes accept expressions too (<span class="mono">2*pi</span>).
+      The helper <span class="mono">boy(u,v)</span> returns the Bryant&ndash;Kusner immersion of &#8477;&#8473;&sup2;
+      as <span class="mono">[x,y,z]</span> (u = radius in [0,1], v = angle).
+      <span class="mono">torusknot(u,v,p,q,R,r,a)</span> returns the tube of radius a about the (p,q) torus
+      knot on the torus of radii R, r (defaults 2, 3, 2.2, 1, 0.42); u runs once along the knot, v around the tube.
+    </p>
+  </details>
+</div>
+
+<script src="/vendor/three/r128/three.min.js"></script>
+<script>
+'use strict';
+/* ------------------------------------------------------------------ *
+ *  A Topological Picture Book, Rendered.
+ *  Pen-and-ink drawing of parametric & implicit surfaces, three.js.
+ *  See the Sources panel for the papers this leans on.
+ * ------------------------------------------------------------------ */
+
+const $ = id => document.getElementById(id);
+const QS = new URLSearchParams(location.search);
+const statusEl = $('status');
+function setStatus(msg, err){ statusEl.textContent = msg||''; statusEl.className = err?'err':''; }
+
+/* ---------- expression compiler ---------- */
+const PREAMBLE =
+  "const {sin,cos,tan,asin,acos,atan,atan2,sinh,cosh,tanh,exp,log,log2,log10," +
+  "sqrt,cbrt,abs,sign,pow,min,max,floor,ceil,round,hypot} = Math;" +
+  "const pi=Math.PI, tau=2*Math.PI, e=Math.E, PI=Math.PI;" +
+  "const sq=x=>x*x, sech=x=>1/Math.cosh(x), ln=Math.log;" +
+  /* Bryant–Kusner immersion of RP^2 (Boy's surface): u=radius in [0,1], v=angle */
+  "const boy=(r,t)=>{const zr=r*Math.cos(t),zi=r*Math.sin(t);" +
+  "const z2r=zr*zr-zi*zi,z2i=2*zr*zi;const z3r=z2r*zr-z2i*zi,z3i=z2r*zi+z2i*zr;" +
+  "const z4r=z2r*z2r-z2i*z2i,z4i=2*z2r*z2i;const z6r=z3r*z3r-z3i*z3i,z6i=2*z3r*z3i;" +
+  "const s5=Math.sqrt(5),dr=z6r+s5*z3r-1,di=z6i+s5*z3i,dd=dr*dr+di*di;" +
+  "const dv=(a,b)=>[(a*dr+b*di)/dd,(b*dr-a*di)/dd];" +
+  "let a=dv(zr*(1-z4r)+zi*z4i, zi*(1-z4r)-zr*z4i);" +
+  "let b=dv(zr*(1+z4r)-zi*z4i, zi*(1+z4r)+zr*z4i);" +
+  "let c=dv(1+z6r, z6i);" +
+  "const g1=-1.5*a[1],g2=-1.5*b[0],g3=c[1]-0.5,ss=g1*g1+g2*g2+g3*g3;" +
+  "return [g1/ss,g2/ss,g3/ss];};" +
+  /* tube of radius a about the (p,q) torus knot on the torus of radii R, r; frame = (torus normal, tangent × normal) */
+  "const torusknot=(u,v,p=2,q=3,R=2.2,r=1,a=0.42)=>{" +
+  "const cp=Math.cos(p*u),sp=Math.sin(p*u),cq=Math.cos(q*u),sqv=Math.sin(q*u),w=R+r*cq;" +
+  "const t0=-q*r*sqv*cp-p*w*sp,t1=-q*r*sqv*sp+p*w*cp,t2=q*r*cq;" +
+  "const n0=cq*cp,n1=cq*sp,n2=sqv;" +
+  "let b0=t1*n2-t2*n1,b1=t2*n0-t0*n2,b2=t0*n1-t1*n0;const L=Math.hypot(b0,b1,b2);b0/=L;b1/=L;b2/=L;" +
+  "const cv=Math.cos(v),sv=Math.sin(v);" +
+  "return [w*cp+a*(cv*n0+sv*b0), w*sp+a*(cv*n1+sv*b1), r*sqv+a*(cv*n2+sv*b2)];};";
+function compileExpr(expr, vars){
+  const clean = String(expr).replace(/\^/g, '**');
+  const body = PREAMBLE + "return (" + vars.join(',') + ")=>(" + clean + ");";
+  const fn = new Function(body)();
+  fn(...vars.map(()=>0.123)); // smoke test (throws on bad identifiers)
+  return fn;
+}
+function evalNum(expr){
+  const fn = compileExpr(expr, []);
+  const v = fn();
+  if (!isFinite(v)) throw new Error('range is not a finite number: '+expr);
+  return v;
+}
+
+/* ---------- presets ---------- */
+const PAR_PRESETS = [
+  { key:'torus', name:'The torus',
+    fx:'(2+cos(v))*cos(u)', fy:'(2+cos(v))*sin(u)', fz:'sin(v)',
+    u0:'0', u1:'2*pi', v0:'0', v1:'2*pi', su:256, sv:96, rep:[170,64] },
+  { key:'mobius', name:'The Möbius band',
+    fx:'(2+v*cos(u/2))*cos(u)', fy:'(2+v*cos(u/2))*sin(u)', fz:'v*sin(u/2)',
+    u0:'0', u1:'2*pi', v0:'-0.62', v1:'0.62', su:320, sv:24, rep:[220,18] },
+  { key:'klein8', name:'The Klein bottle (figure-eight immersion)',
+    fx:'(2.4+cos(u/2)*sin(v)-sin(u/2)*sin(2*v))*cos(u)',
+    fy:'(2.4+cos(u/2)*sin(v)-sin(u/2)*sin(2*v))*sin(u)',
+    fz:'sin(u/2)*sin(v)+cos(u/2)*sin(2*v)',
+    u0:'0', u1:'2*pi', v0:'0', v1:'2*pi', su:320, sv:128, rep:[190,56] },
+  { key:'boy', name:'Boy’s surface (Bryant–Kusner immersion of ℝℙ²)',
+    fx:'boy(u,v)[0]', fy:'boy(u,v)[1]', fz:'boy(u,v)[2]',
+    u0:'0.0001', u1:'1', v0:'0', v1:'2*pi', su:120, sv:360, rep:[30,120] },
+  { key:'trefoil', name:'A knotted torus (tube of the (2,3) torus knot)',
+    fx:'torusknot(u,v,2,3)[0]', fy:'torusknot(u,v,2,3)[1]', fz:'torusknot(u,v,2,3)[2]',
+    u0:'0', u1:'2*pi', v0:'0', v1:'2*pi', su:480, sv:40, rep:[260,18] },
+  { key:'roman', name:'Steiner’s Roman surface',
+    fx:'sin(u)*cos(v)*sin(v)', fy:'cos(u)*cos(v)*sin(v)', fz:'cos(u)*sin(u)*sq(cos(v))',
+    u0:'0', u1:'2*pi', v0:'0', v1:'pi/2', su:256, sv:96, rep:[130,48] },
+  { key:'dini', name:'Dini’s surface (constant negative curvature)',
+    fx:'cos(u)*sin(v)', fy:'sin(u)*sin(v)', fz:'cos(v)+log(tan(v/2))+0.22*u',
+    u0:'0', u1:'4*pi', v0:'0.06', v1:'1.9', su:400, sv:64, rep:[300,44] },
+  { key:'enneper', name:'Enneper’s minimal surface',
+    fx:'u-u^3/3+u*v^2', fy:'v-v^3/3+v*u^2', fz:'u^2-v^2',
+    u0:'-2.1', u1:'2.1', v0:'-2.1', v1:'2.1', su:220, sv:220, rep:[84,84] },
+  { key:'catenoid', name:'The catenoid',
+    fx:'cosh(v)*cos(u)', fy:'cosh(v)*sin(u)', fz:'v',
+    u0:'0', u1:'2*pi', v0:'-1.6', v1:'1.6', su:220, sv:80, rep:[130,38] },
+];
+const IMP_PRESETS = [
+  { key:'itorus', name:'The torus, carved from space',
+    f:'sq(sqrt(x*x+y*y)-2)+z*z-1', bb:'3.3', res:80 },
+  { key:'genus2', name:'A surface of genus two (tube of a lemniscate)',
+    f:'sq(sq(x*x+y*y)-(x*x-y*y))+2*z*z-0.02', bb:'1.3', res:110 },
+  { key:'tangle', name:'The tangle cube (a quartic of genus five)',
+    f:'x^4+y^4+z^4-5*(x*x+y*y+z*z)+11.8', bb:'3.1', res:88 },
+  { key:'gyroid', name:'The gyroid, cut by a box',
+    f:'cos(x)*sin(y)+cos(y)*sin(z)+cos(z)*sin(x)', bb:'4.7', res:96 },
+  { key:'blend', name:'Two spheres, blended',
+    f:'1/(sq(x-1.3)+y*y+z*z)+1/(sq(x+1.3)+y*y+z*z)-1.05', bb:'2.9', res:88 },
+];
+
+/* ---------- three.js scaffolding ---------- */
+const canvas = $('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setClearColor(0x000000, 0);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 300);
+
+/* Trackball: the model hangs in a pivot whose orientation is a quaternion;
+   the camera stays on the +z axis. Every drag premultiplies a small rotation
+   about the screen axis perpendicular to the drag, so rotations compose
+   freely — no poles, no gimbal lock, roll emerges naturally. */
+const pivot = new THREE.Group();
+scene.add(pivot);
+let view = { r: 9 };                       // camera distance
+function orientFromAngles(th, ph){         // initial 3/4 view
+  const d = new THREE.Vector3(Math.sin(ph)*Math.cos(th), Math.cos(ph), Math.sin(ph)*Math.sin(th));
+  const m = new THREE.Matrix4().lookAt(d, new THREE.Vector3(0,0,0), new THREE.Vector3(0,1,0));
+  pivot.quaternion.setFromRotationMatrix(m).invert();
+}
+orientFromAngles(0.9, 1.15);
+
+/* ---------- surface material: paper + (optional) procedural stripe hatching ---------- */
+const hatchUniforms = {
+  uLight:   { value: new THREE.Vector3(-0.5, 0.7, 0.6) },
+  uPaper:   { value: new THREE.Color('#f5eedd') },
+  uInk:     { value: new THREE.Color('#2b2620') },
+  uSpacing: { value: 9.0 },          // px, screen mode
+  uRep:     { value: new THREE.Vector2(48,18) },
+  uWobble:  { value: 0.7 },
+  uPen:     { value: 1.1 },          // px
+  uMode:    { value: 3.0 },          // 0 screen, 1 param, 2 slices, 3 strokes (no stripes)
+  uDirA:    { value: new THREE.Vector3(0.16, 1.0, 0.24).normalize() },
+  uDirB:    { value: new THREE.Vector3(1.0, 0.18, -0.5).normalize() },
+  uObjScale:{ value: 0.28 },
+  uAmbient: { value: 0.30 },
+  uContrast:{ value: 1.15 },
+  uRim:     { value: 0.33 },
+  uCross:   { value: 1.0 },
+  uInkW:    { value: 0.92 },
+};
+const hatchVert = `
+  varying vec3 vN; varying vec3 vP; varying vec2 vUv; varying vec3 vW;
+  void main(){
+    vUv = uv;
+    vN = normalize(normalMatrix * normal);
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vP = mv.xyz;
+    vW = position;                        /* model coordinates: stripes turn with the model */
+    gl_Position = projectionMatrix * mv;
+  }`;
+const hatchFrag = `
+  uniform vec3 uLight, uPaper, uInk, uDirA, uDirB;
+  uniform vec2 uRep;
+  uniform float uSpacing, uWobble, uPen, uMode, uObjScale,
+                uAmbient, uContrast, uRim, uCross, uInkW;
+  varying vec3 vN; varying vec3 vP; varying vec2 vUv; varying vec3 vW;
+
+  float hash(float n){ return fract(sin(n)*43758.5453123); }
+  float noise1(float x){
+    float i = floor(x), f = fract(x);
+    f = f*f*(3.0-2.0*f);
+    return mix(hash(i), hash(i+1.0), f);
+  }
+  /* one family of strokes: s = across-stroke coord (1 unit per line),
+     t = along-stroke coord, dark in [0,1] sets width (in pixels, via uPen). */
+  float stroke(float s, float t, float dark){
+    s += uWobble*0.38*(noise1(t*1.9 + hash(floor(s+0.5))*37.0) - 0.5);
+    float ln = floor(s + 0.5);
+    float d  = abs(s - ln);
+    float aa = fwidth(s);
+    float w  = uPen*aa*(0.55 + 0.9*dark)*(0.8 + 0.4*hash(ln*7.13 + 3.7));
+    w = min(w, 0.48);
+    float br = noise1(t*0.57 + ln*29.7);           /* pen lifts */
+    w *= 0.2 + 0.8*smoothstep(0.08, 0.34, br);
+    float v  = 1.0 - smoothstep(w - aa, w + aa, d);
+    float flatTone = clamp(2.0*w, 0.0, 1.0);       /* strokes < 1px: wash */
+    return mix(v, flatTone, smoothstep(0.25, 0.6, aa));
+  }
+  void main(){
+    vec3 n = normalize(vN);
+    vec3 V = normalize(-vP);
+    if (dot(n, V) < 0.0) n = -n;   /* draw whichever side faces us */
+    float diff = clamp(dot(n, normalize(uLight)), 0.0, 1.0);
+    float tone = uAmbient + (1.0-uAmbient)*diff;
+    float rim  = pow(1.0 - clamp(dot(n,V), 0.0, 1.0), 2.0);
+    tone = clamp(tone - uRim*rim, 0.0, 1.0);
+    tone = pow(tone, uContrast);
+    float dark = 1.0 - tone;
+
+    float ink = 0.0;
+    if (uMode < 2.5){
+      vec2 c1, c2, c3;
+      if (uMode > 0.5 && uMode < 1.5){          /* parameter lines */
+        vec2 q = vUv * uRep;
+        c1 = vec2(q.y, q.x);
+        c2 = vec2(q.x, q.y);
+        c3 = vec2(q.y*2.0 + 0.5, q.x*2.0);
+      } else if (uMode > 1.5){                  /* plane sections */
+        float a = dot(vW, uDirA)/uObjScale;
+        float b = dot(vW, uDirB)/uObjScale;
+        c1 = vec2(a, b);
+        c2 = vec2(b, a);
+        c3 = vec2(a*2.0 + 0.5, b*2.0);
+      } else {                                  /* picture plane */
+        vec2 p = gl_FragCoord.xy / uSpacing;
+        float k = 0.70710678;
+        c1 = vec2( p.x*k + p.y*k, -p.x*k + p.y*k);
+        c2 = vec2(-p.x*k + p.y*k,  p.x*k + p.y*k);
+        c3 = vec2( p.y + 0.31, p.x );
+      }
+      float g1 = smoothstep(0.24, 0.44, dark);
+      float g2 = smoothstep(0.52, 0.68, dark);
+      float g3 = smoothstep(0.74, 0.90, dark);
+      float wgt = clamp(dark*1.25, 0.0, 1.0);
+      ink = g1 * stroke(c1.x, c1.y, max(wgt, 0.30));
+      float second = (uCross > 0.5)
+        ? stroke(c2.x, c2.y, max(wgt*0.9, 0.26))
+        : stroke(c1.x*2.0 + 0.5, c1.y*2.0, max(wgt*0.9, 0.26));
+      ink = max(ink, g2 * second);
+      ink = max(ink, g3 * stroke(c3.x, c3.y, max(wgt, 0.36)));
+    }
+    /* paper with faint grain + faint tonal wash so form reads between strokes */
+    float g = noise1(dot(gl_FragCoord.xy, vec2(0.754, 1.213)) * 1.7);
+    vec3 paper = uPaper * (1.0 - 0.05*g) * (0.965 + 0.035*tone);
+    vec3 col = mix(paper, uInk, ink * uInkW);
+    gl_FragColor = vec4(col, 1.0);
+  }`;
+const hatchMat = new THREE.ShaderMaterial({
+  uniforms: hatchUniforms, vertexShader: hatchVert, fragmentShader: hatchFrag,
+  side: THREE.DoubleSide,
+});
+hatchMat.extensions = { derivatives: true };
+
+const mesh = new THREE.Mesh(new THREE.BufferGeometry(), hatchMat);
+mesh.frustumCulled = false;
+pivot.add(mesh);
+
+/* ---------- stroke ribbons (contours, double curves, hatch streamlines, haloes) ---------- */
+const strokeVert = `
+  attribute vec3 prev; attribute vec3 next; attribute vec3 nrm;
+  attribute float side; attribute float t; attribute float s; attribute float lvl; attribute float seed;
+  uniform vec2 uRes; uniform float uWidth, uTaper, uWobble, uWobLen, uNib, uNibAngle, uKind, uOffset,
+                       uDepthNear, uDepthFar, uShadowWeight, uPool, uBleed;
+  uniform vec3 uLight; uniform float uAmbient, uContrast, uRim;
+  varying float vSide, vS, vGate, vDark, vPool, vCore;
+  float hash(float n){ return fract(sin(n)*43758.5453123); }
+  float noise1(float x){ float i=floor(x), f=fract(x); f=f*f*(3.0-2.0*f); return mix(hash(i),hash(i+1.0),f); }
+  vec4 toClip(vec3 p, float off){
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    mv.xyz += normalize(-mv.xyz) * off;              /* pull toward the eye: sits on the surface */
+    return projectionMatrix * mv;
+  }
+  void main(){
+    vec4 cp = toClip(position, uOffset), cprev = toClip(prev, uOffset), cnext = toClip(next, uOffset);
+    vec2 sp  = cp.xy / cp.w * 0.5 * uRes;
+    vec2 spp = cprev.xy / cprev.w * 0.5 * uRes;
+    vec2 spn = cnext.xy / cnext.w * 0.5 * uRes;
+    vec2 d1 = sp - spp, d2 = spn - sp;
+    vec2 dir = vec2(0.0);
+    if (length(d1) > 1e-3) dir += normalize(d1);
+    if (length(d2) > 1e-3) dir += normalize(d2);
+    if (length(dir) < 1e-4) dir = vec2(1.0, 0.0);
+    dir = normalize(dir);
+    vec2 perp = vec2(-dir.y, dir.x);
+
+    /* tone at this point of the surface (same model as the paper shader) */
+    vec3 n = normalize(normalMatrix * nrm);
+    vec3 V = normalize(-(modelViewMatrix * vec4(position, 1.0)).xyz);
+    if (dot(n, V) < 0.0) n = -n;
+    float diff = clamp(dot(n, normalize(uLight)), 0.0, 1.0);
+    float tone = uAmbient + (1.0-uAmbient)*diff;
+    float rim  = pow(1.0 - clamp(dot(n,V), 0.0, 1.0), 2.0);
+    tone = clamp(tone - uRim*rim, 0.0, 1.0);
+    tone = pow(tone, uContrast);
+    float dark = 1.0 - tone;
+
+    float w = uWidth;
+    /* taper toward the ends of open chains (closed chains carry t = 0.5) */
+    float tp = smoothstep(0.0, uTaper, t) * smoothstep(1.0, 1.0 - uTaper, t);
+    w *= mix(0.12, 1.0, tp);
+    /* the pen pauses where a stroke starts and (less) where it lifts: ink pools there */
+    float isOpen = 1.0 - step(0.499, t) * step(t, 0.501);
+    float pool = uPool * isOpen * ( exp(-pow((t - 0.06)/0.05, 2.0)) + 0.55*exp(-pow((t - 0.94)/0.05, 2.0)) );
+    w *= 1.0 + 0.55*pool;
+    /* a wider ribbon leaves room for the bleed fringe; vCore is the ink core's half-width in side units */
+    float coreFrac = 1.0 / (1.0 + 0.9*uBleed);
+    if (uKind < 1.5 || uKind > 2.5) w /= coreFrac;
+    /* broad nib: width depends on the stroke's direction relative to the nib */
+    float nib = abs(dir.x*sin(uNibAngle) - dir.y*cos(uNibAngle));
+    w *= mix(1.0, max(nib, 0.28), uNib);
+    /* nearer lines and shadow-side lines are heavier */
+    float dz = clamp((cp.w - uDepthNear) / max(uDepthFar - uDepthNear, 1e-4), 0.0, 1.0);
+    w *= mix(1.18, 0.78, dz);
+    float gate = 1.0;
+    if (uKind > 0.5 && uKind < 1.5){                 /* hatch stroke: tone chooses the level */
+      gate = (lvl < 0.5) ? smoothstep(0.28, 0.46, dark)
+           : (lvl < 1.5) ? smoothstep(0.58, 0.72, dark)
+                         : smoothstep(0.74, 0.88, dark);
+      w *= 0.75 + 0.9*dark;
+    } else {
+      w *= 1.0 + uShadowWeight*dark;
+    }
+    /* hand wobble, coherent along the stroke */
+    float wob = uWobble * 0.9 * (noise1(s / uWobLen + seed*23.7) - 0.5)
+              + uWobble * 0.35 * (noise1(s / (uWobLen*0.23) + seed*11.1) - 0.5);
+    vec2 off;
+    if (uKind > 1.5 && uKind < 2.5){                 /* halo: one-sided, outward from the surface */
+      vec2 nv = n.xy;
+      float sgn = (length(nv) < 1e-4) ? 1.0 : ((dot(perp, nv) < 0.0) ? -1.0 : 1.0);
+      off = perp * sgn * (side*0.5 + 0.5) * uWidth;
+    } else {
+      off = perp * (side * w * 0.5 + wob);
+    }
+    vec2 outS = sp + off;
+    gl_Position = vec4(outS / (0.5 * uRes) * cp.w, cp.z, cp.w);
+    vSide = side; vS = s; vGate = gate; vDark = dark; vPool = pool; vCore = coreFrac;
+  }`;
+const strokeFrag = `
+  uniform vec3 uInk, uPaper; uniform float uAlpha, uDash, uKind, uBleed;
+  varying float vSide, vS, vGate, vDark, vPool, vCore;
+  float hash2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float vnoise(vec2 p){
+    vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
+    return mix(mix(hash2(i), hash2(i+vec2(1,0)), f.x), mix(hash2(i+vec2(0,1)), hash2(i+vec2(1,1)), f.x), f.y);
+  }
+  void main(){
+    if (uKind > 1.5 && uKind < 2.5){ gl_FragColor = vec4(uPaper, 1.0); return; }
+    if (uDash > 0.0 && fract(vS / uDash) > 0.62) discard;    /* hidden-line dashes */
+    float x = abs(vSide) / vCore;                             /* 1 = edge of the ink core */
+    float core = 1.0 - smoothstep(0.6, 1.0, x);
+    /* bleed: ink wicking along the paper fibres, ragged and faint, outside the core */
+    float fib = vnoise(gl_FragCoord.xy * vec2(0.55, 0.11)) * 0.6 + vnoise(gl_FragCoord.xy * 0.9) * 0.4;
+    float fringe = uBleed * (1.0 - smoothstep(0.85, 1.0 + 0.9*uBleed, x)) * smoothstep(0.35, 0.75, fib) * 0.55;
+    float a = uAlpha * max(core, fringe);
+    a *= vGate;
+    a *= 1.0 + 0.45*vPool;                                    /* pooled ink is darker */
+    a *= 0.82 + 0.18*hash2(floor(gl_FragCoord.xy*0.7));      /* ink breaking on the paper grain */
+    if (a < 0.015) discard;
+    gl_FragColor = vec4(uInk, min(a, 1.0));
+  }`;
+function strokeMat(kind, extra){
+  const u = {
+    uRes:{ value: new THREE.Vector2(1,1) }, uWidth:{ value: 1.5 }, uTaper:{ value: 0.12 },
+    uWobble:{ value: 0.7 }, uWobLen:{ value: 1 }, uNib:{ value: 0.4 }, uNibAngle:{ value: Math.PI/4 },
+    uKind:{ value: kind }, uOffset:{ value: 0.01 }, uDepthNear:{ value: 1 }, uDepthFar:{ value: 10 },
+    uShadowWeight:{ value: 0.55 }, uAlpha:{ value: 0.95 }, uDash:{ value: 0 },
+    uPool:{ value: 0.5 }, uBleed:{ value: 0.35 },
+    uLight: hatchUniforms.uLight, uAmbient: hatchUniforms.uAmbient, uContrast: hatchUniforms.uContrast,
+    uRim: hatchUniforms.uRim, uInk: hatchUniforms.uInk, uPaper: hatchUniforms.uPaper,
+  };
+  const m = new THREE.ShaderMaterial({
+    uniforms: u, vertexShader: strokeVert, fragmentShader: strokeFrag,
+    transparent: true, depthWrite: kind === 2, depthTest: true, side: THREE.DoubleSide,
+  });
+  if (extra) Object.assign(m, extra);
+  return m;
+}
+const MAT = {
+  contour:  strokeMat(0),
+  contourH: strokeMat(0, { depthFunc: THREE.GreaterDepth }),
+  halo:     strokeMat(2),
+  hatch:    strokeMat(1),
+  dbl:      strokeMat(0),
+  dblH:     strokeMat(0, { depthFunc: THREE.GreaterDepth }),
+};
+const ALL_STROKE_MATS = Object.values(MAT);
+
+/* extend an open chain past both ends along its end tangents (the hand overshoots) */
+const STYLE = { overshoot: 0.45, smooth: 2 };
+function overshootChain(c){
+  const cnt = c.pts.length/3;
+  if (c.closed || cnt < 2 || STYLE.overshoot <= 0 || !c.unit) return c;
+  const h = Math.abs(Math.sin((c.seed||0)*91.7 + 1.3));
+  const L = STYLE.overshoot * c.unit * (0.35 + 0.9*h);
+  const P = c.pts, Nn = c.nrm;
+  const ext = (i, j) => {          // point beyond P[i], away from P[j]
+    let dx = P[i*3]-P[j*3], dy = P[i*3+1]-P[j*3+1], dz = P[i*3+2]-P[j*3+2];
+    const d = Math.hypot(dx,dy,dz) || 1;
+    return [P[i*3]+dx/d*L, P[i*3+1]+dy/d*L, P[i*3+2]+dz/d*L];
+  };
+  const a = ext(0, Math.min(2, cnt-1)), b = ext(cnt-1, Math.max(cnt-3, 0));
+  const pts = new Float32Array((cnt+2)*3), nrm = new Float32Array((cnt+2)*3);
+  pts.set(a, 0); pts.set(P, 3); pts.set(b, (cnt+1)*3);
+  nrm.set(Nn.subarray(0,3), 0); nrm.set(Nn, 3); nrm.set(Nn.subarray((cnt-1)*3, cnt*3), (cnt+1)*3);
+  return Object.assign({}, c, { pts, nrm });
+}
+/* light Laplacian smoothing of a chain (contours come off the mesh with a faint zigzag) */
+function smoothChain(c, passes){
+  const cnt = c.pts.length/3;
+  if (passes <= 0 || cnt < 4) return c;
+  let P = Float32Array.from(c.pts);
+  for (let p = 0; p < passes; p++){
+    const Q = Float32Array.from(P);
+    const i0 = c.closed ? 0 : 1, i1 = c.closed ? cnt : cnt-1;
+    for (let i = i0; i < i1; i++){
+      const a = (i-1+cnt)%cnt, b = (i+1)%cnt;
+      for (let k = 0; k < 3; k++) Q[i*3+k] = 0.5*P[i*3+k] + 0.25*(P[a*3+k] + P[b*3+k]);
+    }
+    P = Q;
+  }
+  return Object.assign({}, c, { pts: P });
+}
+/* ribbon geometry from chains: [{pts:Float32Array(3n), nrm:Float32Array(3n), closed, level, seed, unit}] */
+function ribbonGeometry(chains){
+  chains = chains.map(overshootChain);
+  let n = 0;
+  for (const c of chains) n += (c.pts.length/3) + (c.closed ? 1 : 0);
+  const N = n*2;
+  const pos = new Float32Array(N*3), prv = new Float32Array(N*3), nxt = new Float32Array(N*3),
+        nrm = new Float32Array(N*3), side = new Float32Array(N), tt = new Float32Array(N),
+        ss = new Float32Array(N), lv = new Float32Array(N), sd = new Float32Array(N);
+  const idx = new Uint32Array(Math.max(0, (n - chains.length))*6);
+  let vi = 0, ii = 0;
+  for (const c of chains){
+    const cnt = c.pts.length/3, m = cnt + (c.closed ? 1 : 0), P = c.pts, Nn = c.nrm;
+    let acc = 0;
+    for (let k = 0; k < m; k++){
+      const kk = k % cnt;
+      const kp = c.closed ? (kk - 1 + cnt) % cnt : Math.max(k-1, 0);
+      const kn = c.closed ? (kk + 1) % cnt : Math.min(k+1, cnt-1);
+      if (k > 0){
+        const pk = (k-1) % cnt;
+        acc += Math.hypot(P[kk*3]-P[pk*3], P[kk*3+1]-P[pk*3+1], P[kk*3+2]-P[pk*3+2]);
+      }
+      const tv = c.closed ? 0.5 : (m > 1 ? k/(m-1) : 0.5);
+      for (let sgn = -1; sgn <= 1; sgn += 2){
+        const o = vi*3;
+        pos[o]=P[kk*3]; pos[o+1]=P[kk*3+1]; pos[o+2]=P[kk*3+2];
+        prv[o]=P[kp*3]; prv[o+1]=P[kp*3+1]; prv[o+2]=P[kp*3+2];
+        nxt[o]=P[kn*3]; nxt[o+1]=P[kn*3+1]; nxt[o+2]=P[kn*3+2];
+        nrm[o]=Nn[kk*3]; nrm[o+1]=Nn[kk*3+1]; nrm[o+2]=Nn[kk*3+2];
+        side[vi]=sgn; tt[vi]=tv; ss[vi]=acc; lv[vi]=c.level||0; sd[vi]=c.seed||0;
+        vi++;
+      }
+    }
+    const base = vi - m*2;
+    for (let k = 0; k < m-1; k++){
+      const b = base + k*2;
+      idx[ii++]=b; idx[ii++]=b+1; idx[ii++]=b+2;
+      idx[ii++]=b+1; idx[ii++]=b+3; idx[ii++]=b+2;
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('prev', new THREE.BufferAttribute(prv, 3));
+  g.setAttribute('next', new THREE.BufferAttribute(nxt, 3));
+  g.setAttribute('nrm',  new THREE.BufferAttribute(nrm, 3));
+  g.setAttribute('side', new THREE.BufferAttribute(side, 1));
+  g.setAttribute('t',    new THREE.BufferAttribute(tt, 1));
+  g.setAttribute('s',    new THREE.BufferAttribute(ss, 1));
+  g.setAttribute('lvl',  new THREE.BufferAttribute(lv, 1));
+  g.setAttribute('seed', new THREE.BufferAttribute(sd, 1));
+  g.setIndex(new THREE.BufferAttribute(idx, 1));
+  return g;
+}
+const EMPTY = () => new THREE.BufferGeometry();
+function strokeObject(mat, order){
+  const o = new THREE.Mesh(EMPTY(), mat);
+  o.frustumCulled = false; o.renderOrder = order;
+  mesh.add(o);
+  return o;
+}
+/* draw order: hidden passes, then haloes (write depth), then visible ink */
+const OBJ = {
+  contourH: strokeObject(MAT.contourH, 1),
+  dblH:     strokeObject(MAT.dblH, 1),
+  halo:     strokeObject(MAT.halo, 2),
+  hatch:    strokeObject(MAT.hatch, 3),
+  dbl:      strokeObject(MAT.dbl, 4),
+  contour:  strokeObject(MAT.contour, 5),
+};
+function setGeom(obj, geo){ if (obj.geometry) obj.geometry.dispose(); obj.geometry = geo; }
+
+/* ---------- optional Sobel edge pass (Saito–Takahashi G-buffer edges) ---------- */
+const depthTex = new THREE.DepthTexture();
+depthTex.type = THREE.UnsignedIntType;
+const normTarget = new THREE.WebGLRenderTarget(4, 4, {
+  minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+  depthTexture: depthTex, depthBuffer: true, stencilBuffer: false,
+});
+const normalMat = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
+const quadScene = new THREE.Scene();
+const quadCam = new THREE.Camera();
+const edgeUniforms = {
+  tNorm:  { value: normTarget.texture },
+  tDepth: { value: depthTex },
+  uPx:    { value: new THREE.Vector2(1/4, 1/4) },
+  uNear:  { value: 0.05 }, uFar: { value: 300 },
+  uWidth: { value: 0 },
+  uInk:   { value: hatchUniforms.uInk.value },
+  uWob:   { value: 0.7 },
+};
+const edgeFrag = `
+  uniform sampler2D tNorm; uniform sampler2D tDepth;
+  uniform vec2 uPx; uniform float uNear, uFar, uWidth, uWob;
+  uniform vec3 uInk;
+  varying vec2 vUv;
+  float hash(float n){ return fract(sin(n)*43758.5453123); }
+  float noise1(float x){
+    float i=floor(x), f=fract(x); f=f*f*(3.0-2.0*f);
+    return mix(hash(i), hash(i+1.0), f);
+  }
+  float linz(float d){
+    float z = d*2.0 - 1.0;
+    return (2.0*uNear*uFar) / (uFar + uNear - z*(uFar - uNear));
+  }
+  void main(){
+    if (uWidth < 0.02){ discard; }
+    vec2 uv = vUv + uWob * 1.6 * uPx *
+      (vec2(noise1(vUv.y*90.0), noise1(vUv.x*90.0 + 17.0)) - 0.5);
+    vec2 o = uPx * uWidth;
+    vec3 n0 = texture2D(tNorm, uv).xyz;
+    float d0 = linz(texture2D(tDepth, uv).x);
+    float ne = 0.0, de = 0.0;
+    for (int i = 0; i < 4; i++){
+      vec2 off = (i==0) ? vec2( o.x, o.y) : (i==1) ? vec2(-o.x, o.y)
+               : (i==2) ? vec2( o.x,-o.y) : vec2(-o.x,-o.y);
+      ne = max(ne, length(texture2D(tNorm, uv+off).xyz - n0));
+      de = max(de, abs(linz(texture2D(tDepth, uv+off).x) - d0));
+    }
+    float edge = max( smoothstep(0.32, 0.55, ne),
+                      smoothstep(0.015, 0.05, de/max(d0, 0.001)) );
+    edge *= 0.75 + 0.25*noise1((vUv.x+vUv.y)*140.0);
+    gl_FragColor = vec4(uInk, edge*0.92);
+  }`;
+const edgeMat = new THREE.ShaderMaterial({
+  uniforms: edgeUniforms,
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: edgeFrag,
+  transparent: true, depthTest: false, depthWrite: false,
+});
+quadScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), edgeMat));
+
+/* ---------- mesh topology (welded vertices, faces, edges) ---------- */
+let TOPO = null;          // current topology
+let CHAINS = { boundary: [], dbl: [], hatch: null };
+let MODEL = { R: 1, param: null };   // bounding radius + parametric info
+
+function buildTopology(geo){
+  const pa = geo.attributes.position.array, na = geo.attributes.normal.array;
+  const nV = pa.length/3;
+  geo.computeBoundingSphere();
+  const R = geo.boundingSphere.radius || 1;
+  const inv = 1 / (R*2e-6);
+  const wid = new Int32Array(nV);
+  const key2w = new Map();
+  const wposA = [], wnrmA = [];
+  let nW = 0;
+  for (let i = 0; i < nV; i++){
+    const x = pa[i*3], y = pa[i*3+1], z = pa[i*3+2];
+    const k = Math.round(x*inv) + ',' + Math.round(y*inv) + ',' + Math.round(z*inv);
+    let w = key2w.get(k);
+    if (w === undefined){
+      w = nW++; key2w.set(k, w);
+      wposA.push(x, y, z); wnrmA.push(na[i*3], na[i*3+1], na[i*3+2]);
+    }
+    wid[i] = w;
+  }
+  const wpos = new Float32Array(wposA), wnrm = new Float32Array(wnrmA);
+  const src = geo.index ? geo.index.array : null;
+  const nF0 = (src ? src.length : nV) / 3;
+  const fa = [], fb = [], fc = [];
+  for (let f = 0; f < nF0; f++){
+    const a = wid[src ? src[f*3] : f*3], b = wid[src ? src[f*3+1] : f*3+1], c = wid[src ? src[f*3+2] : f*3+2];
+    if (a === b || b === c || a === c) continue;
+    fa.push(a); fb.push(b); fc.push(c);
+  }
+  const F = fa.length;
+  /* edges */
+  const ekey = new Map();
+  const ea = [], eb = [], ef1 = [], ef2 = [], ecnt = [];
+  const fe = new Int32Array(F*3);
+  function edge(a, b, f){
+    const lo = Math.min(a,b), hi = Math.max(a,b), k = lo*nW + hi;
+    let e = ekey.get(k);
+    if (e === undefined){ e = ea.length; ekey.set(k, e); ea.push(lo); eb.push(hi); ef1.push(f); ef2.push(-1); ecnt.push(1); }
+    else { if (ef2[e] < 0) ef2[e] = f; ecnt[e]++; }
+    return e;
+  }
+  for (let f = 0; f < F; f++){
+    fe[f*3]   = edge(fa[f], fb[f], f);
+    fe[f*3+1] = edge(fb[f], fc[f], f);
+    fe[f*3+2] = edge(fc[f], fa[f], f);
+  }
+  const E = ea.length;
+  /* for each face, the sign that makes each welded vertex normal agree with the face normal */
+  const fs = new Int8Array(F*3);
+  for (let f = 0; f < F; f++){
+    const a = fa[f], b = fb[f], c = fc[f];
+    const e1x = wpos[b*3]-wpos[a*3], e1y = wpos[b*3+1]-wpos[a*3+1], e1z = wpos[b*3+2]-wpos[a*3+2];
+    const e2x = wpos[c*3]-wpos[a*3], e2y = wpos[c*3+1]-wpos[a*3+1], e2z = wpos[c*3+2]-wpos[a*3+2];
+    const nx = e1y*e2z-e1z*e2y, ny = e1z*e2x-e1x*e2z, nz = e1x*e2y-e1y*e2x;
+    const vs = [a,b,c];
+    for (let k = 0; k < 3; k++){
+      const v = vs[k];
+      fs[f*3+k] = (wnrm[v*3]*nx + wnrm[v*3+1]*ny + wnrm[v*3+2]*nz) < 0 ? -1 : 1;
+    }
+  }
+  return {
+    nW, wpos, wnrm, fs, F, fa: Int32Array.from(fa), fb: Int32Array.from(fb), fc: Int32Array.from(fc),
+    E, ea: Int32Array.from(ea), eb: Int32Array.from(eb), ef1: Int32Array.from(ef1), ef2: Int32Array.from(ef2), ecnt: Int32Array.from(ecnt), fe,
+    // scratch for per-frame silhouette extraction
+    g: new Float32Array(nW), ept: new Float32Array(E*3), enr: new Float32Array(E*3),
+    estamp: new Int32Array(E), eseg1: new Int32Array(E), eseg2: new Int32Array(E), R,
+  };
+}
+
+/* chains of selected mesh edges: boundary loops (pred: one face) or non-manifold seams
+   where two sheets of an immersion meet along a grid line (pred: three or more faces) */
+function boundaryChains(T, pred){
+  pred = pred || (e => T.ef2[e] < 0);
+  const deg = new Int32Array(T.nW);
+  const bEdges = [];
+  for (let e = 0; e < T.E; e++) if (pred(e)){ bEdges.push(e); deg[T.ea[e]]++; deg[T.eb[e]]++; }
+  if (!bEdges.length) return [];
+  const adj = new Map();
+  for (const e of bEdges){
+    (adj.get(T.ea[e]) || adj.set(T.ea[e], []).get(T.ea[e])).push(e);
+    (adj.get(T.eb[e]) || adj.set(T.eb[e], []).get(T.eb[e])).push(e);
+  }
+  const used = new Uint8Array(T.E);
+  const chains = [];
+  for (const e0 of bEdges){
+    if (used[e0]) continue;
+    /* walk both directions */
+    const walk = (vStart, eStart) => {
+      const vs = [];
+      let v = vStart, e = eStart;
+      while (true){
+        used[e] = 1;
+        v = (T.ea[e] === v) ? T.eb[e] : T.ea[e];
+        vs.push(v);
+        const cand = (adj.get(v) || []).filter(x => !used[x]);
+        if (cand.length !== 1 || deg[v] !== 2) break;
+        e = cand[0];
+      }
+      return vs;
+    };
+    used[e0] = 1;
+    const fwd = walk(T.ea[e0], e0);
+    used[e0] = 0;
+    const back = walk(T.eb[e0], e0);
+    back.reverse();
+    const verts = back.concat(fwd).filter((x,i,arr)=> i===0 || x!==arr[i-1]);
+    let closed = false;
+    if (verts.length > 2 && verts[0] === verts[verts.length-1]){ verts.pop(); closed = true; }
+    if (verts.length < 2) continue;
+    const pts = new Float32Array(verts.length*3), nrm = new Float32Array(verts.length*3);
+    verts.forEach((v,i) => { for (let k=0;k<3;k++){ pts[i*3+k]=T.wpos[v*3+k]; nrm[i*3+k]=T.wnrm[v*3+k]; } });
+    chains.push({ pts, nrm, closed, level: 0, seed: chains.length*0.37, unit: T.R*0.03 });
+  }
+  return chains;
+}
+
+/* ---------- silhouettes: zero set of n·v with interpolated normals, chained ---------- */
+let frameStamp = 0;
+function silhouetteChains(T, eye){
+  frameStamp++;
+  const { nW, wpos, wnrm, fs, F, fa, fb, fc, E, ea, eb, fe, g, ept, enr, estamp, eseg1, eseg2 } = T;
+  for (let i = 0; i < nW; i++){
+    g[i] = wnrm[i*3]*(eye.x - wpos[i*3]) + wnrm[i*3+1]*(eye.y - wpos[i*3+1]) + wnrm[i*3+2]*(eye.z - wpos[i*3+2]);
+  }
+  const segA = [], segB = [];                 // segment = two edge ids
+  const crossing = (e, va, ga, vb, gb, sa, sb) => {     // ga, gb: face-consistent values; sa, sb: normal signs
+    if (estamp[e] === frameStamp) return;
+    estamp[e] = frameStamp; eseg1[e] = -1; eseg2[e] = -1;
+    let t = ga / (ga - gb); if (!isFinite(t)) t = 0.5; t = Math.min(1, Math.max(0, t));
+    const a = va, b = vb;
+    for (let k = 0; k < 3; k++){
+      ept[e*3+k] = wpos[a*3+k] + t*(wpos[b*3+k] - wpos[a*3+k]);
+    }
+    const nx = sa*wnrm[a*3]+t*(sb*wnrm[b*3]-sa*wnrm[a*3]),
+          ny = sa*wnrm[a*3+1]+t*(sb*wnrm[b*3+1]-sa*wnrm[a*3+1]),
+          nz = sa*wnrm[a*3+2]+t*(sb*wnrm[b*3+2]-sa*wnrm[a*3+2]);
+    const L = Math.hypot(nx,ny,nz) || 1;
+    enr[e*3] = nx/L; enr[e*3+1] = ny/L; enr[e*3+2] = nz/L;
+  };
+  const link = (e, sidx) => { if (eseg1[e] < 0) eseg1[e] = sidx; else eseg2[e] = sidx; };
+  for (let f = 0; f < F; f++){
+    const a = fa[f], b = fb[f], c = fc[f];
+    const ka = fs[f*3], kb = fs[f*3+1], kc = fs[f*3+2];
+    const ga = ka*g[a], gb = kb*g[b], gc = kc*g[c];
+    const sa = ga > 0, sb = gb > 0, sc = gc > 0;
+    if (sa === sb && sb === sc) continue;
+    const e0 = fe[f*3], e1 = fe[f*3+1], e2 = fe[f*3+2];
+    let x = -1, y = -1;
+    if (sa !== sb){ x = e0; crossing(e0, a, ga, b, gb, ka, kb); }
+    if (sb !== sc){ if (x < 0) x = e1; else y = e1; crossing(e1, b, gb, c, gc, kb, kc); }
+    if (sc !== sa){ if (x < 0) x = e2; else y = e2; crossing(e2, c, gc, a, ga, kc, ka); }
+    if (x < 0 || y < 0) continue;
+    const sidx = segA.length;
+    segA.push(x); segB.push(y);
+    link(x, sidx); link(y, sidx);
+  }
+  /* chain segments through shared edges */
+  const nS = segA.length;
+  const used = new Uint8Array(nS);
+  const chains = [];
+  for (let s0 = 0; s0 < nS; s0++){
+    if (used[s0]) continue;
+    const walk = (eStart, sStart) => {          // returns list of edge ids reached after eStart
+      const out = [];
+      let e = eStart, s = sStart;
+      while (s >= 0 && !used[s]){
+        used[s] = 1;
+        e = (segA[s] === e) ? segB[s] : segA[s];
+        out.push(e);
+        const nxt = (eseg1[e] === s) ? eseg2[e] : eseg1[e];
+        if (nxt < 0 || e === eStart) break;
+        s = nxt;
+      }
+      return out;
+    };
+    const fwd = walk(segA[s0], s0);                 // edges after segA[s0], starting with segB[s0]
+    const eA = segA[s0];
+    const other = (eseg1[eA] === s0) ? eseg2[eA] : eseg1[eA];
+    const back = (other >= 0) ? walk(eA, other) : [];  // edges beyond segA[s0] on the other side
+    // fwd: edges after segA[s0] along the chain; back: edges beyond segA[s0] on the other side
+    back.reverse();
+    let edges = back.concat([segA[s0]], fwd);
+    let closed = false;
+    if (edges.length > 2 && edges[0] === edges[edges.length-1]){ edges.pop(); closed = true; }
+    if (edges.length < 2) continue;
+    const n = edges.length;
+    const pts = new Float32Array(n*3), nrm = new Float32Array(n*3);
+    for (let i = 0; i < n; i++){
+      const e = edges[i];
+      pts[i*3]=ept[e*3]; pts[i*3+1]=ept[e*3+1]; pts[i*3+2]=ept[e*3+2];
+      nrm[i*3]=enr[e*3]; nrm[i*3+1]=enr[e*3+1]; nrm[i*3+2]=enr[e*3+2];
+    }
+    chains.push(smoothChain({ pts, nrm, closed, level: 0, seed: (s0 % 97) * 0.11, unit: T.R*0.03 }, STYLE.smooth));
+  }
+  return chains;
+}
+
+/* ---------- double curves: mesh self-intersection (triangle–triangle, grid hashed) ---------- */
+function doubleCurveChains(T){
+  const { F, fa, fb, fc, wpos, R } = T;
+  // grid
+  let avg = 0;
+  for (let f = 0; f < Math.min(F, 2000); f++){
+    const a = fa[f], b = fb[f];
+    avg += Math.hypot(wpos[a*3]-wpos[b*3], wpos[a*3+1]-wpos[b*3+1], wpos[a*3+2]-wpos[b*3+2]);
+  }
+  avg /= Math.min(F, 2000);
+  const cell = Math.max(avg*2.5, R*1e-3);
+  const inv = 1/cell;
+  const grid = new Map();
+  const fmin = new Float32Array(F*3), fmax = new Float32Array(F*3);
+  const ckey = (i,j,k) => (i*73856093) ^ (j*19349663) ^ (k*83492791);
+  for (let f = 0; f < F; f++){
+    const vs = [fa[f], fb[f], fc[f]];
+    for (let k = 0; k < 3; k++){
+      let lo = Infinity, hi = -Infinity;
+      for (const v of vs){ const x = wpos[v*3+k]; if (x<lo) lo=x; if (x>hi) hi=x; }
+      fmin[f*3+k] = lo; fmax[f*3+k] = hi;
+    }
+    const i0 = Math.floor(fmin[f*3]*inv), i1 = Math.floor(fmax[f*3]*inv);
+    const j0 = Math.floor(fmin[f*3+1]*inv), j1 = Math.floor(fmax[f*3+1]*inv);
+    const k0 = Math.floor(fmin[f*3+2]*inv), k1 = Math.floor(fmax[f*3+2]*inv);
+    for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) for (let k = k0; k <= k1; k++){
+      const key = ckey(i,j,k);
+      let arr = grid.get(key); if (!arr){ arr = []; grid.set(key, arr); }
+      arr.push(f);
+    }
+  }
+  const P = new Float64Array(9), Q = new Float64Array(9);
+  const tri = (arr, f) => { const vs=[fa[f],fb[f],fc[f]]; for(let i=0;i<3;i++)for(let k=0;k<3;k++) arr[i*3+k]=wpos[vs[i]*3+k]; };
+  const pts = [];
+  /* Möller–Trumbore segment (o→o+d) vs triangle (A,B,C); returns t in [0,1] or -1 */
+  function segTri(ox,oy,oz, dx,dy,dz, A,i){
+    const ax=A[i], ay=A[i+1], az=A[i+2];
+    const e1x=A[3]-A[0], e1y=A[4]-A[1], e1z=A[5]-A[2];
+    const e2x=A[6]-A[0], e2y=A[7]-A[1], e2z=A[8]-A[2];
+    const px=dy*e2z-dz*e2y, py=dz*e2x-dx*e2z, pz=dx*e2y-dy*e2x;
+    const det=e1x*px+e1y*py+e1z*pz;
+    if (Math.abs(det) < 1e-14) return -1;
+    const id=1/det;
+    const tx=ox-A[0], ty=oy-A[1], tz=oz-A[2];
+    const u=(tx*px+ty*py+tz*pz)*id; if (u<-1e-7||u>1+1e-7) return -1;
+    const qx=ty*e1z-tz*e1y, qy=tz*e1x-tx*e1z, qz=tx*e1y-ty*e1x;
+    const v=(dx*qx+dy*qy+dz*qz)*id; if (v<-1e-7||u+v>1+1e-7) return -1;
+    const t=(e2x*qx+e2y*qy+e2z*qz)*id;
+    return (t>=-1e-7 && t<=1+1e-7) ? t : -1;
+  }
+  function edgesVsTri(S, Tt, out){
+    for (let i = 0; i < 3; i++){
+      const j = (i+1)%3;
+      const ox=S[i*3], oy=S[i*3+1], oz=S[i*3+2];
+      const dx=S[j*3]-ox, dy=S[j*3+1]-oy, dz=S[j*3+2]-oz;
+      const t = segTri(ox,oy,oz,dx,dy,dz,Tt,0);
+      if (t >= 0) out.push(ox+t*dx, oy+t*dy, oz+t*dz);
+    }
+  }
+  let pairs = 0;
+  for (const [key, arr] of grid){
+    for (let x = 0; x < arr.length; x++){
+      const f = arr[x];
+      for (let y = x+1; y < arr.length; y++){
+        const h = arr[y];
+        // triangles sharing an edge (two welded vertices) are neighbours, skip; a single shared
+        // vertex may be a genuine crossing through a grid vertex, so those pairs are still tested
+        let shared = 0;
+        if (fa[f]===fa[h]||fa[f]===fb[h]||fa[f]===fc[h]) shared++;
+        if (fb[f]===fa[h]||fb[f]===fb[h]||fb[f]===fc[h]) shared++;
+        if (fc[f]===fa[h]||fc[f]===fb[h]||fc[f]===fc[h]) shared++;
+        if (shared >= 2) continue;
+        // AABB overlap
+        let ok = true;
+        for (let k = 0; k < 3; k++){ if (fmin[f*3+k] > fmax[h*3+k] || fmin[h*3+k] > fmax[f*3+k]){ ok = false; break; } }
+        if (!ok) continue;
+        // test this pair only in the min cell of the AABB overlap (dedupe across cells)
+        const ci = Math.floor(Math.max(fmin[f*3],fmin[h*3])*inv), cj = Math.floor(Math.max(fmin[f*3+1],fmin[h*3+1])*inv), ck = Math.floor(Math.max(fmin[f*3+2],fmin[h*3+2])*inv);
+        if (ckey(ci,cj,ck) !== key) continue;
+        pairs++;
+        tri(P, f); tri(Q, h);
+        const out = [];
+        edgesVsTri(P, Q, out); edgesVsTri(Q, P, out);
+        if (out.length >= 6){
+          const d = Math.hypot(out[0]-out[3], out[1]-out[4], out[2]-out[5]);
+          if (d > R*1e-5) pts.push(out[0],out[1],out[2],out[3],out[4],out[5]);
+        }
+      }
+    }
+  }
+  /* chain segments by shared endpoints */
+  const nSeg = pts.length/6;
+  const qinv = 1/(R*3e-4);
+  const pkey = (i) => Math.round(pts[i]*qinv)+','+Math.round(pts[i+1]*qinv)+','+Math.round(pts[i+2]*qinv);
+  const endMap = new Map();          // key -> [segIdx*2+end]
+  for (let s = 0; s < nSeg; s++){
+    for (let e = 0; e < 2; e++){
+      const k = pkey(s*6 + e*3);
+      let l = endMap.get(k); if (!l){ l = []; endMap.set(k, l); }
+      l.push(s*2+e);
+    }
+  }
+  const used = new Uint8Array(nSeg);
+  const chains = [];
+  const nearestNormal = (x,y,z) => {           // normal from the nearest welded vertex (for tone)
+    return [0,0,1];
+  };
+  for (let s0 = 0; s0 < nSeg; s0++){
+    if (used[s0]) continue;
+    const walk = (s, endIdx) => {   // continue from segment s leaving via end endIdx
+      const outPts = [];
+      let cur = s, e = endIdx;
+      while (true){
+        used[cur] = 1;
+        const p = cur*6 + e*3;
+        outPts.push(pts[p], pts[p+1], pts[p+2]);
+        const l = endMap.get(pkey(p)) || [];
+        let next = -1;
+        for (const q of l){ const sq = q>>1; if (!used[sq]){ next = q; break; } }
+        if (next < 0) break;
+        cur = next>>1; e = 1 - (next & 1);
+      }
+      return outPts;
+    };
+    used[s0] = 1;
+    const fwd = walk(s0, 1);
+    used[s0] = 1;
+    const back = walk(s0, 0);
+    // back starts with the s0 end-0 point; fwd starts with s0 end-1 point
+    const arr = [];
+    for (let i = back.length-3; i >= 0; i -= 3) arr.push(back[i], back[i+1], back[i+2]);
+    for (let i = 0; i < fwd.length; i += 3) arr.push(fwd[i], fwd[i+1], fwd[i+2]);
+    let n = arr.length/3;
+    if (n < 2) continue;
+    let closed = false;
+    if (n > 3 && Math.hypot(arr[0]-arr[(n-1)*3], arr[1]-arr[(n-1)*3+1], arr[2]-arr[(n-1)*3+2]) < R*5e-4){ arr.length -= 3; n--; closed = true; }
+    const cp = new Float32Array(arr), cn = new Float32Array(n*3);
+    for (let i = 0; i < n; i++){ cn[i*3+2] = 1; }
+    chains.push(smoothChain({ pts: cp, nrm: cn, closed, level: 0, seed: chains.length*0.53, unit: R*0.03 }, 1));
+  }
+  /* drop dust */
+  return chains.filter(c => c.pts.length >= 4*3 || c.closed);
+}
+
+/* ---------- principal-curvature streamline hatching ---------- */
+/* spatial hash of stroke sample points for the Jobard–Lefer separation test */
+class PointHash {
+  constructor(cell){ this.cell = cell; this.inv = 1/cell; this.m = new Map(); }
+  key(i,j,k){ return (i*73856093) ^ (j*19349663) ^ (k*83492791); }
+  add(x,y,z,id,step){
+    const k = this.key(Math.floor(x*this.inv), Math.floor(y*this.inv), Math.floor(z*this.inv));
+    let a = this.m.get(k); if (!a){ a = []; this.m.set(k, a); }
+    a.push(x,y,z,id,step);
+  }
+  near(x,y,z,d,id,step){       // any point within d, excluding this streamline's recent points
+    const ci = Math.floor(x*this.inv), cj = Math.floor(y*this.inv), ck = Math.floor(z*this.inv);
+    const d2 = d*d;
+    for (let i = ci-1; i <= ci+1; i++) for (let j = cj-1; j <= cj+1; j++) for (let k = ck-1; k <= ck+1; k++){
+      const a = this.m.get(this.key(i,j,k)); if (!a) continue;
+      for (let q = 0; q < a.length; q += 5){
+        if (a[q+3] === id && Math.abs(a[q+4] - step) < 12) continue;
+        const dx = a[q]-x, dy = a[q+1]-y, dz = a[q+2]-z;
+        if (dx*dx+dy*dy+dz*dz < d2) return true;
+      }
+    }
+    return false;
+  }
+}
+function eig2(a, b, c, d){   // eigen-decomposition of [[a,b],[c,d]]; returns [k1,k2,e1x,e1y] with k1 >= k2
+  /* signed ordering: the max-|κ| choice flips families wherever κ1 = -κ2 (hyperbolic loci), which
+     puts right-angle kinks into the hatching; the signed maximum is continuous away from umbilics */
+  const tr = a+d, disc = Math.sqrt(Math.max(0, (a-d)*(a-d)/4 + b*c));
+  let k1 = tr/2 + disc, k2 = tr/2 - disc;
+  let ex, ey;
+  if (Math.abs(b) > 1e-12){ ex = b; ey = k1 - a; }
+  else if (Math.abs(c) > 1e-12){ ex = k1 - d; ey = c; }
+  else { if (Math.abs(k1 - a) < Math.abs(k1 - d)){ ex = 1; ey = 0; } else { ex = 0; ey = 1; } }
+  const L = Math.hypot(ex, ey) || 1;
+  return [k1, k2, ex/L, ey/L];
+}
+const FALLBACK = [0.21, 0.94, 0.27];   // direction used where the surface is umbilic (sphere-like)
+function blendWithFallback(D, n, aniso){
+  // project fallback on tangent plane, align, blend by anisotropy
+  const dn = FALLBACK[0]*n[0]+FALLBACK[1]*n[1]+FALLBACK[2]*n[2];
+  let fx = FALLBACK[0]-dn*n[0], fy = FALLBACK[1]-dn*n[1], fz = FALLBACK[2]-dn*n[2];
+  let L = Math.hypot(fx,fy,fz);
+  if (L < 1e-6){ fx = D[0]; fy = D[1]; fz = D[2]; L = 1; }
+  fx/=L; fy/=L; fz/=L;
+  const w = Math.min(1, Math.max(0, (aniso - 0.06)/0.3));
+  const w2 = w*w*(3-2*w);
+  const sgn = (D[0]*fx+D[1]*fy+D[2]*fz) < 0 ? -1 : 1;
+  let x = fx*(1-w2) + sgn*D[0]*w2, y = fy*(1-w2) + sgn*D[1]*w2, z = fz*(1-w2) + sgn*D[2]*w2;
+  L = Math.hypot(x,y,z) || 1;
+  return [x/L, y/L, z/L];
+}
+
+/* parametric: precompute the field on the (u,v) grid, trace by bilinear interpolation */
+function paramField(fx, fy, fz, u0, u1, v0, v1, nu, nv){
+  const hu = (u1-u0)*5e-4, hv = (v1-v0)*5e-4;
+  const D1 = new Float32Array(nu*nv*3), NN = new Float32Array(nu*nv*3);
+  const PU = new Float32Array(nu*nv*3), PV = new Float32Array(nu*nv*3);
+  const P = (u,v) => [fx(u,v), fy(u,v), fz(u,v)];
+  for (let i = 0; i < nu; i++){
+    const u = u0 + (u1-u0)*i/(nu-1);
+    for (let j = 0; j < nv; j++){
+      const v = v0 + (v1-v0)*j/(nv-1);
+      const p0 = P(u,v), pp0 = P(u+hu,v), pm0 = P(u-hu,v), p0p = P(u,v+hv), p0m = P(u,v-hv);
+      const ppp = P(u+hu,v+hv), ppm = P(u+hu,v-hv), pmp = P(u-hu,v+hv), pmm = P(u-hu,v-hv);
+      const Pu = [0,0,0], Pv = [0,0,0], Puu = [0,0,0], Pvv = [0,0,0], Puv = [0,0,0];
+      for (let k = 0; k < 3; k++){
+        Pu[k] = (pp0[k]-pm0[k])/(2*hu); Pv[k] = (p0p[k]-p0m[k])/(2*hv);
+        Puu[k] = (pp0[k]-2*p0[k]+pm0[k])/(hu*hu); Pvv[k] = (p0p[k]-2*p0[k]+p0m[k])/(hv*hv);
+        Puv[k] = (ppp[k]-ppm[k]-pmp[k]+pmm[k])/(4*hu*hv);
+      }
+      let nx = Pu[1]*Pv[2]-Pu[2]*Pv[1], ny = Pu[2]*Pv[0]-Pu[0]*Pv[2], nz = Pu[0]*Pv[1]-Pu[1]*Pv[0];
+      const Ln = Math.hypot(nx,ny,nz);
+      const o = (i*nv+j)*3;
+      PU[o]=Pu[0]; PU[o+1]=Pu[1]; PU[o+2]=Pu[2]; PV[o]=Pv[0]; PV[o+1]=Pv[1]; PV[o+2]=Pv[2];
+      if (!(Ln > 1e-12) || !isFinite(Ln)){ D1[o]=1; NN[o+2]=1; continue; }
+      nx/=Ln; ny/=Ln; nz/=Ln;
+      NN[o]=nx; NN[o+1]=ny; NN[o+2]=nz;
+      const E = Pu[0]*Pu[0]+Pu[1]*Pu[1]+Pu[2]*Pu[2], Fm = Pu[0]*Pv[0]+Pu[1]*Pv[1]+Pu[2]*Pv[2], G = Pv[0]*Pv[0]+Pv[1]*Pv[1]+Pv[2]*Pv[2];
+      const L = Puu[0]*nx+Puu[1]*ny+Puu[2]*nz, M = Puv[0]*nx+Puv[1]*ny+Puv[2]*nz, N = Pvv[0]*nx+Pvv[1]*ny+Pvv[2]*nz;
+      const det = E*G - Fm*Fm;
+      if (!(det > 1e-14)){ D1[o]=1; continue; }
+      const a = (G*L-Fm*M)/det, b = (G*M-Fm*N)/det, c = (E*M-Fm*L)/det, d = (E*N-Fm*M)/det;
+      const [k1, k2, eu, ev] = eig2(a, b, c, d);
+      let dx = eu*Pu[0]+ev*Pv[0], dy = eu*Pu[1]+ev*Pv[1], dz = eu*Pu[2]+ev*Pv[2];
+      const Ld = Math.hypot(dx,dy,dz) || 1;
+      const aniso = Math.abs(k1-k2)/(Math.abs(k1)+Math.abs(k2)+1e-9);
+      const D = blendWithFallback([dx/Ld, dy/Ld, dz/Ld], [nx,ny,nz], aniso);
+      D1[o]=D[0]; D1[o+1]=D[1]; D1[o+2]=D[2];
+    }
+  }
+  return { D1, NN, PU, PV, nu, nv, u0, u1, v0, v1 };
+}
+function traceParametric(fx, fy, fz, fld, R, spacing, onLevel){
+  const { D1, NN, PU, PV, nu, nv, u0, u1, v0, v1 } = fld;
+  const perU = (() => { let ok = true; for (let j = 1; j < 5; j++){ const v = v0+(v1-v0)*j/5; const a=[fx(u0,v),fy(u0,v),fz(u0,v)], b=[fx(u1,v),fy(u1,v),fz(u1,v)]; if (Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]) > R*1e-4) ok = false; } return ok; })();
+  const perV = (() => { let ok = true; for (let i = 1; i < 5; i++){ const u = u0+(u1-u0)*i/5; const a=[fx(u,v0),fy(u,v0),fz(u,v0)], b=[fx(u,v1),fy(u,v1),fz(u,v1)]; if (Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]) > R*1e-4) ok = false; } return ok; })();
+  const P = (u,v) => [fx(u,v), fy(u,v), fz(u,v)];
+  const tmpD = [0,0,0], tmpN = [0,0,0], tmpPu = [0,0,0], tmpPv = [0,0,0];
+  function sample(u, v, fam, ref){   // fills tmpD (3D dir of family), tmpN, tmpPu, tmpPv
+    let fu = (u-u0)/(u1-u0)*(nu-1), fv = (v-v0)/(v1-v0)*(nv-1);
+    fu = Math.min(nu-1.000001, Math.max(0, fu)); fv = Math.min(nv-1.000001, Math.max(0, fv));
+    const i = Math.floor(fu), j = Math.floor(fv), a = fu-i, b = fv-j;
+    const o00 = (i*nv+j)*3, o10 = ((i+1)*nv+j)*3, o01 = (i*nv+j+1)*3, o11 = ((i+1)*nv+j+1)*3;
+    const ws = [(1-a)*(1-b), a*(1-b), (1-a)*b, a*b], os = [o00,o10,o01,o11];
+    let rx = D1[o00], ry = D1[o00+1], rz = D1[o00+2];
+    if (ref && (rx*ref[0]+ry*ref[1]+rz*ref[2]) < 0){ rx=-rx; ry=-ry; rz=-rz; }
+    for (let k = 0; k < 3; k++){ tmpD[k]=0; tmpN[k]=0; tmpPu[k]=0; tmpPv[k]=0; }
+    for (let q = 0; q < 4; q++){
+      const o = os[q], w = ws[q];
+      let dx = D1[o], dy = D1[o+1], dz = D1[o+2];
+      if (dx*rx+dy*ry+dz*rz < 0){ dx=-dx; dy=-dy; dz=-dz; }
+      tmpD[0]+=w*dx; tmpD[1]+=w*dy; tmpD[2]+=w*dz;
+      tmpN[0]+=w*NN[o]; tmpN[1]+=w*NN[o+1]; tmpN[2]+=w*NN[o+2];
+      tmpPu[0]+=w*PU[o]; tmpPu[1]+=w*PU[o+1]; tmpPu[2]+=w*PU[o+2];
+      tmpPv[0]+=w*PV[o]; tmpPv[1]+=w*PV[o+1]; tmpPv[2]+=w*PV[o+2];
+    }
+    let L = Math.hypot(tmpN[0],tmpN[1],tmpN[2]) || 1; tmpN[0]/=L; tmpN[1]/=L; tmpN[2]/=L;
+    if (fam === 1){   // second family: n × D1
+      const x = tmpN[1]*tmpD[2]-tmpN[2]*tmpD[1], y = tmpN[2]*tmpD[0]-tmpN[0]*tmpD[2], z = tmpN[0]*tmpD[1]-tmpN[1]*tmpD[0];
+      tmpD[0]=x; tmpD[1]=y; tmpD[2]=z;
+    }
+    L = Math.hypot(tmpD[0],tmpD[1],tmpD[2]) || 1; tmpD[0]/=L; tmpD[1]/=L; tmpD[2]/=L;
+    if (ref && (tmpD[0]*ref[0]+tmpD[1]*ref[1]+tmpD[2]*ref[2]) < 0){ tmpD[0]=-tmpD[0]; tmpD[1]=-tmpD[1]; tmpD[2]=-tmpD[2]; }
+  }
+  function toParam(D){   // 3D tangent direction -> (du,dv) using interpolated Pu,Pv
+    const E = tmpPu[0]*tmpPu[0]+tmpPu[1]*tmpPu[1]+tmpPu[2]*tmpPu[2];
+    const Fm = tmpPu[0]*tmpPv[0]+tmpPu[1]*tmpPv[1]+tmpPu[2]*tmpPv[2];
+    const G = tmpPv[0]*tmpPv[0]+tmpPv[1]*tmpPv[1]+tmpPv[2]*tmpPv[2];
+    const det = E*G-Fm*Fm; if (!(det > 1e-16)) return null;
+    const du0 = D[0]*tmpPu[0]+D[1]*tmpPu[1]+D[2]*tmpPu[2], dv0 = D[0]*tmpPv[0]+D[1]*tmpPv[1]+D[2]*tmpPv[2];
+    return [(G*du0-Fm*dv0)/det, (E*dv0-Fm*du0)/det, E, Fm, G];
+  }
+  const chains = [];
+  const levels = [
+    { fam: 0, sep: spacing,      lvl: 0 },
+    { fam: 1, sep: spacing*0.85, lvl: 1 },
+    { fam: 0, sep: spacing*0.5,  lvl: 2 },
+  ];
+  const hashes = [[], []];     // per family, list of PointHash from previous levels
+  let sid = 0;
+  const seedsAll = [];
+  const gs = 90;
+  for (let i = 0; i < gs; i++) for (let j = 0; j < gs; j++) seedsAll.push([u0+(u1-u0)*(i+0.5)/gs, v0+(v1-v0)*(j+0.5)/gs]);
+  // shuffle (LCG)
+  let rng = 12345;
+  for (let i = seedsAll.length-1; i > 0; i--){ rng = (rng*1103515245+12345) & 0x7fffffff; const j = rng % (i+1); const t = seedsAll[i]; seedsAll[i] = seedsAll[j]; seedsAll[j] = t; }
+  for (const L of levels){
+    const H = new PointHash(L.sep);
+    const fam = hashes[L.fam];
+    const test = (x,y,z,d,id,step) => { if (H.near(x,y,z,d,id,step)) return true; for (const h of fam) if (h.near(x,y,z,d,id,step)) return true; return false; };
+    const h3 = L.sep*0.4;
+    let count = 0;
+    for (const [su, sv] of seedsAll){
+      rng = (rng*1103515245+12345) & 0x7fffffff;
+      const maxSteps = Math.round((7 + 9*(rng % 1000)/1000) * L.sep / h3);
+      const p0 = P(su, sv);
+      if (!p0.every(isFinite)) continue;
+      if (test(p0[0],p0[1],p0[2], L.sep*0.9, -1, 0)) continue;
+      const id = sid++;
+      const halves = [];
+      for (let dirSign = -1; dirSign <= 1; dirSign += 2){
+        const ptsA = [], nrA = [];
+        let u = su, v = sv, ref = null;
+        sample(u, v, L.fam, null);
+        ref = [dirSign*tmpD[0], dirSign*tmpD[1], dirSign*tmpD[2]];
+        let step = 0;
+        while (step < maxSteps){
+          sample(u, v, L.fam, ref);
+          const pr = toParam(tmpD); if (!pr) break;
+          let [du, dv, E, Fm, G] = pr;
+          let len = Math.sqrt(Math.max(1e-30, E*du*du + 2*Fm*du*dv + G*dv*dv));
+          du *= h3/len; dv *= h3/len;
+          // midpoint
+          const um = u + du/2, vm = v + dv/2;
+          sample(um, vm, L.fam, ref);
+          const pr2 = toParam(tmpD); if (!pr2) break;
+          [du, dv, E, Fm, G] = pr2;
+          len = Math.sqrt(Math.max(1e-30, E*du*du + 2*Fm*du*dv + G*dv*dv));
+          du *= h3/len; dv *= h3/len;
+          ref = [tmpD[0], tmpD[1], tmpD[2]];
+          u += du; v += dv;
+          if (u < u0 || u > u1){ if (perU){ u = u0 + ((u-u0) % (u1-u0) + (u1-u0)) % (u1-u0); } else break; }
+          if (v < v0 || v > v1){ if (perV){ v = v0 + ((v-v0) % (v1-v0) + (v1-v0)) % (v1-v0); } else break; }
+          const p = P(u, v);
+          if (!p.every(isFinite)) break;
+          if (test(p[0],p[1],p[2], L.sep*0.5, id, step)) break;
+          sample(u, v, L.fam, ref);
+          ptsA.push(p[0],p[1],p[2]); nrA.push(tmpN[0],tmpN[1],tmpN[2]);
+          H.add(p[0],p[1],p[2], id, step);
+          step++;
+        }
+        halves.push([ptsA, nrA]);
+      }
+      // assemble: reverse(back) + seed + fwd
+      const [bp, bn] = halves[0], [fp, fn] = halves[1];
+      const n = bp.length/3 + 1 + fp.length/3;
+      if (n < 5) continue;
+      sample(su, sv, L.fam, null);
+      const pts = new Float32Array(n*3), nrm = new Float32Array(n*3);
+      let w = 0;
+      for (let i = bp.length/3 - 1; i >= 0; i--){ pts.set(bp.slice(i*3,i*3+3), w*3); nrm.set(bn.slice(i*3,i*3+3), w*3); w++; }
+      pts.set(p0, w*3); nrm.set(tmpN, w*3); w++;
+      for (let i = 0; i < fp.length/3; i++){ pts.set(fp.slice(i*3,i*3+3), w*3); nrm.set(fn.slice(i*3,i*3+3), w*3); w++; }
+      chains.push({ pts, nrm, closed: false, level: L.lvl, seed: (id % 89)*0.13, unit: L.sep });
+      H.add(p0[0],p0[1],p0[2], id, 0);
+      count++;
+    }
+    hashes[L.fam].push(H);
+    if (onLevel) onLevel(L.lvl, count);
+  }
+  return chains;
+}
+
+/* implicit: field at welded vertices from grad & Hessian of f, trace in 3D with re-projection */
+function traceImplicit(f, T, h, R, spacing, onLevel){
+  const { nW, wpos } = T;
+  const eps = h*0.5;
+  const D1 = new Float32Array(nW*3), NN = new Float32Array(nW*3);
+  const grad = (x,y,z) => [ (f(x+eps,y,z)-f(x-eps,y,z))/(2*eps), (f(x,y+eps,z)-f(x,y-eps,z))/(2*eps), (f(x,y,z+eps)-f(x,y,z-eps))/(2*eps) ];
+  for (let i = 0; i < nW; i++){
+    const x = wpos[i*3], y = wpos[i*3+1], z = wpos[i*3+2];
+    const g = grad(x,y,z);
+    const Lg = Math.hypot(g[0],g[1],g[2]);
+    const o = i*3;
+    if (!(Lg > 1e-12)){ D1[o]=1; NN[o+2]=1; continue; }
+    const n = [g[0]/Lg, g[1]/Lg, g[2]/Lg];
+    NN[o]=n[0]; NN[o+1]=n[1]; NN[o+2]=n[2];
+    const f0 = f(x,y,z);
+    const Hxx = (f(x+eps,y,z)-2*f0+f(x-eps,y,z))/(eps*eps);
+    const Hyy = (f(x,y+eps,z)-2*f0+f(x,y-eps,z))/(eps*eps);
+    const Hzz = (f(x,y,z+eps)-2*f0+f(x,y,z-eps))/(eps*eps);
+    const Hxy = (f(x+eps,y+eps,z)-f(x+eps,y-eps,z)-f(x-eps,y+eps,z)+f(x-eps,y-eps,z))/(4*eps*eps);
+    const Hxz = (f(x+eps,y,z+eps)-f(x+eps,y,z-eps)-f(x-eps,y,z+eps)+f(x-eps,y,z-eps))/(4*eps*eps);
+    const Hyz = (f(x,y+eps,z+eps)-f(x,y+eps,z-eps)-f(x,y-eps,z+eps)+f(x,y-eps,z-eps))/(4*eps*eps);
+    // tangent basis
+    let t1 = Math.abs(n[0]) < 0.9 ? [1,0,0] : [0,1,0];
+    let dn = t1[0]*n[0]+t1[1]*n[1]+t1[2]*n[2];
+    t1 = [t1[0]-dn*n[0], t1[1]-dn*n[1], t1[2]-dn*n[2]];
+    let Lt = Math.hypot(t1[0],t1[1],t1[2]); t1 = [t1[0]/Lt, t1[1]/Lt, t1[2]/Lt];
+    const t2 = [n[1]*t1[2]-n[2]*t1[1], n[2]*t1[0]-n[0]*t1[2], n[0]*t1[1]-n[1]*t1[0]];
+    const Hv = (v) => [Hxx*v[0]+Hxy*v[1]+Hxz*v[2], Hxy*v[0]+Hyy*v[1]+Hyz*v[2], Hxz*v[0]+Hyz*v[1]+Hzz*v[2]];
+    const H1 = Hv(t1), H2 = Hv(t2);
+    const a = -(t1[0]*H1[0]+t1[1]*H1[1]+t1[2]*H1[2])/Lg, b = -(t1[0]*H2[0]+t1[1]*H2[1]+t1[2]*H2[2])/Lg, d = -(t2[0]*H2[0]+t2[1]*H2[1]+t2[2]*H2[2])/Lg;
+    const [k1, k2, e1, e2] = eig2(a, b, b, d);
+    const aniso = Math.abs(k1-k2)/(Math.abs(k1)+Math.abs(k2)+1e-9);
+    const D = blendWithFallback([e1*t1[0]+e2*t2[0], e1*t1[1]+e2*t2[1], e1*t1[2]+e2*t2[2]], n, aniso);
+    D1[o]=D[0]; D1[o+1]=D[1]; D1[o+2]=D[2];
+  }
+  // vertex lookup hash for direction interpolation
+  const VH = new PointHash(h*1.5);
+  for (let i = 0; i < nW; i++) VH.add(wpos[i*3], wpos[i*3+1], wpos[i*3+2], i, 0);
+  const tmpD = [0,0,0], tmpN = [0,0,0];
+  function sample(x,y,z, fam, ref){
+    const inv = VH.inv, ci = Math.floor(x*inv), cj = Math.floor(y*inv), ck = Math.floor(z*inv);
+    let rx = 0, ry = 0, rz = 0, first = true;
+    for (let k = 0; k < 3; k++){ tmpD[k]=0; tmpN[k]=0; }
+    let wsum = 0;
+    for (let i = ci-1; i <= ci+1; i++) for (let j = cj-1; j <= cj+1; j++) for (let k = ck-1; k <= ck+1; k++){
+      const a = VH.m.get(VH.key(i,j,k)); if (!a) continue;
+      for (let q = 0; q < a.length; q += 5){
+        const dx = a[q]-x, dy = a[q+1]-y, dz = a[q+2]-z;
+        const d2 = dx*dx+dy*dy+dz*dz;
+        if (d2 > 2.25*h*h) continue;
+        const id = a[q+3]*3;
+        const w = 1/(d2 + 1e-4*h*h);
+        let vx = D1[id], vy = D1[id+1], vz = D1[id+2];
+        if (first){ rx = vx; ry = vy; rz = vz; first = false; if (ref && (rx*ref[0]+ry*ref[1]+rz*ref[2]) < 0){ rx=-rx; ry=-ry; rz=-rz; } }
+        if (vx*rx+vy*ry+vz*rz < 0){ vx=-vx; vy=-vy; vz=-vz; }
+        tmpD[0]+=w*vx; tmpD[1]+=w*vy; tmpD[2]+=w*vz;
+        tmpN[0]+=w*NN[id]; tmpN[1]+=w*NN[id+1]; tmpN[2]+=w*NN[id+2];
+        wsum += w;
+      }
+    }
+    if (wsum === 0) return false;
+    let L = Math.hypot(tmpN[0],tmpN[1],tmpN[2]) || 1; tmpN[0]/=L; tmpN[1]/=L; tmpN[2]/=L;
+    if (fam === 1){
+      const ax = tmpN[1]*tmpD[2]-tmpN[2]*tmpD[1], ay = tmpN[2]*tmpD[0]-tmpN[0]*tmpD[2], az = tmpN[0]*tmpD[1]-tmpN[1]*tmpD[0];
+      tmpD[0]=ax; tmpD[1]=ay; tmpD[2]=az;
+    }
+    // keep tangent
+    const dn = tmpD[0]*tmpN[0]+tmpD[1]*tmpN[1]+tmpD[2]*tmpN[2];
+    tmpD[0]-=dn*tmpN[0]; tmpD[1]-=dn*tmpN[1]; tmpD[2]-=dn*tmpN[2];
+    L = Math.hypot(tmpD[0],tmpD[1],tmpD[2]); if (!(L > 1e-9)) return false;
+    tmpD[0]/=L; tmpD[1]/=L; tmpD[2]/=L;
+    if (ref && (tmpD[0]*ref[0]+tmpD[1]*ref[1]+tmpD[2]*ref[2]) < 0){ tmpD[0]=-tmpD[0]; tmpD[1]=-tmpD[1]; tmpD[2]=-tmpD[2]; }
+    return true;
+  }
+  function project(p){   // Newton step(s) back onto f = 0
+    for (let it = 0; it < 2; it++){
+      const g = grad(p[0],p[1],p[2]); const g2 = g[0]*g[0]+g[1]*g[1]+g[2]*g[2]; if (!(g2 > 1e-20)) return false;
+      const v = f(p[0],p[1],p[2]) / g2;
+      p[0]-=v*g[0]; p[1]-=v*g[1]; p[2]-=v*g[2];
+    }
+    return p.every(isFinite);
+  }
+  const levels = [
+    { fam: 0, sep: spacing,      lvl: 0 },
+    { fam: 1, sep: spacing*0.85, lvl: 1 },
+    { fam: 0, sep: spacing*0.5,  lvl: 2 },
+  ];
+  const hashes = [[], []];
+  const chains = [];
+  let sid = 0;
+  // seeds: welded vertices in shuffled order (subsampled)
+  const order = []; for (let i = 0; i < nW; i++) order.push(i);
+  let rng = 4321;
+  for (let i = order.length-1; i > 0; i--){ rng = (rng*1103515245+12345) & 0x7fffffff; const j = rng % (i+1); const t = order[i]; order[i] = order[j]; order[j] = t; }
+  const seeds = order.slice(0, Math.min(nW, 6000));
+  for (const L of levels){
+    const H = new PointHash(L.sep);
+    const fam = hashes[L.fam];
+    const test = (x,y,z,d,id,step) => { if (H.near(x,y,z,d,id,step)) return true; for (const hh of fam) if (hh.near(x,y,z,d,id,step)) return true; return false; };
+    const h3 = L.sep*0.4;
+    let count = 0;
+    for (const vi of seeds){
+      rng = (rng*1103515245+12345) & 0x7fffffff;
+      const maxSteps = Math.round((7 + 9*(rng % 1000)/1000) * L.sep / h3);
+      const p0 = [wpos[vi*3], wpos[vi*3+1], wpos[vi*3+2]];
+      if (test(p0[0],p0[1],p0[2], L.sep*0.9, -1, 0)) continue;
+      const id = sid++;
+      const halves = [];
+      for (let dirSign = -1; dirSign <= 1; dirSign += 2){
+        const ptsA = [], nrA = [];
+        const p = p0.slice();
+        if (!sample(p[0],p[1],p[2], L.fam, null)) break;
+        let ref = [dirSign*tmpD[0], dirSign*tmpD[1], dirSign*tmpD[2]];
+        let step = 0;
+        while (step < maxSteps){
+          if (!sample(p[0],p[1],p[2], L.fam, ref)) break;
+          const m = [p[0]+tmpD[0]*h3/2, p[1]+tmpD[1]*h3/2, p[2]+tmpD[2]*h3/2];
+          if (!sample(m[0],m[1],m[2], L.fam, ref)) break;
+          ref = [tmpD[0], tmpD[1], tmpD[2]];
+          p[0]+=tmpD[0]*h3; p[1]+=tmpD[1]*h3; p[2]+=tmpD[2]*h3;
+          if (!project(p)) break;
+          if (test(p[0],p[1],p[2], L.sep*0.5, id, step)) break;
+          if (!sample(p[0],p[1],p[2], L.fam, ref)) break;
+          ptsA.push(p[0],p[1],p[2]); nrA.push(tmpN[0],tmpN[1],tmpN[2]);
+          H.add(p[0],p[1],p[2], id, step);
+          step++;
+        }
+        halves.push([ptsA, nrA]);
+      }
+      if (halves.length < 2) continue;
+      const [bp, bn] = halves[0], [fp, fn] = halves[1];
+      const n = bp.length/3 + 1 + fp.length/3;
+      if (n < 5) continue;
+      sample(p0[0],p0[1],p0[2], L.fam, null);
+      const pts = new Float32Array(n*3), nrm = new Float32Array(n*3);
+      let w = 0;
+      for (let i = bp.length/3 - 1; i >= 0; i--){ pts.set(bp.slice(i*3,i*3+3), w*3); nrm.set(bn.slice(i*3,i*3+3), w*3); w++; }
+      pts.set(p0, w*3); nrm.set(tmpN, w*3); w++;
+      for (let i = 0; i < fp.length/3; i++){ pts.set(fp.slice(i*3,i*3+3), w*3); nrm.set(fn.slice(i*3,i*3+3), w*3); w++; }
+      chains.push({ pts, nrm, closed: false, level: L.lvl, seed: (id % 89)*0.13, unit: L.sep });
+      H.add(p0[0],p0[1],p0[2], id, 0);
+      count++;
+    }
+    hashes[L.fam].push(H);
+    if (onLevel) onLevel(L.lvl, count);
+  }
+  return chains;
+}
+
+/* ---------- render loop (on demand) ---------- */
+let needsRender = true;
+function requestRender(){ needsRender = true; }
+const _eye = new THREE.Vector3();
+function updateContours(){
+  if (!TOPO || !$('contours').checked){ setGeom(OBJ.contour, EMPTY()); setGeom(OBJ.contourH, EMPTY()); setGeom(OBJ.halo, EMPTY()); return; }
+  mesh.updateMatrixWorld(true);
+  _eye.copy(camera.position);
+  mesh.worldToLocal(_eye);
+  const chains = silhouetteChains(TOPO, _eye).concat(CHAINS.boundary);
+  const g = ribbonGeometry(chains);
+  setGeom(OBJ.contour, g);
+  OBJ.contourH.geometry = g;
+  OBJ.halo.geometry = g;
+}
+function renderFrame(){
+  camera.position.set(0, 0, view.r);
+  camera.lookAt(0, 0, 0);
+  camera.updateMatrixWorld();
+  updateContours();
+  for (const m of ALL_STROKE_MATS){
+    m.uniforms.uDepthNear.value = Math.max(0.01, view.r - MODEL.R);
+    m.uniforms.uDepthFar.value = view.r + MODEL.R;
+  }
+  /* pass 1: normals + depth for the optional edge filter (strokes hidden) */
+  if (edgeUniforms.uWidth.value > 0.02){
+    for (const o of Object.values(OBJ)) o.visible = false;
+    scene.overrideMaterial = normalMat;
+    renderer.setRenderTarget(normTarget);
+    renderer.clear();
+    renderer.render(scene, camera);
+    scene.overrideMaterial = null;
+    for (const o of Object.values(OBJ)) o.visible = true;
+  }
+  /* pass 2: paper, hatching and strokes */
+  renderer.setRenderTarget(null);
+  renderer.clear();
+  renderer.render(scene, camera);
+  /* pass 3: optional edge filter over the top */
+  if (edgeUniforms.uWidth.value > 0.02){
+    renderer.autoClear = false;
+    renderer.render(quadScene, quadCam);
+    renderer.autoClear = true;
+  }
+  updateLabels(false);
+}
+function tick(){
+  requestAnimationFrame(tick);
+  if (needsRender){ needsRender = false; renderFrame(); }
+}
+
+function resize(){
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2) * ($('fine').checked ? 2 : 1);
+  renderer.setPixelRatio(dpr);
+  renderer.setSize(w, h, false);
+  camera.aspect = w/h; camera.updateProjectionMatrix();
+  const W = Math.round(w*dpr), H = Math.round(h*dpr);
+  normTarget.setSize(W, H);
+  edgeUniforms.uPx.value.set(1/W, 1/H);
+  for (const m of ALL_STROKE_MATS) m.uniforms.uRes.value.set(W, H);
+  requestRender();
+}
+window.addEventListener('resize', resize);
+
+/* ---------- controls (trackball drag, wheel to zoom) ---------- */
+let dragging = false, px = 0, py = 0;
+const _axis = new THREE.Vector3(), _dq = new THREE.Quaternion();
+function trackball(dx, dy, roll){
+  if (roll){
+    _axis.set(0, 0, 1);
+    _dq.setFromAxisAngle(_axis, -dx * 0.006);
+  } else {
+    const len = Math.hypot(dx, dy);
+    if (len < 1e-6) return;
+    _axis.set(dy / len, dx / len, 0);
+    _dq.setFromAxisAngle(_axis, len * 0.006);
+  }
+  pivot.quaternion.premultiply(_dq);
+}
+let pressX = 0, pressY = 0;
+canvas.addEventListener('pointerdown', e => {
+  dragging = true; px = e.clientX; py = e.clientY; pressX = px; pressY = py; canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  trackball(e.clientX - px, e.clientY - py, e.shiftKey);
+  px = e.clientX; py = e.clientY;
+  requestRender();
+});
+canvas.addEventListener('pointerup', e => {
+  dragging = false;
+  if (placing && Math.hypot(e.clientX - pressX, e.clientY - pressY) < 4){
+    const hit = pickSurface(e.clientX, e.clientY);
+    if (hit){ addLabel(mesh.worldToLocal(hit.point.clone()), $('labelText').value || 'A'); }
+  }
+  updateLabels(true);
+});
+let wheelTimer = 0;
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  view.r *= Math.exp(e.deltaY * 0.0012);
+  view.r = Math.min(200, Math.max(0.3, view.r));
+  requestRender();
+  clearTimeout(wheelTimer); wheelTimer = setTimeout(() => updateLabels(true), 200);
+}, { passive:false });
+
+/* ---------- geometry builders ---------- */
+function fitCamera(geo){
+  geo.computeBoundingSphere();
+  const bs = geo.boundingSphere;
+  mesh.position.copy(bs.center).negate();
+  view.r = Math.max(0.5, bs.radius * 3.1);
+  if (QS.get('th') || QS.get('ph'))
+    orientFromAngles(parseFloat(QS.get('th') || '0.9'), parseFloat(QS.get('ph') || '1.15'));
+  camera.near = Math.max(0.01, bs.radius * 0.02);
+  camera.far  = bs.radius * 40;
+  camera.updateProjectionMatrix();
+  edgeUniforms.uNear.value = camera.near;
+  edgeUniforms.uFar.value  = camera.far;
+}
+
+function buildParametric(){
+  const fx = compileExpr($('fx').value, ['u','v']);
+  const fy = compileExpr($('fy').value, ['u','v']);
+  const fz = compileExpr($('fz').value, ['u','v']);
+  const u0 = evalNum($('u0').value), u1 = evalNum($('u1').value);
+  const v0 = evalNum($('v0').value), v1 = evalNum($('v1').value);
+  const su = Math.max(8, Math.min(800, $('su').value|0));
+  const sv = Math.max(8, Math.min(800, $('sv').value|0));
+  const nu = su+1, nv = sv+1;
+  const pos = new Float32Array(nu*nv*3);
+  const nrm = new Float32Array(nu*nv*3);
+  const uvs = new Float32Array(nu*nv*2);
+  const du = (u1-u0)/su, dv = (v1-v0)/sv;
+  let k3 = 0, k2 = 0;
+  for (let i = 0; i < nu; i++){
+    const u = u0 + du*i;
+    for (let j = 0; j < nv; j++){
+      const v = v0 + dv*j;
+      let x = fx(u,v), y = fy(u,v), z = fz(u,v);
+      if (!isFinite(x) || !isFinite(y) || !isFinite(z)){ x = y = z = 0; }
+      pos[k3] = x; pos[k3+1] = y; pos[k3+2] = z;
+      const hu = du*0.5, hv = dv*0.5;
+      const ax = fx(u+hu,v)-fx(u-hu,v), ay = fy(u+hu,v)-fy(u-hu,v), az = fz(u+hu,v)-fz(u-hu,v);
+      const bx = fx(u,v+hv)-fx(u,v-hv), by = fy(u,v+hv)-fy(u,v-hv), bz = fz(u,v+hv)-fz(u,v-hv);
+      let cx = ay*bz-az*by, cy = az*bx-ax*bz, cz = ax*by-ay*bx;
+      const L = Math.hypot(cx,cy,cz);
+      if (L > 1e-12){ cx/=L; cy/=L; cz/=L; } else { cx=0; cy=0; cz=1; }
+      nrm[k3] = cx; nrm[k3+1] = cy; nrm[k3+2] = cz;
+      uvs[k2] = i/su; uvs[k2+1] = j/sv;
+      k3 += 3; k2 += 2;
+    }
+  }
+  const idx = new Uint32Array(su*sv*6);
+  let q = 0;
+  for (let i = 0; i < su; i++){
+    for (let j = 0; j < sv; j++){
+      const a = i*nv+j, b = (i+1)*nv+j, c = (i+1)*nv+j+1, d = i*nv+j+1;
+      idx[q++]=a; idx[q++]=b; idx[q++]=d;
+      idx[q++]=b; idx[q++]=c; idx[q++]=d;
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('normal',   new THREE.BufferAttribute(nrm, 3));
+  geo.setAttribute('uv',       new THREE.BufferAttribute(uvs, 2));
+  geo.setIndex(new THREE.BufferAttribute(idx, 1));
+  MODEL.param = { fx, fy, fz, u0, u1, v0, v1 };
+  return geo;
+}
+
+function buildImplicit(){
+  const f = compileExpr($('ff').value, ['x','y','z']);
+  const B = evalNum($('bb').value);
+  const res = Math.max(16, Math.min(160, $('res').value|0));
+  const n = res, h = 2*B/n;
+  const N1 = n+1;
+  const vals = new Float32Array(N1*N1*N1);
+  const gid = (i,j,k) => (i*N1+j)*N1+k;
+  for (let i = 0; i <= n; i++){
+    const x = -B + h*i;
+    for (let j = 0; j <= n; j++){
+      const y = -B + h*j;
+      for (let k = 0; k <= n; k++){
+        const w = f(x, y, -B + h*k);
+        vals[gid(i,j,k)] = isFinite(w) ? w : 1e6;
+      }
+    }
+  }
+  const CORN = [[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
+  const TETS = [[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]];
+  const out = [];
+  const cp = new Float64Array(24), cv = new Float64Array(8);
+  const P = new Float64Array(12), Q = new Float64Array(8);
+  const tri = new Float64Array(9);
+  let tn = 0;
+  const geps = h * 0.5;
+  function emitInterp(m, o){
+    const t = Q[m] / (Q[m] - Q[o]);
+    tri[tn*3]   = P[m*3]   + t*(P[o*3]  -P[m*3]);
+    tri[tn*3+1] = P[m*3+1] + t*(P[o*3+1]-P[m*3+1]);
+    tri[tn*3+2] = P[m*3+2] + t*(P[o*3+2]-P[m*3+2]);
+    if (++tn === 3){ pushTri(); tn = 0; }
+  }
+  function pushTri(){
+    const cx = (tri[0]+tri[3]+tri[6])/3, cy = (tri[1]+tri[4]+tri[7])/3, cz = (tri[2]+tri[5]+tri[8])/3;
+    const e1x = tri[3]-tri[0], e1y = tri[4]-tri[1], e1z = tri[5]-tri[2];
+    const e2x = tri[6]-tri[0], e2y = tri[7]-tri[1], e2z = tri[8]-tri[2];
+    const nx = e1y*e2z - e1z*e2y, ny = e1z*e2x - e1x*e2z, nz = e1x*e2y - e1y*e2x;
+    const gx = f(cx+geps,cy,cz)-f(cx-geps,cy,cz),
+          gy = f(cx,cy+geps,cz)-f(cx,cy-geps,cz),
+          gz = f(cx,cy,cz+geps)-f(cx,cy,cz-geps);
+    if (nx*gx + ny*gy + nz*gz < 0){
+      out.push(tri[0],tri[1],tri[2], tri[6],tri[7],tri[8], tri[3],tri[4],tri[5]);
+    } else {
+      out.push(tri[0],tri[1],tri[2], tri[3],tri[4],tri[5], tri[6],tri[7],tri[8]);
+    }
+  }
+  for (let i = 0; i < n; i++){
+    for (let j = 0; j < n; j++){
+      for (let k = 0; k < n; k++){
+        let mn = Infinity, mx = -Infinity;
+        for (let c = 0; c < 8; c++){
+          const w = vals[gid(i+CORN[c][0], j+CORN[c][1], k+CORN[c][2])];
+          cv[c] = w;
+          if (w < mn) mn = w;
+          if (w > mx) mx = w;
+          cp[c*3]   = -B + h*(i+CORN[c][0]);
+          cp[c*3+1] = -B + h*(j+CORN[c][1]);
+          cp[c*3+2] = -B + h*(k+CORN[c][2]);
+        }
+        if (mn > 0 || mx < 0) continue;
+        for (let t = 0; t < 6; t++){
+          const T = TETS[t];
+          const ins = [], outs = [];
+          for (let m = 0; m < 4; m++){
+            const c = T[m];
+            P[m*3] = cp[c*3]; P[m*3+1] = cp[c*3+1]; P[m*3+2] = cp[c*3+2];
+            Q[m] = cv[c];
+            (cv[c] < 0 ? ins : outs).push(m);
+          }
+          if (ins.length === 0 || ins.length === 4) continue;
+          if (ins.length === 1){
+            emitInterp(ins[0], outs[0]); emitInterp(ins[0], outs[1]); emitInterp(ins[0], outs[2]);
+          } else if (ins.length === 3){
+            emitInterp(ins[0], outs[0]); emitInterp(ins[1], outs[0]); emitInterp(ins[2], outs[0]);
+          } else {
+            const a = ins[0], b = ins[1], c = outs[0], d = outs[1];
+            emitInterp(a,c); emitInterp(a,d); emitInterp(b,d);
+            emitInterp(a,c); emitInterp(b,d); emitInterp(b,c);
+          }
+        }
+      }
+    }
+  }
+  const m = out.length/3;
+  const pos = new Float32Array(out);
+  const nrm = new Float32Array(out.length);
+  const eps = h*0.5;
+  for (let v = 0; v < m; v++){
+    const x = pos[v*3], y = pos[v*3+1], z = pos[v*3+2];
+    let gx = f(x+eps,y,z)-f(x-eps,y,z),
+        gy = f(x,y+eps,z)-f(x,y-eps,z),
+        gz = f(x,y,z+eps)-f(x,y,z-eps);
+    const L = Math.hypot(gx,gy,gz);
+    if (L > 1e-12){ gx/=L; gy/=L; gz/=L; } else { gx=0; gy=0; gz=1; }
+    nrm[v*3]=gx; nrm[v*3+1]=gy; nrm[v*3+2]=gz;
+  }
+  const uvs = new Float32Array(m*2);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('normal',   new THREE.BufferAttribute(nrm, 3));
+  geo.setAttribute('uv',       new THREE.BufferAttribute(uvs, 2));
+  if (m === 0) throw new Error('the zero set misses the box — enlarge the half-width?');
+  MODEL.param = null;
+  MODEL.implicit = { f, h };
+  return geo;
+}
+
+/* ---------- UI wiring ---------- */
+const ROMAN = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV'];
+let plateNo = 0;
+function mode(){ return document.querySelector('input[name=mode]:checked').value; }
+
+function fillPresetList(){
+  const sel = $('preset');
+  sel.innerHTML = '';
+  const list = mode() === 'par' ? PAR_PRESETS : IMP_PRESETS;
+  list.forEach((p, i) => {
+    const o = document.createElement('option');
+    o.value = p.key; o.textContent = p.name;
+    sel.appendChild(o);
+  });
+}
+function applyPreset(key){
+  const par = mode() === 'par';
+  const list = par ? PAR_PRESETS : IMP_PRESETS;
+  const p = list.find(x => x.key === key) || list[0];
+  plateNo = (par ? 0 : PAR_PRESETS.length) + list.indexOf(p);
+  if (par){
+    $('fx').value = p.fx; $('fy').value = p.fy; $('fz').value = p.fz;
+    $('u0').value = p.u0; $('u1').value = p.u1;
+    $('v0').value = p.v0; $('v1').value = p.v1;
+    $('su').value = p.su; $('sv').value = p.sv;
+  } else {
+    $('ff').value = p.f; $('bb').value = p.bb; $('res').value = p.res;
+    if ($('hatchMode').value === '1') $('hatchMode').value = '2';
+  }
+  for (const l of LABELS) l.el.remove(); LABELS.length = 0; updateLabels(false);
+  document.querySelector('#caption b').textContent = 'Plate ' + (ROMAN[plateNo] || plateNo+1) + '.';
+  $('capText').textContent = p.name + '.';
+  rebuild(true);
+}
+
+let buildToken = 0;
+const later = fn => new Promise(res => setTimeout(() => res(fn()), 15));
+async function rebuild(refit){
+  const token = ++buildToken;
+  setStatus('meshing…');
+  try {
+    await later(() => {});
+    const geo = mode() === 'par' ? buildParametric() : buildImplicit();
+    if (token !== buildToken) return;
+    mesh.geometry.dispose();
+    mesh.geometry = geo;
+    if (refit) fitCamera(geo);
+    geo.computeBoundingSphere();
+    MODEL.R = geo.boundingSphere.radius;
+    setStatus('finding edges…');
+    await later(() => { TOPO = buildTopology(geo); CHAINS.boundary = boundaryChains(TOPO); });
+    if (token !== buildToken) return;
+    CHAINS.dbl = [];
+    if (MODEL.param && $('dbl').checked){
+      setStatus('tracing the double curve…');
+      await later(() => {
+        CHAINS.dbl = doubleCurveChains(TOPO).concat(boundaryChains(TOPO, e => TOPO.ecnt[e] >= 3));
+      });
+      if (token !== buildToken) return;
+    }
+    const gd = ribbonGeometry(CHAINS.dbl);
+    setGeom(OBJ.dbl, gd); OBJ.dblH.geometry = gd;
+    await retraceHatch(token);
+    if (token !== buildToken) return;
+    const info = [];
+    if (CHAINS.dbl.length) info.push(`double curve: ${CHAINS.dbl.length} arc${CHAINS.dbl.length>1?'s':''}`);
+    if (hatchCount) info.push(`${hatchCount} hatch strokes`);
+    setStatus(info.join(' · '));
+    setTimeout(() => { if (token === buildToken) setStatus(''); }, 4000);
+    syncStyle();
+    setTimeout(() => updateLabels(true), 50);
+  } catch (err){
+    setStatus('✗ ' + err.message, true);
+  }
+}
+let hatchCount = 0;
+async function retraceHatch(token){
+  hatchCount = 0;
+  if ($('hatchMode').value !== '3' || !TOPO){ setGeom(OBJ.hatch, EMPTY()); return; }
+  const sc = parseFloat($('spacing').value);
+  const spacing = MODEL.R / 40 * sc;
+  let chains = [];
+  const report = (lvl, cnt) => setStatus(`tracing hatching… level ${lvl+1}: ${cnt} strokes`);
+  if (MODEL.param){
+    const { fx, fy, fz, u0, u1, v0, v1 } = MODEL.param;
+    setStatus('curvature field…');
+    const fld = await later(() => paramField(fx, fy, fz, u0, u1, v0, v1, 161, 161));
+    if (token !== undefined && token !== buildToken) return;
+    setStatus('tracing hatching…');
+    chains = await later(() => traceParametric(fx, fy, fz, fld, MODEL.R, spacing, report));
+  } else if (MODEL.implicit){
+    setStatus('curvature field & hatching…');
+    chains = await later(() => traceImplicit(MODEL.implicit.f, TOPO, MODEL.implicit.h, MODEL.R, spacing, report));
+  }
+  if (token !== undefined && token !== buildToken) return;
+  hatchCount = chains.length;
+  CHAINS.hatch = chains;
+  setGeom(OBJ.hatch, ribbonGeometry(chains));
+  requestRender();
+}
+function rebuildStaticRibbons(){
+  if (CHAINS.hatch) setGeom(OBJ.hatch, ribbonGeometry(CHAINS.hatch));
+  const gd = ribbonGeometry(CHAINS.dbl || []);
+  setGeom(OBJ.dbl, gd); OBJ.dblH.geometry = gd;
+  requestRender();
+}
+
+document.querySelectorAll('input[name=mode]').forEach(r =>
+  r.addEventListener('change', () => {
+    $('parBox').classList.toggle('hide', mode() !== 'par');
+    $('impBox').classList.toggle('hide', mode() === 'par');
+    fillPresetList();
+    applyPreset($('preset').value);
+  }));
+$('preset').addEventListener('change', e => applyPreset(e.target.value));
+$('redraw').addEventListener('click', () => rebuild(false));
+['fx','fy','fz','u0','u1','v0','v1','ff','bb'].forEach(id =>
+  $(id).addEventListener('keydown', e => { if (e.key === 'Enter') rebuild(false); }));
+$('dbl').addEventListener('change', () => rebuild(false));
+$('fine').addEventListener('change', () => { resize(); syncStyle(); });
+
+function syncStyle(){
+  const sc = parseFloat($('spacing').value);
+  const pen = parseFloat($('pen').value);
+  const wob = parseFloat($('wobble').value);
+  const nib = parseFloat($('nib').value);
+  const cw = parseFloat($('cw').value);
+  const R = MODEL.R || 1;
+  hatchUniforms.uMode.value = parseFloat($('hatchMode').value);
+  hatchUniforms.uSpacing.value = 9 * sc;
+  hatchUniforms.uPen.value = pen;
+  const p = PAR_PRESETS.find(x => x.key === $('preset').value);
+  if (mode() === 'par' && p) hatchUniforms.uRep.value.set(p.rep[0]/sc, p.rep[1]/sc);
+  hatchUniforms.uObjScale.value = R / 20 * sc;
+  hatchUniforms.uWobble.value = wob;
+  edgeUniforms.uWob.value = wob;
+  hatchUniforms.uInkW.value = parseFloat($('inkw').value);
+  edgeUniforms.uWidth.value = parseFloat($('outw').value);
+  hatchUniforms.uCross.value = $('cross').checked ? 1 : 0;
+  const az = parseFloat($('laz').value) * Math.PI/180;
+  const el = parseFloat($('lel').value) * Math.PI/180;
+  hatchUniforms.uLight.value.set(
+    Math.sin(az)*Math.cos(el), Math.sin(el), Math.cos(az)*Math.cos(el));
+  hatchUniforms.uContrast.value = parseFloat($('contrast').value);
+  hatchUniforms.uAmbient.value = parseFloat($('ambient').value);
+  hatchUniforms.uRim.value = parseFloat($('rim').value);
+  hatchUniforms.uInk.value.set($('inkc').value);
+  edgeUniforms.uInk.value.copy(hatchUniforms.uInk.value);
+  hatchUniforms.uPaper.value.set($('paperc').value);
+  document.documentElement.style.setProperty('--paper', $('paperc').value);
+  document.documentElement.style.setProperty('--ink', $('inkc').value);
+
+  /* strokes */
+  const dpr = renderer.getPixelRatio();
+  const inkw = parseFloat($('inkw').value);
+  const hiddenMode = $('hidden').value;
+  STYLE.overshoot = parseFloat($('over').value);
+  STYLE.smooth = parseInt($('smooth').value, 10);
+  for (const m of ALL_STROKE_MATS){
+    m.uniforms.uWobble.value = wob;
+    m.uniforms.uWobLen.value = R * 0.07;
+    m.uniforms.uNib.value = nib;
+    m.uniforms.uOffset.value = R * 0.004;
+    m.uniforms.uPool.value = parseFloat($('pool').value);
+    m.uniforms.uBleed.value = parseFloat($('bleed').value);
+  }
+  MAT.contour.uniforms.uWidth.value = cw * dpr;   MAT.contour.uniforms.uAlpha.value = inkw;
+  MAT.contourH.uniforms.uWidth.value = cw * dpr * 0.6;
+  MAT.contourH.uniforms.uAlpha.value = hiddenMode === 'none' ? 0 : (hiddenMode === 'faint' ? 0.32 : 0.55) * inkw;
+  MAT.contourH.uniforms.uDash.value = hiddenMode === 'dashed' ? R * 0.045 : 0;
+  MAT.dbl.uniforms.uWidth.value = cw * dpr * 0.75;  MAT.dbl.uniforms.uAlpha.value = inkw * 0.9;
+  MAT.dbl.uniforms.uShadowWeight.value = 0.2;
+  MAT.dblH.uniforms.uWidth.value = cw * dpr * 0.5;
+  MAT.dblH.uniforms.uAlpha.value = MAT.contourH.uniforms.uAlpha.value;
+  MAT.dblH.uniforms.uDash.value = MAT.contourH.uniforms.uDash.value;
+  MAT.halo.uniforms.uWidth.value = cw * dpr * 3.2;
+  MAT.hatch.uniforms.uWidth.value = pen * dpr * 1.25;  MAT.hatch.uniforms.uAlpha.value = inkw;
+  MAT.hatch.uniforms.uTaper.value = 0.22;
+  MAT.contour.uniforms.uTaper.value = 0.08;
+  MAT.contourH.uniforms.uTaper.value = 0.08;
+  OBJ.halo.visible = $('halo').checked && $('contours').checked;
+  OBJ.contour.visible = OBJ.contourH.visible = $('contours').checked;
+  OBJ.dbl.visible = OBJ.dblH.visible = $('contours').checked;
+  requestRender();
+}
+['hatchMode','spacing','pen','wobble','nib','inkw','outw','cross','laz','lel',
+ 'contrast','ambient','rim','inkc','paperc','contours','cw','hidden','halo','pool','bleed','over','smooth'].forEach(id =>
+  $(id).addEventListener('input', syncStyle));
+$('over').addEventListener('change', rebuildStaticRibbons);
+$('spacing').addEventListener('change', () => retraceHatch());
+$('hatchMode').addEventListener('change', () => retraceHatch());
+
+$('savePng').addEventListener('click', () => {
+  renderFrame();
+  const tmp = document.createElement('canvas');
+  tmp.width = canvas.width; tmp.height = canvas.height;
+  const g = tmp.getContext('2d');
+  g.fillStyle = $('paperc').value;
+  g.fillRect(0, 0, tmp.width, tmp.height);
+  g.drawImage(canvas, 0, 0);
+  drawLabelsOn(g, canvas.width / canvas.clientWidth);
+  const a = document.createElement('a');
+  a.download = ($('preset').value || 'surface') + '-plate.png';
+  a.href = tmp.toDataURL('image/png');
+  a.click();
+});
+
+/* ---------- hand lettering: labels pinned to points of the surface ---------- */
+const LABELS = [];
+const overlay = $('overlay'), leadersSvg = $('leaders');
+const raycaster = new THREE.Raycaster();
+let placing = false;
+function setPlacing(v){ placing = v; canvas.classList.toggle('placing', v); $('placeLabel').textContent = v ? 'click the surface…' : 'place'; }
+$('placeLabel').addEventListener('click', () => setPlacing(!placing));
+$('clearLabels').addEventListener('click', () => { for (const l of LABELS) l.el.remove(); LABELS.length = 0; updateLabels(false); });
+window.addEventListener('keydown', e => { if (e.key === 'Escape') setPlacing(false); });
+function pickSurface(clientX, clientY){
+  const r = canvas.getBoundingClientRect();
+  const ndc = new THREE.Vector2(((clientX - r.left)/r.width)*2 - 1, -((clientY - r.top)/r.height)*2 + 1);
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObject(mesh, false);
+  return hits.length ? hits[0] : null;
+}
+function addLabel(anchorLocal, text){
+  const el = document.createElement('div');
+  el.className = 'lbl'; el.textContent = text;
+  overlay.appendChild(el);
+  const l = { anchor: anchorLocal.clone(), text, dx: 46, dy: -40, el, hidden: false, sx: 0, sy: 0,
+              seed: Math.random()*10 };
+  let drag = null;
+  el.addEventListener('pointerdown', e => { e.stopPropagation(); drag = { x: e.clientX, y: e.clientY, dx: l.dx, dy: l.dy }; el.setPointerCapture(e.pointerId); });
+  el.addEventListener('pointermove', e => { if (!drag) return; l.dx = drag.dx + (e.clientX - drag.x); l.dy = drag.dy + (e.clientY - drag.y); updateLabels(false); });
+  el.addEventListener('pointerup', () => drag = null);
+  el.addEventListener('dblclick', () => { el.remove(); LABELS.splice(LABELS.indexOf(l), 1); updateLabels(false); });
+  LABELS.push(l);
+  setPlacing(false);
+  updateLabels(true);
+}
+const _wp = new THREE.Vector3(), _dir = new THREE.Vector3();
+function leaderPath(x0, y0, x1, y1, seed){
+  /* a slightly bowed, slightly shaky line from the label to its point */
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy) || 1;
+  const nx = -dy/L, ny = dx/L, bow = L * 0.12 * Math.sin(seed*3.1);
+  let d = `M${x0.toFixed(1)},${y0.toFixed(1)}`;
+  for (let i = 1; i <= 10; i++){
+    const t = i/10, b = Math.sin(Math.PI*t)*bow + Math.sin(t*23.0 + seed*7.0)*0.6;
+    d += ` L${(x0 + dx*t + nx*b).toFixed(1)},${(y0 + dy*t + ny*b).toFixed(1)}`;
+  }
+  return d;
+}
+function updateLabels(checkOcclusion){
+  if (!LABELS.length){ leadersSvg.innerHTML = ''; return; }
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  leadersSvg.setAttribute('width', w); leadersSvg.setAttribute('height', h);
+  mesh.updateMatrixWorld(true);
+  let svg = '';
+  const ink = $('inkc').value;
+  for (const l of LABELS){
+    _wp.copy(l.anchor); mesh.localToWorld(_wp);
+    if (checkOcclusion){
+      _dir.copy(_wp).sub(camera.position);
+      const dist = _dir.length(); _dir.normalize();
+      raycaster.set(camera.position, _dir);
+      const hits = raycaster.intersectObject(mesh, false);
+      l.hidden = hits.length > 0 && hits[0].distance < dist - MODEL.R*0.012;
+    }
+    const p = _wp.clone().project(camera);
+    const inFront = p.z < 1;
+    l.sx = (p.x + 1)/2 * w; l.sy = (1 - p.y)/2 * h;
+    const lx = l.sx + l.dx, ly = l.sy + l.dy;
+    l.el.style.left = lx + 'px'; l.el.style.top = ly + 'px';
+    l.el.style.display = inFront ? '' : 'none';
+    l.el.classList.toggle('hidden', l.hidden);
+    if (!inFront) continue;
+    /* leader starts at the label's nearer edge */
+    const bw = l.el.offsetWidth || 20;
+    const sx0 = lx + (l.sx < lx ? -2 : bw - 6), sy0 = ly;
+    svg += `<path d="${leaderPath(sx0, sy0, l.sx, l.sy, l.seed)}" fill="none" stroke="${ink}" stroke-width="1.1" stroke-linecap="round" opacity="${l.hidden ? 0.32 : 0.85}"/>`;
+    svg += `<circle cx="${l.sx.toFixed(1)}" cy="${l.sy.toFixed(1)}" r="1.6" fill="${ink}" opacity="${l.hidden ? 0.32 : 0.85}"/>`;
+  }
+  leadersSvg.innerHTML = svg;
+}
+/* labels are drawn into the exported PNG as well */
+function drawLabelsOn(ctx, scale){
+  const ink = $('inkc').value;
+  ctx.save();
+  ctx.lineCap = 'round'; ctx.strokeStyle = ink; ctx.fillStyle = ink; ctx.lineWidth = 1.1*scale;
+  ctx.font = `500 ${27*scale}px Caveat, 'Segoe Script', cursive`;
+  ctx.textBaseline = 'middle';
+  for (const l of LABELS){
+    if (l.el.style.display === 'none') continue;
+    ctx.globalAlpha = l.hidden ? 0.32 : 0.85;
+    const lx = l.sx + l.dx, ly = l.sy + l.dy;
+    const bw = l.el.offsetWidth || 20;
+    const sx0 = lx + (l.sx < lx ? -2 : bw - 6);
+    const d = leaderPath(sx0*scale, ly*scale, l.sx*scale, l.sy*scale, l.seed);
+    ctx.stroke(new Path2D(d));
+    ctx.beginPath(); ctx.arc(l.sx*scale, l.sy*scale, 1.6*scale, 0, 2*Math.PI); ctx.fill();
+    ctx.globalAlpha = l.hidden ? 0.4 : 1;
+    ctx.fillText(l.text, (lx + 0)*scale, (ly - 2)*scale);
+  }
+  ctx.restore();
+}
+
+/* ---------- boot ---------- */
+const qs = QS;
+if (qs.get('mode') === 'imp') document.querySelector('input[name=mode][value=imp]').checked = true;
+$('parBox').classList.toggle('hide', mode() !== 'par');
+$('impBox').classList.toggle('hide', mode() === 'par');
+fillPresetList();
+$('preset').value = qs.get('p') || (mode() === 'par' ? 'klein8' : 'itorus');   /* open on the Klein bottle */
+if (qs.get('hatch')) $('hatchMode').value = qs.get('hatch');
+resize();
+syncStyle();
+applyPreset($('preset').value);
+['fx','fy','fz','u0','u1','v0','v1','su','sv','ff','bb','res'].forEach(k => {
+  if (qs.get(k) !== null){ $(k).value = qs.get(k); rebuild(true); }
+});
+tick();
+</script>
+</body>
+</html>
