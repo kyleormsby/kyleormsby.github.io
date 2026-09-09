@@ -21,7 +21,7 @@
     display:flex; flex-direction:column; align-items:center; justify-content:center;
   }
   #wrap{ position:relative; width:100%; height:100%; }
-  canvas#c{ position:absolute; inset:0; width:100%; height:100%; display:block; cursor:grab; }
+  canvas#c{ position:absolute; inset:0; width:100%; height:100%; display:block; cursor:grab; touch-action:none; }
   canvas#c:active{ cursor:grabbing; }
   #caption{
     position:absolute; left:0; right:0; bottom:14px; text-align:center;
@@ -88,6 +88,34 @@
   canvas#c.placing{ cursor:crosshair; }
   .mini{ display:flex; gap:6px; align-items:center; margin-top:6px; }
   .mini input[type=text]{ flex:1 1 auto; }
+  #panelToggle{ display:none; }
+  /* landscape phones and small tablets keep the side-by-side layout with a slimmer panel */
+  @media (min-width: 841px) and (max-width: 1100px){
+    #panel{ flex-basis:270px; padding:12px 12px 32px; font-size:13px; }
+  }
+  /* phones and narrow windows: the plate on top, the controls below, the page scrolls */
+  @media (max-width: 840px){
+    html,body{ height:auto; min-height:100%; }
+    body{ flex-direction:column; overflow:auto; -webkit-overflow-scrolling:touch; }
+    #stage{ flex:none; height:64vh; min-height:320px; }
+    #panel{
+      flex:none; height:auto; overflow:visible; border-left:none; border-top:1px solid var(--rule);
+      background:var(--paper2); padding:10px 14px 48px; font-size:15px;
+    }
+    #panel:not(.open) > *:not(h1):not(#panelToggle){ display:none; }
+    #panelToggle{
+      display:inline-block; margin:6px 0 4px; padding:8px 14px; font-size:14px;
+    }
+    h1{ display:inline-block; margin-right:10px; }
+    input[type=text], input[type=number], select{ font-size:16px; }   /* stops iOS zooming on focus */
+    input[type=number]{ width:80px; }
+    button{ padding:8px 12px; font-size:15px; }
+    input[type=range]{ height:28px; }
+    label{ margin-top:10px; }
+    #caption{ font-size:13px; bottom:8px; padding:0 8px; }
+    .lbl{ font-size:22px; }
+    #status{ font-size:12px; max-width:80%; }
+  }
 </style>
 </head>
 <body>
@@ -102,7 +130,8 @@
 
 <div id="panel">
   <h1>A Topological Picture Book</h1>
-  <p class="sub">Hand-hatched surfaces after the mid-century manner of Francis, Ap&eacute;ry, Hilbert&ndash;Cohn-Vossen. Drag to turn the model freely (shift-drag to roll it); scroll to approach.</p>
+  <button id="panelToggle" type="button">controls</button>
+  <p class="sub">Hand-hatched surfaces after the mid-century manner of Francis, Ap&eacute;ry, Hilbert&ndash;Cohn-Vossen. Drag to turn the model freely (shift-drag to roll it); scroll to approach. On a touch screen, one finger turns, two fingers pinch to approach and twist to roll.</p>
 
   <fieldset>
     <legend>Surface</legend>
@@ -1612,6 +1641,7 @@ function resize(){
   requestRender();
 }
 window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', () => setTimeout(resize, 250));
 
 /* ---------- controls (trackball drag, wheel to zoom) ---------- */
 let dragging = false, px = 0, py = 0;
@@ -1629,22 +1659,59 @@ function trackball(dx, dy, roll){
   pivot.quaternion.premultiply(_dq);
 }
 let pressX = 0, pressY = 0;
+const pointers = new Map();          // active pointers (touch: up to two)
+let pinch = null;                    // {d0, a0, r0} while two fingers are down
+function pinchState(){
+  const [a, b] = [...pointers.values()];
+  return { d: Math.hypot(b.x - a.x, b.y - a.y), a: Math.atan2(b.y - a.y, b.x - a.x) };
+}
 canvas.addEventListener('pointerdown', e => {
-  dragging = true; px = e.clientX; py = e.clientY; pressX = px; pressY = py; canvas.setPointerCapture(e.pointerId);
+  try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 1){
+    dragging = true; px = e.clientX; py = e.clientY; pressX = px; pressY = py;
+  } else if (pointers.size === 2){
+    dragging = false;
+    const st = pinchState();
+    pinch = { d0: st.d, a0: st.a, r0: view.r, aPrev: st.a };
+  }
 });
 canvas.addEventListener('pointermove', e => {
+  if (!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 2 && pinch){
+    const st = pinchState();
+    view.r = Math.min(200, Math.max(0.3, pinch.r0 * pinch.d0 / Math.max(st.d, 1)));   /* pinch to approach */
+    let da = st.a - pinch.aPrev;                                                        /* twist to roll */
+    if (da > Math.PI) da -= 2*Math.PI; if (da < -Math.PI) da += 2*Math.PI;
+    pinch.aPrev = st.a;
+    _axis.set(0, 0, 1); _dq.setFromAxisAngle(_axis, da); pivot.quaternion.premultiply(_dq);
+    requestRender();
+    return;
+  }
   if (!dragging) return;
   trackball(e.clientX - px, e.clientY - py, e.shiftKey);
   px = e.clientX; py = e.clientY;
   requestRender();
 });
-canvas.addEventListener('pointerup', e => {
-  dragging = false;
-  if (placing && Math.hypot(e.clientX - pressX, e.clientY - pressY) < 4){
+function endPointer(e){
+  const wasSingle = pointers.size === 1 && dragging;
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinch = null;
+  if (pointers.size === 0) dragging = false;
+  if (wasSingle && placing && Math.hypot(e.clientX - pressX, e.clientY - pressY) < 6){
     const hit = pickSurface(e.clientX, e.clientY);
     if (hit){ addLabel(mesh.worldToLocal(hit.point.clone()), $('labelText').value || 'A'); }
   }
   updateLabels(true);
+}
+canvas.addEventListener('pointerup', endPointer);
+canvas.addEventListener('pointercancel', endPointer);
+/* controls fold away under the plate on narrow screens */
+const SMALL = window.matchMedia('(max-width: 840px)');
+$('panelToggle').addEventListener('click', () => {
+  const open = $('panel').classList.toggle('open');
+  $('panelToggle').textContent = open ? 'hide controls' : 'controls';
 });
 let wheelTimer = 0;
 canvas.addEventListener('wheel', e => {
@@ -1852,9 +1919,11 @@ function applyPreset(key){
     $('fx').value = p.fx; $('fy').value = p.fy; $('fz').value = p.fz;
     $('u0').value = p.u0; $('u1').value = p.u1;
     $('v0').value = p.v0; $('v1').value = p.v1;
-    $('su').value = p.su; $('sv').value = p.sv;
+    const q = SMALL.matches ? 0.6 : 1;            /* phones: lighter meshes, same look */
+    $('su').value = Math.max(16, Math.round(p.su*q/8)*8); $('sv').value = Math.max(16, Math.round(p.sv*q/8)*8);
   } else {
-    $('ff').value = p.f; $('bb').value = p.bb; $('res').value = p.res;
+    const q = SMALL.matches ? 0.7 : 1;
+    $('ff').value = p.f; $('bb').value = p.bb; $('res').value = Math.max(24, Math.round(p.res*q/4)*4);
     if ($('hatchMode').value === '1') $('hatchMode').value = '2';
   }
   for (const l of LABELS) l.el.remove(); LABELS.length = 0; updateLabels(false);
