@@ -35,5 +35,15 @@
     },
     "scale": 1,
     "wait": 6000
+  },
+  "graph-spectra": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "click": "#eigbody tr:nth-child(2)",
+    "scrollTo": "h1",
+    "wait": 1500
   }
 }
