@@ -72,6 +72,20 @@
       "by": "submit_by"
     },
     {
+      "col": "lab",
+      "kind": "file",
+      "label": "assigned",
+      "text": "lab",
+      "due": "lab_due"
+    },
+    {
+      "col": "lab_submit",
+      "kind": "file",
+      "label": "due",
+      "text": "lab",
+      "by": "lab_by"
+    },
+    {
       "col": "note",
       "kind": "md",
       "label": "note"

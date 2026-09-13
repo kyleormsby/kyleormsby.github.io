@@ -13,13 +13,20 @@ import { escape, inline } from './markup';
  * change.
  */
 
-export type Kind = 'md' | 'text' | 'pdf' | 'url' | 'panopto';
+/**
+ * How a cell is read.  'pdf' takes a bare stem and appends .pdf — the common
+ * case for problem sets, worksheets, and solutions.  'file' takes the name as
+ * written, extension included, so a course can publish a notebook or a data
+ * file through the same filesBase without pretending it is a pdf.  Both honour
+ * filesGone.
+ */
+export type Kind = 'md' | 'text' | 'pdf' | 'file' | 'url' | 'panopto';
 
 export interface RenderRule {
   col: string;            // CSV column this rule reads
   label?: string;         // mono label; omit for an unlabelled line
   kind?: Kind;            // how to interpret the cell (default 'md')
-  text?: string;          // link text for pdf/url/panopto kinds
+  text?: string;          // link text for pdf/file/url/panopto kinds
   note?: string;          // dim suffix, e.g. "before class"
   pages?: string;         // column holding a page range -> dim "pp. 14–18"
   due?: string;           // column holding an ISO date -> dim "due March 4"
@@ -79,6 +86,7 @@ function href(value: string, kind: Kind, meta: CourseMeta): string {
   if (/^(https?:)?\/\//.test(value) || value.startsWith('/')) return value;
   if (kind === 'panopto') return `${meta.panoptoBase ?? ''}${value}`;
   if (kind === 'pdf') return meta.filesGone ?? `${meta.filesBase}${value}.pdf`;
+  if (kind === 'file') return meta.filesGone ?? `${meta.filesBase}${value}`;
   return value;
 }
 
