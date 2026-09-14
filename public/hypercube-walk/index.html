@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Return to the Origin — random walks on the hypercube</title>
+<meta name="description" content="Animated random walks on the hypercube Q_n with a running return-to-origin tally against the exact closed-form probability. Built for Math 372 at Reed College.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=STIX+Two+Text:ital,wght@0,400;1,400&display=swap">
+<style>
+:root{
+  --bg:#F4F6F8; --panel:#FFFFFF; --ink:#18212B; --muted:#66727F; --rule:#D5DBE2; --rule-soft:#E7EBEF;
+  --accent:#0A8F86; --accent-soft:#D8EFEC; --origin:#B4521B; --miss:#9AA4AE;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --serif:"STIX Two Text","Times New Roman",Times,serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11161C; --panel:#181E26; --ink:#E6EBF0; --muted:#98A4B1; --rule:#2C3540; --rule-soft:#222A33;
+    --accent:#4DB8B0; --accent-soft:#173A38; --origin:#E08A57; --miss:#5C6773;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11161C; --panel:#181E26; --ink:#E6EBF0; --muted:#98A4B1; --rule:#2C3540; --rule-soft:#222A33;
+  --accent:#4DB8B0; --accent-soft:#173A38; --origin:#E08A57; --miss:#5C6773;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans);padding:24px 20px 40px}
+h1{font:600 26px/1.15 var(--sans);margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:0 0 20px;max-width:62ch}
+.wrap{max-width:1180px;margin:0 auto}
+.grid{display:grid;grid-template-columns:minmax(320px,1.15fr) minmax(300px,1fr);gap:24px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.fig{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:14px}
+.fig svg{display:block;width:100%;height:auto}
+.stage-note{color:var(--muted);font-size:13px;margin:8px 0 0}
+.trace{font:13px/1.9 var(--mono);margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px 10px;min-height:2.2em}
+.trace .b{padding:0 4px;border-radius:3px;background:var(--rule-soft)}
+.trace .b .f{color:var(--accent);font-weight:500}
+.trace .b.home{outline:2px solid var(--accent)}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px 16px;margin-bottom:14px}
+label{display:block;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+select,input[type=number]{width:100%;font:15px var(--mono);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:6px 8px}
+input[type=range]{width:100%}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+button{font:500 14px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:7px 12px;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button:hover{border-color:var(--ink)}
+button.primary:hover{border-color:var(--accent);filter:brightness(1.06)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tally{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--panel);margin-bottom:14px}
+.tally div{padding:10px 12px;border-right:1px solid var(--rule)}
+.tally div:last-child{border-right:0}
+.tally .k{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.tally .v{font:500 24px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.tally .v.small{font-size:16px;color:var(--muted)}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.compare .box{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:10px 12px}
+.compare .box.obs{border-color:var(--accent)}
+.compare .k{font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.compare .v{font:500 28px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.compare .d{font:13px var(--mono);color:var(--muted)}
+.formula{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;margin-bottom:14px;overflow-x:auto}
+.formula .m{font:18px/1.6 var(--serif)}
+.formula .m i{font-style:italic}
+.formula .frac{display:inline-block;vertical-align:middle;text-align:center;margin:0 3px}
+.formula .frac span{display:block;padding:0 4px}
+.formula .frac span:first-child{border-bottom:1px solid var(--ink)}
+.formula .big{font-size:26px;vertical-align:-4px;margin:0 2px}
+.terms{font:13px/1.7 var(--mono);margin-top:8px;color:var(--muted);white-space:nowrap}
+.terms b{color:var(--ink);font-weight:500}
+.terms .ans{color:var(--ink)}
+.note{font-size:13px;color:var(--muted);margin:8px 0 0;max-width:60ch}
+.chart{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:10px 12px 6px}
+.chart h2{font:500 13px var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.chart canvas{display:block;width:100%;height:190px}
+.chart .tip{font:12px var(--mono);color:var(--muted);height:1.4em;margin-top:2px}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+<style>
+  html{color-scheme:light dark}
+  .credit{max-width:1180px;margin:28px auto 0;font-size:13px;color:var(--muted)}
+  .credit a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Return to the Origin</h1>
+  <p class="sub">A simple random walk on the hypercube <span style="font-family:var(--serif);font-style:italic">Q<sub>n</sub></span> starts at 000…0 and takes ℓ steps, each flipping one coordinate chosen uniformly at random. How often is it home at the end?</p>
+
+  <div class="grid">
+    <section class="fig" aria-label="The hypercube and the current walk">
+      <svg id="cube" viewBox="0 0 600 560" role="img" aria-label="Hypercube with the current walk highlighted"></svg>
+      <p class="stage-note" id="stage-note"></p>
+      <div class="trace" id="trace" aria-live="polite"></div>
+    </section>
+
+    <section aria-label="Controls, tally, and expected value">
+      <div class="controls">
+        <div><label for="n">dimension n</label><select id="n"></select></div>
+        <div><label for="ell">steps ℓ</label><input id="ell" type="number" min="1" max="60" step="1" value="4"></div>
+        <div><label for="speed">steps per second <span id="speed-val">8</span></label><input id="speed" type="range" min="1" max="60" value="8"></div>
+      </div>
+      <div class="btns">
+        <button id="run" class="primary">Start</button>
+        <button id="step">One step</button>
+        <button id="batch">Run 1,000 silently</button>
+        <button id="reset">Reset tally</button>
+      </div>
+
+      <div class="tally" aria-live="polite">
+        <div><div class="k">walks</div><div class="v" id="t-n">0</div></div>
+        <div><div class="k">returned</div><div class="v" id="t-r">0</div></div>
+        <div><div class="k">expected returns</div><div class="v small" id="t-e">0.0</div></div>
+      </div>
+
+      <div class="compare">
+        <div class="box obs"><div class="k">observed frequency</div><div class="v" id="c-obs">—</div><div class="d" id="c-obs-d">no walks yet</div></div>
+        <div class="box"><div class="k">expected probability</div><div class="v" id="c-exp">—</div><div class="d" id="c-exp-d"></div></div>
+      </div>
+
+      <div class="formula">
+        <div class="m">
+          <i>p</i><sub>ℓ</sub> &nbsp;=&nbsp;
+          <span class="frac"><span>1</span><span>2<sup><i>n</i></sup> <i>n</i><sup>ℓ</sup></span></span>
+          <span class="big">∑</span><sub><i>i</i>=0</sub><sup><i>n</i></sup>
+          <span class="frac"><span><i>n</i></span><span><i>i</i></span></span>
+          (<i>n</i> − 2<i>i</i>)<sup>ℓ</sup>
+        </div>
+        <div class="terms" id="terms"></div>
+        <p class="note" id="fnote"></p>
+      </div>
+
+      <div class="chart">
+        <h2>Observed frequency against walks sampled</h2>
+        <canvas id="chart" width="900" height="380"></canvas>
+        <div class="tip" id="tip">hover for values</div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const $ = id => document.getElementById(id);
+const MAXPIC = 6;
+
+// ---------- exact arithmetic ----------
+const big = x => BigInt(x);
+function binom(n,k){ let r=1n; for(let i=1n;i<=big(k);i++){ r = r*(big(n)-i+1n)/i; } return r; }
+function pow(b,e){ let r=1n, x=big(b); for(let i=0;i<e;i++) r*=x; return r; }
+function gcd(a,b){ a=a<0n?-a:a; b=b<0n?-b:b; while(b){ [a,b]=[b,a%b]; } return a; }
+function expected(n,l){
+  const terms=[]; let S=0n;
+  for(let i=0;i<=n;i++){ const c=binom(n,i), t=c*pow(n-2*i,l); terms.push({i,c,base:n-2*i,val:t}); S+=t; }
+  const den = pow(2,n)*pow(n,l);
+  const g = gcd(S,den);
+  return {terms, S, den, num:S/g, red:den/g, p: dec(S,den,12)};
+}
+function dec(num,den,places){ // exact decimal string
+  const neg = (num<0n)!==(den<0n); num=num<0n?-num:num; den=den<0n?-den:den;
+  const ip = num/den; let rem = num%den, s = ip.toString()+'.';
+  for(let i=0;i<places;i++){ rem*=10n; s += (rem/den).toString(); rem%=den; }
+  return (neg?'-':'')+s;
+}
+
+// ---------- state ----------
+const st = { n:3, l:4, pos:0, path:[0], N:0, R:0, running:false, timer:null,
+             hist:[], exp:null, lastMiss:null, phase:'walk' };
+
+// ---------- hypercube layout ----------
+let layout = null;
+function makeLayout(n){
+  let d=[];
+  if(n===2) d=[[1,0],[0,-1]];
+  else if(n===3) d=[[1,0],[0,-1],[0.46,-0.34]];
+  else for(let i=0;i<n;i++){ const th=Math.PI*(i+.5)/n-Math.PI/2, r=1-.09*i; d.push([r*Math.cos(th), r*Math.sin(th)]); }
+  const pts=[]; let minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
+  for(let v=0;v<(1<<n);v++){ let x=0,y=0; for(let i=0;i<n;i++) if(v>>i&1){x+=d[i][0];y+=d[i][1];}
+    pts.push([x,y]); minx=Math.min(minx,x);maxx=Math.max(maxx,x);miny=Math.min(miny,y);maxy=Math.max(maxy,y); }
+  const W=600,H=560,pad=34, sx=(W-2*pad)/(maxx-minx||1), sy=(H-2*pad)/(maxy-miny||1), s=Math.min(sx,sy);
+  const ox=(W-(maxx-minx)*s)/2, oy=(H-(maxy-miny)*s)/2;
+  return pts.map(([x,y])=>[ox+(x-minx)*s, oy+(y-miny)*s]);
+}
+function bits(v,n){ let s=''; for(let i=n-1;i>=0;i--) s+=(v>>i&1); return s; }
+
+function drawCube(){
+  const svg=$('cube'); const n=st.n;
+  if(n>MAXPIC){ svg.innerHTML=''; svg.setAttribute('viewBox','0 0 600 120');
+    svg.innerHTML=`<text x="300" y="66" text-anchor="middle" fill="var(--muted)" font-family="var(--sans)" font-size="15">Q<tspan baseline-shift="sub" font-size="11">${n}</tspan> has ${1<<n} vertices — too many to draw legibly. Follow the walk in the bit strings below.</text>`;
+    $('stage-note').textContent=''; return; }
+  svg.setAttribute('viewBox','0 0 600 560');
+  layout = makeLayout(n);
+  const r = n<=3?7:n<=4?6:n<=5?4.5:3.2;
+  let edges='';
+  for(let v=0;v<(1<<n);v++) for(let i=0;i<n;i++) if(!(v>>i&1)){ const w=v|1<<i; edges+=`<line x1="${layout[v][0].toFixed(1)}" y1="${layout[v][1].toFixed(1)}" x2="${layout[w][0].toFixed(1)}" y2="${layout[w][1].toFixed(1)}"/>`; }
+  let verts='';
+  for(let v=0;v<(1<<n);v++) verts+=`<circle cx="${layout[v][0].toFixed(1)}" cy="${layout[v][1].toFixed(1)}" r="${r}"/>`;
+  const o=layout[0];
+  svg.innerHTML =
+    `<g stroke="var(--rule)" stroke-width="1.2" fill="none">${edges}</g>`+
+    `<g fill="var(--rule)">${verts}</g>`+
+    `<polyline id="walk-path" fill="none" stroke="var(--accent)" stroke-width="${n<=4?3.5:2.5}" stroke-linejoin="round" stroke-linecap="round" points=""/>`+
+    `<circle id="origin" cx="${o[0].toFixed(1)}" cy="${o[1].toFixed(1)}" r="${r+6}" fill="none" stroke="var(--origin)" stroke-width="2"/>`+
+    `<text x="${(o[0]+r+10).toFixed(1)}" y="${(o[1]+4).toFixed(1)}" fill="var(--origin)" font-family="var(--mono)" font-size="12">${bits(0,n)}</text>`+
+    `<circle id="walker" cx="${o[0].toFixed(1)}" cy="${o[1].toFixed(1)}" r="${r+2.5}" fill="var(--accent)"/>`;
+  $('stage-note').textContent = `${1<<n} vertices, ${n*(1<<(n-1))} edges; each vertex has ${n} neighbours. The ring marks the origin.`;
+}
+function drawWalk(){
+  const n=st.n; if(n>MAXPIC) return;
+  const pl=$('walk-path'), wk=$('walker'); if(!pl) return;
+  pl.setAttribute('points', st.path.map(v=>layout[v].map(c=>c.toFixed(1)).join(',')).join(' '));
+  const c=layout[st.pos]; wk.setAttribute('cx',c[0].toFixed(1)); wk.setAttribute('cy',c[1].toFixed(1));
+  const done = st.path.length===st.l+1;
+  wk.setAttribute('fill', done ? (st.pos===0?'var(--accent)':'var(--miss)') : 'var(--accent)');
+  pl.setAttribute('stroke', done && st.pos!==0 ? 'var(--miss)' : 'var(--accent)');
+}
+function drawTrace(){
+  const n=st.n, t=$('trace'); let h='';
+  for(let k=0;k<st.path.length;k++){
+    const v=st.path[k], prev=k?st.path[k-1]:v, flip=v^prev; let s='';
+    for(let i=n-1;i>=0;i--){ const ch=(v>>i&1); s += (flip>>i&1) ? `<span class="f">${ch}</span>` : ch; }
+    const home = k===st.l && v===0;
+    h += `<span class="b${home?' home':''}">${s}</span>`;
+  }
+  t.innerHTML=h;
+}
+
+// ---------- the walk ----------
+function stepOnce(){
+  if(st.path.length>st.l){ st.pos=0; st.path=[0]; }
+  const i=Math.floor(Math.random()*st.n); st.pos^=1<<i; st.path.push(st.pos);
+  if(st.path.length===st.l+1){ st.N++; if(st.pos===0) st.R++; record(); }
+  drawWalk(); drawTrace(); updateTally();
+}
+function batch(k){
+  const n=st.n,l=st.l;
+  for(let w=0;w<k;w++){ let p=0; for(let s=0;s<l;s++) p^=1<<Math.floor(Math.random()*n); st.N++; if(p===0) st.R++; if(st.N%Math.max(1,Math.floor(k/50))===0) record(); }
+  record(); st.pos=0; st.path=[0]; drawWalk(); drawTrace(); updateTally();
+}
+function record(){ st.hist.push([st.N, st.N?st.R/st.N:0]); if(st.hist.length>4000) st.hist=st.hist.filter((_,i)=>i%2===0); drawChart(); }
+
+function tick(){ stepOnce(); }
+function setRunning(on){
+  st.running=on; $('run').textContent=on?'Pause':'Start'; $('run').classList.toggle('primary',!on);
+  clearInterval(st.timer); if(on) st.timer=setInterval(tick, 1000/Number($('speed').value));
+}
+
+// ---------- tally + formula ----------
+function updateTally(){
+  $('t-n').textContent=st.N.toLocaleString(); $('t-r').textContent=st.R.toLocaleString();
+  const p=Number(st.exp.p); $('t-e').textContent=(st.N*p).toFixed(1);
+  if(st.N){
+    const f=st.R/st.N, sig=Math.sqrt(p*(1-p)/st.N), diff=f-p;
+    $('c-obs').textContent=f.toFixed(4);
+    $('c-obs-d').textContent = `${st.R} / ${st.N}   off by ${(diff>=0?'+':'')+diff.toFixed(4)}`
+      + (p>0 ? `  =  ${(diff/sig).toFixed(1)}σ   (2σ = ±${(2*sig).toFixed(4)})` : '');
+  }
+  else { $('c-obs').textContent='—'; $('c-obs-d').textContent='no walks yet'; }
+}
+function updateExpected(){
+  const n=st.n,l=st.l, e=expected(n,l); st.exp=e;
+  $('c-exp').textContent=Number(e.p).toFixed(4);
+  $('c-exp-d').textContent = e.num===0n ? '= 0' : `= ${e.num} / ${e.red}`;
+  const parts=e.terms.map(t=>`<b>${t.c}</b>·(${t.base})<sup>${l}</sup>`).join(' + ');
+  const vals=e.terms.map(t=>t.val.toString()).join(' + ');
+  $('terms').innerHTML = `n=${n}, ℓ=${l}: &nbsp;[ ${parts} ] / (2<sup>${n}</sup>·${n}<sup>${l}</sup>)<br>= [ ${vals} ] / ${e.den}<br>= <span class="ans">${e.S} / ${e.den}` + (e.num!==e.S?` = ${e.num} / ${e.red}`:'') + ` ≈ ${e.p.slice(0,8)}</span>`;
+  $('fnote').textContent = (l%2)
+    ? `ℓ is odd, so the sum vanishes term by term (the i and n−i terms cancel): Qₙ is bipartite, and an odd number of flips cannot return you home.`
+    : `As ℓ → ∞ through even values, only i=0 and i=n survive, so p₂ₘ → 2·2⁻ⁿ = ${dec(1n,pow(2,n-1),6)}. The factor of 2 is the eigenvalue −1: the walk never converges, it alternates between 0 and twice the uniform density.`;
+}
+
+// ---------- chart ----------
+const cv=$('chart'), cx=cv.getContext('2d');
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+let chartGeom=null;
+function drawChart(){
+  const W=cv.width,H=cv.height, L=58,R=44,T=14,B=34;
+  cx.clearRect(0,0,W,H);
+  const p=Number(st.exp.p);
+  const last = st.hist.length ? st.hist[st.hist.length-1][1] : 0;
+  const want = Math.max(0.02, Math.min(1, p>0 ? p*1.6 : 0.1), last*1.1);
+  const ymax = [0.05,0.1,0.25,0.5,1].find(v=>v>=want) ?? 1;
+  const xmax = Math.max(20, st.N);
+  const X=v=>L+(W-L-R)*v/xmax, Y=v=>T+(H-T-B)*(1-v/ymax);
+  chartGeom={L,R,T,B,W,H,xmax,ymax,X,Y};
+  cx.font='20px '+css('--mono'); cx.textBaseline='middle';
+  // grid + y labels
+  const ticks=5; cx.strokeStyle=css('--rule-soft'); cx.lineWidth=1; cx.fillStyle=css('--muted'); cx.textAlign='right';
+  for(let k=0;k<=ticks;k++){ const v=ymax*k/ticks, y=Y(v); cx.beginPath(); cx.moveTo(L,y); cx.lineTo(W-R,y); cx.stroke(); cx.fillText(v.toFixed(2),L-8,y); }
+  cx.textAlign='center'; cx.textBaseline='top';
+  for(let k=0;k<=4;k++){ const v=Math.round(xmax*k/4); cx.fillText(v.toLocaleString(), X(v), H-B+8); }
+  // ±2σ band: p ± 2·sqrt(p(1-p)/N), narrowing as N grows
+  if(p>0){
+    const sig=N=>Math.sqrt(p*(1-p)/N);
+    const up=[],lo=[];
+    for(let k=0;k<=120;k++){ const N=Math.max(1, xmax*k/120); up.push([X(N),Y(Math.min(ymax,p+2*sig(N)))]); lo.push([X(N),Y(Math.max(0,p-2*sig(N)))]); }
+    cx.fillStyle=css('--accent-soft'); cx.beginPath();
+    up.forEach(([x,y],i)=>i?cx.lineTo(x,y):cx.moveTo(x,y)); lo.reverse().forEach(([x,y])=>cx.lineTo(x,y)); cx.closePath(); cx.fill();
+    const Nl=Math.max(1,xmax*0.16);
+    cx.fillStyle=css('--muted'); cx.textAlign='left'; cx.textBaseline='top'; cx.fillText('±2σ', X(Nl)+4, Y(Math.min(ymax,p+2*sig(Nl)))+6);
+  }
+  // expected line
+  cx.setLineDash([8,6]); cx.strokeStyle=css('--ink'); cx.lineWidth=2; cx.beginPath(); cx.moveTo(L,Y(p)); cx.lineTo(W-R,Y(p)); cx.stroke(); cx.setLineDash([]);
+  cx.fillStyle=css('--ink'); cx.textAlign='right'; cx.textBaseline='bottom'; cx.fillText('expected '+p.toFixed(4), W-R-4, Y(p)-9);
+  // observed
+  if(st.hist.length){
+    cx.strokeStyle=css('--accent'); cx.lineWidth=2.5; cx.lineJoin='round'; cx.beginPath();
+    st.hist.forEach(([n,f],i)=>{ const x=X(n),y=Y(Math.min(f,ymax)); i?cx.lineTo(x,y):cx.moveTo(x,y); });
+    cx.stroke();
+    const [n,f]=st.hist[st.hist.length-1];
+    cx.fillStyle=css('--accent'); cx.beginPath(); cx.arc(X(n),Y(Math.min(f,ymax)),5,0,7); cx.fill();
+  }
+}
+cv.addEventListener('mousemove', e=>{
+  if(!chartGeom||!st.hist.length) return;
+  const r=cv.getBoundingClientRect(), x=(e.clientX-r.left)*cv.width/r.width;
+  const n=Math.round((x-chartGeom.L)/(chartGeom.W-chartGeom.L-chartGeom.R)*chartGeom.xmax);
+  let best=st.hist[0]; for(const h of st.hist){ if(Math.abs(h[0]-n)<Math.abs(best[0]-n)) best=h; }
+  $('tip').textContent=`after ${best[0].toLocaleString()} walks: observed ${best[1].toFixed(4)}, expected ${Number(st.exp.p).toFixed(4)}`;
+});
+cv.addEventListener('mouseleave', ()=>{ $('tip').textContent='hover for values'; });
+
+// ---------- wiring ----------
+function resetAll(keepRunning){
+  st.pos=0; st.path=[0]; st.N=0; st.R=0; st.hist=[]; st.lastMiss=null;
+  updateExpected(); drawCube(); drawWalk(); drawTrace(); updateTally(); drawChart();
+  if(!keepRunning) setRunning(false);
+}
+const sel=$('n'); for(let n=2;n<=8;n++){ const o=document.createElement('option'); o.value=n; o.textContent=n<=MAXPIC?n:n+' (no picture)'; sel.appendChild(o); }
+sel.value=3;
+sel.addEventListener('change', ()=>{ st.n=Number(sel.value); resetAll(st.running); if(st.running) setRunning(true); });
+$('ell').addEventListener('change', ()=>{ let v=Math.max(1,Math.min(60,Math.round(Number($('ell').value)||1))); $('ell').value=v; st.l=v; resetAll(st.running); if(st.running) setRunning(true); });
+$('speed').addEventListener('input', ()=>{ $('speed-val').textContent=$('speed').value; if(st.running) setRunning(true); });
+$('run').addEventListener('click', ()=>setRunning(!st.running));
+$('step').addEventListener('click', ()=>{ setRunning(false); stepOnce(); });
+$('batch').addEventListener('click', ()=>{ batch(1000); });
+$('reset').addEventListener('click', ()=>resetAll(false));
+if(window.matchMedia){ const mq=window.matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener?.('change',()=>{drawCube();drawWalk();drawChart();}); }
+
+function start(data){
+  if(data&&data.n){ st.n=data.n; st.l=data.l; sel.value=st.n; $('ell').value=st.l; }
+  resetAll(false);
+  if(data&&data.N){ st.N=data.N; st.R=data.R; st.hist=data.hist||[]; updateTally(); drawChart(); }
+}
+window.claude?.hot?.snapshot?.(()=>({n:st.n,l:st.l,N:st.N,R:st.R,hist:st.hist.slice(-400)}));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+<p class="credit">Made for <a href="/372fall26/">Math 372: Combinatorics</a> at Reed College, fall 2026. The closed form is the spectral count of closed walks on the cube, divided by the number of walks: tr A<sup>ℓ</sup> / (2<sup>n</sup> n<sup>ℓ</sup>). Part of <a href="/viz/">e-infinity.space/viz</a>.</p>
+</body>
+</html>

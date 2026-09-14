@@ -5,7 +5,7 @@ week,date,display,type,topic,reading,resources,hw,hw_due,submit,submit_by,lab,la
 2,2026-09-07,,break,Labor Day — no class ☭,,,,,,,,,,,
 2,2026-09-09,,class,Cubes and the Radon transform I,Stanley §2,,,,,,,,,,
 2,2026-09-11,,class,Cubes and the Radon transform II: the spectrum of $Q_n$,Stanley §2,[graph spectra](/graph-spectra/),,,372hw01,10pm,,,,,
-3,2026-09-14,,class,Random walks on graphs,Stanley §3,,,,,,372lab01.ipynb,2026-09-28,,,
+3,2026-09-14,,class,Random walks on graphs,Stanley §3,[random walk demo](/hypercube-walk/),,,,,372lab01.ipynb,2026-09-28,,,
 3,2026-09-16,,class,"Posets, rank symmetry, and the Sperner property",Stanley §4,,,,,,,,,,
 3,2026-09-18,,class,Order-raising operators and the linear algebra method,Stanley §4,,,,,,,,,,
 4,2026-09-21,,class,The Sperner property for $B_n$; contrast with Dilworth,Stanley §4,,,,,,,,,,
