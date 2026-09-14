@@ -61,12 +61,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .compare .v{font:500 28px/1.2 var(--mono);font-variant-numeric:tabular-nums}
 .compare .d{font:13px var(--mono);color:var(--muted)}
 .formula{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;margin-bottom:14px;overflow-x:auto}
-.formula .m{font:18px/1.6 var(--serif)}
-.formula .m i{font-style:italic}
-.formula .frac{display:inline-block;vertical-align:middle;text-align:center;margin:0 3px}
-.formula .frac span{display:block;padding:0 4px}
-.formula .frac span:first-child{border-bottom:1px solid var(--ink)}
-.formula .big{font-size:26px;vertical-align:-4px;margin:0 2px}
+.formula math.m{display:block;font-family:"STIX Two Math","STIX Two Text","Latin Modern Math","Cambria Math","Times New Roman",serif;font-size:21px;margin:2px 0 6px;color:var(--ink)}
 .terms{font:13px/1.7 var(--mono);margin-top:8px;color:var(--muted);white-space:nowrap}
 .terms b{color:var(--ink);font-weight:500}
 .terms .ans{color:var(--ink)}
@@ -120,13 +115,16 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
       </div>
 
       <div class="formula">
-        <div class="m">
-          <i>p</i><sub>ℓ</sub> &nbsp;=&nbsp;
-          <span class="frac"><span>1</span><span>2<sup><i>n</i></sup> <i>n</i><sup>ℓ</sup></span></span>
-          <span class="big">∑</span><sub><i>i</i>=0</sub><sup><i>n</i></sup>
-          <span class="frac"><span><i>n</i></span><span><i>i</i></span></span>
-          (<i>n</i> − 2<i>i</i>)<sup>ℓ</sup>
-        </div>
+        <math display="block" class="m">
+          <mrow>
+            <msub><mi>p</mi><mi>ℓ</mi></msub>
+            <mo>=</mo>
+            <mfrac><mn>1</mn><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>⁢</mo><msup><mi>n</mi><mi>ℓ</mi></msup></mrow></mfrac>
+            <munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mi>n</mi></munderover>
+            <mrow><mo>(</mo><mfrac linethickness="0"><mi>n</mi><mi>i</mi></mfrac><mo>)</mo></mrow>
+            <msup><mrow><mo>(</mo><mi>n</mi><mo>−</mo><mn>2</mn><mo>⁢</mo><mi>i</mi><mo>)</mo></mrow><mi>ℓ</mi></msup>
+          </mrow>
+        </math>
         <div class="terms" id="terms"></div>
         <p class="note" id="fnote"></p>
       </div>
