@@ -338,6 +338,8 @@ const PRESETS = [
     ({n,k})=>{ const S=subsets(n,k); const e=[]; for(let i=0;i<S.length;i++) for(let j=i+1;j<S.length;j++){ let c=0; for(const x of S[i]) if(S[j].includes(x)) c++; if(c===k-1) e.push([i,j]); } return {n:S.length, edges:e, pos:circleLayout(S.length), title:`Johnson J(${n},${k})`}; }),
   P('Paley graph P(p)','Families',[N('p','prime p ≡ 1 (mod 4)',13,5,101)],'ℤ_p with a ~ b iff a−b is a nonzero square. Self-complementary, strongly regular; eigenvalues (−1±√p)/2.',
     ({p})=>{ while(!(isPrime(p)&&p%4===1)) p++; const sq=new Set(); for(let x=1;x<p;x++) sq.add(x*x%p); const e=[]; for(let a=0;a<p;a++) for(let b=a+1;b<p;b++) if(sq.has((b-a)%p)) e.push([a,b]); return {n:p, edges:e, pos:circleLayout(p), title:`Paley P(${p})`}; }),
+  P('Random graph on N vertices','Families',[N('N','N',10,1,120)],'A uniformly random labelled graph on N vertices (every edge independently with probability ½, so all 2^C(N,2) graphs are equally likely). Press Load again for a fresh draw.',
+    ({N})=>{ const e=[]; for(let i=0;i<N;i++) for(let j=i+1;j<N;j++) if(Math.random()<0.5) e.push([i,j]); return {n:N, edges:e, pos:circleLayout(N), title:`Random graph on ${N} vertices`, spring:true}; }),
   P('Random G(n,p)','Families',[N('n','n',12,1,120),{key:'p',label:'p',def:0.3,min:0,max:1,step:0.05},N('seed','seed',1,0,9999)],'Erdős–Rényi random graph; each edge present independently with probability p.',
     ({n,p,seed})=>{ const rnd=mulberry(seed*7919+17); const e=[]; for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) if(rnd()<p) e.push([i,j]); return {n, edges:e, pos:circleLayout(n), title:`G(${n}, ${p})`, spring:true}; }),
   P('Random tree','Families',[N('n','n',12,1,150),N('seed','seed',1,0,9999)],'Uniformly random labelled tree via a random Prüfer sequence.',
