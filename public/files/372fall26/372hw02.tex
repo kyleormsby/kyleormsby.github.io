@@ -1,0 +1,154 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage{caption}
+\usepackage[normalem]{ulem}
+\usepackage{fullpage}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\hypersetup{hidelinks}
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem*{rmk*}{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem*{bonus*}{Bonus Problem}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Ztn}{(\mathbb{Z}/2)^{n}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\spec}{\operatorname{spec}}
+\newcommand{\wt}{\omega}
+
+\title{Math 372: Combinatorics\\ Homework 02}
+\author{Due Friday, 25 September, 10\textsc{p.m.}, via Gradescope}
+
+\begin{document}
+\maketitle
+
+\begin{rmk*}
+\textbf{When you can start.} Problems 1 and 2 use only what we have done through Monday,
+September~14. Problem~3 needs Wednesday the 16th, and Problem~4 needs Friday the 18th. The set is
+released early so that the first half can be done while the lab is also open; do not wait for
+Friday to begin.
+\end{rmk*}
+
+\begin{rmk*}
+\textbf{Conventions.} Graphs are finite and undirected. For $u,v\in\Ztn$ the dot product
+$u\cdot v=\sum_i u_iv_i$ is taken mod~$2$, $\wt(u)$ is the number of $1$'s in $u$, and
+$\chi_u\colon\Ztn\to\RR$ is the function $\chi_u(v)=(-1)^{u\cdot v}$, as in class. A poset is
+finite; $P_i$ denotes the $i$th level of a graded poset and $p_i=\#P_i$. An \emph{order-matching}
+from $P_i$ to $P_{i+1}$ is a one-to-one map $\mu\colon P_i\to P_{i+1}$ with $x<\mu(x)$ for all
+$x$; from $P_{i}$ to $P_{i-1}$ it is a one-to-one map with $\mu(x)<x$.
+\end{rmk*}
+
+\begin{rmk*}
+\textbf{On these solutions.} Each problem is worth up to five points for mathematical content
+and up to two for writing. Write for another student in this course: say what you are going to
+show before you show it, justify each step, and use complete sentences. End your submission with
+a short \emph{Methods and tools} note --- three or four sentences on what software you used and
+for what, and how you checked anything a machine produced for you.
+\end{rmk*}
+
+%%% Problem 1 %%%
+\begin{prob}[the two-flip graph]
+Fix $n\ge3$. Let $G_n$ be the graph with vertex set $\Ztn$ in which $u$ and $v$ are adjacent
+exactly when they differ in \emph{exactly two} coordinates. (So $G_n$ is to the cube as ``change
+two bits'' is to ``change one bit.'')
+\begin{enumerate}[(a)]
+\item Show that $G_n$ is regular and find its degree.
+\item Show that each $\chi_u$ is an eigenvector of the adjacency matrix of $G_n$, and find its
+eigenvalue as a function of $\wt(u)$. Then write out $\spec(G_4)$ completely, with
+multiplicities.
+\item How many connected components does $G_n$ have? Describe them. (Which vertices can a walk
+starting at $0$ reach?)
+\item Use $\spec(G_4)$ to compute the number of closed walks of length $3$ in $G_4$, and deduce
+how many triangles $G_4$ contains. Then confirm that number by a direct count, using your
+description of the components in (c).
+\end{enumerate}
+\end{prob}
+
+%%% Problem 2 %%%
+\begin{prob}[coming home]
+Let $G$ be a $d$-regular graph on $p$ vertices with adjacency matrix $A$, and let $M=\tfrac1dA$,
+so that $(M^{\ell})_{uv}$ is the probability that the simple random walk started at $u$ is at
+$v$ after $\ell$ steps. Write $p_\ell(u)=(M^{\ell})_{uu}$ for the probability of being home after
+$\ell$ steps.
+\begin{enumerate}[(a)]
+\item Explain why $p_\ell(u)$ does not depend on $u$ when $G$ is the complete graph $K_p$, and
+also when $G$ is the cube $Q_n$. Conclude that in both cases $p_\ell=\tr(M^{\ell})/p$.
+\item For $K_p$, find $p_\ell$ exactly as a function of $p$ and $\ell$, and compute
+$\lim_{\ell\to\infty}p_\ell$.
+\item For $Q_n$, show that $p_\ell=0$ when $\ell$ is odd, find $\lim_{m\to\infty}p_{2m}$, and
+explain in one sentence why the answer is $2^{1-n}$ rather than $2^{-n}$.
+\end{enumerate}
+\end{prob}
+
+%%% Problem 3 %%%
+\begin{prob}[a poset where the matchings can be written down]
+Fix integers $a,b\ge1$ and let $P$ be the set of pairs $(i,j)$ with $0\le i\le a$ and
+$0\le j\le b$, ordered by $(i,j)\le(i',j')$ if and only if $i\le i'$ and $j\le j'$. (If you like:
+$P$ is the set of divisors of $2^a3^b$, ordered by divisibility.)
+\begin{enumerate}[(a)]
+\item Show that $P$ is graded of rank $a+b$, with $P_k=\{(i,j):i+j=k\}$. Compute the rank sizes
+$p_0,\dots,p_{a+b}$ and show the sequence is symmetric and unimodal.
+\item Assume $a\le b$. Find order-matchings
+\[
+P_0\to P_1\to\cdots\to P_b \qquad\text{and}\qquad P_b\leftarrow P_{b+1}\leftarrow\cdots\leftarrow P_{a+b},
+\]
+and verify that they are order-matchings. (There is a very simple choice; try changing only one
+coordinate.)
+\item Conclude that the largest antichain in $P$ has exactly $\min(a,b)+1$ elements.
+\item Draw the chain decomposition of $P$ that your matchings produce when $a=2$ and $b=3$.
+\end{enumerate}
+\end{prob}
+
+%%% Problem 4 %%%
+\begin{prob}[the linear algebra method]
+Recall the operators on the Boolean algebra $B_n$: for a set $x$ with $|x|=i$,
+\[
+U_i(x)=\sum_{\substack{|y|=i+1\\ y\supset x}}y,
+\qquad
+D_i(x)=\sum_{\substack{|z|=i-1\\ z\subset x}}z,
+\]
+extended linearly to $U_i\colon\RR(B_n)_i\to\RR(B_n)_{i+1}$ and
+$D_i\colon\RR(B_n)_i\to\RR(B_n)_{i-1}$.
+\begin{enumerate}[(a)]
+\item For $n=3$, write out the matrices $[U_1]$ and $[D_2]$ with respect to the bases
+$(B_3)_1=\{1,2,3\}$ and $(B_3)_2=\{12,13,23\}$, in those orders. Then compute
+$[D_2][U_1]-[U_0][D_1]$ and check that it is what the identity from class predicts.
+\item Now let $P$ be any graded poset and suppose $U\colon\RR P_i\to\RR P_{i+1}$ is linear,
+\emph{order-raising} (each $U(x)$ is a linear combination of elements $y>x$), and \emph{onto}.
+Prove that there is an order-matching from $P_{i+1}$ to $P_i$.
+
+In class we proved the companion statement --- \emph{one-to-one} order-raising gives a matching
+from $P_i$ to $P_{i+1}$ --- by extracting a nonzero term from a determinant. Your proof should
+run the same way, but be careful about which rows and columns you are choosing and why.
+\end{enumerate}
+\end{prob}
+
+%%% Bonus %%%
+\begin{bonus*}[LYM]
+Let $\mathcal A$ be an antichain in $B_n$. Show that
+\[
+\sum_{A\in\mathcal A}\binom{n}{|A|}^{-1}\ \le\ 1,
+\]
+and deduce Sperner's theorem from it. (Count, in two ways, the pairs $(\mathcal C,A)$ where
+$\mathcal C$ is a maximal chain $\emptyset\subset\{x_1\}\subset\{x_1,x_2\}\subset\cdots$ in $B_n$
+and $A\in\mathcal A$ lies on $\mathcal C$. How many maximal chains pass through a given $A$? How
+many can pass through two different members of an antichain?)
+\end{bonus*}
+
+\end{document}
