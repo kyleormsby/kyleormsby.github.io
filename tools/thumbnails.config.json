@@ -54,5 +54,14 @@
     "scale": 1,
     "click": "#batch",
     "wait": 1500
+  },
+  "sperner-chains": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "click": "#n5",
+    "wait": 800
   }
 }

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sperner Chains — chain partitions of the Boolean algebra</title>
+<meta name="description" content="The Boolean algebra B_n partitioned into chains by the order-matchings that the determinant method of Stanley's Algebraic Combinatorics, Chapter 4, extracts from nonzero minors; with the bracketing symmetric chain decomposition for comparison. Built for Math 372 at Reed College.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F3F4F6; --panel: #FFFFFF; --ink: #1B1F2A; --muted: #646B7A; --line: #DADDE4;
+    --edge: #D3D6DE; --edge-dim: #E9EBF0; --accent: #2F5D8A; --accent-ink: #FFFFFF;
+    --node-stroke: #FFFFFF; --sat: 62%; --lum: 44%;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161C; --panel: #1C1F27; --ink: #E8E9EE; --muted: #9AA0AC; --line: #2C3039;
+      --edge: #343945; --edge-dim: #22262E; --accent: #8AB4E3; --accent-ink: #10131A;
+      --node-stroke: #1C1F27; --sat: 58%; --lum: 62%;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161C; --panel: #1C1F27; --ink: #E8E9EE; --muted: #9AA0AC; --line: #2C3039;
+    --edge: #343945; --edge-dim: #22262E; --accent: #8AB4E3; --accent-ink: #10131A;
+    --node-stroke: #1C1F27; --sat: 58%; --lum: 62%;
+  }
+  body { background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", system-ui, sans-serif;
+         font-size: 15px; line-height: 1.45; padding-block: 24px 40px; padding-inline: 20px; }
+  .wrap { max-width: 1240px; margin: 0 auto; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 24px; margin-bottom: 18px; }
+  h1 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 30px; letter-spacing: -0.01em;
+       margin: 0; text-wrap: balance; }
+  header p { margin: 0; color: var(--muted); max-width: 62ch; }
+  main { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 22px; align-items: start; }
+  @media (max-width: 820px) { main { grid-template-columns: 1fr; } }
+  aside { display: flex; flex-direction: column; gap: 18px; }
+  .block { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; }
+  .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+  .seg { display: flex; gap: 4px; flex-wrap: wrap; }
+  .seg button, .btn { font: inherit; font-weight: 500; border: 1px solid var(--line); background: var(--panel);
+    color: var(--ink); border-radius: 5px; padding: 6px 0; cursor: pointer; min-width: 34px; }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .seg button:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn { padding: 7px 12px; width: 100%; margin-top: 10px; }
+  .btn[disabled] { opacity: 0.45; cursor: default; }
+  .stats { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-variant-numeric: tabular-nums; }
+  .stats dt { color: var(--muted); } .stats dd { margin: 0; }
+  .hist { display: grid; grid-template-columns: 2.2em 1fr 2em; gap: 3px 8px; align-items: center;
+          font-variant-numeric: tabular-nums; font-size: 13px; margin-top: 10px; }
+  .hist .bar { height: 10px; background: var(--accent); border-radius: 2px; opacity: 0.8; }
+  .readout { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; min-height: 3.2em;
+             word-break: break-word; }
+  .readout .set { display: inline-block; padding: 1px 5px; border-radius: 3px; color: #fff; margin: 1px 0; }
+  .ranks { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; color: var(--muted);
+           line-height: 1.6; white-space: nowrap; overflow-x: auto; }
+  .note { font-size: 13.5px; color: var(--muted); }
+  .note b { color: var(--ink); font-weight: 600; }
+  .fig { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px; overflow-x: auto; }
+  svg { display: block; width: 100%; height: auto; }
+  .hasse { stroke: var(--edge); stroke-width: 1; fill: none; }
+  .chain-edge { fill: none; stroke-linecap: round; }
+  .node circle { stroke: var(--node-stroke); stroke-width: 1.5; cursor: pointer; }
+  .node text { font-family: "IBM Plex Mono", ui-monospace, monospace; fill: #fff; text-anchor: middle;
+               pointer-events: none; font-weight: 500; }
+  .rank-label { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11px; fill: var(--muted); }
+  .dim { opacity: 0.12; }
+  .credit { max-width: 1240px; margin: 28px auto 0; font-size: 13px; color: var(--muted); }
+  .credit a { color: var(--accent); }
+  @media (prefers-reduced-motion: no-preference) { .node, .chain-edge { transition: opacity 120ms; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Sperner Chains</h1>
+    <p>The Boolean algebra <i>B<sub>n</sub></i>, partitioned into chains by the order-matchings that
+       Lemma 4.5 extracts from nonzero determinants. Every chain crosses the middle level, so an antichain
+       has at most <i>C</i>(<i>n</i>,⌊<i>n</i>/2⌋) elements.</p>
+  </header>
+
+  <main>
+    <aside>
+      <div class="block">
+        <div class="label">n</div>
+        <div class="seg" id="nsel" role="group" aria-label="choose n"></div>
+        <div class="label" style="margin-top:14px">Chains from</div>
+        <div class="seg" id="method" role="group" aria-label="method">
+          <button id="m-det" aria-pressed="true" style="flex:1">determinants</button>
+          <button id="m-brk" aria-pressed="false" style="flex:1">bracketing</button>
+        </div>
+        <button class="btn" id="shuffle">Reorder the elements and recompute</button>
+      </div>
+
+      <div class="block">
+        <dl class="stats" id="stats"></dl>
+        <div class="hist" id="hist"></div>
+      </div>
+
+      <div class="block">
+        <div class="label">Chain under the pointer</div>
+        <div class="readout" id="readout">Hover a node.</div>
+      </div>
+
+      <div class="block">
+        <div class="label" id="ranks-label">The matrices behind it</div>
+        <div class="ranks" id="ranks"></div>
+        <p class="note" id="note" style="margin:10px 0 0"></p>
+      </div>
+    </aside>
+
+    <div class="fig"><svg id="svg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hasse diagram of B_n with chains"></svg></div>
+  </main>
+</div>
+
+<script>
+// ---------- exact-enough linear algebra mod a prime (entries are 0/1; a nonzero result mod P is nonzero over Q) ----------
+const P = 67108859; // prime 2^26 - 5: products of two residues stay below 2^53
+const mod = (a) => ((a % P) + P) % P;
+function inv(a) { let [g, x, b, y] = [mod(a), 1, P, 0];
+  while (b) { const q = Math.floor(g / b); [g, b] = [b, g - q * b]; [x, y] = [y, x - q * y]; } return mod(x); }
+function pivotCols(rows, ncols) { // indices of a maximal independent set of columns
+  const A = rows.map(r => r.slice()); const piv = []; let r = 0;
+  for (let c = 0; c < ncols && r < A.length; c++) {
+    let k = r; while (k < A.length && A[k][c] === 0) k++;
+    if (k === A.length) continue;
+    [A[r], A[k]] = [A[k], A[r]];
+    const iv = inv(A[r][c]); for (let j = c; j < ncols; j++) A[r][j] = mod(A[r][j] * iv);
+    for (let i = 0; i < A.length; i++) if (i !== r && A[i][c] !== 0) {
+      const f = A[i][c]; for (let j = c; j < ncols; j++) A[i][j] = mod(A[i][j] - f * A[r][j]); }
+    piv.push(c); r++;
+  }
+  return piv;
+}
+function detNonzero(M, R, C) { // is det of the submatrix (rows R, cols C) nonzero?
+  const m = R.length; if (m === 0) return true;
+  const A = R.map(i => C.map(j => M[i][j]));
+  for (let c = 0; c < m; c++) {
+    let k = c; while (k < m && A[k][c] === 0) k++;
+    if (k === m) return false;
+    [A[c], A[k]] = [A[k], A[c]];
+    const iv = inv(A[c][c]);
+    for (let i = c + 1; i < m; i++) if (A[i][c] !== 0) {
+      const f = mod(A[i][c] * iv); for (let j = c; j < m; j++) A[i][j] = mod(A[i][j] - f * A[c][j]); }
+  }
+  return true;
+}
+// A nonzero term of det M[R][C]: expand along the first row, step into a branch whose minor is nonsingular.
+function nonzeroTerm(M, R, C) {
+  R = R.slice(); C = C.slice(); const out = [];
+  while (R.length) {
+    const r = R[0]; let found = false;
+    for (let t = 0; t < C.length; t++) {
+      const c = C[t]; if (M[r][c] === 0) continue;
+      const R2 = R.slice(1), C2 = C.slice(0, t).concat(C.slice(t + 1));
+      if (detNonzero(M, R2, C2)) { out.push([r, c]); R = R2; C = C2; found = true; break; }
+    }
+    if (!found) throw new Error("no nonzero branch");
+  }
+  return out;
+}
+const popcount = (x) => { let c = 0; while (x) { x &= x - 1; c++; } return c; };
+const binom = (n, k) => { let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return Math.round(r); };
+
+// ---------- B_n ----------
+function levelsOf(n, shuffle) {
+  const L = Array.from({ length: n + 1 }, () => []);
+  for (let x = 0; x < (1 << n); x++) L[popcount(x)].push(x);
+  if (shuffle) for (const lv of L) for (let i = lv.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1)); [lv[i], lv[j]] = [lv[j], lv[i]]; }
+  return L;
+}
+const upMatrix = (Li, Lj) => Lj.map(y => Li.map(x => ((x & y) === x) ? 1 : 0)); // rows: rank i+1, cols: rank i
+
+// Chapter 4: matchings toward the middle level from nonzero determinant terms, then follow them.
+function determinantChains(n, levels) {
+  const j = Math.floor(n / 2), up = new Map(), down = new Map(), ranks = [];
+  for (let i = 0; i < n; i++) {
+    const Li = levels[i], Lj = levels[i + 1], M = upMatrix(Li, Lj);
+    if (i < j) {                                                   // Lemma 4.5: one-to-one, choose rows
+      const rows = pivotCols(Li.map((_, c) => Lj.map((_, r) => M[r][c])), Lj.length);
+      for (const [r, c] of nonzeroTerm(M, rows, Li.map((_, c) => c))) up.set(Li[c], Lj[r]);
+      ranks.push({ i, rows: Lj.length, cols: Li.length, rank: rows.length, kind: "one-to-one" });
+    } else {                                                       // onto, choose columns
+      const cols = pivotCols(M, Li.length);
+      for (const [r, c] of nonzeroTerm(M, Lj.map((_, r) => r), cols)) down.set(Lj[r], Li[c]);
+      ranks.push({ i, rows: Lj.length, cols: Li.length, rank: cols.length, kind: "onto" });
+    }
+  }
+  const upInv = new Map([...up].map(([x, y]) => [y, x])), downInv = new Map([...down].map(([y, x]) => [x, y]));
+  const chains = [];
+  for (const m of levels[j]) {
+    const ch = [m]; let x = m, y = m;
+    while (upInv.has(x)) { x = upInv.get(x); ch.unshift(x); }
+    while (downInv.has(y)) { y = downInv.get(y); ch.push(y); }
+    chains.push(ch);
+  }
+  return { chains, ranks };
+}
+// Bracketing (de Bruijn–Tengbergen–Kruyswijk / Greene–Kleitman): i in S is ")", i not in S is "(".
+function bracketChains(n) {
+  const groups = new Map();
+  for (let s = 0; s < (1 << n); s++) {
+    const stack = [], unmatched = [];
+    for (let i = 0; i < n; i++) { if (s & (1 << i)) { if (stack.length) stack.pop(); else unmatched.push(i); } else stack.push(i); }
+    let bottom = s; for (const i of unmatched) bottom &= ~(1 << i);   // chain bottom: unmatched ")" flipped to "("
+    if (!groups.has(bottom)) groups.set(bottom, []);
+    groups.get(bottom).push(s);
+  }
+  return { chains: [...groups.values()].map(ch => ch.sort((a, b) => popcount(a) - popcount(b))), ranks: [] };
+}
+
+// ---------- state & UI ----------
+const state = { n: 4, method: "det", levels: null, result: null, pinned: null };
+try { const s = JSON.parse(localStorage.getItem("sperner-chains") || "{}"); if (s.n >= 1 && s.n <= 8) state.n = s.n; if (s.method) state.method = s.method; } catch (e) {}
+const $ = (id) => document.getElementById(id);
+const setName = (x) => x === 0 ? "∅" : [...Array(8).keys()].filter(i => x & (1 << i)).map(i => i + 1).join("");
+const hueOf = (k, total) => Math.round((k * 137.508) % 360);
+const colorOf = (k, total) => `hsl(${hueOf(k, total)} var(--sat) var(--lum))`;
+
+function compute() {
+  state.levels = state.levels || levelsOf(state.n, false);
+  state.result = state.method === "det" ? determinantChains(state.n, state.levels) : bracketChains(state.n);
+  state.chainOf = new Map();
+  state.result.chains.forEach((ch, k) => ch.forEach(x => state.chainOf.set(x, k)));
+  state.pinned = null;
+  try { localStorage.setItem("sperner-chains", JSON.stringify({ n: state.n, method: state.method })); } catch (e) {}
+  render();
+}
+
+function render() {
+  const n = state.n, L = levelsOf(n, false), chains = state.result.chains, K = chains.length;
+  // layout
+  const W = Math.max(720, 80 + 22 * binom(n, Math.floor(n / 2))), rowH = n <= 5 ? 78 : 62, padX = 72, padTop = 28;
+  const H = padTop * 2 + rowH * n;
+  const r = n <= 3 ? 16 : n <= 5 ? 14 : n === 6 ? 12 : n === 7 ? 8 : 5;
+  const pos = new Map();
+  L.forEach((lv, k) => { const y = H - padTop - rowH * k; const w = W - 2 * padX;
+    lv.forEach((x, t) => pos.set(x, [lv.length === 1 ? W / 2 : padX + w * t / (lv.length - 1), y])); });
+  let hasse = "", cedges = "", nodes = "", labels = "";
+  for (let x = 0; x < (1 << n); x++) for (let i = 0; i < n; i++) if (!(x & (1 << i))) {
+    const y = x | (1 << i), [ax, ay] = pos.get(x), [bx, by] = pos.get(y);
+    hasse += `<line x1="${ax.toFixed(1)}" y1="${ay}" x2="${bx.toFixed(1)}" y2="${by}"/>`;
+  }
+  chains.forEach((ch, k) => {
+    if (ch.length < 2) return;
+    const d = ch.map((x, t) => (t ? "L" : "M") + pos.get(x)[0].toFixed(1) + " " + pos.get(x)[1]).join(" ");
+    cedges += `<path class="chain-edge" data-k="${k}" d="${d}" stroke="${colorOf(k, K)}" stroke-width="${n <= 5 ? 4 : n <= 7 ? 3 : 2}"/>`;
+  });
+  const fs = n <= 3 ? 12 : n <= 5 ? 10.5 : 8.5;
+  for (let x = 0; x < (1 << n); x++) {
+    const [px, py] = pos.get(x), k = state.chainOf.get(x);
+    const name = setName(x), f = Math.min(fs, (1.7 * r) / (0.62 * Math.max(1, name.length)));   // shrink long labels to fit
+    nodes += `<g class="node" data-x="${x}" data-k="${k}"><circle cx="${px.toFixed(1)}" cy="${py}" r="${r}" fill="${colorOf(k, K)}"><title>${name}</title></circle>` +
+      (n <= 6 ? `<text x="${px.toFixed(1)}" y="${py + f * 0.36}" font-size="${f.toFixed(1)}">${name}</text>` : "") + `</g>`;
+  }
+  L.forEach((lv, k) => labels += `<text class="rank-label" x="6" y="${H - padTop - rowH * k + 4}">p${k}=${lv.length}</text>`);
+  const svg = $("svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.style.minWidth = n >= 7 ? W + "px" : "";
+  svg.innerHTML = `<g class="hasse">${hasse}</g><g>${cedges}</g><g>${nodes}</g><g>${labels}</g>`;
+  // stats
+  const j = Math.floor(n / 2), lens = chains.map(c => c.length), longest = Math.max(...lens);
+  const symmetric = chains.every(c => popcount(c[0]) + popcount(c[c.length - 1]) === n);
+  $("stats").innerHTML =
+    `<dt>elements</dt><dd>2<sup>${n}</sup> = ${1 << n}</dd>` +
+    `<dt>chains</dt><dd>${K} = C(${n},${j}) = p<sub>${j}</sub></dd>` +
+    `<dt>longest chain</dt><dd>${longest} elements</dd>` +
+    `<dt>symmetric</dt><dd>${symmetric ? "yes — every chain runs from rank a to rank n−a" : "no"}</dd>`;
+  const counts = {}; lens.forEach(l => counts[l] = (counts[l] || 0) + 1);
+  const maxc = Math.max(...Object.values(counts));
+  $("hist").innerHTML = `<div class="label" style="grid-column:1/-1;margin:6px 0 2px">chain lengths</div>` +
+    Object.keys(counts).map(Number).sort((a, b) => b - a).map(l =>
+      `<span>${l}</span><div class="bar" style="width:${100 * counts[l] / maxc}%"></div><span>${counts[l]}</span>`).join("");
+  // matrices
+  if (state.method === "det") {
+    $("ranks-label").textContent = "The matrices behind it";
+    $("ranks").innerHTML = state.result.ranks.map(q =>
+      `[U<sub>${q.i}</sub>] is ${q.rows}×${q.cols}, rank ${q.rank}: ${q.kind}`).join("<br>");
+    $("note").innerHTML = `For <i>i</i> &lt; ${n}/2 the matrix of <i>U<sub>i</sub></i> has independent columns; pick <i>p<sub>i</sub></i> independent rows, and the square matrix they form has nonzero determinant, so <b>some term of its expansion is nonzero</b>. That term pairs each <i>x</i> in rank <i>i</i> with a distinct <i>y</i> ⊃ <i>x</i> in rank <i>i</i>+1. For <i>i</i> ≥ ${n}/2 the same with rows and columns swapped. The chains are the matchings followed through the middle level. Nothing here is canonical: reorder the elements and the determinants hand back different chains.`;
+  } else {
+    $("ranks-label").textContent = "The rule";
+    $("ranks").innerHTML = `read a subset as brackets:<br>i ∈ S ↦ ")",  i ∉ S ↦ "("`;
+    $("note").innerHTML = `Match brackets left to right. The matched pairs are fixed along a chain; the unmatched positions are a run of ")" then a run of "(", and the chain flips them one at a time from the left. Every chain then runs from rank <i>a</i> to rank ${n}−<i>a</i>: a <b>symmetric chain decomposition</b>, written down with no linear algebra at all.`;
+  }
+  $("shuffle").disabled = state.method !== "det";
+  $("readout").textContent = "Hover a node.";
+  wireHover();
+}
+
+function wireHover() {
+  const svg = $("svg"), K = state.result.chains.length;
+  const show = (k) => {
+    svg.querySelectorAll(".node, .chain-edge").forEach(el => el.classList.toggle("dim", k !== null && +el.dataset.k !== k));
+    if (k === null) { $("readout").textContent = "Hover a node."; return; }
+    const ch = state.result.chains[k];
+    $("readout").innerHTML = ch.map(x => `<span class="set" style="background:${colorOf(k, K)}">${setName(x)}</span>`).join(" ⊂ ") +
+      `<div style="color:var(--muted);margin-top:4px">ranks ${popcount(ch[0])}–${popcount(ch[ch.length - 1])}, ${ch.length} element${ch.length > 1 ? "s" : ""}</div>`;
+  };
+  svg.querySelectorAll(".node").forEach(g => {
+    g.addEventListener("mouseenter", () => { if (state.pinned === null) show(+g.dataset.k); });
+    g.addEventListener("mouseleave", () => { if (state.pinned === null) show(null); });
+    g.addEventListener("click", () => { const k = +g.dataset.k; state.pinned = state.pinned === k ? null : k; show(state.pinned === null ? null : k); });
+  });
+}
+
+// controls
+for (let n = 1; n <= 8; n++) {
+  const b = document.createElement("button"); b.textContent = n; b.id = "n" + n;
+  b.setAttribute("aria-pressed", n === state.n);
+  b.addEventListener("click", () => { state.n = n; state.levels = null;
+    document.querySelectorAll("#nsel button").forEach(x => x.setAttribute("aria-pressed", x === b)); compute(); });
+  $("nsel").appendChild(b);
+}
+const setMethod = (m) => { state.method = m; $("m-det").setAttribute("aria-pressed", m === "det"); $("m-brk").setAttribute("aria-pressed", m === "brk"); compute(); };
+$("m-det").addEventListener("click", () => setMethod("det"));
+$("m-brk").addEventListener("click", () => setMethod("brk"));
+$("shuffle").addEventListener("click", () => { state.levels = levelsOf(state.n, true); compute(); });
+$("m-det").setAttribute("aria-pressed", state.method === "det"); $("m-brk").setAttribute("aria-pressed", state.method === "brk");
+compute();
+</script>
+<p class="credit">Made for <a href="/372fall26/">Math 372: Combinatorics</a> at Reed College, fall 2026. The chains come from order-matchings P<sub>i</sub> → P<sub>i+1</sub> (i &lt; n/2) and P<sub>i+1</sub> → P<sub>i</sub> (i ≥ n/2), each read off a nonzero term in the determinant of a square submatrix of the up-operator, as in Lemma 4.5 of Stanley's <i>Algebraic Combinatorics</i>; the bracketing rule is de Bruijn–Tengbergen–Kruyswijk's. Part of <a href="/viz/">e-infinity.space/viz</a>.</p>
+</body>
+</html>
