@@ -3,6 +3,9 @@
 \usepackage[T1]{fontenc}
 \usepackage[margin=1in]{geometry}
 \usepackage{tikz}
+\newcommand{\gridxy}[4]{% xmin xmax ymin ymax -- gridlines exactly on the ticks
+  \foreach \gX in {#1,...,#2} \draw[gray!25] (\gX,#3) -- (\gX,#4);
+  \foreach \gY in {#3,...,#4} \draw[gray!25] (#1,\gY) -- (#2,\gY);}
 \definecolor{dark-red}{rgb}{0.4,0.15,0.15}
 \hypersetup{colorlinks, linkcolor=dark-red, citecolor=dark-red, urlcolor=dark-red}
 \setlist[enumerate,1]{label=\textbf{\arabic*.}, leftmargin=*, itemsep=10pt}
@@ -108,7 +111,7 @@ and none is needed.
 \smallskip
 \begin{center}
 \begin{tikzpicture}[x=1.05cm,y=0.72cm]
-  \draw[gray!25] (0,0) grid (8,6);
+  \gridxy{0}{8}{0}{6}
   \draw[->,thick] (-0.2,0) -- (8.5,0) node[right] {$x$};
   \draw[->,thick] (0,-0.2) -- (0,6.5) node[above] {$y$};
   \foreach \x in {1,...,8} \draw (\x,0.08) -- (\x,-0.08) node[below,font=\small] {\x};
