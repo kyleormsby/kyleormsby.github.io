@@ -1,0 +1,70 @@
+{
+  "slug": "putnam",
+  "number": "putnam",
+  "title": "practice sessions",
+  "term": "fall 2026",
+  "schedule": "putnam-fall26.csv",
+  "filesBase": "/files/putnam/",
+  "current": true,
+  "blurb": "Weekly training for the William Lowell Putnam Mathematical Competition: one technique per week, a short lecture, then problems.",
+  "preamble": "Each week has two identical sessions; come to whichever fits your schedule. A 15-minute mini-lecture on one technique, then 35 minutes of group work on a six-problem handout (two warm-ups, two easy Putnam problems, two hard take-homes). Solutions are posted after Friday's session.",
+  "facts": [
+    {
+      "label": "the exam",
+      "value": "Saturday, December 5, 2026 — four 90-minute sessions with breaks (new this year). Twelve problems, ten points each, median score near zero. [MAA Putnam page](https://maa.org/putnam/)"
+    },
+    {
+      "label": "meetings",
+      "value": "Thursdays 9:10–10:00 and Fridays 1:40–2:30, ROOM TBD\nThe two sessions each week are identical"
+    },
+    {
+      "label": "registration",
+      "value": "Any Reed undergraduate can take the exam (at most four times). Email [ormsbyk@reed.edu](mailto:ormsbyk@reed.edu) to get the registration link."
+    },
+    {
+      "label": "plan",
+      "value": "[Semester plan](/files/putnam/plan.pdf) — schedule, session structure, and the problem list"
+    },
+    {
+      "label": "resources",
+      "value": "[Kedlaya's Putnam archive](https://kskedlaya.org/putnam-archive/) ❦ [CMU Putnam seminar handouts](https://www.math.cmu.edu/~ploh/2025-putnam.shtml) ❦ [Stanford Putnam/Pólya seminar](http://math.stanford.edu/~vakil/putnam14/) ❦ [Northwestern's easy Putnam problems](https://putnam.math.northwestern.edu/) ❦ [AoPS Putnam forum](https://artofproblemsolving.com/community/c7t441f7_putnam)"
+    },
+    {
+      "label": "books",
+      "value": "Gelca & Andreescu, *Putnam and Beyond* ❦ Zeitz, *The Art and Craft of Problem Solving* ❦ Engel, *Problem-Solving Strategies*"
+    }
+  ],
+  "render": [
+    {
+      "col": "topic",
+      "kind": "md"
+    },
+    {
+      "col": "slides",
+      "kind": "pdf",
+      "label": "materials",
+      "text": "slides",
+      "also": [
+        {
+          "col": "notes",
+          "text": "notes"
+        },
+        {
+          "col": "handout",
+          "text": "handout"
+        }
+      ]
+    },
+    {
+      "col": "solutions",
+      "kind": "pdf",
+      "label": "solutions",
+      "text": "solutions"
+    },
+    {
+      "col": "note",
+      "kind": "md",
+      "label": "note"
+    }
+  ]
+}
