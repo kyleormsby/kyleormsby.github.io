@@ -19,7 +19,10 @@ const viz = (await getCollection('viz'))
     a.data.title.localeCompare(b.data.title))
   .slice(0, 3);
 
-const courses = currentCourses();
+// The Putnam practice sessions are a current "course" for the teaching page,
+// but on the splash they read better as their own clause.
+const courses = currentCourses().filter((c) => c.slug !== 'putnam');
+const putnam = currentCourses().find((c) => c.slug === 'putnam');
 
 let writing: any[] = [];
 try {
@@ -42,7 +45,7 @@ try {
       Professor of mathematics. Currently teaching{' '}
       {courses.map((c, i) => (
         <>{i > 0 && ', '}<a href={courseHref(c)}>{c.number}</a></>
-      ))}.
+      ))}{putnam ? <> and running <a href={courseHref(putnam)}>Putnam practices</a></> : null}.
     </p>
   </div>
 
