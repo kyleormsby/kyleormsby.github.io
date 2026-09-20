@@ -78,9 +78,13 @@ const meetings = weeks.reduce(
           return (
             <div class="meeting" data-type={m.type} data-date={m.date}>
               <div class="when label">
-                {when
-                  ? <span class="day">{when.day} {when.date}</span>
-                  : <span class="day">{m.display}</span>}
+                {/* `display` wins when set (a two-day session, a date range);
+                    `date` still anchors the past/next logic. */}
+                {m.display
+                  ? <span class="day">{m.display.split(' / ').map((part, i, all) => (
+                      <>{part}{i < all.length - 1 && <> /<br /></>}</>
+                    ))}</span>
+                  : when && <span class="day">{when.day} {when.date}</span>}
                 {kindWord[m.type] && <span class="kind">{kindWord[m.type]}</span>}
               </div>
               <ul>

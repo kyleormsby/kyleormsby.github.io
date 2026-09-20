@@ -11,7 +11,7 @@
   "facts": [
     {
       "label": "the exam",
-      "value": "Saturday, December 5, 2026 — four 90-minute sessions with breaks (new this year). Twelve problems, ten points each, median score near zero. [MAA Putnam page](https://maa.org/putnam/)"
+      "value": "Saturday, December 5, 2026 — four 90-minute sessions with breaks (new this year). Twelve problems, ten points each. [MAA Putnam page](https://maa.org/putnam/)"
     },
     {
       "label": "meetings",
@@ -20,10 +20,6 @@
     {
       "label": "registration",
       "value": "Any Reed undergraduate can take the exam (at most four times). Email [ormsbyk@reed.edu](mailto:ormsbyk@reed.edu) to get the registration link."
-    },
-    {
-      "label": "plan",
-      "value": "[Semester plan](/files/putnam/plan.pdf) — schedule, session structure, and the problem list"
     },
     {
       "label": "resources",

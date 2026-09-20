@@ -1,13 +1,13 @@
 week,week_dates,date,display,type,topic,slides,notes,handout,solutions,note
-1,Sep 24 · Sep 25,2026-09-24,,class,"Induction, pigeonhole, and the extremal principle — and how to write a solution that scores",week01-slides,week01-notes,week01-handout,,Thu 9:10 or Fri 1:40 — same session both days
-2,Oct 1 · Oct 2,2026-10-01,,class,"Invariants, monovariants, parity, and coloring",week02-slides,week02-notes,week02-handout,,
-3,Oct 8 · Oct 9,2026-10-08,,class,"Polynomials: roots, Vieta, $a-b\mid p(a)-p(b)$, interpolation, growth",week03-slides,week03-notes,week03-handout,,
-4,Oct 15 · Oct 16,2026-10-15,,class,"Number theory: congruences, orders, Fermat–Euler–Wilson, valuations",week04-slides,week04-notes,week04-handout,,
-4,Oct 15 · Oct 16,2026-10-22,,break,Fall break — no sessions Oct 22 or 23,,,,,
-5,Oct 29 · Oct 30,2026-10-29,,class,"Combinatorics: bijections, double counting, recursions, generating functions",week05-slides,week05-notes,week05-handout,,
-6,Nov 5 · Nov 6,2026-11-05,,class,"Inequalities and analysis: AM–GM, Cauchy–Schwarz, Jensen, integrals, sequences, MVT",week06-slides,week06-notes,week06-handout,,
-7,Nov 12 · Nov 13,2026-11-12,,class,"Linear algebra: determinants, eigenvalues, trace, rank, structured matrices",week07-slides,week07-notes,week07-handout,,**Friday Nov 13 meets in Library 41**, not Library 389 (Thursday is in 389 as usual)
-8,Nov 19 · Nov 20,2026-11-19,,class,"Probability, expectation, and games: indicators, symmetry, conditioning, strategies",week08-slides,week08-notes,week08-handout,,
-8,Nov 19 · Nov 20,2026-11-26,,break,Thanksgiving — no sessions Nov 26 or 27,,,,,
-9,Dec 3 · Dec 4,2026-12-03,,review,"Exam week: the 2026 format, triage, writing for points, and a timed 35-minute mini-set",week09-slides,week09-notes,week09-handout,,Take-home problems 4–6 are for after the exam if you like
+1,,2026-09-24,thu sep 24 / fri sep 25,class,"Induction, pigeonhole, and the extremal principle — and how to write a solution that scores",week01-slides,week01-notes,week01-handout,,Thu 9:10 or Fri 1:40 — same session both days
+2,,2026-10-01,thu oct 1 / fri oct 2,class,"Invariants, monovariants, parity, and coloring",week02-slides,week02-notes,week02-handout,,
+3,,2026-10-08,thu oct 8 / fri oct 9,class,"Polynomials: roots, Vieta, $a-b\mid p(a)-p(b)$, interpolation, growth",week03-slides,week03-notes,week03-handout,,
+4,,2026-10-15,thu oct 15 / fri oct 16,class,"Number theory: congruences, orders, Fermat–Euler–Wilson, valuations",week04-slides,week04-notes,week04-handout,,
+4,,2026-10-22,thu oct 22 / fri oct 23,break,Fall break — no sessions,,,,,
+5,,2026-10-29,thu oct 29 / fri oct 30,class,"Combinatorics: bijections, double counting, recursions, generating functions",week05-slides,week05-notes,week05-handout,,
+6,,2026-11-05,thu nov 5 / fri nov 6,class,"Inequalities and analysis: AM–GM, Cauchy–Schwarz, Jensen, integrals, sequences, MVT",week06-slides,week06-notes,week06-handout,,
+7,,2026-11-12,thu nov 12 / fri nov 13,class,"Linear algebra: determinants, eigenvalues, trace, rank, structured matrices",week07-slides,week07-notes,week07-handout,,"**Friday Nov 13 meets in Library 41**, not Library 389 (Thursday is in 389 as usual)"
+8,,2026-11-19,thu nov 19 / fri nov 20,class,"Probability, expectation, and games: indicators, symmetry, conditioning, strategies",week08-slides,week08-notes,week08-handout,,
+8,,2026-11-26,thu nov 26 / fri nov 27,break,Thanksgiving — no sessions,,,,,
+9,,2026-12-03,thu dec 3 / fri dec 4,review,"Exam week: the 2026 format, triage, writing for points, and a timed 35-minute mini-set",week09-slides,week09-notes,week09-handout,,Take-home problems 4–6 are for after the exam if you like
 exam,,2026-12-05,,exam,"The 87th Putnam — four 90-minute sessions, ROOM TBD. Bring blue/black pens and your Putnam ID number; no calculators, notes, or drawing tools.",,,,,[Rules and format](https://maa.org/putnam/)
