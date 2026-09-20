@@ -1,0 +1,31 @@
+% Putnam practice poster. Compile with pdflatex.
+\documentclass{article}
+\usepackage[letterpaper,margin=0in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{PlayfairDisplay}
+\usepackage{graphicx,tikz}
+\usetikzlibrary{calc}
+\pagestyle{empty}
+
+% giant letters: Playfair Display Black, scaled to a target width and height
+\newcommand{\bigword}[3]{%
+  \resizebox{#2}{#3}{\fontseries{black}\selectfont
+    \begingroup\fontsize{100}{100}\selectfont #1\endgroup}}
+
+\begin{document}
+\begin{tikzpicture}[remember picture,overlay]
+  % PUT: full width, upper half
+  \node[anchor=north,inner sep=0] at ($(current page.north)+(0,-0.35in)$)
+    {\bigword{PUT}{8.1in}{4.4in}};
+  % NAM: full width, lower half
+  \node[anchor=north,inner sep=0] at ($(current page.north)+(0,-5.15in)$)
+    {\bigword{NAM}{8.1in}{4.4in}};
+  % small text, all at the bottom
+  \node[anchor=south,inner sep=0] at ($(current page.south)+(0,0.42in)$)
+    {\fontseries{regular}\selectfont\fontsize{18}{24}\selectfont
+     \begin{tabular}{c}
+       \itshape e-infinity.space/putnam/\\
+       thu 9:10 \,/\, fri 13:40 \quad in Lib 389
+     \end{tabular}};
+\end{tikzpicture}
+\end{document}

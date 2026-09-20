@@ -36,15 +36,11 @@
       "kind": "md"
     },
     {
-      "col": "slides",
+      "col": "notes",
       "kind": "pdf",
       "label": "materials",
-      "text": "slides",
+      "text": "notes",
       "also": [
-        {
-          "col": "notes",
-          "text": "notes"
-        },
         {
           "col": "handout",
           "text": "handout"
