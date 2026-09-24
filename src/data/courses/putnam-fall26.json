@@ -7,7 +7,7 @@
   "filesBase": "/files/putnam/",
   "current": true,
   "blurb": "Weekly training for the William Lowell Putnam Mathematical Competition: one technique per week, a short lecture, then problems.",
-  "preamble": "Each week has two identical sessions; come to whichever fits your schedule. A 15-minute mini-lecture on one technique, then 35 minutes of group work on a six-problem handout (two warm-ups, two easy Putnam problems, two hard take-homes). Solutions are posted after Friday's session.\n\nThese materials were drafted with the help of an AI assistant (Claude) and reviewed by me before posting.",
+  "preamble": "Each week has two identical sessions; come to whichever fits your schedule. A 15-minute mini-lecture on one technique, then 35 minutes of group work on a six-problem handout (two warm-ups, two easy Putnam problems, two hard take-homes). Solutions are posted after Friday's session.\n\nThese materials were drafted with the help of an AI assistant (Claude) and reviewed by me before practice sessions.",
   "facts": [
     {
       "label": "the exam",
