@@ -9,9 +9,8 @@ import Base from '../../layouts/Base.astro';
  *
  * The maps are listed once, below. To add or retitle one, edit that array.
  *
- * public/thumbs/hasse-diagrams.png is a 1200x900 render of the inline figure
- * below on the light palette, not a product of `npm run thumbs` (which only
- * shoots public/<slug>/ pages). Re-render it by hand if the figure changes.
+ * public/thumbs/hasse-diagrams.png is a hand-made 1200x900 render of a small
+ * figure (B3, B3/S3, B4/C4), not a product of `npm run thumbs`.
  */
 const maps = [
   {
@@ -62,139 +61,42 @@ const maps = [
       'Rows count open sets, but the order is not graded — covers jump rows — so this is the one map where Sperner’s machinery does not apply.',
     tags: ['finite spaces', 'posets'],
   },
+  {
+    slug: 'tamari-lattice',
+    title: 'Tamari lattice',
+    formula: '<i>T</i><sub><i>n</i>+1</sub> on trees and on transfer systems on [<i>n</i>]; NC(<i>n</i>+1)',
+    href: '/tamari-lattice/',
+    thumb: '/thumbs/tamari-lattice.png',
+    blurb:
+      'One Catalan set drawn three ways: full binary trees with <i>n</i>+2 leaves, transfer systems on the chain [<i>n</i>], noncrossing partitions of [<i>n</i>+1]. ' +
+      'The first two carry the Tamari order — a rotation is exactly adding relations — and the third carries Kreweras’ refinement order, coarser than Tamari, so toggling to it changes the covers as well as the glyphs.',
+    tags: ['Catalan', 'lattices'],
+  },
 ];
 ---
 
 <Base
   title="Hasse diagrams · Kyle Ormsby"
-  description="Zoomable Hasse diagrams of the quotient posets from Stanley's Chapter 5 — unlabeled graphs, necklaces, simplicial complexes, and finite spaces — and a primer on reading them."
+  description="Zoomable Hasse diagrams built for Math 372: the quotient posets of unlabeled graphs, necklaces, simplicial complexes and finite spaces, and the Tamari lattice on binary trees, transfer systems and noncrossing partitions."
   wide
 >
   <div style="max-width:var(--measure)">
     <p class="label">visualizations · posets</p>
     <h1 style="margin-top:var(--s3)">Hasse diagrams</h1>
     <p class="lede dim" style="margin-top:var(--s4)">
-      Four maps of quotient posets — unlabeled graphs, necklaces, simplicial
-      complexes, finite spaces — drawn large enough to wander around in.
+      Zoomable Hasse diagrams — unlabeled graphs, necklaces, simplicial
+      complexes, finite spaces, the Tamari lattice — drawn large enough to
+      wander around in.
     </p>
   </div>
 
-  <div class="prose-col" style="margin-top:var(--s7)">
+  <div class="prose-col" style="margin-top:var(--s6)">
     <p>
-      A finite poset is drawn by its <em>cover relation</em>: one dot per
-      element, and a segment from <i>x</i> up to <i>y</i> exactly when{' '}
-      <i>x</i> &lt; <i>y</i> with nothing in between. Transitivity supplies
-      the rest, so the picture is as sparse as the order allows, and height
-      reads as rank. That drawing is the Hasse diagram, and for anything much
-      bigger than the Boolean algebra B<sub>4</sub> it stops fitting on a
-      page — which is where the maps below come in.
-    </p>
-    <p>
-      They all draw the same kind of object, the quotient poset{' '}
-      <i>P</i>/<i>G</i> of Stanley’s{' '}
-      <a href="https://www.cambridge.org/core/books/algebraic-combinatorics/"><em>Algebraic Combinatorics</em></a>,
-      Chapter 5. Start with a poset <i>P</i> — subsets of [<i>n</i>], a
-      product of chains, the down-sets of B<sub><i>n</i></sub>, the
-      topologies on [<i>n</i>] — and a group <i>G</i> acting on it by
-      automorphisms. The elements of <i>P</i>/<i>G</i> are the orbits, and
-      one orbit lies below another when some representative of the first lies
-      below some representative of the second. Unlabeled graphs are the orbits
-      of <i>S<sub>n</sub></i> on edge sets; necklaces are the orbits of{' '}
-      <i>C<sub>n</sub></i> on colorings; finite spaces are the orbits of{' '}
-      <i>S<sub>n</sub></i> on topologies.
-    </p>
-  </div>
-
-  <figure class="hasse-fig">
-    <svg viewBox="0 0 760 232" role="img"
-         aria-label="Three Hasse diagrams: the Boolean algebra B₃ drawn as a cube, its quotient by S₃ drawn as a chain with orbit sizes 1, 3, 3, 1 and cover multiplicities 1, 2, 3, and the quotient B₄/C₄ drawn as a diamond of six elements.">
-      <g class="edges" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
-        <!-- B_3 -->
-        <line x1="110" y1="196" x2="50" y2="140"/><line x1="110" y1="196" x2="110" y2="140"/><line x1="110" y1="196" x2="170" y2="140"/>
-        <line x1="50" y1="140" x2="50" y2="84"/><line x1="50" y1="140" x2="110" y2="84"/>
-        <line x1="110" y1="140" x2="50" y2="84"/><line x1="110" y1="140" x2="170" y2="84"/>
-        <line x1="170" y1="140" x2="110" y2="84"/><line x1="170" y1="140" x2="170" y2="84"/>
-        <line x1="50" y1="84" x2="110" y2="28"/><line x1="110" y1="84" x2="110" y2="28"/><line x1="170" y1="84" x2="110" y2="28"/>
-        <!-- B_3 / S_3 -->
-        <line x1="330" y1="196" x2="330" y2="140"/><line x1="330" y1="140" x2="330" y2="84"/><line x1="330" y1="84" x2="330" y2="28"/>
-        <!-- B_4 / C_4 -->
-        <line x1="600" y1="212" x2="600" y2="166"/>
-        <line x1="600" y1="166" x2="560" y2="120"/><line x1="600" y1="166" x2="640" y2="120"/>
-        <line x1="560" y1="120" x2="600" y2="74"/><line x1="640" y1="120" x2="600" y2="74"/>
-        <line x1="600" y1="74" x2="600" y2="28"/>
-      </g>
-      <!-- quotient arrow -->
-      <g class="arrow" fill="none" stroke="currentColor" stroke-width="1.2">
-        <line x1="212" y1="112" x2="266" y2="112"/><polyline points="259,106 266,112 259,118"/>
-      </g>
-      <g class="nodes" fill="var(--paper)" stroke="currentColor" stroke-width="1.4">
-        <circle cx="110" cy="196" r="4.5"/><circle cx="50" cy="140" r="4.5"/><circle cx="110" cy="140" r="4.5"/><circle cx="170" cy="140" r="4.5"/>
-        <circle cx="50" cy="84" r="4.5"/><circle cx="110" cy="84" r="4.5"/><circle cx="170" cy="84" r="4.5"/><circle cx="110" cy="28" r="4.5"/>
-        <circle cx="330" cy="196" r="4.5"/><circle cx="330" cy="140" r="4.5"/><circle cx="330" cy="84" r="4.5"/><circle cx="330" cy="28" r="4.5"/>
-        <circle cx="600" cy="212" r="4.5"/><circle cx="600" cy="166" r="4.5"/><circle cx="560" cy="120" r="4.5"/><circle cx="640" cy="120" r="4.5"/><circle cx="600" cy="74" r="4.5"/><circle cx="600" cy="28" r="4.5"/>
-      </g>
-      <g class="lbl" fill="currentColor" font-size="12.5">
-        <!-- B_3 element labels -->
-        <text x="110" y="214" text-anchor="middle">∅</text>
-        <text x="36" y="144" text-anchor="end">1</text><text x="119" y="153" text-anchor="start">2</text><text x="184" y="144" text-anchor="start">3</text>
-        <text x="36" y="88" text-anchor="end">12</text><text x="119" y="80" text-anchor="start">13</text><text x="184" y="88" text-anchor="start">23</text>
-        <text x="110" y="18" text-anchor="middle">123</text>
-        <!-- B_3/S_3: orbit sizes -->
-        <text x="344" y="200" text-anchor="start">∅</text>
-        <text x="344" y="144" text-anchor="start">&#123;1&#125;</text>
-        <text x="344" y="88" text-anchor="start">&#123;1,2&#125;</text>
-        <text x="344" y="32" text-anchor="start">&#123;1,2,3&#125;</text>
-        <!-- B_4/C_4 labels -->
-        <text x="614" y="216" text-anchor="start">∅</text>
-        <text x="614" y="170" text-anchor="start">&#123;1&#125;</text>
-        <text x="546" y="124" text-anchor="end">&#123;1,2&#125;</text>
-        <text x="654" y="124" text-anchor="start">&#123;1,3&#125;</text>
-        <text x="614" y="78" text-anchor="start">&#123;1,2,3&#125;</text>
-        <text x="614" y="32" text-anchor="start">&#123;1,2,3,4&#125;</text>
-      </g>
-      <g class="mult" font-size="11">
-        <!-- cover multiplicities of U on orbit sums -->
-        <text x="322" y="171" text-anchor="end">1</text>
-        <text x="322" y="115" text-anchor="end">2</text>
-        <text x="322" y="59" text-anchor="end">3</text>
-        <text x="592" y="192" text-anchor="end">1</text>
-        <text x="574" y="148" text-anchor="end">2</text>
-        <text x="626" y="148" text-anchor="start">2</text>
-        <text x="574" y="94" text-anchor="end">2</text>
-        <text x="626" y="94" text-anchor="start">1</text>
-        <text x="592" y="54" text-anchor="end">4</text>
-      </g>
-      <g class="cap" font-size="11.5">
-        <text x="110" y="232" text-anchor="middle">B₃</text>
-        <text x="330" y="232" text-anchor="middle">B₃ / S₃</text>
-        <text x="600" y="232" text-anchor="middle">B₄ / C₄ — necklaces, 4 beads, 2 colors</text>
-      </g>
-    </svg>
-    <figcaption>
-      B<sub>3</sub>, its quotient by <i>S</i><sub>3</sub>, and the quotient of{' '}
-      B<sub>4</sub> by the 4-cycle. In a quotient, each cover edge carries the
-      coefficient with which Stanley’s up-operator <i>U</i> sends one orbit sum
-      to the next: <i>U</i>(1 + 2 + 3) = 2·(12 + 13 + 23), so the middle edge
-      of the chain is labelled 2. The maps below draw exactly these numbers.
-    </figcaption>
-  </figure>
-
-  <div class="prose-col">
-    <p>
-      The reason to care is Stanley’s theorem that any quotient{' '}
-      B<sub><i>n</i></sub>/<i>G</i> is rank-symmetric, rank-unimodal, and
-      Sperner: the largest antichain is a rank, whatever the group. The proof
-      lifts the linear-algebra method — order-matchings extracted from the
-      up-operator — to the invariants, and the multiplicities on the edges
-      are precisely the matrix of <i>U</i> restricted to those invariants.
-      The finite-space map is the instructive exception: the poset of
-      topologies is not graded, its covers skip rows, and the theorem has
-      nothing to say about it.
-      Each map lays the quotient out so that the order-reversing symmetry of
-      the original (complementing a graph, swapping the colors of a necklace,
-      Alexander duality for a complex) is a reflection of the picture, colors
-      the elements by orbit size, and opens a panel with the stabilizer, the
-      covers, and the dual for whatever you click.
+      A Hasse diagram draws a finite poset by its cover relation: one dot per
+      element, a segment from <i>x</i> up to <i>y</i> when <i>y</i> covers{' '}
+      <i>x</i>, and nothing else — transitivity is left to the reader, and
+      height reads as rank. Past a few dozen elements the drawing needs
+      panning and zooming, which is what these maps are for.
     </p>
   </div>
 
@@ -215,9 +117,9 @@ const maps = [
   </ul>
 
   <p class="dim see-also">
-    See also <a href="/sperner-chains/">Sperner chains</a>, which partitions{' '}
-    B<sub><i>n</i></sub> itself into chains by the same linear-algebra method,
-    and the <a href="/372fall26/">Math 372</a> schedule, where these were built.
+    See also <a href="/sperner-chains/">Sperner chains</a>, a chain partition
+    of B<sub><i>n</i></sub> itself, and the <a href="/372fall26/">Math 372</a>{' '}
+    schedule, where these were built.
   </p>
 </Base>
 
@@ -225,30 +127,6 @@ const maps = [
   .prose-col { max-width: var(--measure); }
   .prose-col p + p { margin-top: var(--s4); }
 
-  .hasse-fig {
-    margin: var(--s7) 0;
-    max-width: 50rem;
-  }
-  .hasse-fig svg {
-    display: block;
-    width: 100%;
-    height: auto;
-    color: var(--ink);
-    font-family: var(--mono);
-    font-variant-numeric: tabular-nums;
-    overflow: visible;
-  }
-  .hasse-fig .lbl text { fill: var(--ink); }
-  .hasse-fig .mult text { fill: var(--accent); font-weight: 500; }
-  .hasse-fig .cap text { fill: var(--muted); letter-spacing: 0.04em; }
-  .hasse-fig .arrow { color: var(--muted); }
-  .hasse-fig figcaption {
-    margin-top: var(--s4);
-    max-width: var(--measure);
-    font-size: 0.92rem;
-    line-height: 1.5;
-    color: var(--muted);
-  }
 
   .card .formula { text-transform: none; letter-spacing: 0.02em; font-size: 0.78rem; }
   .see-also { margin-top: var(--s7); max-width: var(--measure); }

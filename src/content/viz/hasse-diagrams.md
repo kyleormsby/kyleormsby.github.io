@@ -8,4 +8,4 @@ tags:
   - combinatorics
 ---
 
-Zoomable maps of the quotient posets of Stanley's Chapter 5 — unlabeled graphs, necklaces, simplicial complexes, and finite spaces — with a short primer on reading a Hasse diagram and on the cover multiplicities that the up-operator *U* writes on the edges.
+Zoomable Hasse diagrams built for Math 372: the quotient posets of unlabeled graphs, necklaces, simplicial complexes and finite spaces, and the Tamari lattice drawn on binary trees, transfer systems on a chain, and noncrossing partitions.

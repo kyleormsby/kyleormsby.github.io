@@ -31,3 +31,21 @@
 @font-face{font-family:'Caveat';font-style:normal;font-weight:500;font-display:swap;src:url('./files/caveat-latin-ext-500-normal.woff2') format('woff2');}
 @font-face{font-family:'Caveat';font-style:normal;font-weight:600;font-display:swap;src:url('./files/caveat-latin-600-normal.woff2') format('woff2');}
 @font-face{font-family:'Caveat';font-style:normal;font-weight:600;font-display:swap;src:url('./files/caveat-latin-ext-600-normal.woff2') format('woff2');}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:500;font-display:swap;src:url('./files/fraunces-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:500;font-display:swap;src:url('./files/fraunces-latin-ext-500-normal.woff2') format('woff2');}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:600;font-display:swap;src:url('./files/fraunces-latin-600-normal.woff2') format('woff2');}
+@font-face{font-family:'Fraunces';font-style:normal;font-weight:600;font-display:swap;src:url('./files/fraunces-latin-ext-600-normal.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:400;font-display:swap;src:url('./files/ibm-plex-sans-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:400;font-display:swap;src:url('./files/ibm-plex-sans-latin-ext-400-normal.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:500;font-display:swap;src:url('./files/ibm-plex-sans-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:500;font-display:swap;src:url('./files/ibm-plex-sans-latin-ext-500-normal.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:600;font-display:swap;src:url('./files/ibm-plex-sans-latin-600-normal.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Sans';font-style:normal;font-weight:600;font-display:swap;src:url('./files/ibm-plex-sans-latin-ext-600-normal.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url('./files/ibm-plex-mono-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url('./files/ibm-plex-mono-latin-ext-400-normal.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url('./files/ibm-plex-mono-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url('./files/ibm-plex-mono-latin-ext-500-normal.woff2') format('woff2');}
+@font-face{font-family:'STIX Two Text';font-style:normal;font-weight:400;font-display:swap;src:url('./files/stix-two-text-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:'STIX Two Text';font-style:normal;font-weight:400;font-display:swap;src:url('./files/stix-two-text-latin-ext-400-normal.woff2') format('woff2');}
+@font-face{font-family:'STIX Two Text';font-style:italic;font-weight:400;font-display:swap;src:url('./files/stix-two-text-latin-400-italic.woff2') format('woff2');}
+@font-face{font-family:'STIX Two Text';font-style:italic;font-weight:400;font-display:swap;src:url('./files/stix-two-text-latin-ext-400-italic.woff2') format('woff2');}
