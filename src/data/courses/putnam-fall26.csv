@@ -1,5 +1,5 @@
 week,week_dates,date,display,type,topic,notes,handout,solutions,note
-1,,2026-09-24,thu sep 24 / fri sep 25,class,"Induction, pigeonhole, and the extremal principle — and how to write a solution that scores",week01-notes,week01-handout,,Thu 9:10 or Fri 1:40 — same session both days
+1,,2026-09-24,thu sep 24 / fri sep 25,class,"Induction, pigeonhole, and the extremal principle — and how to write a solution that scores",week01-notes,week01-handout,week01-solutions,Thu 9:10 or Fri 1:40 — same session both days
 2,,2026-10-01,thu oct 1 / fri oct 2,class,"Invariants, monovariants, parity, and coloring",week02-notes,week02-handout,,
 3,,2026-10-08,thu oct 8 / fri oct 9,class,"Polynomials: roots, Vieta, $a-b\mid p(a)-p(b)$, interpolation, growth",week03-notes,week03-handout,,
 4,,2026-10-15,thu oct 15 / fri oct 16,class,"Number theory: congruences, orders, Fermat–Euler–Wilson, valuations",week04-notes,week04-handout,,
