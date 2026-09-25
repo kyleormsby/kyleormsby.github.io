@@ -1,0 +1,189 @@
+\documentclass[11pt]{article}
+\usepackage{amssymb, amsmath, libertine, hyperref, xcolor, booktabs, enumitem, microtype}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+\hypersetup{colorlinks, linkcolor=dark-red, citecolor=dark-red, urlcolor=dark-red}
+\setlist[enumerate,1]{label=\textbf{\arabic*.}, leftmargin=*, itemsep=10pt}
+\setlist[enumerate,2]{label=(\alph*), leftmargin=*, itemsep=4pt, topsep=4pt}
+\setlist[enumerate,3]{label=(\roman*), leftmargin=*, itemsep=2pt, topsep=2pt}
+\pagestyle{empty}
+
+\newcommand{\prob}[1]{\medskip\noindent\textbf{\large #1}\par\smallskip}
+
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Math 111: Calculus \quad Homework 2}\\[4pt]
+{Due Friday, October 9 by 10:00\textsc{p.m.} via Gradescope}
+\end{center}
+
+\medskip
+\noindent\textbf{Covers} Active Calculus \S2.1--\S2.3, \S2.5, and \S2.6. Problem~1 can be
+done now. Problems~2 and~4 use the chain rule (Monday, October~5), and Problem~3(c) uses
+derivatives of inverse functions (Wednesday, October~7).
+
+\smallskip
+\noindent\textbf{Before you start.} Write in sentences and paragraphs, as an
+explanation another student in this course could read and follow. Draw diagrams large
+and label them. You are encouraged to work with classmates; cite everyone you worked
+with, and write your solutions independently --- duplicated solutions are an Honor
+Principle violation. Each problem is marked holistically on the 0--5 scale, with up
+to two further points for the quality of the writing. If you need an extension, use
+the \href{https://docs.google.com/forms/d/e/1FAIpQLSfIfgx44SFtUzefTNr-80yz35MVJaUqQttt96xVTU5mCQCOgg/viewform}{extension
+form} \emph{before} the deadline.
+
+\bigskip\hrule\bigskip
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\prob{1. A coffee cart, and where the money goes}
+
+A coffee cart has been open for a few months. Let $N(t)$ be the number of cups it sells
+per week, $P(t)$ the price of a cup in dollars, and $C(t)$ its total costs per week in
+dollars, all $t$ weeks after opening. Ten weeks in, the owner knows:
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+$N(10) = 800$ & $P(10) = 4.50$ & $C(10) = 2400$ \\
+$N'(10) = -20$ & $P'(10) = 0.10$ & $C'(10) = 40$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\smallskip
+
+\begin{enumerate}[resume]
+\item[]
+\begin{enumerate}
+\item Let $R(t) = N(t)\,P(t)$ be the weekly revenue. Find $R(10)$ and $R'(10)$, with
+units, and write one sentence saying what $R'(10)$ tells the owner.
+
+\item The owner is surprised: the price is going \emph{up}, so why isn't revenue? Draw the
+growing-rectangle picture from class for $R = N\cdot P$ at $t=10$, and use it to explain
+the sign of $R'(10)$. Label which part of the picture is the effect of the price change
+and which is the effect of the change in sales, and give the dollar amount of each.
+
+\item How large would $P'(10)$ have to be for revenue to be holding steady at week~10, if
+nothing else in the table changed? Then explain why ``if nothing else changed'' is
+doing a lot of work in that question: which other number in the table would you expect
+to move if the owner raised prices faster, and in which direction?
+
+\item Let $A(t) = C(t)/N(t)$ be the cost of making one cup. Find $A(10)$ and $A'(10)$, with
+units. Compare $A'(10)$ with $P'(10)$, and say what the comparison means for the money
+the cart makes on each cup it sells.
+\end{enumerate}
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\prob{2. Climbing into the cold}
+
+A hiker climbs a mountain. Let $a(t)$ be her altitude in feet, $t$ hours after she
+starts, and let $T(a)$ be the air temperature in degrees Fahrenheit at altitude $a$
+feet. Suppose that on this mountain, today, $T'(a) = -0.0035$ for every altitude $a$ on
+her route. The temperature \emph{she experiences} at time $t$ is $H(t) = T\big(a(t)\big)$.
+
+\begin{enumerate}[resume]
+\item[]
+\begin{enumerate}
+\item Say in a sentence what $T'(a) = -0.0035$ means, with units. Then suppose that at
+some moment she is climbing at $1200$ feet per hour. How fast is the temperature she
+experiences changing at that moment? Explain why multiplying is the right thing to do,
+using the units and a sentence about what happens over the next few minutes of her
+climb --- not by quoting the chain rule.
+
+\item Her altitude is recorded every hour:
+
+\smallskip
+\begin{center}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+$t$ (hours) & 0 & 1 & 2 & 3 & 4\\
+$a(t)$ (feet) & 3000 & 4100 & 5300 & 6200 & 6700\\
+\bottomrule
+\end{tabular}
+\end{center}
+\smallskip
+
+Estimate $H'(2)$, with units. There is no formula for $a$ or for $H$.
+
+\item From the table alone, over which part of the hike does $H'$ appear to be
+increasing, and over which part decreasing? Say what each means for the hiker, in a
+sentence about how cold it is getting.
+
+\item A friend computes $H'(2)$ as $T'(2)\cdot a'(2)$. Explain what is wrong with writing
+$T'(2)$, and why, on \emph{this} mountain today, the friend's number happens to come out
+right anyway. Then describe a situation --- in words, about the weather --- in which the
+friend's method would give the wrong answer.
+\end{enumerate}
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\prob{3. Where the rules come from}
+
+\begin{enumerate}[resume]
+\item[]
+\begin{enumerate}
+\item We proved the power rule in class for positive whole-number exponents by expanding
+$(x+h)^n$. Use the quotient rule to show that it also holds for negative whole-number
+exponents: if $n$ is a positive whole number, then
+$\dfrac{d}{dx}\big[x^{-n}\big] = -n\,x^{-n-1}$.
+
+\item Now the exponent $\tfrac12$. Assume that $s(x) = \sqrt{x}$ is differentiable for
+$x > 0$. Differentiate both sides of $\big(s(x)\big)^2 = x$ with respect to $x$, and solve
+for $s'(x)$. Check that your answer is what the power rule predicts for $x^{1/2}$.
+
+\item Suppose $f$ is differentiable and has an inverse function $f^{-1}$, and that
+$f(3) = 5$ and $f'(3) = 4$. Find $\big(f^{-1}\big)'(5)$. Then draw a picture that
+explains your answer: the graph of $f$ near $(3,5)$ with its tangent line, the graph of
+$f^{-1}$ near $(5,3)$ with its tangent line, and the line $y=x$. Say in a sentence why
+reflecting a line across $y = x$ turns its slope into the reciprocal.
+
+\item The rules have hypotheses. Answer each of the following; give an example if one
+exists, and explain why not if it doesn't.
+\begin{enumerate}
+\item Two functions $f$ and $g$, \emph{neither} of which is differentiable at $x = 0$,
+whose product $f g$ \emph{is} differentiable at $x = 0$.
+\item Two functions $f$ and $g$, both differentiable at $x=0$, with $f'(0) = g'(0) = 0$
+but $(fg)'(0) \neq 0$.
+\end{enumerate}
+\end{enumerate}
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\prob{4. A rule that isn't, and a rule that is}
+
+A student submits the following.
+
+\smallskip
+\begin{quote}
+\textbf{Claim.} For any differentiable function $f$,
+$\dfrac{d}{dx}\Big[\big(f(x)\big)^2\Big] = 2f(x)$.
+
+\textbf{Argument.} Write $u = f(x)$. The power rule says that the derivative of $u^2$ is
+$2u$. Substituting back, the derivative of $\big(f(x)\big)^2$ is $2f(x)$.
+\end{quote}
+\smallskip
+
+\begin{enumerate}[resume]
+\item[]
+\begin{enumerate}
+\item Identify the \emph{first} sentence of the argument that is wrong, and say precisely
+what is wrong with it.
+
+\item Give a specific function $f$ for which the claim is false, and show that it is false
+by computing both sides.
+
+\item State the correct rule for $\dfrac{d}{dx}\Big[\big(f(x)\big)^2\Big]$, explain where it
+comes from, and check it on your example from part (b).
+
+\item Your corrected rule gives a second route to the product rule. Check that
+\[
+f(x)\,g(x) = \tfrac14\Big[\big(f(x)+g(x)\big)^2 - \big(f(x)-g(x)\big)^2\Big],
+\]
+then differentiate the right-hand side using only your rule from part (c) and linearity.
+Show that the result is $f(x)g'(x) + g(x)f'(x)$.
+\end{enumerate}
+\end{enumerate}
+
+\end{document}
