@@ -90,5 +90,14 @@
     "scale": 1,
     "click": "#n4",
     "wait": 800
+  },
+  "finite-space-map": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "click": "#n5",
+    "wait": 800
   }
 }
