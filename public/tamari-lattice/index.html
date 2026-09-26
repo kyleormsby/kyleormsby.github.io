@@ -237,7 +237,9 @@ function draw() {
   const edgeCol = css("--edge"), hotCol = css("--hot");
   ctx.lineCap = "round";
   const faded = focus !== null;
-  const seg = (a, b) => { const [x1, y1] = W2S(pos[a][0], pos[a][1] - R * 1.05), [x2, y2] = W2S(pos[b][0], pos[b][1] + R * 1.05);
+  const seg = (a, b) => {   // the segment between the two centres, clipped to start and end just outside the discs
+    const dx = pos[b][0] - pos[a][0], dy = pos[b][1] - pos[a][1], L = Math.hypot(dx, dy) || 1, ux = dx / L * R * 1.05, uy = dy / L * R * 1.05;
+    const [x1, y1] = W2S(pos[a][0] + ux, pos[a][1] + uy), [x2, y2] = W2S(pos[b][0] - ux, pos[b][1] - uy);
     if (Math.max(x1, x2) < 0 || Math.min(x1, x2) > W || Math.max(y1, y2) < 0 || Math.min(y1, y2) > H) return null; return [x1, y1, x2, y2]; };
   ctx.globalAlpha = faded ? 0.3 : Math.min(1, 0.75 + s / 200);
   ctx.strokeStyle = edgeCol; ctx.lineWidth = Math.max(0.4, 0.7 * Math.min(1, s / 40));
