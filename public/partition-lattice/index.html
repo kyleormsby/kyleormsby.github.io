@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partition Lattice — set partitions of [n] under refinement</title>
+<meta name="description" content="A zoomable Hasse diagram of the partition lattice Π_n — set partitions of [n] ordered by refinement — and of its quotient by S_n, the integer partitions of n. Built for Math 372 at Reed College.">
+<link rel="stylesheet" href="/vendor/fonts/fonts.css">
+<style>
+  :root {
+    --bg: #F3F4F6; --panel: #FFFFFF; --ink: #1B1F2A; --muted: #646B7A; --line: #DADDE4;
+    --accent: #2F5D8A; --accent-ink: #FFFFFF; --hot: #C8501E; --hot-soft: #F3D9CC;
+    --map-bg: #FAFAFB; --edge: #C9CDD6; --glyph-fill: #FFFFFF; --glyph-ink: #1B1F2A;
+    --ramp-l0: 80%; --ramp-l1: 36%; --ramp-h: 214; --orb-l: 44%; --orb-s: 58%;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161C; --panel: #1C1F27; --ink: #E8E9EE; --muted: #9AA0AC; --line: #2C3039;
+      --accent: #8AB4E3; --accent-ink: #10131A; --hot: #F08A4B; --hot-soft: #4A2A18;
+      --map-bg: #171A21; --edge: #363B47; --glyph-fill: #1C1F27; --glyph-ink: #E8E9EE;
+      --ramp-l0: 34%; --ramp-l1: 74%; --ramp-h: 214; --orb-l: 66%; --orb-s: 60%;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161C; --panel: #1C1F27; --ink: #E8E9EE; --muted: #9AA0AC; --line: #2C3039;
+    --accent: #8AB4E3; --accent-ink: #10131A; --hot: #F08A4B; --hot-soft: #4A2A18;
+    --map-bg: #171A21; --edge: #363B47; --glyph-fill: #1C1F27; --glyph-ink: #E8E9EE;
+    --ramp-l0: 34%; --ramp-l1: 74%; --ramp-h: 214; --orb-l: 66%; --orb-s: 60%;
+  }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", system-ui, sans-serif;
+         font-size: 14px; line-height: 1.4; margin: 0; display: flex; flex-direction: column; }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; padding: 10px 16px; border-bottom: 1px solid var(--line);
+         background: var(--panel); }
+  h1 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 20px; margin: 0; letter-spacing: -0.01em; white-space: nowrap; }
+  .bar .sub { color: var(--muted); font-size: 13px; }
+  .ctl { display: flex; align-items: center; gap: 6px; }
+  .ctl .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-right: 2px; }
+  .seg { display: flex; gap: 3px; }
+  .seg button, .btn { font: inherit; font-size: 13px; font-weight: 500; border: 1px solid var(--line); background: var(--panel);
+    color: var(--ink); border-radius: 5px; padding: 4px 9px; cursor: pointer; }
+  .seg button[aria-pressed="true"], .btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .seg button:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .legend { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .legend .sw { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: -3px; }
+  .legend .ramp { width: 90px; height: 10px; border-radius: 3px;
+    background: linear-gradient(90deg, hsl(var(--ramp-h) 45% var(--ramp-l0)), hsl(var(--ramp-h) 60% var(--ramp-l1))); }
+  .order { font-size: 12px; color: var(--muted); }
+  .order b { color: var(--ink); font-weight: 600; }
+  main { flex: 1; min-height: 0; position: relative; display: flex; }
+  #map { flex: 1; min-width: 0; background: var(--map-bg); cursor: grab; touch-action: none; display: block; }
+  #map.dragging { cursor: grabbing; }
+  aside { width: 300px; border-left: 1px solid var(--line); background: var(--panel); padding: 14px 16px; overflow-y: auto; }
+  aside h2 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 16px; margin: 0 0 6px; }
+  .big { display: block; width: 100%; max-width: 220px; margin: 4px auto 8px; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-variant-numeric: tabular-nums; font-size: 13px; }
+  .kv dt { color: var(--muted); } .kv dd { margin: 0; }
+  .cov { margin-top: 10px; font-size: 13px; }
+  .cov .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 8px 0 4px; }
+  .mini { display: inline-block; width: 30px; height: 30px; vertical-align: middle; margin: 1px 2px; cursor: pointer; border-radius: 4px; }
+  .mini:hover { background: var(--hot-soft); }
+  .item { display: inline-block; white-space: nowrap; margin-right: 4px; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; }
+  .hint { color: var(--muted); font-size: 12.5px; margin-top: 12px; }
+  .hint b { color: var(--ink); font-weight: 600; }
+  .short { display: none; }
+  @media (max-width: 760px) {
+    .bar { gap: 6px 12px; padding: 8px 10px; }
+    .bar .sub, .order { display: none; }
+    h1 { font-size: 17px; }
+    .seg button, .btn { padding: 4px 7px; font-size: 12px; }
+    .long { display: none; } .short { display: inline; }
+    .legend { font-size: 11px; } .legend .ramp { width: 60px; }
+    main { flex-direction: column; }
+    #map { flex: 1 1 auto; min-height: 0; }
+    aside { width: auto; flex: 0 0 auto; max-height: 42%; border-left: 0; border-top: 1px solid var(--line); padding: 10px 14px; }
+    aside h2 { font-size: 14px; }
+    .big { max-width: 120px; float: right; margin: 0 0 6px 10px; }
+    .hint { font-size: 12px; margin-top: 8px; }
+  }
+  .credit { max-width: 1240px; margin: 12px auto; padding-inline: 16px; font-size: 13px; color: var(--muted); }
+  .credit a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div><h1>Partition Lattice</h1><div class="sub">Π<sub><i>n</i></sub>: set partitions of [<i>n</i>] under refinement, and its quotient Π<sub><i>n</i></sub>/<i>S<sub>n</sub></i>, the integer partitions of <i>n</i></div></div>
+  <div class="ctl"><span class="label">n</span><div class="seg" id="nsel" role="group" aria-label="size of the ground set"></div></div>
+  <div class="ctl"><span class="label">draw</span>
+    <div class="seg" id="vsel" role="group" aria-label="poset">
+      <button data-v="set" aria-pressed="true" title="All set partitions of [n]; going up merges two blocks"><span class="long">set partitions</span><span class="short">sets</span></button>
+      <button data-v="type" aria-pressed="false" title="Orbits of S_n on set partitions = integer partitions of n; going up merges two parts"><span class="long">orbits Π<sub>n</sub>/S<sub>n</sub></span><span class="short">orbits</span></button>
+    </div>
+  </div>
+  <div class="ctl"><span class="label">color</span>
+    <div class="seg" id="csel" role="group" aria-label="coloring">
+      <button data-c="blocks" aria-pressed="true" title="Shade by the number of blocks">blocks</button>
+      <button data-c="orbit" aria-pressed="false" title="One hue per S_n-orbit, i.e. per integer partition of n (the multiset of block sizes)">orbits</button>
+    </div>
+  </div>
+  <div class="ctl"><button class="btn" id="fit">Fit</button></div>
+  <div class="order" id="order"></div>
+  <div class="legend" id="legend"><span>1 block</span><div class="ramp"></div><span id="legend-max">n blocks</span></div>
+</div>
+
+<main>
+  <canvas id="map" aria-label="Hasse diagram of the partition lattice"></canvas>
+  <aside id="panel">
+    <h2 id="p-title">Hover an element</h2>
+    <div id="p-body"></div>
+    <p class="hint" id="p-hint">Drag to pan, scroll to zoom. Hover an element to see its covers; click to pin it. The elements of Π<sub><i>n</i></sub> are the set partitions of [<i>n</i>] = {1, …, <i>n</i>}, ordered by <b>refinement</b>: π ≤ σ when every block of π lies inside a block of σ. Going up one step merges two blocks, so the lattice is graded by <i>n</i> minus the number of blocks, with <i>S</i>(<i>n</i>, <i>k</i>) elements in the row with <i>k</i> blocks and <i>B</i>(<i>n</i>) elements in all. Each glyph places 1, …, <i>n</i> clockwise around a circle from the top and draws every block of size two or more as a chord or a filled polygon. Within a row the partitions are in canonical order — by the block of 1, then the block of 2, and so on. Since restricting a partition of [<i>n</i>] to [<i>m</i>] preserves refinement, each row is sorted into nested clusters of partitions with the same restriction to [<i>m</i>], and a cover either stays inside its cluster or moves between clusters the way the corresponding cover of Π<sub><i>m</i></sub> does; copies of the smaller lattices are visible inside the larger. The symmetric group permutes the ground set and preserves refinement; the <b>orbits</b> button draws the quotient poset Π<sub><i>n</i></sub>/<i>S<sub>n</sub></i>, whose elements are the integer partitions of <i>n</i> (the multiset of block sizes), one orbit below another when some partition of the first type refines some partition of the second. Color is the number of blocks, or one hue per orbit; switching to the orbits view first colors every partition by its orbit, then slides each orbit together onto its point of the quotient, so that the cover edges of Π<sub><i>n</i></sub> pile up on the cover edges of the quotient — the quotient edges are drawn with a width that records how many ways a representative of the lower orbit is covered inside the upper one. <span id="stats"></span></p>
+  </aside>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const NMAX = 7;
+
+const state = { n: 4, v: "set", color: "blocks", orbitMix: 0, anim: null, scale: 40, tx: 0, ty: 0, hover: null, pinned: null };
+try { const s = JSON.parse(localStorage.getItem("partition-lattice") || "{}"); if (s.n >= 1 && s.n <= NMAX) state.n = s.n; if (s.v === "set" || s.v === "type") state.v = s.v; if (s.color === "orbit") state.color = "orbit"; } catch (e) {}
+
+// ---------- combinatorics
+const fact = (k) => { let r = 1; for (let i = 2; i <= k; i++) r *= i; return r; };
+function setPartitions(n) {   // restricted growth strings, lexicographic; blocks listed by least element
+  const out = [], a = new Array(n).fill(0);
+  const rec = (i, mx) => { if (i === n) { out.push(a.slice()); return; } for (let v = 0; v <= mx + 1; v++) { a[i] = v; rec(i + 1, Math.max(mx, v)); } };
+  if (n) rec(0, -1); else out.push([]);
+  return out;
+}
+const blocksOf = (rgs) => { const B = []; rgs.forEach((v, i) => { (B[v] = B[v] || []).push(i + 1); }); return B; };
+function typeOf(blocks) { return blocks.map(b => b.length).sort((a, b) => b - a); }
+function intPartitions(n) { const out = []; const rec = (rem, mx, cur) => { if (!rem) { out.push(cur.slice()); return; } for (let p = Math.min(rem, mx); p >= 1; p--) { cur.push(p); rec(rem - p, p, cur); cur.pop(); } }; rec(n, n, []); return out; }
+const canon = (rgs) => { const map = new Map(); let next = 0; return rgs.map(v => { if (!map.has(v)) map.set(v, next++); return map.get(v); }); };
+function mobiusBelow(blocks) { let m = 1; for (const b of blocks) m *= (b.length % 2 ? 1 : -1) * fact(b.length - 1); return m; }   // μ(0̂, π)
+function mobiusAbove(k) { return (k % 2 ? 1 : -1) * fact(k - 1); }                                                                // μ(π, 1̂)
+function orbitSize(n, type) { let d = 1; const mult = {}; for (const p of type) { d *= fact(p); mult[p] = (mult[p] || 0) + 1; } for (const c of Object.values(mult)) d *= fact(c); return fact(n) / d; }
+
+// ---------- build a poset
+function buildSet(n) {
+  const P = setPartitions(n), N = P.length, key = new Map(P.map((p, i) => [p.join(","), i]));
+  const blocks = P.map(blocksOf), nb = blocks.map(b => b.length);
+  const cov = [];
+  for (let i = 0; i < N; i++) {
+    const B = blocks[i], k = B.length;
+    for (let x = 0; x < k; x++) for (let y = x + 1; y < k; y++) {
+      const q = P[i].slice(); for (const e of B[y]) q[e - 1] = x;
+      cov.push([i, key.get(canon(q).join(","))]);
+    }
+  }
+  return { N, items: P, blocks, nb, cov, rank: nb.map(k => n - k), levels: rowCounts(nb, n) };
+}
+function buildType(n) {
+  const T = intPartitions(n), N = T.length, key = new Map(T.map((t, i) => [t.join(","), i]));
+  const cov = new Set();
+  for (let i = 0; i < N; i++) {
+    const t = T[i];
+    for (let x = 0; x < t.length; x++) for (let y = x + 1; y < t.length; y++) {
+      const q = t.slice(); q[x] += q[y]; q.splice(y, 1); q.sort((a, b) => b - a);
+      cov.add(i + ":" + key.get(q.join(",")));
+    }
+  }
+  const nb = T.map(t => t.length);
+  return { N, items: T, key, blocks: T.map(t => { let s = 1; return t.map(p => { const b = []; for (let j = 0; j < p; j++) b.push(s++); return b; }); }), nb,
+           cov: [...cov].map(s => s.split(":").map(Number)), rank: nb.map(k => n - k), levels: rowCounts(nb, n) };
+}
+function rowCounts(nb, n) { const L = new Array(n).fill(0); for (const k of nb) L[n - k]++; return L; }
+
+// ---------- layout: rows by rank; within a row, canonical order (lexicographic on the restricted-growth string,
+// i.e. by the block of 1, then the block of 2, ...).  Restriction to [m] is order-preserving, so this sorts each row
+// into nested clusters of partitions with the same restriction to [m], and every cover either stays in a cluster
+// or moves between clusters as the corresponding cover of Π_m does.  In the orbits view the items are already in
+// lexicographic order, which is a linear extension of dominance.
+function layout(D) {
+  const R = Math.max(...D.rank), rows = []; for (let r = 0; r <= R; r++) rows.push([]);
+  D.rank.forEach((r, v) => rows[r].push(v));        // items are generated in lexicographic order, so each row is too
+  const x = new Array(D.N).fill(0);
+  for (const row of rows) row.forEach((v, k) => { x[v] = k - (row.length - 1) / 2; });
+  const widest = Math.max(...rows.map(r => r.length));
+  const dx = widest > 60 ? 1.0 : widest > 20 ? 1.3 : 1.7;
+  const dy = Math.max(2.2, widest * dx / (1.5 * Math.max(1, R)));   // keep the whole picture near a 3:2 aspect
+  return D.rank.map((r, v) => [x[v] * dx, -r * dy]);
+}
+
+// ---------- state
+const canvas = $("map"), ctx = canvas.getContext("2d");
+let D, S, T, pos, up, down, grid;
+const R = 0.42;
+const isT = () => state.v === "type";
+const cache = {};
+function pair(n) {   // both posets for n, the orbit map and the cover multiplicities of the quotient
+  if (cache[n]) return cache[n];
+  const S = buildSet(n), T = buildType(n);
+  S.pos = layout(S); T.pos = layout(T);
+  S.tmap = S.blocks.map(b => T.key.get(typeOf(b).join(",")));
+  T.mult = {};   // "a:b" -> number of covers of one representative of orbit a that lie in orbit b (the same for every representative)
+  const rep = new Array(T.N).fill(-1); S.tmap.forEach((t, i) => { if (rep[t] < 0) rep[t] = i; });
+  for (const [a, b] of S.cov) if (rep[S.tmap[a]] === a) { const k = S.tmap[a] + ":" + S.tmap[b]; T.mult[k] = (T.mult[k] || 0) + 1; }
+  T.multDown = {};  // "a:b" -> number of covers of one representative of orbit b that lie in orbit a
+  for (const [a, b] of S.cov) if (rep[S.tmap[b]] === b) { const k = S.tmap[a] + ":" + S.tmap[b]; T.multDown[k] = (T.multDown[k] || 0) + 1; }
+  T.orbit = T.items.map(t => orbitSize(n, t));
+  const seen = new Array(T.N).fill(0); S.stag = S.tmap.map(t => seen[t]++ / Math.max(1, T.orbit[t]));   // 0..1 within each orbit, for staggering
+  return cache[n] = { S, T };
+}
+function load() {
+  ({ S, T } = pair(state.n));
+  D = isT() ? T : S; pos = D.pos.map(p => p.slice());
+  up = {}; down = {}; for (const [a, b] of D.cov) { (up[a] = up[a] || []).push(b); (down[b] = down[b] || []).push(a); }
+  buildGrid();
+  state.orbitMix = (isT() || state.color === "orbit") ? 1 : 0;
+  legend();
+  $("order").innerHTML = isT() ? `<b>Π<sub>${state.n}</sub>/S<sub>${state.n}</sub></b> · ${D.N} orbits · ${D.cov.length} covers`
+                               : `<b>Π<sub>${state.n}</sub></b> · ${D.N} elements · ${D.cov.length} covers`;
+  $("stats").innerHTML = `For <i>n</i> = ${state.n}: <i>B</i>(${state.n}) = ${S.N} set partitions in ${state.n} rows of sizes ${S.levels.slice().reverse().join(", ")} (bottom to top), ${S.cov.length} covers, and ${intPartitions(state.n).length} orbits under <i>S</i><sub>${state.n}</sub>. The Möbius function is μ(0̂, 1̂) = (−1)<sup>${state.n}−1</sup>(${state.n}−1)! = ${mobiusAbove(state.n)}.`;
+  try { localStorage.setItem("partition-lattice", JSON.stringify({ n: state.n, v: state.v, color: state.color })); } catch (e) {}
+}
+function legend() {
+  if (isT() || state.color === "orbit") {
+    const n = state.n;
+    $("legend").innerHTML = `<span>orbits:</span>` + T.items.map((t, i) => `<span class="sw" title="${t.join(" + ")}" style="background:${orbitColor(i)}"></span>`).join("") + `<span>= integer partitions of ${n}</span>`;
+  } else $("legend").innerHTML = `<span>1 block</span><div class="ramp"></div><span>${state.n} blocks</span>`;
+}
+function buildGrid() { grid = new Map(); pos.forEach(([x, y], i) => { const k = Math.floor(x) + ":" + Math.floor(y); (grid.get(k) || grid.set(k, []).get(k)).push(i); }); }
+function nearest(wx, wy) {
+  if (state.anim) return null;
+  const cx = Math.floor(wx), cy = Math.floor(wy); let best = null, bd = R * R * 1.4;
+  for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) for (const k of (grid.get((cx + i) + ":" + (cy + j)) || [])) {
+    const d = (pos[k][0] - wx) ** 2 + (pos[k][1] - wy) ** 2; if (d < bd) { bd = d; best = k; } }
+  return best;
+}
+function fitTarget(P) {
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  const xs = P.map(p => p[0]), ys = P.map(p => p[1]);
+  const labelPx = W < 640 ? 60 : 170;
+  let minx = Math.min(...xs) - R - 0.5, maxx = Math.max(...xs) + R + 0.3, miny = Math.min(...ys) - 0.8, maxy = Math.max(...ys) + 0.8;
+  const scale = Math.min((W - labelPx - 16) / (maxx - minx), (H - 24) / (maxy - miny), 140);
+  minx -= (labelPx + 8) / scale;
+  return { scale, tx: W / 2 - scale * (minx + maxx) / 2, ty: H / 2 - scale * (miny + maxy) / 2 };
+}
+function fit() { Object.assign(state, fitTarget(pos)); draw(); }
+function resize() {
+  const dpr = window.devicePixelRatio || 1; const W = canvas.clientWidth, H = canvas.clientHeight;
+  canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); draw();
+}
+function blockColor(i) {
+  const t = state.n > 1 ? (D.nb[i] - 1) / (state.n - 1) : 0;
+  const l0 = parseFloat(css("--ramp-l0")), l1 = parseFloat(css("--ramp-l1")), h = css("--ramp-h");
+  return `hsl(${h} ${45 + 15 * t}% ${l0 + (l1 - l0) * t}%)`;
+}
+function orbitColor(t) { return `hsl(${(30 + t * 137.508) % 360} ${css("--orb-s")} ${css("--orb-l")})`; }
+function nodeColor(i) {   // i indexes the current poset D; while animating, D is the set poset
+  if (D === T) return orbitColor(i);
+  const oc = orbitColor(S.tmap[i]);
+  if (state.orbitMix >= 1) return oc;
+  if (state.orbitMix <= 0) return blockColor(i);
+  return `color-mix(in oklab, ${oc} ${Math.round(state.orbitMix * 100)}%, ${blockColor(i)})`;
+}
+
+// ---------- painters
+function canvasPainter(ctx) {
+  return {
+    line(x1, y1, x2, y2, col, w, a = 1) { ctx.save(); ctx.globalAlpha *= a; ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.restore(); },
+    dot(x, y, r, col, a = 1) { ctx.save(); ctx.globalAlpha *= a; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.restore(); },
+    ring(x, y, r, col, w) { ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.stroke(); ctx.restore(); },
+    poly(pts, fill, fa, stroke, w) { ctx.save(); ctx.beginPath(); pts.forEach(([x, y], k) => k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath();
+      if (fill) { ctx.globalAlpha *= fa; ctx.fillStyle = fill; ctx.fill(); ctx.globalAlpha /= fa; } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = w; ctx.lineJoin = "round"; ctx.stroke(); } ctx.restore(); },
+    rect(x, y, w, h, fill, stroke, lw) { ctx.save(); if (fill) { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.strokeRect(x, y, w, h); } ctx.restore(); },
+    text() {},
+  };
+}
+function svgPainter() {
+  const out = [], f = (v) => +v.toFixed(2);
+  return {
+    out,
+    line(x1, y1, x2, y2, col, w, a = 1) { out.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="${col}" stroke-width="${f(w)}" stroke-opacity="${a}" stroke-linecap="round"/>`); },
+    dot(x, y, r, col, a = 1) { out.push(`<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="${col}" fill-opacity="${a}"/>`); },
+    ring(x, y, r, col, w) { out.push(`<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="none" stroke="${col}" stroke-width="${f(w)}"/>`); },
+    poly(pts, fill, fa, stroke, w) { out.push(`<polygon points="${pts.map(([x, y]) => f(x) + "," + f(y)).join(" ")}" fill="${fill || "none"}" fill-opacity="${fa}" stroke="${stroke || "none"}" stroke-width="${f(w || 0)}" stroke-linejoin="round"/>`); },
+    rect(x, y, w, h, fill, stroke, lw) { out.push(`<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" fill="${fill || "none"}" stroke="${stroke || "none"}" stroke-width="${f(lw || 0)}"/>`); },
+    text(x, y, s, size, col, anchor = "middle") { out.push(`<text x="${f(x)}" y="${f(y)}" text-anchor="${anchor}" font-size="${f(size)}" font-family="IBM Plex Mono, monospace" fill="${col}">${s}</text>`); },
+  };
+}
+
+// ---------- glyphs
+function drawSet(P, i, cx, cy, r, ink, acc, labels) {
+  const n = state.n, rr = r * 0.74, pt = (k) => n === 1 ? [cx, cy] : [cx + rr * Math.sin(2 * Math.PI * (k - 1) / n), cy - rr * Math.cos(2 * Math.PI * (k - 1) / n)];
+  P.ring(cx, cy, rr, ink, Math.max(0.3, r * 0.015));
+  for (const B of D.blocks[i]) {
+    if (B.length === 2) { const [p, q] = [pt(B[0]), pt(B[1])]; P.line(p[0], p[1], q[0], q[1], acc, Math.max(0.8, r * 0.06)); }
+    else if (B.length >= 3) P.poly(B.map(pt), acc, 0.28, acc, Math.max(0.8, r * 0.05));
+  }
+  for (let k = 1; k <= n; k++) { const [x, y] = pt(k); P.dot(x, y, Math.max(0.9, r * 0.075), ink); }
+  if (labels) for (let k = 1; k <= n; k++) { const [x, y] = pt(k); const dx = x - cx, dy = y - cy, L = Math.hypot(dx, dy) || 1; P.text(x + dx / L * r * 0.19, y + dy / L * r * 0.19 + r * 0.04, String(k), r * 0.11, ink); }
+}
+function drawType(P, i, cx, cy, r, ink, acc, labels) {   // Ferrers diagram of the block sizes, rows = blocks
+  const t = D.items[i], rows = t.length, cols = t[0], s = Math.min(r * 1.3 / Math.max(rows, cols), r * 0.42);
+  const x0 = cx - cols * s / 2, y0 = cy - rows * s / 2;
+  t.forEach((p, ri) => { for (let c = 0; c < p; c++) P.rect(x0 + c * s + s * 0.08, y0 + ri * s + s * 0.08, s * 0.84, s * 0.84, acc, null, 0); });
+  if (labels) P.text(cx, y0 + rows * s + r * 0.2, t.join(" + "), r * 0.11, ink);
+}
+const GLYPH = () => isT() ? drawType : drawSet;
+
+function draw() {
+  const W = canvas.clientWidth, H = canvas.clientHeight, s = state.scale;
+  const dpr = window.devicePixelRatio || 1;
+  if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) { canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  ctx.clearRect(0, 0, W, H);
+  const focus = state.pinned ?? state.hover;
+  const hi = new Set(); if (focus !== null) { hi.add(focus); for (const j of (up[focus] || [])) hi.add(j); for (const j of (down[focus] || [])) hi.add(j); }
+  const W2S = (x, y) => [state.tx + s * x, state.ty + s * y];
+  const rpx = R * s;
+  // row labels
+  const minx = Math.min(...pos.map(p => p[0]));
+  ctx.font = `${Math.max(9, Math.min(13, 0.32 * s))}px "IBM Plex Mono", monospace`; ctx.fillStyle = css("--muted"); ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  const compact = W < 640, rowY = {}; pos.forEach((p, i) => { rowY[D.rank[i]] = p[1]; });
+  for (const r in rowY) {
+    const [lx, ly] = W2S(minx - R - 0.4, rowY[r]); if (ly < -20 || ly > H + 20) continue;
+    const k = state.n - r, c = D.levels[r];
+    ctx.fillText(compact ? `${k} · ${c}` : `${k} ${k === 1 ? "block" : "blocks"} · ${c}`, lx, ly);
+  }
+  const edgeCol = css("--edge"), hotCol = css("--hot");
+  ctx.lineCap = "round";
+  const faded = focus !== null;
+  const seg = (a, b) => {
+    const dx = pos[b][0] - pos[a][0], dyy = pos[b][1] - pos[a][1], L = Math.hypot(dx, dyy) || 1, ux = dx / L * R * 1.05, uy = dyy / L * R * 1.05;
+    const [x1, y1] = W2S(pos[a][0] + ux, pos[a][1] + uy), [x2, y2] = W2S(pos[b][0] - ux, pos[b][1] - uy);
+    if (Math.max(x1, x2) < 0 || Math.min(x1, x2) > W || Math.max(y1, y2) < 0 || Math.min(y1, y2) > H) return null; return [x1, y1, x2, y2]; };
+  const base = Math.max(0.4, 0.7 * Math.min(1, s / 40));
+  const wOf = (a, b) => D === T ? base * (0.6 + 0.55 * Math.sqrt(T.mult[a + ":" + b] || 1)) : base;
+  ctx.globalAlpha = faded ? 0.3 : Math.min(1, 0.75 + s / 200);
+  ctx.strokeStyle = edgeCol;
+  if (D === T) {
+    for (const [a, b] of D.cov) { if (faded && (a === focus || b === focus)) continue; const e = seg(a, b); if (!e) continue; ctx.lineWidth = wOf(a, b); ctx.beginPath(); ctx.moveTo(e[0], e[1]); ctx.lineTo(e[2], e[3]); ctx.stroke(); }
+  } else {
+    if (state.anim) ctx.globalAlpha *= 0.8;
+    ctx.lineWidth = base; ctx.beginPath();
+    for (const [a, b] of D.cov) { if (faded && (a === focus || b === focus)) continue; const e = seg(a, b); if (!e) continue; ctx.moveTo(e[0], e[1]); ctx.lineTo(e[2], e[3]); }
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  if (focus !== null) { ctx.strokeStyle = hotCol;
+    for (const [a, b] of D.cov) if (a === focus || b === focus) { const e = seg(a, b); if (!e) continue; ctx.lineWidth = Math.max(1.2, 2 * wOf(a, b)); ctx.beginPath(); ctx.moveTo(e[0], e[1]); ctx.lineTo(e[2], e[3]); ctx.stroke(); } }
+  const fill = css("--glyph-fill"), ink = css("--glyph-ink"), acc = css("--accent");
+  const detailed = rpx >= 6, P = canvasPainter(ctx), G = GLYPH();
+  for (let i = 0; i < pos.length; i++) {
+    const [cx, cy] = W2S(pos[i][0], pos[i][1]);
+    if (cx < -rpx || cx > W + rpx || cy < -rpx || cy > H + rpx) continue;
+    const isHi = hi.has(i), col = nodeColor(i);
+    ctx.globalAlpha = faded && !isHi ? 0.45 : 1;
+    if (!detailed) { ctx.fillStyle = isHi ? hotCol : col; ctx.beginPath(); ctx.arc(cx, cy, Math.max(2, rpx), 0, 7); ctx.fill(); continue; }
+    const rr = state.anim ? rpx * (1 - 0.35 * state.anim.squeeze) : rpx;
+    ctx.fillStyle = fill; ctx.strokeStyle = isHi ? hotCol : col; ctx.lineWidth = isHi ? Math.max(2, rr * 0.16) : Math.max(1, rr * 0.1);
+    ctx.beginPath(); ctx.arc(cx, cy, rr, 0, 7); ctx.fill(); ctx.stroke();
+    G(P, i, cx, cy, rr, ink, acc, false);
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ---------- panel
+function svgGlyph(i, size, cls, labels = false) {
+  const P = svgPainter(), c = size / 2;
+  P.out.push(`<circle cx="${c}" cy="${c}" r="${size * 0.47}" fill="${css("--glyph-fill")}" stroke="${nodeColor(i)}" stroke-width="${size * 0.03}"/>`);
+  GLYPH()(P, i, c, c, size * 0.44, css("--glyph-ink"), css("--accent"), labels);
+  return `<svg class="${cls}" viewBox="0 0 ${size} ${size}" data-i="${i}">${P.out.join("")}</svg>`;
+}
+const setText = (i) => D.blocks[i].map(B => B.join(" ")).join(" | ");
+const typeText = (t) => t.join(" + ");
+function describe(i) {
+  const n = state.n, k = D.nb[i], lower = (down[i] || []).slice(), upper = (up[i] || []).slice();
+  const type = isT() ? D.items[i] : typeOf(D.blocks[i]);
+  const orb = orbitSize(n, type);
+  $("p-title").innerHTML = (isT() ? typeText(type) : setText(i)) + (state.pinned === i ? " <span class=\"mono\">(pinned)</span>" : "");
+  const splits = D.blocks[i].reduce((s, B) => s + (2 ** (B.length - 1) - 1), 0);
+  const common = `<dt>blocks</dt><dd>${k} — rank ${n - k}</dd><dt>type</dt><dd class="mono">${typeText(type)}</dd>`;
+  const mu = (j) => isT() ? ` <span class="mono">×${T.mult[i + ":" + j] || 0}</span>` : "", md = (j) => isT() ? ` <span class="mono">×${T.multDown[j + ":" + i] || 0}</span>` : "";
+  const info = isT()
+    ? `${common}<dt>orbit size</dt><dd>${orb} set partition${orb === 1 ? "" : "s"} of this type</dd><dt>stabilizer</dt><dd>order ${fact(n) / orb}: a product of wreath products <i>S<sub>p</sub></i> ≀ <i>S<sub>m</sub></i>, one per repeated part size</dd>`
+    : `${common}<dt>orbit</dt><dd>${orb} partition${orb === 1 ? "" : "s"} share this type; stabilizer of order ${fact(n) / orb}</dd><dt>μ(0̂, π)</dt><dd>${mobiusBelow(D.blocks[i])} = ∏ (−1)<sup>|B|−1</sup>(|B|−1)!</dd><dt>μ(π, 1̂)</dt><dd>${mobiusAbove(k)} = (−1)<sup>${k}−1</sup>(${k}−1)!</dd><dt>interval [0̂, π]</dt><dd>≅ ${D.blocks[i].filter(B => B.length > 1).map(B => `Π<sub>${B.length}</sub>`).join(" × ") || "a point"}</dd><dt>interval [π, 1̂]</dt><dd>≅ Π<sub>${k}</sub></dd>`;
+  $("p-body").innerHTML = `${svgGlyph(i, 220, "big", true)}<dl class="kv">${info}</dl>` +
+    `<div class="cov"><div class="label">covers ${lower.length} below${isT() ? "" : ` (splits: ${splits})`}</div>${lower.map(j => `<span class="item">${svgGlyph(j, 30, "mini")}${md(j)}</span>`).join("")}` +
+    `<div class="label">covered by ${upper.length} above${isT() ? "" : ` (merges: C(${k},2) = ${k * (k - 1) / 2})`}</div>${upper.map(j => `<span class="item">${svgGlyph(j, 30, "mini")}${mu(j)}</span>`).join("")}</div>` +
+    `<div class="hint">${isT() ? "Going up merges two parts. Each ×<i>m</i> counts the covers of one representative of this orbit that land in the neighbouring orbit — above: the ways to merge two of its blocks to that type; below: the ways to split one of its blocks to that type. Edge widths in the picture record the upward counts." : "Going up merges two blocks; going down splits a block in two."} Click a small glyph to jump to it.</div>`;
+  $("p-hint").hidden = true;
+  $("p-body").querySelectorAll("svg.mini").forEach(el => el.addEventListener("click", () => goTo(+el.dataset.i)));
+}
+function clearPanel() { $("p-title").textContent = "Hover an element"; $("p-body").innerHTML = ""; $("p-hint").hidden = false; }
+function goTo(i) {
+  state.pinned = i; state.hover = i;
+  const W = canvas.clientWidth, H = canvas.clientHeight;
+  animate({ tx: W / 2 - state.scale * pos[i][0], ty: H / 2 - state.scale * pos[i][1] }); describe(i);
+}
+function animate(target) {
+  const from = { tx: state.tx, ty: state.ty }, t0 = performance.now(), dur = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 350;
+  const step = (t) => { const u = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - (1 - u) ** 3;
+    state.tx = from.tx + (target.tx - from.tx) * e; state.ty = from.ty + (target.ty - from.ty) * e; draw(); if (u < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+
+// ---------- collapsing to the quotient and back
+const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function tween(dur, f, done) {
+  const t0 = performance.now();
+  const step = (t) => { const u = dur ? Math.min(1, (t - t0) / dur) : 1; f(1 - (1 - u) ** 3, u); draw(); if (u < 1) requestAnimationFrame(step); else if (done) done(); };
+  requestAnimationFrame(step);
+}
+function collapse() {          // set view -> orbits view: gather each orbit within its row, then compress the rows and zoom
+  const from = S.pos, mid = S.pos.map((p, i) => [T.pos[S.tmap[i]][0], p[1]]), to = S.pos.map((p, i) => T.pos[S.tmap[i]]);
+  const view0 = { scale: state.scale, tx: state.tx, ty: state.ty }, viewS = fitTarget(S.pos);
+  state.anim = { squeeze: 0 };
+  const lerpView = (a, b, e) => { state.scale = a.scale + (b.scale - a.scale) * e; state.tx = a.tx + (b.tx - a.tx) * e; state.ty = a.ty + (b.ty - a.ty) * e; };
+  const move = (A, B, i, e) => { pos[i][0] = A[i][0] + (B[i][0] - A[i][0]) * e; pos[i][1] = A[i][1] + (B[i][1] - A[i][1]) * e; };
+  const compress = () => tween(reduced() ? 0 : 700, (e) => { for (let i = 0; i < S.N; i++) move(mid, to, i, e); Object.assign(state, fitTarget(pos)); },
+    () => { state.anim = null; state.v = "type"; pressed("#vsel", "v", "type"); load(); draw(); });
+  const gather = () => tween(reduced() ? 0 : 1400, (e, u) => {
+    for (let i = 0; i < S.N; i++) { const ui = Math.max(0, Math.min(1, (u - 0.3 * S.stag[i]) / 0.7)); move(from, mid, i, 1 - (1 - ui) ** 3); }
+    state.anim.squeeze = Math.min(1, e * 1.5);
+  }, compress);
+  const recolor = (then) => { if (state.orbitMix < 1 && !reduced()) tween(500, (e) => { state.orbitMix = e; lerpView(view0, viewS, e); }, () => setTimeout(then, 250)); else { state.orbitMix = 1; lerpView(view0, viewS, 1); then(); } };
+  recolor(gather);
+}
+function expand() {            // orbits view -> set view: pull the rows apart and zoom out, then scatter each orbit along its row
+  state.v = "set"; pressed("#vsel", "v", "set"); load();
+  const to = S.pos, mid = S.pos.map((p, i) => [T.pos[S.tmap[i]][0], p[1]]), from = S.pos.map((p, i) => T.pos[S.tmap[i]]);
+  for (let i = 0; i < S.N; i++) { pos[i][0] = from[i][0]; pos[i][1] = from[i][1]; }
+  state.orbitMix = 1;
+  const view0 = { scale: state.scale, tx: state.tx, ty: state.ty }, viewS = fitTarget(S.pos);
+  state.anim = { squeeze: 1 };
+  const lerpView = (a, b, e) => { state.scale = a.scale + (b.scale - a.scale) * e; state.tx = a.tx + (b.tx - a.tx) * e; state.ty = a.ty + (b.ty - a.ty) * e; };
+  const move = (A, B, i, e) => { pos[i][0] = A[i][0] + (B[i][0] - A[i][0]) * e; pos[i][1] = A[i][1] + (B[i][1] - A[i][1]) * e; };
+  const scatter = () => tween(reduced() ? 0 : 1400, (e, u) => {
+    for (let i = 0; i < S.N; i++) { const ui = Math.max(0, Math.min(1, (u - 0.3 * S.stag[i]) / 0.7)); move(mid, to, i, 1 - (1 - ui) ** 3); }
+    state.anim.squeeze = 1 - Math.min(1, e * 1.5);
+  }, () => { state.anim = null; buildGrid();
+    if (state.color === "blocks") setTimeout(() => tween(reduced() ? 0 : 500, (e) => { state.orbitMix = 1 - e; }), 200); });
+  tween(reduced() ? 0 : 700, (e) => { for (let i = 0; i < S.N; i++) move(from, mid, i, e); lerpView(fitTarget(pos), viewS, e); }, scatter);
+}
+function pressed(sel, attr, val) { document.querySelectorAll(sel + " button").forEach(x => x.setAttribute("aria-pressed", x.dataset[attr] === val)); }
+
+// ---------- interaction
+let drag = null;
+canvas.addEventListener("pointerdown", (e) => { drag = { x: e.clientX, y: e.clientY, tx: state.tx, ty: state.ty, moved: false }; canvas.setPointerCapture(e.pointerId); canvas.classList.add("dragging"); });
+canvas.addEventListener("pointermove", (e) => {
+  if (drag) { const dx = e.clientX - drag.x, dy = e.clientY - drag.y; if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+    state.tx = drag.tx + dx; state.ty = drag.ty + dy; draw(); return; }
+  const rect = canvas.getBoundingClientRect(), wx = (e.clientX - rect.left - state.tx) / state.scale, wy = (e.clientY - rect.top - state.ty) / state.scale;
+  const h = nearest(wx, wy);
+  if (h !== state.hover) { state.hover = h; if (state.pinned === null) { if (h === null) clearPanel(); else describe(h); } draw(); }
+});
+canvas.addEventListener("pointerup", (e) => {
+  canvas.classList.remove("dragging");
+  if (drag && !drag.moved) {
+    const rect = canvas.getBoundingClientRect(), wx = (e.clientX - rect.left - state.tx) / state.scale, wy = (e.clientY - rect.top - state.ty) / state.scale;
+    const h = nearest(wx, wy);
+    state.pinned = (h === null || h === state.pinned) ? null : h;
+    if (state.pinned === null) { if (h === null) clearPanel(); else describe(h); } else describe(state.pinned);
+    draw();
+    if (state.pinned !== null && canvas.clientWidth < 640) {
+      requestAnimationFrame(() => { const W = canvas.clientWidth, H = canvas.clientHeight;
+        animate({ tx: W / 2 - state.scale * pos[state.pinned][0], ty: H / 2 - state.scale * pos[state.pinned][1] }); });
+    }
+  }
+  drag = null;
+});
+canvas.addEventListener("pointerleave", () => { if (!drag) { state.hover = null; if (state.pinned === null) clearPanel(); draw(); } });
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect(), mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const f = Math.exp(-e.deltaY * 0.0015), ns = Math.min(320, Math.max(1, state.scale * f)), g = ns / state.scale;
+  state.tx = mx - (mx - state.tx) * g; state.ty = my - (my - state.ty) * g; state.scale = ns; draw();
+}, { passive: false });
+let pinch = null;
+canvas.addEventListener("touchstart", (e) => { if (e.touches.length === 2) { drag = null; pinch = { d: Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY), s: state.scale }; } }, { passive: true });
+canvas.addEventListener("touchmove", (e) => { if (pinch && e.touches.length === 2) { e.preventDefault();
+  const rect = canvas.getBoundingClientRect(), mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left, my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+  const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+  const ns = Math.min(320, Math.max(1, pinch.s * d / pinch.d)), g = ns / state.scale;
+  state.tx = mx - (mx - state.tx) * g; state.ty = my - (my - state.ty) * g; state.scale = ns; draw(); } }, { passive: false });
+canvas.addEventListener("touchend", () => { pinch = null; });
+
+const BELL = [1, 1, 2, 5, 15, 52, 203, 877, 4140];
+for (let n = 1; n <= NMAX; n++) {
+  const b = document.createElement("button"); b.textContent = n; b.id = "n" + n; b.setAttribute("aria-pressed", n === state.n);
+  b.title = `Π${n}: B(${n}) = ${BELL[n]} set partitions`;
+  b.addEventListener("click", () => { if (state.anim) return; state.n = n; state.pinned = null; state.hover = null; clearPanel();
+    document.querySelectorAll("#nsel button").forEach(x => x.setAttribute("aria-pressed", x === b)); load(); fit(); });
+  $("nsel").appendChild(b);
+}
+document.querySelectorAll("#vsel button").forEach(b => {
+  b.setAttribute("aria-pressed", b.dataset.v === state.v);
+  b.addEventListener("click", () => { if (state.anim || b.dataset.v === state.v) return; state.pinned = null; state.hover = null; clearPanel();
+    if (b.dataset.v === "type") collapse(); else expand(); });
+});
+document.querySelectorAll("#csel button").forEach(b => {
+  b.setAttribute("aria-pressed", b.dataset.c === state.color);
+  b.addEventListener("click", () => { if (state.anim) return; state.color = b.dataset.c; pressed("#csel", "c", state.color); legend();
+    const target = state.color === "orbit" ? 1 : 0;
+    if (isT()) { draw(); return; }
+    const start = state.orbitMix; tween(reduced() ? 0 : 400, (e) => { state.orbitMix = start + (target - start) * e; }, () => { if (state.pinned !== null) describe(state.pinned); });
+    try { localStorage.setItem("partition-lattice", JSON.stringify({ n: state.n, v: state.v, color: state.color })); } catch (e) {} });
+});
+$("fit").addEventListener("click", fit);
+window.addEventListener("resize", resize);
+new ResizeObserver(() => draw()).observe(canvas);
+if (window.matchMedia) { window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", draw); }
+new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+function start() {
+  document.querySelectorAll("#nsel button").forEach(x => x.setAttribute("aria-pressed", +x.textContent === state.n));
+  load(); resize(); fit();
+  document.fonts?.ready?.then(() => fit());
+}
+start();
+</script>
+<p class="credit">Made for <a href="/372fall26/">Math 372: Combinatorics</a> at Reed College, fall 2026. Π<sub><i>n</i></sub> is the lattice of set partitions of [<i>n</i>] under refinement (Stanley, <i>Enumerative Combinatorics</i> I, §3.10; <i>Algebraic Combinatorics</i>, Chapter 5 for the quotient by <i>S<sub>n</sub></i>). It is graded by <i>n</i> minus the number of blocks, its rank sizes are the Stirling numbers of the second kind, every interval is a product of smaller partition lattices, and μ(0̂, 1̂) = (−1)<sup><i>n</i>−1</sup>(<i>n</i>−1)!. Everything on this page is computed in the browser; <i>n</i> stops at 7 because <i>B</i>(8) = 4140 elements no longer fit in a picture. Part of <a href="/viz/">e-infinity.space/viz</a>.</p>
+</body>
+</html>
