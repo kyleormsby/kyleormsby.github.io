@@ -12,7 +12,7 @@
     --accent: #2F5D8A; --accent-ink: #FFFFFF; --hot: #C8501E; --hot-soft: #F3D9CC;
     --map-bg: #FAFAFB; --edge: #C9CDD6; --glyph-fill: #FFFFFF; --glyph-ink: #1B1F2A;
     --ramp-l0: 80%; --ramp-l1: 36%; --ramp-h: 214;
-    --f2: #7FB3E6; --f3: #9B59B6; --f4: #E0A426;
+    --f2: #7FB3E6; --f3: #9B59B6; --f4: #E0A426; --f5: #3FA37A;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -20,7 +20,7 @@
       --accent: #8AB4E3; --accent-ink: #10131A; --hot: #F08A4B; --hot-soft: #4A2A18;
       --map-bg: #171A21; --edge: #363B47; --glyph-fill: #1C1F27; --glyph-ink: #E8E9EE;
       --ramp-l0: 34%; --ramp-l1: 74%; --ramp-h: 214;
-      --f2: #4F86BF; --f3: #B07CD6; --f4: #E4B84A;
+      --f2: #4F86BF; --f3: #B07CD6; --f4: #E4B84A; --f5: #5CC49A;
     }
   }
   :root[data-theme="dark"] {
@@ -28,7 +28,7 @@
     --accent: #8AB4E3; --accent-ink: #10131A; --hot: #F08A4B; --hot-soft: #4A2A18;
     --map-bg: #171A21; --edge: #363B47; --glyph-fill: #1C1F27; --glyph-ink: #E8E9EE;
     --ramp-l0: 34%; --ramp-l1: 74%; --ramp-h: 214;
-    --f2: #4F86BF; --f3: #B07CD6; --f4: #E4B84A;
+    --f2: #4F86BF; --f3: #B07CD6; --f4: #E4B84A; --f5: #5CC49A;
   }
   html, body { height: 100%; }
   body { background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", system-ui, sans-serif;
@@ -81,7 +81,7 @@
   }
   .key { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); margin-top: 8px; }
   .key span::before { content: ""; display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
-  .key .k2::before { background: var(--f2); } .key .k3::before { background: var(--f3); } .key .k4::before { background: var(--f4); }
+  .key .k2::before { background: var(--f2); } .key .k3::before { background: var(--f3); } .key .k4::before { background: var(--f4); } .key .k5::before { background: var(--f5); }
   .facet { display: inline-flex; flex-direction: column; align-items: center; margin: 0 4px 2px 0; }
   .facet svg { display: block; }
   .credit { max-width: 1240px; margin: 12px auto; padding-inline: 16px; font-size: 13px; color: var(--muted); }
@@ -116,7 +116,7 @@
     <h2 id="p-title">Hover a complex</h2>
     <div id="p-body"></div>
     <p class="hint" id="p-hint">Drag to pan, scroll to zoom. Hover a complex to see its covers; click to pin it. A complex is a down-set of <i>B<sub>n</sub></i> (its faces, including ∅); rank is the number of faces, so rank 0 is the void complex and rank 2<sup><i>n</i></sup> the full simplex. Edge thickness is the cover multiplicity <i>c</i>: the number of facets of the upper complex whose removal gives the lower one — the coefficient in Stanley's operator <i>U</i> on orbit sums. <span id="sperner"></span></p>
-    <div class="key"><span class="k2">triangle</span><span class="k3">tetrahedron</span><span class="k4">4-simplex</span><span>faint dot: unused vertex</span></div>
+    <div class="key"><span class="k2">triangle</span><span class="k3">tetrahedron</span><span class="k4">4-simplex</span><span class="k5">5-simplex</span><span>faint dot: unused vertex</span></div>
   </aside>
 </main>
 
@@ -255,7 +255,7 @@ function draw() {
     }
   }
   // glyphs
-  const pts = glyphPts(n, R * 0.7), fill = css("--glyph-fill"), ink = css("--glyph-ink"), face = [null, null, null, css("--f2"), css("--f3"), css("--f4")];
+  const pts = glyphPts(n, R * 0.7), fill = css("--glyph-fill"), ink = css("--glyph-ink"), face = [null, null, null, css("--f2"), css("--f3"), css("--f4"), css("--f5")];
   const detailed = rpx >= 6;
   if (!detailed) {   // dots, batched into one path per colour (16k of them at n = 6)
     const groups = new Map(), dr = Math.max(1.6, rpx);
@@ -332,11 +332,11 @@ function drawComplex(ctx, i, cx, cy, s, pts, ink, face, alpha) {
   for (const F of faces) if (popc(F) === 2) { const [u, v] = bits(F); ctx.moveTo(cx + pts[u][0] * s, cy + pts[u][1] * s); ctx.lineTo(cx + pts[v][0] * s, cy + pts[v][1] * s); }
   ctx.stroke();
   // faces of dimension >= 2 as tiles shrunk toward their centroids, low dimension first
-  for (const d of [3, 4, 5]) {
+  for (const d of [3, 4, 5, 6]) {
     ctx.fillStyle = face[d]; ctx.strokeStyle = fill; ctx.lineWidth = Math.max(0.6, R * s * 0.05);
     for (const F of faces) { const vs = bits(F); if (vs.length !== d) continue;
       ctx.globalAlpha = alpha;
-      const gx = vs.reduce((a, v) => a + pts[v][0], 0) / d, gy = vs.reduce((a, v) => a + pts[v][1], 0) / d, sh = d === 3 ? 0.5 : d === 4 ? 0.42 : 0.36;
+      const gx = vs.reduce((a, v) => a + pts[v][0], 0) / d, gy = vs.reduce((a, v) => a + pts[v][1], 0) / d, sh = d === 3 ? 0.5 : d === 4 ? 0.42 : d === 5 ? 0.36 : 0.3;
       ctx.beginPath(); vs.forEach((v, t) => { const px = gx + (pts[v][0] - gx) * sh, py = gy + (pts[v][1] - gy) * sh; t ? ctx.lineTo(cx + px * s, cy + py * s) : ctx.moveTo(cx + px * s, cy + py * s); }); ctx.closePath(); ctx.fill(); ctx.stroke(); }
   }
   const dr = Math.max(1, R * s * 0.09);
@@ -347,20 +347,20 @@ function drawComplex(ctx, i, cx, cy, s, pts, ink, face, alpha) {
 }
 // ---------- panel
 function svgGraph(i, size, cls) {
-  const n = state.n, r = size * 0.38, c = size / 2, pts = glyphPts(n, r), ink = css("--glyph-ink"), face = [null, null, null, css("--f2"), css("--f3"), css("--f4")];
+  const n = state.n, r = size * 0.38, c = size / 2, pts = glyphPts(n, r), ink = css("--glyph-ink"), face = [null, null, null, css("--f2"), css("--f3"), css("--f4"), css("--f5")];
   const faces = D.faces[i], used = new Set(); for (const F of faces) if (popc(F) === 1) used.add(bits(F)[0]);
   const P = (v) => `${c + pts[v][0]},${c + pts[v][1]}`;
-  const shrunk = (F) => { const vs = bits(F), d = vs.length, sh = d === 3 ? 0.5 : d === 4 ? 0.42 : 0.36;
+  const shrunk = (F) => { const vs = bits(F), d = vs.length, sh = d === 3 ? 0.5 : d === 4 ? 0.42 : d === 5 ? 0.36 : 0.3;
     const gx = vs.reduce((a, v) => a + pts[v][0], 0) / d, gy = vs.reduce((a, v) => a + pts[v][1], 0) / d;
     return vs.map(v => `${c + gx + (pts[v][0] - gx) * sh},${c + gy + (pts[v][1] - gy) * sh}`).join(" "); };
   return `<svg class="${cls}" viewBox="0 0 ${size} ${size}" data-i="${i}"><circle cx="${c}" cy="${c}" r="${size * 0.47}" fill="${css("--glyph-fill")}" stroke="${orbitColor(i)}" stroke-width="${size * 0.03}"/>` +
     faces.filter(F => popc(F) === 2).map(F => { const [u, v] = bits(F); return `<line x1="${c + pts[u][0]}" y1="${c + pts[u][1]}" x2="${c + pts[v][0]}" y2="${c + pts[v][1]}" stroke="${ink}" stroke-opacity="0.5" stroke-width="${size * 0.016}" stroke-linecap="round"/>`; }).join("") +
-    [3, 4, 5].map(d => faces.filter(F => popc(F) === d).map(F => `<polygon points="${shrunk(F)}" fill="${face[d]}" stroke="${css("--glyph-fill")}" stroke-width="${size * 0.018}"/>`).join("")).join("") +
+    [3, 4, 5, 6].map(d => faces.filter(F => popc(F) === d).map(F => `<polygon points="${shrunk(F)}" fill="${face[d]}" stroke="${css("--glyph-fill")}" stroke-width="${size * 0.018}"/>`).join("")).join("") +
     pts.map(([x, y], v) => `<circle cx="${c + x}" cy="${c + y}" r="${size * 0.035}" fill="${ink}" fill-opacity="${used.has(v) ? 1 : 0.3}"/>`).join("") + `</svg>`;
 }
 const vname = (F) => popc(F) ? bits(F).map(b => b + 1).join("") : "∅";
 function svgFacet(F, size) {   // one facet, full size, on the vertex frame
-  const n = state.n, r = size * 0.38, c = size / 2, pts = glyphPts(n, r), ink = css("--glyph-ink"), face = [null, null, null, css("--f2"), css("--f3"), css("--f4")];
+  const n = state.n, r = size * 0.38, c = size / 2, pts = glyphPts(n, r), ink = css("--glyph-ink"), face = [null, null, null, css("--f2"), css("--f3"), css("--f4"), css("--f5")];
   const vs = bits(F), d = vs.length, P = (v) => `${c + pts[v][0]},${c + pts[v][1]}`;
   let body = "";
   if (d >= 3) body += `<polygon points="${vs.map(P).join(" ")}" fill="${face[d]}" fill-opacity="0.85"/>`;
@@ -381,7 +381,7 @@ function describe(i) {
     `<dt>Alexander dual</dt><dd>${D.comp[i] === i ? "self-dual" : D.comp[i] < 0 ? "does not use every vertex (outside this poset)" : `<span class="mini-wrap">${svgGraph(D.comp[i], 30, "mini")}</span> rank ${D.C - k}`}</dd></dl>` +
     `<div class="cov"><div class="label">covers ${lower.length} below</div>${lower.map(([j, c, cu]) => `<span class="item">${svgGraph(j, 30, "mini")}<span class="mult">×${c}</span></span> `).join("")}` +
     `<div class="label">covered by ${upper.length} above</div>${upper.map(([j, c, cu]) => `<span class="item">${svgGraph(j, 30, "mini")}<span class="mult">×${cu}</span></span> `).join("")}</div>` +
-    `<div class="hint">×c below: facets of this complex whose removal gives that one (the coefficient of U on orbit sums). ×c above: minimal non-faces whose addition gives that one (the coefficient of D). Each face of dimension ≥ 2 is drawn as a shrunken copy of itself at its own centroid, so distinct faces stay distinct: triangles blue, tetrahedra purple, the 4-simplex gold. Faint dots are unused vertices. Click a small complex to go to it.</div>`;
+    `<div class="hint">×c below: facets of this complex whose removal gives that one (the coefficient of U on orbit sums). ×c above: minimal non-faces whose addition gives that one (the coefficient of D). Each face of dimension ≥ 2 is drawn as a shrunken copy of itself at its own centroid, so distinct faces stay distinct: triangles blue, tetrahedra purple, 4-simplices gold, the 5-simplex green. Faint dots are unused vertices. Click a small complex to go to it.</div>`;
   $("p-hint").hidden = true;
   $("p-body").querySelectorAll("svg.mini").forEach(el => el.addEventListener("click", () => goTo(+el.dataset.i)));
 }
