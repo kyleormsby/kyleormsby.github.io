@@ -1,0 +1,162 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage{caption}
+\usepackage{fullpage}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\hypersetup{hidelinks}
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem*{rmk*}{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem*{bonus*}{Bonus Problem}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\Ztn}{(\mathbb{Z}/2)^{n}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\spec}{\operatorname{spec}}
+\newcommand{\wt}{\omega}
+\newcommand{\kap}{\kappa}
+\newcommand{\adj}{\operatorname{adj}}
+\newcommand{\Uh}{\widehat U}
+
+\title{Math 372: Combinatorics\\ Homework 03}
+\author{Due Friday, 9 October, 10\textsc{p.m.}, via Gradescope}
+
+\begin{document}
+\maketitle
+
+\begin{rmk*}
+\textbf{When you can start.} Problems 1 and 2 use only what we have done through Monday,
+September~28. Problem~3 needs Wednesday the 30th and Friday, October~2; Problem~4(c) and (d)
+need Monday, October~5. As before, the set is released early so that the first half can be
+done first; do not wait.
+\end{rmk*}
+
+\begin{rmk*}
+\textbf{Conventions.} Graphs are finite, undirected, and loopless. For a subgroup $G\le S_n$
+acting on $B_n$, the quotient $B_n/G$ is the poset of orbits with $o\le o'$ iff some
+$x\in o$ lies below some $y\in o'$; for an orbit $o$, $v_o=\sum_{x\in o}x\in\RR B_n$ is its
+orbit sum, and $\Uh_i\colon\RR(B_n/G)_i\to\RR(B_n/G)_{i+1}$ is the operator
+$\Uh_i(o)=\sum_{o'}c_{oo'}\,o'$ with $c_{oo'}=\#\{x\in o: x<y\}$ for any $y\in o'$, as in
+class. For a graph $G$ with vertices $v_1,\dots,v_p$, $L=L(G)$ is the Laplacian (degrees on the
+diagonal, $-1$ for each edge, $0$ otherwise), $L_0$ is $L$ with one row and the same column
+deleted, and $\kap(G)$ is the number of spanning trees.
+\end{rmk*}
+
+\begin{rmk*}
+\textbf{On these solutions.} Each problem is worth up to five points for mathematical content
+and up to two for writing. Write for another student in this course: say what you are going to
+show before you show it, justify each step, and use complete sentences. End your submission with
+a short \emph{Methods and tools} note --- three or four sentences on what software you used and
+for what, and how you checked anything a machine produced for you.
+\end{rmk*}
+
+%%% Problem 1 %%%
+\begin{prob}[necklaces]
+Let $\sigma=(1\,2\,\cdots\,n)\in S_n$ and $G=\langle\sigma\rangle\cong\ZZ/n$, acting on $B_n$.
+An orbit of $G$ on $k$-subsets is a \emph{necklace} with $n$ beads, $k$ of them black.
+\begin{enumerate}[(a)]
+\item For $n=6$, list the orbits rank by rank, drawing each necklace and recording the size of
+each orbit. (You should find rank sizes $1,1,3,4,3,1,1$.)
+\item Still for $n=6$, write the matrix of $\Uh_2\colon\RR(B_6/G)_2\to\RR(B_6/G)_3$ in the
+orbit bases, computing each coefficient $c_{oo'}$ from its definition, and verify that
+$\Uh_2$ is one-to-one.
+\item Now let $n=p$ be prime. Show that for $0<k<p$ every orbit of $G$ on $k$-subsets has
+exactly $p$ elements. Deduce a formula for the number of necklaces with $p$ beads, $k$ of them
+black, and conclude that $p$ divides $\binom pk$ for $0<k<p$.
+\item What does the theorem from class say about the largest antichain in $B_6/G$? The
+theorem proves that a chain decomposition of $B_6/G$ into symmetric chains exists; find one by
+hand, using your Hasse diagram from (a).
+\end{enumerate}
+\end{prob}
+
+%%% Problem 2 %%%
+\begin{prob}[the grid, again]
+Fix $1\le k<n$ and let $G=S_k\times S_{n-k}\le S_n$ be the subgroup of permutations that map
+$[k]=\{1,\dots,k\}$ to itself. For $0\le a\le k$ and $0\le b\le n-k$ let
+\[
+O_{a,b}=\bigl\{\,x\in B_n:\ |x\cap[k]|=a\ \text{and}\ |x\smallsetminus[k]|=b\,\bigr\}.
+\]
+\begin{enumerate}[(a)]
+\item Show that the $O_{a,b}$ are exactly the orbits of $G$ on $B_n$, and that
+$O_{a,b}\le O_{a',b'}$ in $B_n/G$ if and only if $a\le a'$ and $b\le b'$. Conclude that
+$B_n/G$ is isomorphic to the grid poset of Problem~3 on Problem Set~2 (with the roles of
+$a,b$ there played by $k,n-k$ here).
+\item Compute the coefficients $c_{oo'}$ for $o=O_{a,b}$ and $o'$ an orbit of the next
+rank, and write $\Uh_i(O_{a,b})$ as a combination of orbits.
+\item Take $k=1$. Write $\Uh_i$ as a $2\times2$ matrix for $1\le i<n/2$ and check directly
+that it is one-to-one. What happens for $i\ge n/2$, and why is that consistent with the
+theorem?
+\item In one paragraph: the theorem from class reproves part (c) of Problem~3 on Problem
+Set~2. What did the problem-set proof provide that the theorem does not?
+\end{enumerate}
+\end{prob}
+
+%%% Problem 3 %%%
+\begin{prob}[Laplacians]
+\begin{enumerate}[(a)]
+\item Write down $L$ for the complete bipartite graph $K_{2,3}$, with the two vertices of the
+small side listed first. Compute $\det L_0$ twice, deleting a vertex from each side, and confirm
+the answer by counting the spanning trees of $K_{2,3}$ directly.
+\item Let $G$ be connected. Prove, \emph{without} using the Matrix-Tree Theorem, that
+$\det L_0$ does not depend on which row and column are deleted. (Suggestion: let $\adj L$ be
+the adjugate, so that $L\cdot\adj L=\adj L\cdot L=(\det L)\,I=0$. Explain why the kernel of $L$
+is spanned by the all-ones vector $\mathbf 1$, deduce that every column and every row of
+$\adj L$ is a multiple of $\mathbf 1$, and conclude that $\adj L=c\,J$ for a constant $c$,
+where $J$ is the all-ones matrix. Then identify the diagonal entries of $\adj L$.)
+\item Let $G$ be disconnected. Show that $\det L_0=0$ for every choice of deleted vertex, so
+the Matrix-Tree Theorem remains true, in the form ``$0=0$,'' for disconnected graphs.
+\item (\emph{Deletion--contraction.}) For an edge $e$ of $G$, let $G-e$ be $G$ with $e$
+removed and $G/e$ be $G$ with $e$ contracted to a single vertex (keeping any multiple edges
+that result). Prove that
+\[
+\kap(G)=\kap(G-e)+\kap(G/e),
+\]
+and use this to compute $\kap(F_n)$ for $n\le 4$, where the \emph{fan} $F_n$ is a path on
+$n$ vertices together with one more vertex joined to every vertex of the path. Guess the
+general pattern.
+\end{enumerate}
+\end{prob}
+
+%%% Problem 4 %%%
+\begin{prob}[spanning trees from eigenvalues]
+\begin{enumerate}[(a)]
+\item Verify Cauchy--Binet by hand for
+$A=\bigl(\begin{smallmatrix}1&2&3\\4&5&6\end{smallmatrix}\bigr)$ and $B=A^{\mathsf T}$:
+compute $\det(AA^{\mathsf T})$ directly, and as the sum over the three $2$-subsets of columns.
+\item Show that the eigenvalues of $L(K_{m,n})$ are $0$ and $m+n$, each once, $m$ with
+multiplicity $n-1$, and $n$ with multiplicity $m-1$. (Look for eigenvectors supported on one
+side of the bipartition whose entries sum to zero, and for eigenvectors constant on each side.)
+Deduce that $\kap(K_{m,n})=m^{\,n-1}n^{\,m-1}$, and check it against Problem~3(a).
+\item The cube $Q_n$ is $n$-regular and its adjacency eigenvalues are $n-2i$ with multiplicity
+$\binom ni$, $0\le i\le n$. Use the eigenvalue form of the Matrix-Tree Theorem to find
+$\kap(Q_n)$ in closed form, and evaluate it for $n=2,3,4$.
+\item Let $G_4$ be the two-flip graph of Problem~1 on Problem Set~2, whose spectrum you
+computed there. It has two isomorphic connected components. Use the spectrum to find the
+number of spanning trees of one component, and say what graph that component is.
+\end{enumerate}
+\end{prob}
+
+%%% Bonus %%%
+\begin{bonus*}[trees through an edge]
+Show that the number of spanning trees of $K_n$ that contain a given edge is $2n^{n-3}$.
+(Count pairs (tree, edge of the tree) in two ways.) Deduce $\kap(K_n-e)$, and check your
+answer for $n=4$ with the Matrix-Tree Theorem.
+\end{bonus*}
+
+\end{document}
