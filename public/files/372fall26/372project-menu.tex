@@ -1,0 +1,331 @@
+\documentclass[11pt]{amsart}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref, booktabs, enumitem}
+\usepackage[T1]{fontenc}
+\usepackage{fullpage}
+\hypersetup{colorlinks, linkcolor=black!70!red, urlcolor=black!70!red}
+\setlist[itemize]{leftmargin=1.4em, itemsep=2pt}
+\setlist[enumerate]{leftmargin=1.6em, itemsep=2pt}
+
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+
+\newcommand{\project}[5]{%
+  \medskip\noindent\textbf{#1}\quad{\small\textit{#2}}\par\smallskip
+  \noindent #3\par\smallskip
+  \noindent\textit{The question.} #4\par\smallskip
+  \noindent\textit{The computation.} #5\par}
+
+\title{Math 372: Combinatorics\\ The project menu}
+\author{Released Monday, 28 September 2026 \,·\, proposals due Friday, 16 October}
+
+\begin{document}
+\maketitle
+
+\section*{How the project works}
+
+You will spend the second half of the term on one question of your own, and end with an
+8--12 page paper and a fifteen-minute talk at the symposium in finals week. The project is
+individual. It is the part of the course that is most like a thesis, and it is designed to
+rehearse the parts of a thesis that are hardest to learn from a problem set: choosing a
+question that is small enough to finish, running a computation that nobody has told you the
+answer to, writing up what happened, and talking about it to people who did not do it.
+
+\medskip\noindent\textbf{Milestones.}
+\begin{itemize}
+\item \textbf{Friday, October 16 --- proposal and five-minute pitch.} One page: the question,
+the computation attached to it, what you will read first, and what ``done'' looks like. The
+pitch is to the class, in class, and it is the first time you will hear yourself say the
+question out loud. It incubates over fall break.
+\item \textbf{Friday, November 6 --- annotated bibliography and computation prospectus.} Five
+to ten sources with a sentence each on what you took from them, including the OEIS entries you
+have found and what they told you; and a description of the computation you will run ---
+what code, what inputs, what you expect to see, and what would surprise you.
+\item \textbf{Week of November 16 --- a fifteen-minute meeting with me.} Bring whatever you
+have. This replaces a written progress report.
+\item \textbf{Wednesday, December 2 --- full draft} for peer review. Not extendable, because
+a late draft spends your reviewer's time rather than yours.
+\item \textbf{Monday, December 7 --- peer reviews} returned.
+\item \textbf{Friday, December 11 --- final paper.} Not extendable; the symposium follows.
+\item \textbf{Monday, December 14, 9\textsc{a.m.}--noon, Eliot 207 --- the symposium.}
+Fifteen-minute talks, with discussion, in our exam block.
+\end{itemize}
+
+\medskip\noindent\textbf{What the paper must contain.} A statement of the question; the
+mathematics you learned in order to ask it precisely, written for another student in this
+course; the computation and what it showed; and two components that are graded as content,
+not as compliance:
+\begin{itemize}
+\item \textbf{a section on an approach that failed}, and why --- a method you tried that did
+not work, a conjecture the data killed, a proof that broke at a step you can name; and
+\item \textbf{a computation log}, submitted alongside the paper as an appendix outside the page
+count: the real record of what you ran, including the dead ends.
+\end{itemize}
+A finished paper is always a tidied-up story about the work that produced it; these two
+components are where the actual work is allowed to show. They are also the two things nobody
+can produce for you, since there are no false starts if nothing was tried.
+
+\medskip\noindent\textbf{An alternative deliverable.} One form is allowed in place of the
+standard paper, at the same mathematical bar: \textbf{an interactive artifact} --- a web page
+that lets someone explore the object of your project, with an accompanying note (four to six
+pages) containing the mathematics, both left behind on the course page. The course page's
+visualizations are examples of the genre; yours should let a reader see something a static
+picture cannot. An artifact is not a lighter option: it still needs a question, a computation,
+a failed approach, and a log, and it needs to work.
+
+\medskip\noindent\textbf{Scope.} The test is blunt: \emph{a project that cannot be stated as
+one question with one computation attached is too big.} Eight to twelve pages is a ceiling as
+much as a floor, and a small question answered is worth more than a large one surveyed. Every
+item below has a question and a computation already attached; part of the proposal is to
+narrow them further to what you can finish by December.
+
+\medskip\noindent\textbf{Two exclusions.} The project must be new to you. It may not be on
+the topic of your senior thesis, and it may not be on a topic you are learning or have learned
+in another course --- the Ehrhart theory in item~15, for instance, is off the table for anyone
+in this term's polytopes course. The point of the project is to find out what you can do with
+a question nobody has prepared you for, and a topic you are already being taught, or already
+writing a thesis about, defeats that. If you are not sure whether something is too close,
+ask; the answer will usually be a way to move the question sideways rather than a no.
+
+\medskip\noindent\textbf{How to choose.} Read the whole menu once. Pick two or three that you
+would be willing to think about on a walk. Then look at the prerequisites: some items need
+material we reach in Acts II and III (marked), which is fine if you are willing to read ahead,
+and some need only what we have already done. Come talk to me before the proposal; the
+scoping conversation is the most useful twenty minutes of the project. You may also propose a
+question not on this menu, if it passes the same test.
+
+\section*{The menu}
+
+The items are grouped by how much is known. \emph{Live} questions are ones where a careful
+student with a computer has a real chance of seeing something new; the ceiling is high and so
+is the risk of a negative result, which is a fine outcome if it is written up honestly.
+\emph{Well-documented} questions have a literature to lean on and a definite thing to learn
+and compute; they are the straightforward option and there is nothing lesser about them.
+\emph{Experimental} questions are computations first and theory second.
+
+\section*{Live}
+
+\project{1. Transfer systems on a product of two chains}
+{Acts I--III; the course's own research thread}
+{A transfer system on a finite lattice is a partial order refining the lattice order and
+closed under a restriction rule; they arise in equivariant homotopy theory and are counted by
+Catalan numbers on a chain. On $[1]\times[n]$ the counts $2,10,68,544,\dots$ are known to
+satisfy a functional equation but no closed form, and on $[m]\times[n]$ almost nothing is
+known. I have notes and code from this fall summarizing what is known, which I will share with
+whoever takes this on.}
+{Pick one: (a)~how many transfer systems on $[1]\times[n]$ have a given number of arrows, and
+is that polynomial unimodal for large $n$? (b)~the horizontal ones are multichains in the
+Tamari lattice --- what are the analogous counts for $[2]\times[n]$? (c)~which transfer systems
+on $[m]\times[n]$ are self-dual under the natural involution?}
+{Enumerate for small $m,n$, refine by a statistic, submit the sequence to the OEIS if it is
+new, and guess a recurrence.}
+
+\project{2. Is the poset of unlabeled simplicial complexes Sperner?}
+{Act I only; open as far as I can tell}
+{The theorem of Chapter~5 says $B_n/G$ is Sperner for any $G\le S_n$. The poset of
+simplicial complexes on $[n]$ up to isomorphism is a quotient of a \emph{sub}-lattice of
+$B_{2^n}$, ordered by ``is a subcomplex of,'' and the theorem says nothing about it. By
+computer it is Sperner for $n\le5$ (the width equals the largest rank level). Nobody seems to
+have asked about $n=6$, where there are 16{,}353 complexes.}
+{Is $J(B_6)/S_6$ Sperner? Is it rank-unimodal? Does the linear algebra method extend if $U$
+is replaced by a weighted operator?}
+{Compute the width of the $n=6$ poset (a bipartite matching on 16{,}353 vertices, feasible),
+and look for an antichain that beats the largest level.}
+
+\project{3. Cyclic sieving}
+{Acts I--III}
+{The cyclic sieving phenomenon: a set $X$ with a cyclic group action and a polynomial $X(q)$
+such that $X(\zeta^d)$ counts the fixed points of the $d$th power of the generator, for $\zeta$
+a root of unity. Instances are computer-checkable, the catalogue is incomplete, and the
+$q$-analogs of Chapter~6 are exactly the polynomials that show up.}
+{Find a cyclic sieving instance for a family we study --- necklaces, order ideals of a
+product of chains under rotation, noncrossing matchings under rotation --- and either prove it
+or find the smallest counterexample.}
+{Evaluate candidate $q$-polynomials at roots of unity and compare with fixed-point counts for
+$n\le 12$.}
+
+\project{4. Meanders and noncrossing pairings}
+{Act III; connected to current research at Reed}
+{A meander is a closed curve crossing a line at $2n$ points; the number of meanders grows
+like $C\,R^n n^{-\alpha}$ with $R$ and $\alpha$ conjectured but unproven. Meandric systems
+(several curves) are counted by the entries of the Gram matrix of the Temperley--Lieb
+algebra's trace form --- the matrix indexed by pairs of noncrossing pairings whose entry is
+$q^{\text{number of loops}}$ --- so the generating function by number of components is the sum
+of the entries, while the determinant of the same matrix, the meander determinant, has a
+product formula.}
+{Choose a refinement --- meandric systems by number of components, by a symmetry, by a
+forbidden pattern --- and find its generating function or its growth rate numerically.}
+{Enumerate meandric systems by transfer matrix for $n\le 14$ and estimate the growth constant
+by ratio methods.}
+
+\project{5. Homotopy types of finite topological spaces}
+{Act I; small and concrete}
+{A topology on a finite set is the same thing as a preorder, and every finite simplicial
+complex is weakly equivalent to a finite space. The course page has a map of all spaces on
+$\le6$ points with their homotopy types. The minimal finite model of $S^n$ has $2n+2$ points.}
+{What is the smallest finite space with the weak homotopy type of a given small complex --- the
+torus, the projective plane, $S^1\vee S^2$? Which types first appear at $n=7$?}
+{Enumerate posets on $7$ points (2{,}045 of them), compute cores and homology of order complexes,
+and tabulate the types.}
+
+\project{6. Guess-and-prove}
+{Act III; a skill rather than a fact}
+{Many sequences in this course satisfy linear recurrences with polynomial coefficients
+(they are \emph{D-finite}), and there is software that guesses the recurrence from terms and
+then proves it (creative telescoping). This project learns the method by using it.}
+{Take a sequence from the course whose recurrence is not in the book, guess it with
+\texttt{ore\_algebra} or \texttt{gfun}, and prove the guess.}
+{Generate 50--100 terms of your sequence by a method independent of the recurrence, guess,
+and verify the guess to more terms than it was fitted on.}
+
+\section*{Well-documented}
+
+\project{7. Cayley's formula five ways}
+{Act I; the classical straightforward project}
+{The complete graph $K_n$ has $n^{n-2}$ spanning trees. We prove it with the Matrix-Tree Theorem; there are
+also Pr\"ufer's bijection, Joyal's proof with two marked vertices, the Pitman/Clarke
+double-counting proofs, and a generating-function proof.}
+{Present three proofs and explain precisely what each one does that the others cannot ---
+for instance, which refinements (trees by degree sequence, forests, trees containing a
+given edge) each proof gives for free.}
+{Verify a refinement --- e.g.\ the number of spanning trees of $K_n$ with prescribed degrees
+$d_1,\dots,d_n$ is the multinomial $\binom{n-2}{d_1-1,\dots,d_n-1}$ --- by computer for
+$n\le 8$ before proving it.}
+
+\project{8. Spanning trees of the cube and its relatives}
+{Act I}
+{The number of spanning trees of $Q_n$ is $2^{2^n-n-1}\prod_{k=1}^{n}k^{\binom nk}$, a
+consequence of knowing the eigenvalues. The same method handles any graph whose spectrum
+you know: Cayley graphs of abelian groups, Hamming graphs, Kneser graphs.}
+{For a family of graphs with computable spectra --- the two-flip graphs of Problem Set~2 are
+a natural choice --- find the number of spanning trees in closed form.}
+{Compute spanning-tree counts numerically for the family, factor them, and guess the formula
+before deriving it from the spectrum.}
+
+\project{9. Electrical networks and random walks}
+{Act I}
+{Resistances, Kirchhoff's laws, and the Laplacian: effective resistance between two vertices is
+a ratio of spanning-tree counts, and the probability that a random walk started at $a$ hits
+$b$ before returning is $1/(d_a\,R_{ab})$. This is the chapter of the text we skipped, and it
+ties Chapters~3 and~9 together.}
+{Compute effective resistances on a family of graphs (grids, cubes, Platonic graphs) and
+identify the pattern; or explain Rayleigh monotonicity and use it to bound a hitting time.}
+{Effective resistance across the cube $Q_n$ between antipodal vertices, for $n\le 10$, and
+its limit.}
+
+\project{10. Möbius inversion and incidence algebras}
+{Acts I--II; a skipped chapter}
+{The Möbius function of a poset generalizes inclusion--exclusion and also the number-theoretic
+Möbius inversion. For $B_n$ it is $(-1)^{|y-x|}$; for divisors it is the classical $\mu$;
+for the partition lattice it is $(-1)^{k-1}(k-1)!$.}
+{Compute the Möbius function of a lattice we have met --- the partition lattice, the lattice
+of subspaces of $\mathbb F_q^n$, the quotient $B_n/G$ --- and use it to count something.}
+{Implement Möbius inversion for an arbitrary finite poset and check it against the three
+classical formulas.}
+
+\project{11. RSK and the hook length formula}
+{Act II}
+{The Robinson--Schensted--Knuth correspondence is a bijection between permutations and pairs
+of standard Young tableaux of the same shape; the hook length formula counts the tableaux.
+Together they give $n!=\sum_\lambda f_\lambda^{\,2}$.}
+{Prove the hook length formula (the probabilistic proof of Greene--Nijenhuis--Wilf is a good
+target), or study a statistic RSK preserves --- the length of the longest increasing
+subsequence is the length of the first row.}
+{Implement RSK, verify $\sum f_\lambda^2=n!$ for $n\le 10$, and compute the distribution of
+the longest increasing subsequence.}
+
+\project{12. Chip-firing and the sandpile group}
+{Act I}
+{Chips on the vertices of a graph, a vertex fires by sending one chip along each edge; the
+recurrent configurations form an abelian group of order $\kappa(G)$, the number of spanning
+trees. Reed has a local expert and excellent notes.}
+{Compute the sandpile group of a family of graphs and identify it; or prove the
+recurrent-configurations-to-spanning-trees bijection for a class of graphs.}
+{The sandpile group of $C_n$, $K_n$, $K_{m,n}$, and the cube, by Smith normal form of the
+Laplacian.}
+
+\project{13. The probabilistic method}
+{any time; classical}
+{Ramsey's theorem, Erd\H{o}s's lower bound $R(k,k)>2^{k/2}$, and the idea that a random object
+can be shown to exist with a property that no explicit construction achieves.}
+{Present Erd\H{o}s's bound and one refinement (the Lov\'asz local lemma, or the alteration
+method), and compare with the best explicit constructions.}
+{Simulate random colorings of $K_n$ and estimate the probability of a monochromatic $K_k$ for
+small $k$, comparing with the first-moment bound.}
+
+\project{14. Necklaces, bracelets, and P\'olya's theorem}
+{Act III}
+{Counting orbits of a group on colorings: Burnside's lemma, the cycle index, and P\'olya's
+theorem, applied to necklaces, graphs, and chemical isomers.}
+{Count something the cycle index can count that direct enumeration cannot --- unlabeled graphs
+on $n\le 10$ vertices by number of edges, or necklaces with prescribed color counts --- and
+compare with the OEIS.}
+{Compute the cycle index of $S_n$ acting on edges of $K_n$ for $n\le 8$ and recover the
+unimodal sequences of Chapter~5.}
+
+\project{15. A chapter we skipped, as a starting point}
+{any act; exposition plus a computation of your own}
+{The text has chapters we will not reach: the BEST theorem on Eulerian tours of digraphs,
+electrical networks and the cycle and bond spaces, the Ehrhart theory of lattice points in
+polytopes, and the parts of Young tableaux beyond what Act~II covers. Any of them can anchor a
+project, on one condition: the exposition is the setup, not the deliverable. Re-explaining a
+chapter of a well-written book is not a project; carrying its main theorem to a computation
+the book does not do is.}
+{State the chapter's main theorem in your own words, then ask one question it lets you answer
+that the chapter does not answer --- the number of Eulerian tours of a family of digraphs, the
+Ehrhart polynomial of a family of polytopes, the effective resistance across a family of
+graphs.}
+{The computation the question requires, run on enough cases to see the pattern and, where
+possible, to guess and check a formula.}
+
+\section*{Experimental}
+
+\project{16. The width of the graph poset}
+{Act I}
+{The theorem says the largest antichain of graphs on $m$ vertices (under subgraph
+containment) is a middle level. It does not say it is the only one, and for $m=4$ it is not.}
+{For which $m$ is the middle level the \emph{unique} maximum antichain? What is the size of
+the largest antichain containing no graph with the middle number of edges?}
+{Maximum antichains via bipartite matching on the graph poset for $m\le 7$ (1{,}044 graphs at
+$m=7$).}
+
+\project{17. Random walks on quotients}
+{Act I}
+{The random walk on $B_n$ (flip a random coordinate) descends to a random walk on the
+quotient $B_n/G$. Its mixing time and its spectrum are computable from Chapter~3 and
+Chapter~5 together.}
+{How does the mixing time of the walk on $B_n/G$ compare with that on $B_n$, for $G$ cyclic,
+dihedral, and $S_n$? Is there a cutoff?}
+{Simulate and compute exactly the total-variation distance to stationarity for $n\le 12$.}
+
+\project{18. Arrow statistics on Catalan objects}
+{Acts I--III}
+{The number of transfer systems on a chain with $k$ arrows is the coefficient of $q^k$ in the
+Carlitz--Riordan $q$-Catalan polynomial, which is also the area generating function of Dyck
+paths. There are many other $q$-Catalan numbers (major index, dinv, bounce) and many other
+Catalan families.}
+{Find the statistic on transfer systems that corresponds to \emph{dinv}, or show that the
+joint distribution of two natural statistics on transfer systems is symmetric.}
+{Compute joint distributions of pairs of statistics for $n\le 9$ and test symmetry and
+equality with the $q,t$-Catalan polynomial.}
+
+\section*{Alternative deliverable}
+
+\project{19. An explorer}
+{any act}
+{A web page in the style of the course visualizations: a Dyck-path-to-transfer-system
+bijection you can drag, a Laplacian whose spectrum updates as you edit the graph, an RSK
+insertion you can step through, a sandpile you can topple. Accompanied by a note with the
+mathematics.}
+{What should a reader be able to \emph{see} that they could not see in a picture? The
+artifact is judged by that.}
+{The artifact itself; plus one nontrivial thing you verified with it.}
+
+\bigskip
+\noindent\textbf{Before you propose.} Read the OEIS entries near your topic; email me the
+two you find most surprising. Then write the one-sentence question and the one-sentence
+computation, and bring them to office hours or book a Friday slot. The proposal is easier to
+write after that conversation than before it.
+
+\end{document}
