@@ -608,6 +608,17 @@
       "note": "",
       "items": [
         {
+          "title": "The Pontryagin–Thom construction in algebraic geometry",
+          "date": "2 October 2026",
+          "venue": "Boise State Topics in Algebra, Topology, Etc. Research Seminar (TATERS)",
+          "links": [
+            {
+              "text": "Slides",
+              "url": "/files/taters-pontryagin-thom.html"
+            }
+          ]
+        },
+        {
           "title": "Homotopical combinatorics and equivariant derived algebraic geometry",
           "date": "21 October 2025",
           "venue": "Washington University Algebraic Geometry & Combinatorics Seminar"
