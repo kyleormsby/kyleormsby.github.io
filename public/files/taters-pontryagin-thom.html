@@ -142,6 +142,8 @@ button.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--orange
 /* NSF acknowledgment on the closing slide */
 .nsf-ack{position:absolute;left:72px;bottom:48px;display:flex;align-items:center;gap:16px;font-size:18px;color:var(--blue-deep);}
 .nsf-ack img{height:64px;width:auto;display:block;}
+/* slide 14: tighter theorem displays */
+.slide[data-n="14"] .thm mjx-container[display="true"]{margin:14px 0 !important;}
 /* route marker for Part III */
 .route{position:absolute;right:72px;top:40px;display:flex;gap:6px;align-items:center;font-family:var(--mono);font-size:15px;color:var(--blue);z-index:3;}
 .route i{display:inline-grid;place-items:center;font-style:normal;width:34px;height:34px;border-radius:50%;border:3px solid var(--blue);box-sizing:border-box;background:var(--paper);font-weight:700;}
@@ -479,7 +481,7 @@ body.presenter #grain,body.presenter #bar,body.presenter #help,body.presenter #n
   <div class="thm"><div class="lbl">Theorem</div>
     <p style="margin:0;">For $k$ an infinite perfect field of characteristic <span class="nw">$\ne2$,</span> the Pontryagin–Thom map
     $$\mathrm{PT}\colon A^u(\Gamma_k)\longrightarrow\pi_0(\mathbb S_k)(k)$$
-    is a surjective ring homomorphism with kernel <span class="nw">$\ker(d)$.</span> Hence
+    which sends $(L,u)$ to the class of a framed point with residue field $L$ and framing determinant <span class="nw">$u$,</span> is a surjective ring homomorphism with kernel <span class="nw">$\ker(d)$.</span> Hence
     $$\pi_0(\mathbb S_k)(k)\;\cong\;A^u(\Gamma_k)/\ker(d)\;\cong\;\mathrm{GW}(k).$$</p>
   </div>
   <p class="frag small" style="margin-top:18px;">$\pi_0(\mathbb S_k)(k)\cong\mathrm{GW}(k)$ is <strong>Morel's theorem</strong> (2004; reproved in his 2012 book), via strictly $\mathbb A^1$-invariant sheaves and Milnor–Witt $K$-theory. Neshitov and Druzhinin–Kylling gave framed-correspondence proofs. New here: Segal's architecture, the Burnside source <span class="nw">$A^u(\Gamma_k)$,</span> and the kernel.</p>
