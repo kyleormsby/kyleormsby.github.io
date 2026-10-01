@@ -144,6 +144,14 @@ button.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--orange
 .nsf-ack img{height:64px;width:auto;display:block;}
 /* slide 14: tighter theorem displays */
 .slide[data-n="14"] .thm mjx-container[display="true"]{margin:14px 0 !important;}
+/* laser pointer (L) */
+body.laser-on,body.laser-on *{cursor:none !important;}
+#laser{position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;pointer-events:none;z-index:90;opacity:0;
+  background:radial-gradient(circle,#fff 0 18%,#ff3b0f 34%,rgba(255,59,15,.85) 55%,rgba(255,59,15,0) 72%);
+  box-shadow:0 0 14px 6px rgba(255,59,15,.55);transition:opacity .15s;}
+.laser-trail{position:fixed;left:0;top:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;pointer-events:none;z-index:89;
+  background:rgba(255,59,15,.55);transition:opacity .3s ease-out,width .3s,height .3s,margin .3s;}
+@media (prefers-reduced-motion:reduce){.laser-trail{display:none;}}
 /* route marker for Part III */
 .route{position:absolute;right:72px;top:40px;display:flex;gap:6px;align-items:center;font-family:var(--mono);font-size:15px;color:var(--blue);z-index:3;}
 .route i{display:inline-grid;place-items:center;font-style:normal;width:34px;height:34px;border-radius:50%;border:3px solid var(--blue);box-sizing:border-box;background:var(--paper);font-weight:700;}
@@ -775,7 +783,7 @@ body.presenter #grain,body.presenter #bar,body.presenter #help,body.presenter #n
 </div></div>
 <div id="grain"></div>
 <div id="bar"></div>
-<div id="help">← → navigate · N notes · P presenter view · F fullscreen</div>
+<div id="help">← → navigate · L laser · N notes · P presenter view · F fullscreen</div>
 
 <div id="toast" hidden></div>
 
@@ -882,7 +890,7 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$
     const onRange=t&&t.tagName==='INPUT'&&t.type==='range';
     if(onRange&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(k))return;
     if(e.metaKey||e.ctrlKey||e.altKey)return;
-    if(t&&t.blur&&t!==document.body&&['PageDown','PageUp','ArrowRight','ArrowLeft','ArrowDown','ArrowUp',' ','n','N','p','P','f','F','Escape'].includes(k))t.blur();
+    if(t&&t.blur&&t!==document.body&&['PageDown','PageUp','ArrowRight','ArrowLeft','ArrowDown','ArrowUp',' ','n','N','p','P','f','F','l','L','Escape'].includes(k))t.blur();
     if(['ArrowRight','ArrowDown','PageDown',' '].includes(k)){e.preventDefault();next();}
     else if(['ArrowLeft','ArrowUp','PageUp'].includes(k)){e.preventDefault();prev();}
     else if(k==='Home')setState(0,0);
@@ -890,7 +898,8 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$
     else if(k==='n'||k==='N')toggleNotes();
     else if(k==='p'||k==='P')openPresenter();
     else if(k==='f'||k==='F'){const el=document.documentElement;const p=document.fullscreenElement?document.exitFullscreen():(el.requestFullscreen?el.requestFullscreen():null);if(p&&p.catch)p.catch(()=>{});}
-    else if(k==='Escape'){document.body.classList.remove('notes-on');fit();}
+    else if(k==='l'||k==='L')toggleLaser();
+    else if(k==='Escape'){document.body.classList.remove('notes-on');setLaser(false);fit();}
   });
   document.querySelectorAll('input[type=range]').forEach(r=>{['pointerup','change'].forEach(ev=>r.addEventListener(ev,()=>setTimeout(()=>r.blur(),0)));});
   document.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>setTimeout(()=>b.blur(),0)));
@@ -903,6 +912,23 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$
     (x>=0.5)?next():prev();
   });
   addEventListener('hashchange',()=>{const m=/^#s(\d+)/.exec(location.hash);if(m)setState(+m[1]-1,0,{fromHash:true});});
+
+
+  // ---------- laser pointer (L): a glowing dot with a short fading trail; the system cursor is hidden ----------
+  const laser=document.createElement('div');laser.id='laser';document.body.appendChild(laser);
+  let laserOn=false,lastTrail=0;
+  function setLaser(on){if(isPresenter)on=false;laserOn=on;document.body.classList.toggle('laser-on',on);if(!on)laser.style.opacity='0';}
+  function toggleLaser(){setLaser(!laserOn);toast(laserOn?'Laser pointer on (L to turn off)':'Laser pointer off');clearTimeout(toast.h);toast.h=setTimeout(()=>{const t=$('toast');if(t)t.hidden=true;},1500);}
+  addEventListener('pointermove',e=>{
+    if(!laserOn)return;
+    laser.style.opacity='1';laser.style.transform=`translate(${e.clientX}px,${e.clientY}px)`;
+    const now=performance.now();
+    if(now-lastTrail>18){lastTrail=now;
+      const t=document.createElement('div');t.className='laser-trail';t.style.transform=`translate(${e.clientX}px,${e.clientY}px)`;
+      document.body.appendChild(t);requestAnimationFrame(()=>{t.style.opacity='0';t.style.width=t.style.height='4px';t.style.margin='-2px 0 0 -2px';});
+      setTimeout(()=>t.remove(),320);}
+  });
+  document.documentElement.addEventListener('pointerleave',()=>{laser.style.opacity='0';});
 
   // ---------- helpers ----------
   const NS='http://www.w3.org/2000/svg';
@@ -1097,7 +1123,7 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$
   })();
 
   // ---------- start ----------
-  if(PUBLIC){const h=$('help');if(h)h.textContent='← → navigate · F fullscreen';}
+  if(PUBLIC){const h=$('help');if(h)h.textContent='← → navigate · L laser · F fullscreen';}
   fit();
   const m=/^#s(\d+)/.exec(location.hash);
   setState(m?+m[1]-1:0,0,{fromHash:true,force:true,remote:isPresenter});
