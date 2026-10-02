@@ -117,5 +117,15 @@
     "scale": 1,
     "click": "#n5",
     "wait": 800
+  },
+  "light-switch-puzzle": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "click": "#auto",
+    "scrollTo": "#legend",
+    "wait": 22000
   }
 }

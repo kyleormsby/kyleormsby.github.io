@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Light Switch Puzzle</title>
+<style>
+:root{
+  --bg:#fdf8ee; --panel:#ffffff; --ink:#1d2433; --muted:#5d6475; --line:#e4dccb;
+  --off:#2f3a56; --offnum:#e8ecf5; --on:#ffc83a; --onnum:#3a2a00; --ray:#f59e0b;
+  --accent:#e2553f; --accent-ink:#ffffff; --g1:#e7f1ff; --g2:#fff0dc;
+  --p1:#e2553f; --p2:#2f8f6b; --p3:#3d6fd6; --p4:#a259c9; --p5:#d6851f; --p6:#1e9bb0; --p7:#c2417a; --p8:#6d8a1f;
+  --sq:#f2b705; --good:#1f9d55; --bad:#c9374c; --warn:#e07b00;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171f; --panel:#1c212c; --ink:#eef0f5; --muted:#a3aaba; --line:#2f3646;
+    --off:#39445f; --offnum:#dfe5f2; --on:#ffcc4a; --onnum:#3a2a00; --ray:#fbbf24;
+    --accent:#ff6b55; --accent-ink:#1b0f0c; --g1:#1f2a3d; --g2:#33291b;
+    --p1:#ff7a66; --p2:#4cc095; --p3:#6c9bff; --p4:#c58af0; --p5:#f2a649; --p6:#4fc6db; --p7:#ec6fa6; --p8:#a6c94a;
+    --sq:#ffcf3f; --good:#3fca7a; --bad:#ff5d73; --warn:#ff9f2e;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171f; --panel:#1c212c; --ink:#eef0f5; --muted:#a3aaba; --line:#2f3646;
+  --off:#39445f; --offnum:#dfe5f2; --on:#ffcc4a; --onnum:#3a2a00; --ray:#fbbf24;
+  --accent:#ff6b55; --accent-ink:#1b0f0c; --g1:#1f2a3d; --g2:#33291b;
+  --p1:#ff7a66; --p2:#4cc095; --p3:#6c9bff; --p4:#c58af0; --p5:#f2a649; --p6:#4fc6db; --p7:#ec6fa6; --p8:#a6c94a;
+  --sq:#ffcf3f; --good:#3fca7a; --bad:#ff5d73; --warn:#ff9f2e;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font:19px/1.45 ui-rounded,"SF Pro Rounded","Nunito","Trebuchet MS",system-ui,sans-serif}
+main{max-width:1150px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:34px;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:24px;margin:30px 0 6px}
+.story{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:12px 18px;margin:0 0 16px;max-width:860px}
+.story p{margin:6px 0}
+.row{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:0 0 12px}
+.group{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.lbl{color:var(--muted);font-size:17px}
+button{font:inherit;font-size:18px;padding:9px 16px;border-radius:12px;border:2px solid var(--line);
+  background:var(--panel);color:var(--ink);cursor:pointer;min-height:46px}
+button:hover{border-color:var(--muted)}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.big{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700;font-size:21px;padding:10px 22px}
+button.big:disabled{opacity:.45;cursor:default}
+label.check{display:flex;gap:8px;align-items:center;font-size:17px;color:var(--muted);cursor:pointer}
+label.check input{width:22px;height:22px;accent-color:var(--accent)}
+select{font:inherit;font-size:17px;padding:7px 8px;border-radius:10px;border:2px solid var(--line);background:var(--panel);color:var(--ink)}
+
+#msg{font-size:23px;font-weight:650;min-height:2.2em;margin:4px 2px 4px}
+#count{font-size:20px;color:var(--muted);min-height:1.6em;margin:0 2px 10px;overflow-wrap:anywhere}
+#count b{color:var(--accent)}
+
+.card{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:10px;overflow:hidden}
+#stage{position:relative;margin:0 auto}
+.light{position:absolute;left:0;top:0;transition:transform .8s cubic-bezier(.6,0,.3,1);cursor:pointer}
+.light .bg{position:absolute;inset:0;opacity:0;transition:opacity .6s}
+.light .disk{position:absolute;left:50%;transform:translateX(-50%);border-radius:50%;
+  background:var(--off);color:var(--offnum);display:flex;align-items:center;justify-content:center;
+  font-weight:800;transition:background .35s,color .35s,box-shadow .35s}
+.light.is-on .disk{background:var(--on);color:var(--onnum);box-shadow:0 0 18px 2px color-mix(in srgb,var(--on) 55%,transparent)}
+.light .rays{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.6);opacity:0;
+  transition:opacity .35s,transform .35s;pointer-events:none;overflow:visible}
+.light.is-on .rays{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.light .rays line{stroke:var(--ray);stroke-width:7;stroke-linecap:round}
+.light.pop .disk{animation:pop .45s ease}
+@keyframes pop{0%{transform:translateX(-50%) scale(1)}40%{transform:translateX(-50%) scale(1.22)}100%{transform:translateX(-50%) scale(1)}}
+.light.sel .disk{outline:4px solid var(--ink);outline-offset:3px}
+body.guessing .light.sel .disk{outline:none}
+#gtools{display:none;gap:6px}
+body.guessing #gtools{display:flex}
+#gtools button{font-size:16px;min-height:38px;padding:5px 12px}
+.light.reveal .disk{animation:glow 1.2s ease-in-out 3}
+@keyframes glow{50%{box-shadow:0 0 34px 10px color-mix(in srgb,var(--on) 80%,transparent)}}
+.light .tally{position:absolute;left:4%;width:92%;overflow:visible}
+.tally line{stroke:var(--ink);stroke-width:1.6;stroke-linecap:round}
+.tally line.slash{stroke:var(--accent)}
+
+#marker{position:absolute;left:0;top:0;z-index:5;pointer-events:none;
+  transition:transform .3s ease, opacity .3s;opacity:0}
+#marker .tag{background:var(--accent);color:var(--accent-ink);font-weight:800;border-radius:12px;
+  padding:3px 10px;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.25);font-size:17px}
+#marker .tip{width:0;height:0;margin:0 auto;border-left:9px solid transparent;border-right:9px solid transparent;border-top:10px solid var(--accent)}
+
+#legend{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:16px;padding:8px 6px 0}
+.lg{display:flex;align-items:center;gap:6px}
+.lgd{width:20px;height:20px;border-radius:50%;display:inline-block}
+
+#reveal{display:none;margin:12px 0 0;padding:12px 16px;border-radius:14px;background:color-mix(in srgb,var(--on) 25%,var(--panel));border:2px solid var(--on);font-size:20px}
+
+/* partners panel */
+#who{font-size:20px;margin:6px 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.chip{min-width:38px;height:38px;padding:0 8px;border-radius:19px;display:inline-flex;align-items:center;justify-content:center;
+  font-weight:800;border:3px dashed var(--c);color:var(--c);background:transparent;font-size:17px}
+.chip.done{background:var(--c);color:#fff;border-style:solid}
+.rects{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.rect{background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:10px 12px;max-width:100%}
+.rect.square{border-color:var(--sq);border-width:3px}
+.rect h3{margin:0 0 6px;font-size:20px}
+.rect .who2{font-size:16px;color:var(--muted);margin-top:6px}
+.rect svg{display:block;max-width:100%;height:auto}
+#verdict{font-size:20px;margin:14px 2px 2px}
+.muted{color:var(--muted)}
+.light .ring{position:absolute;left:50%;transform:translate(-50%,-50%);border-radius:50%;
+  border:3px dashed var(--accent);opacity:0;transition:opacity .2s;pointer-events:none}
+.light.g .ring{opacity:1}
+.light.miss .ring{opacity:1;border:4px solid var(--warn)}
+.light .badge{position:absolute;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:900;color:#fff;opacity:0;transform:scale(.4);transition:opacity .25s,transform .25s;pointer-events:none;z-index:2}
+.light.hit .badge,.light.extra .badge,.light.wrong .badge,.light.miss .badge{opacity:1;transform:scale(1)}
+.light.hit .badge{background:var(--good)}
+.light.hit .badge::after{content:"✓"}
+.light.extra .badge,.light.wrong .badge{background:var(--bad)}
+.light.extra .badge::after,.light.wrong .badge::after{content:"✗"}
+.light.miss .badge{background:var(--warn)}
+.light.miss .badge::after{content:"!"}
+body.guessing .light{cursor:crosshair}
+body.guessing #stage{outline:3px dashed color-mix(in srgb,var(--accent) 50%,transparent);outline-offset:6px;border-radius:12px}
+#score{font-size:21px;font-weight:650;min-height:0;margin:0 2px 10px}
+#score:empty{display:none}
+#score .good{color:var(--good)} #score .bad{color:var(--bad)}
+.kbd{font-size:15px;color:var(--muted);margin-top:22px}
+</style>
+</head>
+<body>
+<main>
+  <h1>The Light Switch Puzzle</h1>
+  <div class="story">
+    <p>There is a row of lights, and they all start <b>off</b>.</p>
+    <p>Student 1 flips <b>every</b> light. Student 2 flips every <b>2nd</b> light. Student 3 flips every <b>3rd</b> light. And so on, until every student has had a turn.</p>
+    <p>Flipping turns a light <b>on</b> if it was off, and <b>off</b> if it was on. <b>When everyone is done, which lights are on?</b></p>
+  </div>
+
+  <div class="row">
+    <div class="group"><span class="lbl">How many lights?</span>
+      <button data-n="20">20</button><button data-n="30" class="on">30</button><button data-n="50">50</button><button data-n="100">100</button>
+    </div>
+    <div class="group"><span class="lbl">Arrange as</span>
+      <button data-l="line" class="on">Line</button><button data-l="stairs">Staircase</button><button data-l="square">Square</button>
+    </div>
+  </div>
+  <div class="row">
+    <button id="next" class="big">Student 1’s turn ▶</button>
+    <button id="auto">Keep going</button>
+    <button id="restart">Start over</button>
+    <label class="check"><input type="checkbox" id="guess" checked> Guess first:</label>
+    <select id="gkind" aria-label="What to guess">
+      <option value="flip" selected>which lights get flipped</option>
+      <option value="on">which lights are on afterwards</option>
+    </select>
+    <label class="check">Speed
+      <select id="speed"><option value="750">Slow</option><option value="420" selected>Medium</option><option value="140">Fast</option></select>
+    </label>
+  </div>
+
+  <div id="msg"></div>
+  <div class="row" style="margin:0 2px 6px;gap:10px"><div id="count" style="margin:0"></div>
+    <span id="gtools"><button id="gall">Pick all</button><button id="gnone">Clear</button></span></div>
+  <div id="score"></div>
+
+  <div class="card">
+    <div id="stage"><div id="marker"><div class="tag">Student 1</div><div class="tip"></div></div></div>
+    <div id="legend">
+      <span class="lg"><span class="lgd" style="background:var(--on);box-shadow:0 0 0 3px var(--ray)"></span>on (with sun rays)</span>
+      <span class="lg"><span class="lgd" style="background:var(--off)"></span>off</span>
+      <span class="lg"><svg width="44" height="18" viewBox="-1 -1 22 12"><line x1="0" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1.6"/><line x1="3.2" y1="0" x2="3.2" y2="10" stroke="currentColor" stroke-width="1.6"/><line x1="6.4" y1="0" x2="6.4" y2="10" stroke="currentColor" stroke-width="1.6"/></svg>each mark under a light = one flip</span>
+      <span class="lg"><span class="lgd" style="border:3px dashed var(--accent)"></span>your guess</span>
+      <span class="lg">Tap any light to see who flips it ↓</span>
+    </div>
+  </div>
+  <div id="reveal"></div>
+
+  <h2 id="ptitle">Who flips light 12?</h2>
+  <div class="card" style="padding:14px 16px">
+    <div id="who"></div>
+    <div class="chips" id="chips"></div>
+    <div class="muted" style="font-size:18px;margin-bottom:10px">Each way to make a <b>rectangle</b> out of tiles gives a pair of <b>partner</b> students. Partners flip the light twice, and two flips cancel out: off → on → off.</div>
+    <div class="rects" id="rects"></div>
+    <div id="verdict"></div>
+  </div>
+  <div class="kbd">Keyboard: space = next step · 1 / 2 / 3 = Line / Staircase / Square</div>
+</main>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const stage = $('#stage'), marker = $('#marker');
+const PAIRC = ['--p1','--p2','--p3','--p4','--p5','--p6','--p7','--p8'];
+
+let N = 30, layout = 'line';
+let on, flips;          // state
+let turn = 0;           // students who have finished
+let phase = 'idle';     // idle | guess | walking | done
+let auto = false, runId = 0;
+let selected = 12;
+let els = [];
+let guessSet = new Set(), guessKind = 'flip', guessed = null;   // guessed = snapshot taken when Flip is pressed
+let cell = 60;
+
+// ---------- build ----------
+function build(){
+  stage.querySelectorAll('.light').forEach(e=>e.remove());
+  els = [null];
+  for (let n=1;n<=N;n++){
+    const el = document.createElement('div'); el.className='light';
+    el.innerHTML = `<div class="bg"></div><svg class="rays" viewBox="-60 -60 120 120">${
+      Array.from({length:8},(_,i)=>{const a=i*Math.PI/4,c=Math.cos(a),s=Math.sin(a);
+        return `<line x1="${(c*46).toFixed(1)}" y1="${(s*46).toFixed(1)}" x2="${(c*57).toFixed(1)}" y2="${(s*57).toFixed(1)}"/>`;}).join('')
+    }</svg><div class="ring"></div><div class="disk"><span>${n}</span></div><div class="badge"></div><svg class="tally" preserveAspectRatio="xMidYMin meet"></svg>`;
+    el.addEventListener('click', ()=>{ if (phase==='guess') toggleGuess(n); else select(n); });
+    stage.insertBefore(el, marker);
+    els.push(el);
+  }
+}
+function reset(){
+  runId++; auto=false;
+  on = new Uint8Array(N+1); flips = new Uint8Array(N+1);
+  turn = 0; phase = 'idle'; document.body.classList.remove('guessing');
+  if (selected > N) selected = 12;
+  build(); place(true);
+  marker.style.opacity = 0;
+  $('#reveal').style.display='none';
+  guessSet = new Set(); guessed = null; clearMarks();
+  setMsg('Press the button to start. Student 1 goes first!');
+  $('#count').innerHTML='';
+  updateButtons(); select(selected);
+}
+
+// ---------- layouts ----------
+function posFor(n){
+  if (layout==='line'){ return [(n-1)%10, Math.floor((n-1)/10), 0]; }
+  if (layout==='stairs'){ const k=Math.floor(Math.sqrt(n)+1e-9); return [n-k*k, k-1, k]; }
+  const k=Math.ceil(Math.sqrt(n)-1e-9), j=n-(k-1)*(k-1);
+  if (j<=k-1) return [k-1, j-1, k];
+  if (j<=2*k-2) return [j-k, k-1, k];
+  return [k-1, k-1, k];
+}
+function place(instant){
+  let cols=1, rows=1;
+  for (let n=1;n<=N;n++){ const [x,y]=posFor(n); cols=Math.max(cols,x+1); rows=Math.max(rows,y+1); }
+  const W = stage.parentElement.clientWidth - 20;
+  cell = Math.max(26, Math.min(92, W/cols));
+  const ch = cell*1.18, top = cell*0.55;
+  stage.style.width = (cols*cell)+'px';
+  stage.style.height = (rows*ch + top)+'px';
+  const d = cell*0.7;
+  for (let n=1;n<=N;n++){
+    const el = els[n], [x,y,k] = posFor(n);
+    if (instant) el.style.transition='none';
+    el.style.width = cell+'px'; el.style.height = ch+'px';
+    el.style.transform = `translate(${x*cell}px,${top + y*ch}px)`;
+    const disk = el.querySelector('.disk');
+    disk.style.width = disk.style.height = d+'px'; disk.style.top = (cell*0.12)+'px';
+    disk.style.fontSize = Math.max(11, d*0.42)+'px';
+    const rays = el.querySelector('.rays'); rays.style.width = rays.style.height = (d*1.32)+'px';
+    rays.style.top = (cell*0.12 + d/2)+'px';
+    const ring = el.querySelector('.ring'); ring.style.width = ring.style.height = (d*1.22)+'px'; ring.style.top = (cell*0.12 + d/2)+'px';
+    const bd = el.querySelector('.badge'), bs = Math.max(14, d*0.4);
+    bd.style.width = bd.style.height = bs+'px'; bd.style.fontSize = (bs*0.62)+'px';
+    bd.style.left = (cell/2 + d*0.5 - bs*0.55)+'px'; bd.style.top = (cell*0.12 - bs*0.25)+'px';
+    const t = el.querySelector('.tally'); t.style.top = (cell*0.12 + d + cell*0.1)+'px'; t.style.height = (cell*0.3)+'px';
+    const bg = el.querySelector('.bg');
+    bg.style.background = k ? (k%2 ? 'var(--g1)' : 'var(--g2)') : 'transparent';
+    bg.style.opacity = k ? 1 : 0;
+    if (instant){ el.offsetWidth; el.style.transition=''; }
+  }
+  marker.querySelector('.tag').style.fontSize = Math.max(13, Math.min(18, cell*0.24))+'px';
+  if (marker.dataset.n) moveMarker(+marker.dataset.n, true);
+  document.querySelectorAll('[data-l]').forEach(b=>b.classList.toggle('on', b.dataset.l===layout));
+}
+function setLayout(l){ layout=l; place(false); }
+window.addEventListener('resize', ()=>place(true));
+
+function moveMarker(n, instant){
+  const [x,y] = posFor(n); const ch = cell*1.18, top = cell*0.55;
+  marker.dataset.n = n;
+  const mw = marker.offsetWidth || 90, mh = marker.offsetHeight || 40;
+  if (instant) marker.style.transition='none';
+  marker.style.transform = `translate(${x*cell + cell/2 - mw/2}px, ${top + y*ch + cell*0.12 - mh - 2}px)`;
+  if (instant){ marker.offsetWidth; marker.style.transition=''; }
+}
+
+// ---------- tally marks ----------
+function drawTally(n){
+  const c = flips[n], svg = els[n].querySelector('.tally');
+  let s = '', x = 0;
+  for (let g=0; g*5 < c; g++){
+    const inG = Math.min(5, c-g*5);
+    for (let i=0;i<Math.min(4,inG);i++) s += `<line x1="${x+i*3.2}" y1="0" x2="${x+i*3.2}" y2="10"/>`;
+    if (inG===5) s += `<line class="slash" x1="${x-1.2}" y1="8.5" x2="${x+10.8}" y2="1.5"/>`;
+    x += (inG===5 ? 4*3.2+3.6 : inG*3.2);
+  }
+  const w = Math.max(x, 13);
+  svg.setAttribute('viewBox', `${-2 - (w-x)/2} -1 ${w+4} 12`);
+  svg.innerHTML = s;
+}
+
+// ---------- turns ----------
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+function flip(n){
+  on[n]^=1; flips[n]++;
+  const el = els[n]; el.classList.toggle('is-on', !!on[n]);
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+  drawTally(n);
+}
+function setMsg(h){ $('#msg').innerHTML = h; }
+function nth(s){ return s===1 ? 'light' : s===2 ? '2nd light' : s===3 ? '3rd light' : s+'th light'; }
+
+function clearMarks(){
+  for (let n=1;n<=N;n++) els[n] && els[n].classList.remove('g','hit','miss','extra','wrong');
+  $('#score').innerHTML='';
+}
+function renderGuess(){
+  for (let n=1;n<=N;n++) els[n].classList.toggle('g', guessSet.has(n));
+  const list = [...guessSet].sort((a,b)=>a-b);
+  if (guessKind==='flip')
+    $('#count').innerHTML = list.length ? `Your guess: ${list.join(', ')} <span class="muted">(${list.length} light${list.length>1?'s':''})</span>` : '<span class="muted">Tap the lights you think will flip.</span>';
+  else
+    $('#count').innerHTML = `Your guess: <b>${list.length}</b> light${list.length===1?'':'s'} on <span class="muted">— tap a light to change your guess.</span>`;
+}
+function toggleGuess(n){
+  guessSet.has(n) ? guessSet.delete(n) : guessSet.add(n);
+  renderGuess();
+}
+function scoreTurn(flipped){
+  if (!guessed) return;
+  const g = guessed; guessed = null;
+  for (let n=1;n<=N;n++) els[n].classList.remove('g');
+  if (guessKind==='flip'){
+    const F = new Set(flipped);
+    let extra = 0; g.forEach(n=>{ if(!F.has(n)){ els[n].classList.add('extra'); extra++; } });
+    const hits = flipped.filter(n=>g.has(n)).length, missed = flipped.length-hits;
+    $('#score').innerHTML = (hits===flipped.length && !extra) ? `<span class="good">Perfect! You found all ${hits}.</span>` :
+      `You found <span class="good">${hits} of ${flipped.length}</span>.` +
+      (missed ? ` ${missed} you missed ${missed>1?'are':'is'} marked <span style="color:var(--warn)">!</span>.` : '') +
+      (extra ? ` ${extra} guess${extra>1?'es':''} didn’t get flipped <span class="bad">✗</span>.` : '');
+  } else {
+    let wrong = 0;
+    for (let n=1;n<=N;n++) if (!!on[n] !== g.has(n)){ els[n].classList.add('wrong'); wrong++; }
+    $('#score').innerHTML = wrong ? `${N-wrong} of ${N} right. The <span class="bad">${wrong}</span> marked ✗ ${wrong>1?'are':'is'} different from your guess.`
+                                  : `<span class="good">Perfect! All ${N} lights match your guess.</span>`;
+  }
+}
+
+async function walk(s){
+  const id = runId;
+  if (phase==='guess'){ guessed = new Set(guessSet); }
+  else { clearMarks(); guessed = null; }
+  document.body.classList.remove('guessing');
+  phase='walking'; updateButtons();
+  setMsg(`Student ${s} flips every ${nth(s)}.`);
+  marker.querySelector('.tag').textContent = 'Student '+s;
+  marker.style.opacity = 1;
+  const seen = [];
+  for (let m=s; m<=N; m+=s){
+    const hop = +$('#speed').value;
+    moveMarker(m, seen.length===0);
+    await sleep(hop*0.5); if (id!==runId) return;
+    flip(m); seen.push(m);
+    if (guessed && guessKind==='flip') els[m].classList.add(guessed.has(m) ? 'hit' : 'miss');
+    $('#count').innerHTML = `Counting by ${s}s: ` + seen.map((v,i)=> i===seen.length-1 ? `<b>${v}</b>` : v).join(', ');
+    refreshPanel();
+    await sleep(hop*0.5); if (id!==runId) return;
+  }
+  turn = s;
+  scoreTurn(seen);
+  if (turn >= N){ finish(); return; }
+  phase='idle';
+  if (!auto) setMsg(`Student ${s} is done. ` + (s===1 ? 'Every light is on now!' : `${seen.length} light${seen.length>1?'s':''} flipped.`));
+  updateButtons();
+  if (auto){ await sleep(+$('#speed').value*1.2); if (id!==runId || !auto) return; walk(turn+1); }
+}
+function finish(){
+  phase='done'; auto=false; marker.style.opacity=0; $('#count').innerHTML=''; document.body.classList.remove('guessing');
+  setMsg('Everybody has had a turn! Which lights are on? What do you notice about those numbers?');
+  updateButtons(); refreshPanel();
+}
+function doReveal(){
+  const sq=[]; for(let k=1;k*k<=N;k++) sq.push(k*k);
+  sq.forEach(n=>{ els[n].classList.remove('reveal'); void els[n].offsetWidth; els[n].classList.add('reveal'); });
+  const r = $('#reveal'); r.style.display='block';
+  r.innerHTML = `The lights that stay on are <b>${sq.join(', ')}</b>. They are the <b>square numbers</b>: ` +
+    sq.map((n,i)=>`${i+1}×${i+1}`).join(', ') + `. Try the <b>Staircase</b> and <b>Square</b> views, and tap one of these lights to see why squares are special.`;
+  setMsg('These are the square numbers!');
+  updateButtons();
+}
+function next(){
+  if (phase==='walking') return;
+  if (phase==='done'){ doReveal(); return; }
+  const s = turn+1;
+  if (phase==='idle' && $('#guess').checked){
+    phase='guess'; clearMarks();
+    guessKind = $('#gkind').value;
+    guessSet = new Set();
+    if (guessKind==='on') for (let n=1;n<=N;n++) if (on[n]) guessSet.add(n);
+    document.body.classList.add('guessing');
+    setMsg(guessKind==='flip'
+      ? `Student ${s}’s turn! Student ${s} flips every ${nth(s)}. <span class="muted">Tap the lights you think will flip, then press Flip!</span>`
+      : `Student ${s}’s turn! Student ${s} flips every ${nth(s)}. <span class="muted">Tap lights so your guess shows which ones will be <b>on</b> afterwards.</span>`);
+    renderGuess();
+    marker.querySelector('.tag').textContent='Student '+s; marker.style.opacity=0;
+    updateButtons(); return;
+  }
+  walk(s);
+}
+function updateButtons(){
+  const b = $('#next'), s = turn+1;
+  if (phase==='done'){ b.textContent = $('#reveal').style.display==='block' ? 'All done!' : 'Show me the answer'; b.disabled = $('#reveal').style.display==='block'; }
+  else if (phase==='guess'){ b.textContent = `Flip them! ▶`; b.disabled=false; }
+  else if (phase==='walking'){ b.textContent = `Student ${turn+1} is walking…`; b.disabled=true; }
+  else { b.textContent = `Student ${s}’s turn ▶`; b.disabled=false; }
+  $('#auto').textContent = auto ? 'Pause' : 'Keep going';
+  $('#auto').disabled = phase==='done';
+}
+
+// ---------- partners panel ----------
+function select(n){
+  selected = n;
+  els.forEach((e,i)=>{ if(e) e.classList.toggle('sel', i===n); });
+  refreshPanel();
+}
+function refreshPanel(){
+  const n = selected;
+  const pairs = []; for (let a=1;a*a<=n;a++) if (n%a===0) pairs.push([a,n/a]);
+  const divs = []; pairs.forEach(([a,b])=>{ divs.push(a); if(a!==b) divs.push(b); }); divs.sort((x,y)=>x-y);
+  const colorOf = d => { const i = pairs.findIndex(([a,b])=>a===d||b===d); const [a,b]=pairs[i]; return a===b ? 'var(--sq)' : `var(${PAIRC[i%PAIRC.length]})`; };
+  const doneBy = d => d <= turn || (phase==='walking' && d===turn+1 && flips[n] > divs.filter(x=>x<=turn).length);
+  $('#ptitle').textContent = `Who flips light ${n}?`;
+  $('#who').innerHTML = `Light ${n} gets flipped by <b>${divs.length}</b> student${divs.length>1?'s':''}: the ones whose counting lands on ${n}.`;
+  $('#chips').innerHTML = divs.map(d=>`<span class="chip ${doneBy(d)?'done':''}" style="--c:${colorOf(d)}" title="Student ${d}">${d}</span>`).join('');
+
+  const maxW = Math.min(520, $('#rects').clientWidth - 30 || 500);
+  $('#rects').innerHTML = pairs.map(([a,b],i)=>{
+    const sq = a===b, col = sq ? 'var(--sq)' : `var(${PAIRC[i%PAIRC.length]})`;
+    const t = Math.max(4, Math.min(24, maxW/b)), g = t>8 ? 2 : 1;
+    let tiles=''; for(let r=0;r<a;r++) for(let c=0;c<b;c++) tiles+=`<rect x="${c*t}" y="${r*t}" width="${t-g}" height="${t-g}" rx="${Math.min(3,t/5)}" fill="${col}"/>`;
+    return `<div class="rect ${sq?'square':''}"><h3>${a} × ${b} = ${n}${sq?' — a square!':''}</h3>
+      <svg width="${b*t}" height="${a*t}" viewBox="0 0 ${b*t} ${a*t}">${tiles}</svg>
+      <div class="who2">${sq ? `Student ${a} is their own partner. Nobody cancels this flip!` : `Partners: Student ${a} and Student ${b}`}</div></div>`;
+  }).join('');
+
+  const sq = pairs.some(([a,b])=>a===b);
+  const nP = pairs.filter(([a,b])=>a!==b).length;
+  const sofar = flips[n];
+  $('#verdict').innerHTML =
+    `So far light ${n} has been flipped <b>${sofar}</b> time${sofar===1?'':'s'} and it is <b>${on[n]?'ON':'OFF'}</b>. ` +
+    (sq ? `In the end: ${nP} pair${nP===1?'':'s'} of partners cancel out, plus <b>one extra flip</b> from Student ${Math.sqrt(n)}. So light ${n} ends up <b>ON</b>.`
+        : `In the end: ${nP} pair${nP===1?'':'s'} of partners, and every flip gets cancelled by a partner. So light ${n} ends up <b>OFF</b>.`);
+}
+
+// ---------- controls ----------
+document.querySelectorAll('[data-n]').forEach(b=>b.addEventListener('click',()=>{
+  N=+b.dataset.n; document.querySelectorAll('[data-n]').forEach(x=>x.classList.toggle('on',x===b)); reset();
+}));
+document.querySelectorAll('[data-l]').forEach(b=>b.addEventListener('click',()=>setLayout(b.dataset.l)));
+$('#next').addEventListener('click', next);
+$('#auto').addEventListener('click', ()=>{
+  if (auto){ auto=false; updateButtons(); return; }
+  auto=true; updateButtons();
+  if (phase==='idle' || phase==='guess') walk(turn+1);
+});
+$('#restart').addEventListener('click', reset);
+$('#gall').addEventListener('click', ()=>{ for(let n=1;n<=N;n++) guessSet.add(n); renderGuess(); });
+$('#gnone').addEventListener('click', ()=>{ guessSet.clear(); renderGuess(); });
+document.addEventListener('keydown', e=>{
+  if (e.target.tagName==='SELECT' || e.target.tagName==='INPUT') return;
+  if (e.key===' '){ e.preventDefault(); next(); }
+  else if (e.key==='1') setLayout('line');
+  else if (e.key==='2') setLayout('stairs');
+  else if (e.key==='3') setLayout('square');
+});
+window.addEventListener('resize', refreshPanel);
+
+reset();
+})();
+</script>
+</body>
+</html>
