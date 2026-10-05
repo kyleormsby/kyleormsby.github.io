@@ -127,5 +127,15 @@
     "click": "#auto",
     "scrollTo": "#legend",
     "wait": 22000
+  },
+  "matrix-tree": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "click": ".tcard[data-t=\"8\"]",
+    "scrollTo": "h1",
+    "wait": 800
   }
 }

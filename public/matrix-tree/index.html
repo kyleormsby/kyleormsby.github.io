@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matrix-Tree Theorem — determinant monomials are spanning trees</title>
+<style>
+  :root{
+    --bg0:#1a1d24; --bg1:#07080b; --panel:#14161c; --panel2:#0e1015; --ink:#e8e6df; --dim:#9a9890; --rule:#2c3038;
+    --accent:#ff8c4d; --ok:#7ad38f; --bad:#ff6b5a;
+    --mono:'SF Mono','Menlo','Consolas','Courier New',monospace;
+    --serif:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;
+  }
+  html,body{margin:0;}
+  body{ background:var(--bg1); color:var(--ink);
+    font-family:-apple-system,'Helvetica Neue',Helvetica,Arial,sans-serif; font-size:13.5px; line-height:1.45; }
+  header{ padding:16px 22px 6px; }
+  h1{ font-size:20px; font-weight:400; margin:0; letter-spacing:.01em; }
+  .sub{ color:var(--dim); font-size:12.5px; margin:3px 0 0; max-width:980px; }
+  .math{ font-family:var(--serif); font-size:1.08em; }
+  .math i, i.v{ font-style:italic; }
+  sub{ font-size:.72em; }
+
+  #top{ display:grid; grid-template-columns:minmax(320px, 1fr) minmax(320px, 1fr); gap:14px; padding:10px 22px 0; }
+  .card{ background:var(--panel); border:1px solid var(--rule); border-radius:10px; position:relative; min-width:0; }
+  #stage{ height:min(64vh, 620px); min-height:340px; overflow:hidden;
+    background:radial-gradient(ellipse at 50% 42%, var(--bg0) 0%, #0f1116 60%, var(--bg1) 100%); }
+  canvas#c{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:manipulation; border-radius:10px; }
+  canvas#c.mode-draw{ cursor:crosshair; } canvas#c.mode-move{ cursor:grab; }
+  canvas#c.mode-delete{ cursor:not-allowed; } canvas#c.mode-root{ cursor:pointer; }
+  #toolbar{ position:absolute; left:10px; top:10px; display:flex; gap:6px; flex-wrap:wrap; max-width:calc(100% - 20px); }
+  #hint{ position:absolute; left:12px; bottom:9px; right:12px; font-size:11.5px; color:var(--dim); pointer-events:none; text-shadow:0 1px 6px #000c; }
+  #gstats{ position:absolute; right:12px; top:12px; font-family:var(--mono); font-size:11.5px; color:var(--dim); text-align:right; pointer-events:none; white-space:pre; }
+  button, select{ font:inherit; font-size:12.5px; color:var(--ink); background:#1d2028; border:1px solid var(--rule); border-radius:6px; padding:4px 10px; cursor:pointer; }
+  button:hover{ border-color:var(--accent); }
+  button.on{ border-color:var(--accent); background:#2a1f18; color:var(--accent); }
+  select{ background:var(--panel2); }
+  label.cb{ display:inline-flex; align-items:center; gap:5px; color:var(--dim); font-size:12px; }
+
+  #side{ padding:12px 14px 14px; display:flex; flex-direction:column; gap:10px; }
+  .ctl{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .ctl .lab{ color:var(--dim); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; }
+  .sec{ font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin:4px 0 0; }
+  #matwrap{ overflow:auto; border:1px solid var(--rule); border-radius:8px; background:var(--panel2); padding:10px 8px; max-height:52vh; }
+    .matrow{ position:relative; display:inline-block; padding:0 8px; }
+  .brack{ position:absolute; width:6px; border:1.5px solid #8a8880; pointer-events:none; }
+  .brack.l{ border-right:none; border-radius:3px 0 0 3px; } .brack.r{ border-left:none; border-radius:0 3px 3px 0; }
+  table.mat{ border-collapse:collapse; font-family:var(--serif); font-size:14px; }
+  table.mat td{ padding:4px 8px; text-align:center; white-space:nowrap; border:1px solid transparent; transition:background .12s; }
+  table.mat th{ font-family:var(--mono); font-size:10.5px; font-weight:400; color:#5d616b; padding:0 6px; }
+  table.mat td.del{ color:#474b54; background:repeating-linear-gradient(135deg,#ffffff06 0 4px,transparent 4px 8px); }
+  table.mat th.del{ color:#ff8c4d; }
+  table.mat td.zero{ color:#4c5059; }
+  table.mat td:not(.del):hover{ border-color:#3a3f4a; background:#1a1d25; }
+  table.mat td.hl{ background:#2a2117; }
+  .neg{ color:var(--dim); }
+  table.mat td .t .pl{ margin-left:.3em; }
+  #matnote{ font-size:12px; color:var(--dim); }
+
+  #bottom{ padding:14px 22px 40px; }
+  #detbox{ padding:12px 16px 14px; }
+  #dethead{ display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:6px 14px; }
+  #detform{ font-family:var(--serif); font-size:17px; line-height:2.0; margin-top:6px; word-spacing:1px; }
+  #detform .lhs{ color:var(--ink); margin-right:4px; }
+  .mono-term{ display:inline-block; padding:0 4px; border-radius:5px; cursor:pointer; border:1px solid transparent; transition:background .1s, opacity .12s; white-space:nowrap; }
+  .mono-term:hover, .mono-term.hl{ background:#ffffff14; border-color:currentColor; }
+  .plus{ color:#6d717b; margin:0 2px; }
+  #verify{ font-size:12.5px; margin-top:4px; }
+  #verify .ok{ color:var(--ok); } #verify .bad{ color:var(--bad); }
+  .dimmed{ opacity:.18; }
+
+  #gallery{ display:grid; grid-template-columns:repeat(auto-fill, minmax(124px, 1fr)); gap:10px; margin-top:12px; }
+  .tcard{ background:var(--panel); border:1.5px solid var(--rule); border-radius:9px; padding:6px 6px 5px; cursor:pointer; transition:transform .1s, opacity .12s, border-color .1s; }
+  .tcard svg{ width:100%; height:auto; display:block; }
+  .tcard .mono{ font-family:var(--serif); font-size:13.5px; text-align:center; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tcard .idx{ font-family:var(--mono); font-size:9.5px; color:#5d616b; float:right; }
+  .tcard:hover, .tcard.hl{ border-color:currentColor; transform:translateY(-1px); }
+  .tcard.pinned, .mono-term.pinned{ box-shadow:0 0 0 2px currentColor inset; }
+  #more{ margin-top:12px; }
+  details{ margin-top:16px; color:var(--dim); max-width:980px; }
+  summary{ cursor:pointer; font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; }
+  details p{ margin:8px 0; }
+  kbd{ font-family:var(--mono); font-size:11px; background:var(--panel2); border:1px solid var(--rule); border-radius:4px; padding:0 5px; }
+
+  button, select, .tcard, .mono-term, table.mat td{ touch-action:manipulation; }
+  #pinbar{ display:none; }
+  @media (max-width:860px){
+    #top{ grid-template-columns:1fr; padding:6px 10px 0; gap:10px; }
+    header{ padding:10px 14px 2px; } h1{ font-size:18px; }
+    .sub{ font-size:12px; }
+    #bottom{ padding:10px 10px 90px; }
+    #stage{ height:min(56vh, 520px); min-height:300px; }
+    #toolbar{ left:8px; top:8px; gap:5px; }
+    #toolbar button{ padding:6px 9px; font-size:13px; min-height:34px; }
+    #gstats{ top:52px; right:10px; font-size:10.5px; }
+    #hint{ font-size:11px; bottom:7px; }
+    #side{ padding:10px 10px 12px; gap:8px; }
+    select{ font-size:16px; padding:5px 8px; }        /* ≥16px stops iOS zooming on focus */
+    #preset{ flex:1 1 auto; min-width:0; max-width:100%; }
+    .ctl{ gap:6px 10px; }
+    #matwrap{ padding:8px 4px; max-height:none; }
+    table.mat{ font-size:13px; }
+    table.mat td{ padding:3px 4px; vertical-align:middle; }
+    table.mat th{ padding:0 3px; }
+    table.mat td .t{ display:block; line-height:1.25; }
+    table.mat td .t .pl{ color:var(--dim); margin-left:0; }
+    #matnote{ font-size:11.5px; }
+    #detbox{ padding:10px 12px 12px; }
+    #detform{ font-size:15px; line-height:1.95; }
+    .mono-term{ padding:0 3px; }
+    #gallery{ grid-template-columns:repeat(auto-fill, minmax(98px, 1fr)); gap:8px; }
+    .tcard{ padding:4px 4px 3px; }
+    .tcard .mono{ font-size:12px; }
+    #pinbar{ position:fixed; left:10px; right:10px; bottom:calc(10px + env(safe-area-inset-bottom)); z-index:10;
+      display:none; align-items:center; gap:8px; padding:8px 8px 8px 12px; border-radius:10px;
+      background:#14161cf2; border:1.5px solid currentColor; box-shadow:0 6px 24px #000a; backdrop-filter:blur(6px); }
+    #pinbar.on{ display:flex; }
+    #pinmono{ flex:1 1 auto; min-width:0; font-family:var(--serif); font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    #pinmono .neg{ font-family:-apple-system,Helvetica,Arial,sans-serif; font-size:11.5px; }
+    #pinbar button{ flex:0 0 auto; padding:5px 10px; }
+  }
+  @media (max-width:400px){
+    #toolbar .w{ display:none; }
+    #toolbar button{ min-width:40px; font-size:15px; }
+  }
+  /* phone held sideways: graph and matrix side by side, graph fills the height */
+  @media (max-width:960px) and (max-height:520px) and (orientation:landscape){
+    header .sub{ display:none; }
+    #top{ grid-template-columns:minmax(0, 1.1fr) minmax(0, 1fr); }
+    #stage{ height:calc(100vh - 54px); min-height:240px; }
+    #side{ max-height:calc(100vh - 54px); overflow:auto; }
+    #side > *{ flex-shrink:0; }
+    #toolbar .w{ display:none; }
+    #toolbar button{ min-width:38px; font-size:14px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>The Matrix-Tree Theorem</h1>
+  <p class="sub">Give each edge <span class="math"><i>e</i></span> its own variable <span class="math"><i>x<sub>e</sub></i></span> and form the weighted Laplacian
+  <span class="math"><i>L</i> = <i>D</i> − <i>A</i></span>. Delete the row and column of any vertex <span class="math"><i>r</i></span>: the determinant of what remains is
+  <span class="math">Σ<sub><i>T</i></sub> ∏<sub><i>e</i>∈<i>T</i></sub> <i>x<sub>e</sub></i></span>, one monomial for each spanning tree <span class="math"><i>T</i></span>, every coefficient 1.</p>
+</header>
+
+<div id="top">
+  <div class="card" id="stage">
+    <canvas id="c" class="mode-draw"></canvas>
+    <div id="toolbar">
+      <button id="m-draw" class="on" title="Draw (D): click empty space for a vertex, drag vertex→vertex for an edge"><span class="ic">✎</span><span class="w"> draw</span></button>
+      <button id="m-move" title="Move (M)"><span class="ic">✥</span><span class="w"> move</span></button>
+      <button id="m-delete" title="Delete (X): click a vertex or edge"><span class="ic">✕</span><span class="w"> delete</span></button>
+      <button id="m-root" title="Root (R): click the vertex whose row & column are deleted"><span class="ic">◎</span><span class="w"> root</span></button>
+      <button id="b-clear" title="Erase everything">clear</button>
+    </div>
+    <div id="gstats"></div>
+    <div id="hint"></div>
+  </div>
+
+  <div class="card" id="side">
+    <div class="ctl">
+      <span class="lab">Graph</span>
+      <select id="preset"></select>
+    </div>
+    <div class="ctl">
+      <span class="lab">Variables</span>
+      <select id="varstyle">
+        <option value="ij">x_ij by endpoints</option>
+        <option value="abc">a, b, c, … by edge</option>
+      </select>
+      <label class="cb"><input type="checkbox" id="showlabels" checked> labels on graph</label>
+    </div>
+    <div class="ctl">
+      <span class="lab">Delete row/col</span>
+      <select id="rootsel"></select>
+    </div>
+    <div class="sec">Weighted Laplacian</div>
+    <div id="matwrap"></div>
+    <div id="matnote"></div>
+  </div>
+</div>
+
+<div id="bottom">
+  <div class="card" id="detbox">
+    <div id="dethead">
+      <div class="sec" style="margin:0">Determinant</div>
+      <div id="verify"></div>
+    </div>
+    <div id="detform"></div>
+  </div>
+  <div id="gallery"></div>
+  <div id="more"></div>
+  <details>
+    <summary>How to use / what is computed</summary>
+    <p><b>Drawing.</b> In <kbd>D</kbd>raw mode click empty space for a vertex and drag from one vertex to another for an edge; dragging again between the same pair adds a parallel edge with its own variable. <kbd>M</kbd>ove drags vertices, <kbd>X</kbd> deletes, <kbd>R</kbd>oot picks the vertex <i>r</i> whose row and column are struck out. Right-click deletes in any mode. Loops are ignored (they cancel in <i>D</i> − <i>A</i> and lie in no tree).</p>
+    <p><b>Linking.</b> Hover a monomial or a tree to light up the other and draw that tree on the big graph; click to pin it. Hover an edge of the big graph to keep only the trees (and monomials) that use it; hover a matrix entry to see the edges it records.</p>
+    <p><b>Honesty.</b> The determinant is expanded symbolically from the matrix shown (Laplace expansion with memoised minors, exact integer coefficients), and separately the spanning trees are enumerated by search. The line at the top right of the determinant box reports whether the two agree term-for-term. For larger graphs the symbolic expansion is skipped, and the count is checked against the integer determinant (all <i>x<sub>e</sub></i> = 1) instead.</p>
+  </details>
+</div>
+
+<div id="pinbar"><span id="pinmono"></span><button id="pinshow">graph ↑</button><button id="pinclose" aria-label="unpin">✕</button></div>
+<script>
+(() => {
+'use strict';
+// ---------------------------------------------------------------- model
+// vertices: [{x,y}] in the unit square; edges: [{u,v}] (parallel allowed, no loops)
+let V = [], E = [], root = 0;
+let mode = 'draw';
+let trees = [];            // arrays of edge indices (sorted)
+let treeColor = [];
+let symb = null;           // {poly: Map, ok: bool} or null when skipped
+let tau = 0n;
+let focusTree = -1, pinnedTree = -1, focusEdge = -1, focusCell = null;
+let showAll = false;
+const SHOW_CAP = 400, ENUM_CAP = 20000, SYMB_TAU_CAP = 2500, SYMB_N_CAP = 12;
+
+const SUBS = '₀₁₂₃₄₅₆₇₈₉';
+const subDigits = s => String(s).replace(/\d/g, d => SUBS[+d]);
+const LETTERS = 'abcdefghijklmnopqrstuvwyz'; // skip x to avoid clash with x_ij
+const PRIMES = ['', '′', '″', '‴'];
+
+function parallelIndex(i){   // position of edge i among edges with the same endpoints
+  const e = E[i]; let k = 0, c = 0;
+  for (let j = 0; j < E.length; j++){
+    const f = E[j];
+    if ((f.u === e.u && f.v === e.v) || (f.u === e.v && f.v === e.u)){ if (j < i) k++; c++; }
+  }
+  return [k, c];
+}
+function varParts(i){        // {base, sub, prime} for edge i
+  const style = document.getElementById('varstyle').value;
+  if (style === 'abc'){
+    if (i < LETTERS.length) return {base: LETTERS[i], sub:'', prime:''};
+    return {base:'e', sub:String(i+1), prime:''};
+  }
+  const e = E[i], a = Math.min(e.u, e.v) + 1, b = Math.max(e.u, e.v) + 1;
+  const sub = (a > 9 || b > 9) ? a + ',' + b : '' + a + b;
+  const [k] = parallelIndex(i);
+  return {base:'x', sub, prime: k < PRIMES.length ? PRIMES[k] : '⁽' + k + '⁾'};
+}
+const varHTML = i => { const p = varParts(i); return `<i>${p.base}</i>${p.prime}${p.sub ? `<sub>${p.sub}</sub>` : ''}`; };
+const varText = i => { const p = varParts(i); return p.base + p.prime + subDigits(p.sub).replace(',', '‚'); };
+
+// ---------------------------------------------------------------- presets
+function poly(n, r = 0.4, rot = -Math.PI/2, cx = 0.5, cy = 0.5){
+  return Array.from({length:n}, (_, i) => ({x: cx + r*Math.cos(rot + 2*Math.PI*i/n), y: cy + r*Math.sin(rot + 2*Math.PI*i/n)}));
+}
+function complete(n){ const es = []; for (let i = 0; i < n; i++) for (let j = i+1; j < n; j++) es.push([i,j]); return es; }
+const cyc = n => Array.from({length:n}, (_, i) => [i, (i+1) % n]);
+const PRESETS = [
+  {name:'K₄ (16 trees)', make(){ return {V:[...poly(3,0.42,-Math.PI/2,0.5,0.56), {x:0.5,y:0.56}], E:complete(4)}; }},
+  {name:'Triangle K₃ (3)', make(){ return {V:poly(3,0.4,-Math.PI/2,0.5,0.56), E:complete(3)}; }},
+  {name:'Square C₄ (4)', make(){ return {V:poly(4,0.4,-Math.PI*3/4), E:cyc(4)}; }},
+  {name:'Diamond K₄ − e (8)', make(){ return {V:[{x:.5,y:.1},{x:.15,y:.5},{x:.85,y:.5},{x:.5,y:.9}], E:[[0,1],[0,2],[1,2],[1,3],[2,3]]}; }},
+  {name:'Bowtie (9)', make(){ return {V:[{x:.1,y:.2},{x:.1,y:.8},{x:.5,y:.5},{x:.9,y:.2},{x:.9,y:.8}], E:[[0,1],[0,2],[1,2],[2,3],[2,4],[3,4]]}; }},
+  {name:'House (11)', make(){ return {V:[{x:.22,y:.88},{x:.78,y:.88},{x:.78,y:.45},{x:.22,y:.45},{x:.5,y:.1}], E:[[0,1],[1,2],[2,3],[3,0],[2,4],[3,4]]}; }},
+  {name:'K₂,₃ (12)', make(){ return {V:[{x:.2,y:.32},{x:.2,y:.68},{x:.8,y:.15},{x:.8,y:.5},{x:.8,y:.85}], E:[[0,2],[0,3],[0,4],[1,2],[1,3],[1,4]]}; }},
+  {name:'Cycle C₅ (5)', make(){ return {V:poly(5), E:cyc(5)}; }},
+  {name:'Path P₄ (1)', make(){ return {V:[{x:.1,y:.5},{x:.37,y:.5},{x:.63,y:.5},{x:.9,y:.5}], E:[[0,1],[1,2],[2,3]]}; }},
+  {name:'Wheel W₅ (121)', make(){ return {V:[{x:.5,y:.5}, ...poly(5,0.42)], E:[[0,1],[0,2],[0,3],[0,4],[0,5],[1,2],[2,3],[3,4],[4,5],[5,1]]}; }},
+  {name:'K₅ (125)', make(){ return {V:poly(5,0.42), E:complete(5)}; }},
+  {name:'Triangular prism (75)', make(){ return {V:[...poly(3,0.44,-Math.PI/2,0.5,0.56), ...poly(3,0.17,-Math.PI/2,0.5,0.56)], E:[[0,1],[1,2],[2,0],[3,4],[4,5],[5,3],[0,3],[1,4],[2,5]]}; }},
+  {name:'K₃,₃ (81)', make(){ return {V:[{x:.2,y:.15},{x:.2,y:.5},{x:.2,y:.85},{x:.8,y:.15},{x:.8,y:.5},{x:.8,y:.85}], E:[[0,3],[0,4],[0,5],[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]]}; }},
+  {name:'Cube Q₃ (384)', make(){ return {V:[...poly(4,0.44,-Math.PI*3/4), ...poly(4,0.2,-Math.PI*3/4)], E:[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]]}; }},
+  {name:'Octahedron (384)', make(){ return {V:[...poly(3,0.45,-Math.PI/2,0.5,0.56), ...poly(3,0.16,Math.PI/2,0.5,0.56)], E:[[0,1],[1,2],[2,0],[3,4],[4,5],[5,3],[0,4],[0,5],[1,3],[1,5],[2,3],[2,4]]}; }},
+  {name:'Petersen (2000)', make(){ return {V:[...poly(5,0.44), ...poly(5,0.2)], E:[[0,1],[1,2],[2,3],[3,4],[4,0],[0,5],[1,6],[2,7],[3,8],[4,9],[5,7],[7,9],[9,6],[6,8],[8,5]]}; }},
+  {name:'Multigraph: dipole, 3 edges (3)', make(){ return {V:[{x:.2,y:.5},{x:.8,y:.5}], E:[[0,1],[0,1],[0,1]]}; }},
+  {name:'Multigraph: triangle, one edge doubled (5)', make(){ return {V:poly(3,0.4,-Math.PI/2,0.5,0.56), E:[[0,1],[0,1],[1,2],[2,0]]}; }},
+  {name:'Multigraph: doubled path (8)', make(){ return {V:[{x:.12,y:.5},{x:.5,y:.5},{x:.88,y:.5},{x:.5,y:.15}], E:[[0,1],[0,1],[1,2],[1,2],[1,3],[1,3]]}; }},
+];
+
+function loadPreset(k){
+  const p = PRESETS[k].make();
+  V = p.V.map(q => ({x:q.x, y:q.y}));
+  E = p.E.map(([u,v]) => ({u, v}));
+  root = 0; pinnedTree = focusTree = focusEdge = -1; showAll = false;
+  recompute(true);
+  document.getElementById('preset').value = String(k);
+}
+
+// ---------------------------------------------------------------- enumeration of spanning trees
+function enumerateTrees(n, edges, cap){
+  const out = [];
+  if (n === 0) return out;
+  if (n === 1){ out.push([]); return out; }
+  const m = edges.length;
+  const par = Array.from({length:n}, (_, i) => i), sz = new Array(n).fill(1), hist = [];
+  const find = x => { while (par[x] !== x) x = par[x]; return x; };
+  const unite = (a, b) => { a = find(a); b = find(b); if (a === b) return false; if (sz[a] < sz[b]) [a,b] = [b,a]; par[b] = a; sz[a] += sz[b]; hist.push(b); return true; };
+  const undo = () => { const b = hist.pop(); const a = par[b]; sz[a] -= sz[b]; par[b] = b; };
+  const chosen = [];
+  // can the components of the current forest still be connected using edges i..m-1 ?
+  function connectable(i){
+    const p2 = Array.from({length:n}, (_, k) => find(k));
+    const f = x => { while (p2[x] !== x) x = p2[x] = p2[p2[x]]; return x; };
+    let comps = 0; for (let k = 0; k < n; k++) if (p2[k] === k) comps++;
+    for (let j = i; j < m && comps > 1; j++){ const a = f(edges[j].u), b = f(edges[j].v); if (a !== b){ p2[a] = b; comps--; } }
+    return comps === 1;
+  }
+  let stop = false;
+  (function rec(i){
+    if (stop) return;
+    if (chosen.length === n - 1){ out.push(chosen.slice()); if (out.length >= cap) stop = true; return; }
+    if (i >= m || chosen.length + (m - i) < n - 1) return;
+    if (!connectable(i)) return;
+    const e = edges[i];
+    if (unite(e.u, e.v)){ chosen.push(i); rec(i+1); chosen.pop(); undo(); }
+    rec(i+1);
+  })(0);
+  return out;
+}
+
+// ---------------------------------------------------------------- integer determinant (Bareiss, BigInt)
+function intDet(M){
+  const n = M.length; if (n === 0) return 1n;
+  const A = M.map(r => r.map(BigInt)); let prev = 1n, sign = 1n;
+  for (let k = 0; k < n - 1; k++){
+    if (A[k][k] === 0n){
+      let p = k + 1; while (p < n && A[p][k] === 0n) p++;
+      if (p === n) return 0n;
+      [A[k], A[p]] = [A[p], A[k]]; sign = -sign;
+    }
+    for (let i = k + 1; i < n; i++) for (let j = k + 1; j < n; j++) A[i][j] = (A[i][j]*A[k][k] - A[i][k]*A[k][j]) / prev;
+    prev = A[k][k];
+  }
+  return sign * A[n-1][n-1];
+}
+
+// ---------------------------------------------------------------- symbolic determinant
+// polynomials: Map(key -> integer coeff), key = edge indices sorted, joined by '.', '' = 1
+function mulKeys(a, b){
+  if (a === '') return b; if (b === '') return a;
+  const x = a.split('.').map(Number), y = b.split('.').map(Number), z = [];
+  let i = 0, j = 0;
+  while (i < x.length || j < y.length){
+    if (j >= y.length || (i < x.length && x[i] <= y[j])) z.push(x[i++]); else z.push(y[j++]);
+  }
+  return z.join('.');
+}
+function symbolicDet(M, budget){   // M: k×k matrix of polys; returns Map or null if over budget
+  const k = M.length; let ops = 0;
+  const memo = new Map(); const ONE = new Map([['', 1]]);
+  function det(mask, row){
+    if (row === k) return ONE;
+    if (memo.has(mask)) return memo.get(mask);
+    const res = new Map(); let before = 0;
+    for (let j = 0; j < k; j++){
+      if (!(mask & (1 << j))) continue;
+      const a = M[row][j];
+      if (a.size){
+        const sub = det(mask & ~(1 << j), row + 1);
+        if (sub === null) return null;
+        const s = (before % 2) ? -1 : 1;
+        for (const [ka, ca] of a) for (const [kb, cb] of sub){
+          const key = mulKeys(ka, kb), c = (res.get(key) || 0) + s*ca*cb;
+          if (c === 0) res.delete(key); else res.set(key, c);
+          if (++ops > budget) return null;
+        }
+      }
+      before++;
+    }
+    memo.set(mask, res); return res;
+  }
+  return det((1 << k) - 1, 0);
+}
+
+// ---------------------------------------------------------------- recompute everything
+function laplacianPolys(){
+  const n = V.length;
+  const L = Array.from({length:n}, () => Array.from({length:n}, () => new Map()));
+  E.forEach((e, i) => {
+    const k = String(i);
+    L[e.u][e.u].set(k, 1); L[e.v][e.v].set(k, 1);
+    L[e.u][e.v].set(k, -1); L[e.v][e.u].set(k, -1);
+  });
+  return L;
+}
+// display rank of each edge: by endpoints (x_ij style) or by creation order (letters)
+let rank = [];
+function orderTrees(){
+  const ij = document.getElementById('varstyle').value === 'ij';
+  const idx = E.map((_, i) => i);
+  if (ij) idx.sort((a, b) => {
+    const ea = E[a], eb = E[b];
+    return (Math.min(ea.u,ea.v) - Math.min(eb.u,eb.v)) || (Math.max(ea.u,ea.v) - Math.max(eb.u,eb.v)) || (a - b);
+  });
+  rank = new Array(E.length); idx.forEach((e, r) => rank[e] = r);
+  trees.forEach(t => t.sort((a, b) => rank[a] - rank[b]));
+  trees.sort((s, t) => { for (let k = 0; k < s.length; k++){ const d = rank[s[k]] - rank[t[k]]; if (d) return d; } return 0; });
+  const N = trees.length;
+  treeColor = trees.map((_, t) => {
+    const h = N <= 30 ? (360*t/N + 12) % 360 : (t*137.508 + 12) % 360;
+    const l = N <= 30 ? 64 : [62, 72, 55][t % 3];
+    return `hsl(${h.toFixed(1)} 78% ${l}%)`;
+  });
+}
+function recompute(fromPreset){
+  if (!fromPreset) document.getElementById('preset').value = '-1';
+  const n = V.length;
+  if (root >= n) root = 0;
+  focusTree = -1; if (pinnedTree >= 0) pinnedTree = -1; focusEdge = -1;
+  // integer count
+  const Lint = Array.from({length:n}, () => new Array(n).fill(0));
+  E.forEach(e => { Lint[e.u][e.u]++; Lint[e.v][e.v]++; Lint[e.u][e.v]--; Lint[e.v][e.u]--; });
+  const red = Lint.filter((_, i) => i !== root).map(r => r.filter((_, j) => j !== root));
+  tau = n ? intDet(red) : 0n;
+  trees = (n && tau > 0n) ? enumerateTrees(n, E, ENUM_CAP) : [];
+  // symbolic
+  symb = null;
+  if (n >= 1 && n - 1 <= SYMB_N_CAP && tau <= BigInt(SYMB_TAU_CAP)){
+    const L = laplacianPolys();
+    const R = L.filter((_, i) => i !== root).map(r => r.filter((_, j) => j !== root));
+    const P = symbolicDet(R, 4e6);
+    if (P){
+      const want = new Set(trees.map(t => t.slice().sort((a, b) => a - b).join('.')));
+      let ok = P.size === want.size;
+      if (ok) for (const [key, c] of P) if (c !== 1 || !want.has(key)){ ok = false; break; }
+      symb = {poly: P, ok};
+    }
+  }
+  orderTrees();
+  buildRootSelect(); buildMatrix(); buildDet(); buildGallery(); updateStats(); draw(); updatePinbar();
+}
+
+// ---------------------------------------------------------------- geometry
+function edgeGeom(i){       // unit-square quadratic Bézier {p0, c, p2}
+  const e = E[i], a = V[e.u], b = V[e.v];
+  const [k, cnt] = parallelIndex(i);
+  // canonical normal: from lower-index endpoint to higher
+  const lo = e.u < e.v ? a : b, hi = e.u < e.v ? b : a;
+  let dx = hi.x - lo.x, dy = hi.y - lo.y; const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy/len, ny = dx/len;
+  const off = (k - (cnt - 1)/2) * 0.075 * 2;
+  const mx = (a.x + b.x)/2 + nx*off, my = (a.y + b.y)/2 + ny*off;
+  return {p0:a, c:{x:mx, y:my}, p2:b};
+}
+const bez = (g, t) => ({x:(1-t)*(1-t)*g.p0.x + 2*(1-t)*t*g.c.x + t*t*g.p2.x, y:(1-t)*(1-t)*g.p0.y + 2*(1-t)*t*g.c.y + t*t*g.p2.y});
+
+// ---------------------------------------------------------------- canvas
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+let W = 0, H = 0, S = 0, OX = 0, OY = 0, DPR = 1;
+function resize(){
+  const r = cv.getBoundingClientRect(); DPR = window.devicePixelRatio || 1;
+  W = r.width; H = r.height; cv.width = Math.round(W*DPR); cv.height = Math.round(H*DPR);
+  const pad = 46; S = Math.max(50, Math.min(W, H - 30) - 2*pad); OX = (W - S)/2; OY = (H - S)/2 + 8;
+  draw();
+}
+const toS = p => ({x: OX + p.x*S, y: OY + p.y*S});
+const toU = (x, y) => ({x: Math.min(1.08, Math.max(-0.08, (x - OX)/S)), y: Math.min(1.08, Math.max(-0.08, (y - OY)/S))});
+const VR = () => Math.max(11, Math.min(17, S/26));
+
+let drag = null, mouse = null;
+function activeTree(){ return pinnedTree >= 0 ? pinnedTree : focusTree; }
+function draw(){
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
+  const at = activeTree(), inT = new Set(at >= 0 ? trees[at] : []);
+  const hlEdges = new Set();
+  if (focusCell){ const [i, j] = focusCell; E.forEach((e, k) => { if (i === j ? (e.u === i || e.v === i) : ((e.u === i && e.v === j) || (e.u === j && e.v === i))) hlEdges.add(k); }); }
+  const showLabels = document.getElementById('showlabels').checked;
+  // edges
+  E.forEach((e, i) => {
+    const g = edgeGeom(i), a = toS(g.p0), c = toS(g.c), b = toS(g.p2);
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(c.x, c.y, b.x, b.y);
+    ctx.setLineDash([]);
+    if (at >= 0){
+      if (inT.has(i)){ ctx.strokeStyle = treeColor[at]; ctx.lineWidth = 5; }
+      else { ctx.strokeStyle = '#3a3e48'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]); }
+    } else if (hlEdges.size){
+      ctx.strokeStyle = hlEdges.has(i) ? '#ff8c4d' : '#454a55'; ctx.lineWidth = hlEdges.has(i) ? 4 : 1.8;
+    } else {
+      ctx.strokeStyle = i === focusEdge ? '#ff8c4d' : '#b9b6ac'; ctx.lineWidth = i === focusEdge ? 4 : 2;
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+  });
+  // rubber band
+  if (drag && drag.kind === 'edge' && mouse){
+    const a = toS(V[drag.v]); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(mouse.x, mouse.y);
+    ctx.strokeStyle = '#ff8c4d'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+  }
+  // labels
+  if (showLabels){
+    ctx.font = `italic ${Math.round(Math.max(12, Math.min(16, S/34)))}px ${getComputedStyle(document.body).getPropertyValue('--serif')}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    E.forEach((e, i) => {
+      const g = edgeGeom(i), m = toS(bez(g, 0.5)), t = varText(i);
+      const w = ctx.measureText(t).width + 8;
+      let col = '#d8d5cc';
+      if (at >= 0) col = inT.has(i) ? treeColor[at] : '#4a4e58';
+      else if (hlEdges.size) col = hlEdges.has(i) ? '#ff8c4d' : '#5a5e68';
+      ctx.fillStyle = '#0d0f14e0'; ctx.beginPath(); ctx.roundRect(m.x - w/2, m.y - 10, w, 20, 5); ctx.fill();
+      ctx.fillStyle = col; ctx.fillText(t, m.x, m.y + 1);
+    });
+  }
+  // vertices
+  const r = VR();
+  ctx.font = `600 ${Math.round(r*0.95)}px -apple-system, Helvetica, Arial, sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  V.forEach((p, i) => {
+    const q = toS(p);
+    if (i === root){
+      ctx.beginPath(); ctx.arc(q.x, q.y, r + 6, 0, 2*Math.PI); ctx.strokeStyle = '#ff8c4d'; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, 2*Math.PI);
+    ctx.fillStyle = i === root ? '#3a2416' : '#20242d'; ctx.fill();
+    ctx.strokeStyle = (drag && drag.kind === 'edge' && drag.v === i) ? '#ff8c4d' : (i === root ? '#ff8c4d' : '#cfccc2');
+    ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = i === root ? '#ffb48a' : '#ece9e1'; ctx.fillText(String(i+1), q.x, q.y + 0.5);
+  });
+}
+
+let lastPointer = 'mouse';
+const slop = () => lastPointer === 'mouse' ? 0 : 10;
+function hitVertex(x, y){
+  const r = VR() + 4 + slop(); let best = -1, bd = 1e9;
+  V.forEach((p, i) => { const q = toS(p), d = Math.hypot(q.x - x, q.y - y); if (d < r && d < bd){ bd = d; best = i; } });
+  return best;
+}
+function hitEdge(x, y){
+  let best = -1, bd = 9 + slop();
+  E.forEach((e, i) => {
+    const g = edgeGeom(i);
+    for (let s = 0; s <= 24; s++){ const q = toS(bez(g, s/24)), d = Math.hypot(q.x - x, q.y - y); if (d < bd){ bd = d; best = i; } }
+  });
+  return best;
+}
+function evPos(ev){ const r = cv.getBoundingClientRect(); return {x: ev.clientX - r.left, y: ev.clientY - r.top}; }
+
+function deleteVertex(i){
+  E = E.filter(e => e.u !== i && e.v !== i).map(e => ({u: e.u > i ? e.u - 1 : e.u, v: e.v > i ? e.v - 1 : e.v}));
+  V.splice(i, 1);
+  if (root === i) root = 0; else if (root > i) root--;
+  recompute();
+}
+function deleteEdge(i){ E.splice(i, 1); recompute(); }
+
+cv.addEventListener('contextmenu', ev => ev.preventDefault());
+// on touch screens, a finger that lands on empty canvas may scroll the page; one on a vertex may not
+cv.addEventListener('touchstart', ev => {
+  if (ev.touches.length !== 1) return;
+  lastPointer = 'touch';
+  const r = cv.getBoundingClientRect(), t = ev.touches[0];
+  const x = t.clientX - r.left, y = t.clientY - r.top;
+  if (hitVertex(x, y) >= 0) ev.preventDefault();
+}, {passive:false});
+cv.addEventListener('pointerdown', ev => {
+  lastPointer = ev.pointerType || 'mouse';
+  const p = evPos(ev); mouse = p;
+  const v = hitVertex(p.x, p.y);
+  if (ev.button === 2){ if (v >= 0) deleteVertex(v); else { const e = hitEdge(p.x, p.y); if (e >= 0) deleteEdge(e); } return; }
+  cv.setPointerCapture(ev.pointerId);
+  if (mode === 'delete'){ if (v >= 0) deleteVertex(v); else { const e = hitEdge(p.x, p.y); if (e >= 0) deleteEdge(e); } return; }
+  if (mode === 'root'){ if (v >= 0){ const k = ps.value; root = v; recompute(); ps.value = k; } return; }
+  if (mode === 'move'){ if (v >= 0) drag = {kind:'move', v}; return; }
+  // draw
+  if (v >= 0) drag = {kind:'edge', v};
+  else drag = {kind:'tap', x:p.x, y:p.y};   // a vertex is added on release, if this was a tap
+});
+cv.addEventListener('pointermove', ev => {
+  const p = evPos(ev); mouse = p;
+  if (drag && drag.kind === 'move'){ V[drag.v] = toU(p.x, p.y); draw(); return; }
+  if (drag && drag.kind === 'edge'){ draw(); return; }
+  if (drag && drag.kind === 'tap'){ if (Math.hypot(p.x - drag.x, p.y - drag.y) > 10) drag = null; return; }
+  if (ev.pointerType === 'mouse'){
+    const fe = hitVertex(p.x, p.y) >= 0 ? -1 : hitEdge(p.x, p.y);
+    if (fe !== focusEdge){ focusEdge = fe; applyEdgeFocus(); draw(); }
+  }
+});
+function endDrag(ev){
+  if (!drag) return;
+  const p = evPos(ev);
+  if (drag.kind === 'tap'){ drag = null; V.push(toU(p.x, p.y)); recompute(); return; }
+  if (drag.kind === 'edge'){
+    const w = hitVertex(p.x, p.y);
+    const v = drag.v; drag = null;
+    if (w >= 0 && w !== v){ E.push({u: v, v: w}); recompute(); return; }
+  } else if (drag.kind === 'move'){ drag = null; buildGallery(); }
+  drag = null; draw();
+}
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', () => { drag = null; draw(); });
+cv.addEventListener('pointerleave', () => { if (focusEdge >= 0){ focusEdge = -1; applyEdgeFocus(); draw(); } });
+
+const COARSE = matchMedia('(pointer: coarse)').matches;
+const NARROW = () => matchMedia('(max-width: 860px)').matches;
+function setMode(m){
+  mode = m;
+  for (const k of ['draw','move','delete','root']) document.getElementById('m-' + k).classList.toggle('on', k === m);
+  cv.className = 'mode-' + m;
+  const H = COARSE ? {
+    draw: 'tap: new vertex · drag vertex → vertex: new edge (again for a parallel edge)',
+    move: 'drag vertices to rearrange',
+    delete: 'tap a vertex or an edge to delete it',
+    root: 'tap the vertex whose row and column are deleted',
+  } : {
+    draw: 'click empty space: new vertex · drag vertex → vertex: new edge (repeat for parallel edges) · right-click: delete',
+    move: 'drag vertices to rearrange',
+    delete: 'click a vertex or an edge to delete it',
+    root: 'click the vertex whose row and column are deleted from L',
+  };
+  document.getElementById('hint').textContent = H[m];
+}
+for (const k of ['draw','move','delete','root']) document.getElementById('m-' + k).onclick = () => setMode(k);
+document.getElementById('b-clear').onclick = () => { V = []; E = []; root = 0; recompute(); };
+window.addEventListener('keydown', ev => {
+  if (ev.target.tagName === 'SELECT' || ev.target.tagName === 'INPUT' || ev.metaKey || ev.ctrlKey) return;
+  const m = {d:'draw', m:'move', x:'delete', r:'root'}[ev.key.toLowerCase()];
+  if (m) setMode(m);
+  if (ev.key === 'Escape'){ pinnedTree = -1; setTreeFocus(-1); }
+});
+
+// ---------------------------------------------------------------- side panel
+function buildRootSelect(){
+  const s = document.getElementById('rootsel');
+  s.innerHTML = V.map((_, i) => `<option value="${i}"${i === root ? ' selected' : ''}>vertex ${i+1}</option>`).join('');
+}
+document.getElementById('rootsel').onchange = ev => { const k = ps.value; root = +ev.target.value; recompute(); ps.value = k; };
+document.getElementById('varstyle').onchange = () => { pinnedTree = focusTree = -1; orderTrees(); buildMatrix(); buildDet(); buildGallery(); draw(); updatePinbar(); };
+document.getElementById('showlabels').onchange = draw;
+const ps = document.getElementById('preset');
+ps.innerHTML = '<option value="-1">— custom (drawn) —</option>' + PRESETS.map((p, i) => `<option value="${i}">${p.name}</option>`).join('');
+ps.onchange = () => { const k = +ps.value; if (k >= 0) loadPreset(k); };
+
+function entryHTML(i, j){
+  const ids = [];
+  E.forEach((e, k) => { if (i === j ? (e.u === i || e.v === i) : ((e.u === i && e.v === j) || (e.u === j && e.v === i))) ids.push(k); });
+  if (!ids.length) return '0';
+  if (i === j) return ids.map((k, n) => `<span class="t">${n ? '<span class="pl">+ </span>' : ''}${varHTML(k)}</span>`).join('');
+  return ids.map(k => `<span class="t"><span class="neg">−</span>${varHTML(k)} </span>`).join('');
+}
+function buildMatrix(){
+  const n = V.length, wrap = document.getElementById('matwrap');
+  if (!n){ wrap.innerHTML = '<span class="neg">(empty graph — draw some vertices)</span>'; document.getElementById('matnote').textContent = ''; return; }
+  let h = '<div class="matrow"><div class="brack l"></div><div class="brack r"></div><table class="mat"><tr><th></th>';
+  for (let j = 0; j < n; j++) h += `<th class="${j === root ? 'del' : ''}">${j+1}</th>`;
+  h += '</tr>';
+  for (let i = 0; i < n; i++){
+    h += `<tr><th class="${i === root ? 'del' : ''}">${i+1}</th>`;
+    for (let j = 0; j < n; j++){
+      const cont = entryHTML(i, j), del = i === root || j === root;
+      h += `<td data-i="${i}" data-j="${j}" class="${del ? 'del' : ''}${cont === '0' ? ' zero' : ''}">${cont}</td>`;
+    }
+    h += '</tr>';
+  }
+  h += '</table></div>';
+  wrap.innerHTML = h;
+  placeBrackets();
+  document.getElementById('matnote').innerHTML =
+    `Row and column ${root+1} (hatched) are deleted, leaving the ${n-1}×${n-1} reduced Laplacian <span class="math"><i>L</i><sub>(${root+1})</sub></span>. Diagonal: the edges at a vertex; off-diagonal: minus the edges joining two vertices.`;
+}
+function placeBrackets(){
+  const row = document.querySelector('#matwrap .matrow'); if (!row) return;
+  const cells = row.querySelectorAll('td[data-i]'); if (!cells.length) return;
+  const R = row.getBoundingClientRect(), a = cells[0].getBoundingClientRect(), b = cells[cells.length - 1].getBoundingClientRect();
+  const top = a.top - R.top + 2, height = b.bottom - a.top - 4;
+  const [l, r] = row.querySelectorAll('.brack');
+  Object.assign(l.style, {top: top + 'px', height: height + 'px', left: (a.left - R.left - 3) + 'px'});
+  Object.assign(r.style, {top: top + 'px', height: height + 'px', left: (b.right - R.left - 3) + 'px'});
+}
+window.addEventListener('resize', placeBrackets);
+document.getElementById('matwrap').addEventListener('pointerover', ev => {
+  if (ev.pointerType !== 'mouse') return;
+  const td = ev.target.closest('td[data-i]');
+  const c = td ? [+td.dataset.i, +td.dataset.j] : null;
+  if (JSON.stringify(c) !== JSON.stringify(focusCell)){ focusCell = c; draw(); }
+});
+document.getElementById('matwrap').addEventListener('mouseleave', () => { focusCell = null; draw(); });
+document.getElementById('matwrap').addEventListener('click', ev => {   // touch: tap an entry to toggle its edges
+  if (lastPointer === 'mouse') return;
+  const td = ev.target.closest('td[data-i]');
+  const c = td ? [+td.dataset.i, +td.dataset.j] : null;
+  focusCell = (c && JSON.stringify(c) !== JSON.stringify(focusCell)) ? c : null;
+  document.querySelectorAll('table.mat td.hl').forEach(x => x.classList.remove('hl'));
+  if (focusCell && td) td.classList.add('hl');
+  draw();
+});
+document.addEventListener('pointerdown', ev => { lastPointer = ev.pointerType || 'mouse'; }, true);
+
+// ---------------------------------------------------------------- determinant + gallery
+function monoHTML(t){ return trees[t].length ? trees[t].map(varHTML).join('') : '1'; }
+function buildDet(){
+  const n = V.length, form = document.getElementById('detform'), ver = document.getElementById('verify');
+  if (!n){ form.innerHTML = ''; ver.innerHTML = ''; return; }
+  const lhs = `<span class="lhs">det <i>L</i><sub>(${root+1})</sub> =</span>`;
+  if (tau === 0n){
+    form.innerHTML = lhs + ' 0';
+    ver.innerHTML = '<span class="neg">disconnected — no spanning trees</span>';
+    return;
+  }
+  const N = trees.length, lim = showAll ? N : Math.min(N, SHOW_CAP);
+  let h = lhs + ' ';
+  for (let t = 0; t < lim; t++){
+    if (t) h += '<span class="plus">+</span>';
+    h += `<span class="mono-term" data-t="${t}" style="color:${treeColor[t]}">${monoHTML(t)}</span>`;
+  }
+  if (lim < N) h += `<span class="plus">+ ⋯ (${N - lim} more)</span>`;
+  form.innerHTML = h;
+  const count = `τ(<i>G</i>) = ${tau} spanning tree${tau === 1n ? '' : 's'}`;
+  if (symb){
+    ver.innerHTML = `<span class="neg">${count} · </span>` + (symb.ok
+      ? `<span class="ok">✓ symbolic det has exactly these ${N} monomials, all with coefficient 1</span>`
+      : `<span class="bad">✗ symbolic det and tree list disagree</span>`);
+  } else {
+    const ok = BigInt(N) === tau;
+    ver.innerHTML = `<span class="neg">${count} · symbolic expansion skipped (large) · </span>` +
+      (ok ? `<span class="ok">✓ enumeration count = det at x = 1</span>` : `<span class="neg">listing the first ${N}</span>`);
+  }
+}
+function treeSVG(t, col){
+  const xs = V.map(p => p.x), ys = V.map(p => p.y);
+  let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  // include control points so parallel edges fit
+  E.forEach((_, i) => { const c = bez(edgeGeom(i), 0.5); x0 = Math.min(x0, c.x); x1 = Math.max(x1, c.x); y0 = Math.min(y0, c.y); y1 = Math.max(y1, c.y); });
+  const span = Math.max(x1 - x0, y1 - y0, 0.2), sc = 84/span, pad = 8;
+  const mx = (x0 + x1)/2, my = (y0 + y1)/2;
+  const T = p => [(50 + (p.x - mx)*sc).toFixed(1), (50 + (p.y - my)*sc).toFixed(1)];
+  const inT = new Set(trees[t]);
+  let s = `<svg viewBox="${-pad+0} ${-pad+0} ${100+2*pad} ${100+2*pad}" xmlns="http://www.w3.org/2000/svg">`;
+  const vr = Math.max(2.6, Math.min(5, 40/Math.sqrt(V.length + 4)));
+  for (const pass of [0, 1]) E.forEach((_, i) => {
+    if ((pass === 1) !== inT.has(i)) return;
+    const g = edgeGeom(i), [ax, ay] = T(g.p0), [cx, cy] = T(g.c), [bx, by] = T(g.p2);
+    s += inT.has(i)
+      ? `<path d="M${ax} ${ay}Q${cx} ${cy} ${bx} ${by}" fill="none" stroke="${col}" stroke-width="3.6" stroke-linecap="round"/>`
+      : `<path d="M${ax} ${ay}Q${cx} ${cy} ${bx} ${by}" fill="none" stroke="#3b3f49" stroke-width="1.1" stroke-dasharray="2.5 2.5"/>`;
+  });
+  V.forEach((p, i) => {
+    const [x, y] = T(p);
+    s += i === root
+      ? `<circle cx="${x}" cy="${y}" r="${vr+1.6}" fill="#14161c" stroke="#ff8c4d" stroke-width="1.4"/>`
+      : `<circle cx="${x}" cy="${y}" r="${vr}" fill="#14161c" stroke="#bdbab0" stroke-width="1.2"/>`;
+  });
+  return s + '</svg>';
+}
+function buildGallery(){
+  const g = document.getElementById('gallery'), more = document.getElementById('more');
+  const N = trees.length, lim = showAll ? N : Math.min(N, SHOW_CAP);
+  let h = '';
+  for (let t = 0; t < lim; t++){
+    h += `<div class="tcard" data-t="${t}" style="color:${treeColor[t]}"><span class="idx">${t+1}</span>${treeSVG(t, treeColor[t])}<div class="mono">${monoHTML(t)}</div></div>`;
+  }
+  g.innerHTML = h;
+  more.innerHTML = lim < N ? `<button id="showall">show all ${N} trees</button>` : '';
+  if (lim < N) document.getElementById('showall').onclick = () => { showAll = true; buildDet(); buildGallery(); };
+  applyEdgeFocus(); markTree();
+}
+function updateStats(){
+  document.getElementById('gstats').textContent = `n = ${V.length}   m = ${E.length}\nτ = ${V.length ? tau : 0}`;
+}
+
+function markTree(){
+  const at = activeTree();
+  document.querySelectorAll('.tcard, .mono-term').forEach(el => {
+    const t = +el.dataset.t;
+    el.classList.toggle('hl', t === at);
+    el.classList.toggle('pinned', t === pinnedTree);
+  });
+}
+function setTreeFocus(t){ focusTree = t; markTree(); draw(); }
+function applyEdgeFocus(){
+  document.querySelectorAll('.tcard, .mono-term').forEach(el => {
+    const t = +el.dataset.t;
+    el.classList.toggle('dimmed', focusEdge >= 0 && !trees[t].includes(focusEdge));
+  });
+}
+function hookHover(container){
+  container.addEventListener('pointerover', ev => { if (ev.pointerType !== 'mouse') return; const el = ev.target.closest('[data-t]'); if (el) setTreeFocus(+el.dataset.t); });
+  container.addEventListener('pointerleave', ev => { if (ev.pointerType === 'mouse') setTreeFocus(-1); });
+  container.addEventListener('click', ev => {
+    const el = ev.target.closest('[data-t]'); if (!el) return;
+    const t = +el.dataset.t; pinnedTree = pinnedTree === t ? -1 : t; markTree(); draw(); updatePinbar();
+    if (pinnedTree >= 0 && container.id === 'detform' && NARROW()){
+      const card = document.querySelector(`.tcard[data-t="${t}"]`); if (card) card.scrollIntoView({block:'nearest', behavior:'smooth'});
+    }
+  });
+}
+function updatePinbar(){
+  const bar = document.getElementById('pinbar');
+  if (pinnedTree < 0 || !trees[pinnedTree]){ bar.classList.remove('on'); return; }
+  bar.classList.add('on');
+  bar.style.color = treeColor[pinnedTree];
+  document.getElementById('pinmono').innerHTML = `<span class="neg">tree ${pinnedTree+1}:</span> ${monoHTML(pinnedTree)}`;
+}
+document.getElementById('pinclose').onclick = () => { pinnedTree = -1; markTree(); draw(); updatePinbar(); };
+document.getElementById('pinshow').onclick = () => document.getElementById('stage').scrollIntoView({behavior:'smooth', block:'start'});
+hookHover(document.getElementById('detform'));
+hookHover(document.getElementById('gallery'));
+
+// ---------------------------------------------------------------- boot
+window.addEventListener('resize', resize);
+setMode('draw');
+ps.value = '0';
+loadPreset(0);
+resize();
+window.MTT = {
+  loadPresetByName(name){ const k = PRESETS.findIndex(p => p.name.startsWith(name)); loadPreset(k); return k; },
+  info(){ return {n: V.length, m: E.length, tau: String(tau), trees: trees.length, symb: symb ? {ok: symb.ok, size: symb.poly.size} : null}; },
+  setRoot(r){ root = r; recompute(); },
+  presets: PRESETS.map(p => p.name),
+};
+})();
+</script>
+</body>
+</html>
