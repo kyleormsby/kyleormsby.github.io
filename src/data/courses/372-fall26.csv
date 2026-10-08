@@ -18,8 +18,8 @@ week,date,display,type,topic,reading,resources,hw,hw_due,submit,submit_by,lab,la
 6,2026-10-07,,class,Act I synthesis: it was all a rank computation,,[video lecture](https://drive.google.com/file/d/1ccW77z4_EVvsOXP7tLYkFQEfRCs5oX5Y/view?usp=sharing) ❦ [slides](/files/372fall26/372-act1-synthesis.html),,,,,,,,,asynchronous video lecture — no in-person class ❦ includes the project overview
 6,2026-10-09,,class,"Combinatorial classes, size, and ordinary generating functions",FS I.1,,,,372hw03,10pm,,,,,
 7,2026-10-12,,class,"The admissible constructions: sum, product, sequence",FS I.2,,,,,,,,,,board presentations
-7,2026-10-14,,class,Integer partitions; specification to generating function as an algorithm,FS I.3,,,,,,,,,,project pitches (four students)
-7,2026-10-16,,class,Young diagrams and $q$-binomial coefficients I,Stanley §6,,,,,,,,,,project proposal due ❦ project pitches (three students)
+7,2026-10-14,,class,Integer partitions; Young diagrams and $q$-binomial coefficients,FS I.3 ❦ Stanley §6,,,,,,,,,,
+7,2026-10-16,,class,Project pitches,,,,,,,,,,,project proposal due ❦ project pitches (all five)
 fall break,,October 17-25,break,Fall break 🍂,,,,,,,,,,,
 8,2026-10-26,,class,"$q$-binomials II: unimodality, and the Sperner callback",Stanley §6,,,,,,,,,,board presentation
 8,2026-10-28,,class,Words and regular languages: the seed of the transfer matrix,FS I.4,,,,,,,,,,
