@@ -1,0 +1,122 @@
+\documentclass[11pt]{article}
+\usepackage{amssymb, amsmath, libertine, hyperref, xcolor, booktabs, enumitem, microtype}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{tikz}
+\newcommand{\gridxy}[4]{% xmin xmax ymin ymax -- gridlines exactly on the ticks
+  \foreach \gX in {#1,...,#2} \draw[gray!25] (\gX,#3) -- (\gX,#4);
+  \foreach \gY in {#3,...,#4} \draw[gray!25] (#1,\gY) -- (#2,\gY);}
+\definecolor{dark-red}{rgb}{0.4,0.15,0.15}
+\hypersetup{colorlinks, linkcolor=dark-red, urlcolor=dark-red}
+\setlist[enumerate,1]{label=(\alph*), leftmargin=*, itemsep=5pt, topsep=5pt}
+\pagestyle{empty}
+\newcommand{\prob}[2]{\medskip\noindent\textbf{\large #1}\hfill\textit{#2}\par\smallskip}
+\begin{document}
+
+\begin{center}
+{\Large\bfseries Math 111: Calculus \quad Practice Exam 2}\\[4pt]
+{For Exam 2, in class on Friday, October 16}
+\end{center}
+
+\medskip
+\noindent\textbf{What Exam 2 is like.} Four problems in a fifty-minute period, closed-book
+and device-free. It is \textbf{cumulative}: the new material is Chapter~2 (the derivative
+rules, including the chain rule and inverse functions), \S3.1 (related rates), and \S3.3
+(extreme values), but ideas from Unit~1 --- reading $f'$ from a graph or a table,
+over- and under-estimates, the tangent line --- come back inside the new problems. Each
+problem is marked holistically on the 0--5 scale: a right answer with no reasoning is not a
+5, and a wrong answer containing a real idea is not a 0. The derivative rules are now
+fair game and expected; say which rule you are using and why it applies.
+
+\smallskip
+\noindent\textbf{How to use this.} Sit down with a blank sheet and fifty minutes on a
+clock, book closed and phone in another room. Bring whatever you could not finish to
+review on Wednesday the 14th. Problem~4 uses \S3.3, which we cover on Monday the 12th.
+
+\bigskip\hrule
+
+\prob{1. Structure first}{about 10 minutes}
+For each function, first say in a few words how it is built (a sum? a product? a
+quotient? a composition, and of what?), then differentiate it. You need not simplify.
+\begin{enumerate}
+\item $f(x) = x^2\cos x$
+\item $g(x) = \dfrac{e^x}{x+1}$
+\item $h(x) = \sqrt{1+\sin(3x)}$
+\item $k(x) = \ln(1+x^2)$
+\item Find the tangent line to the graph of $f$ at $x=\pi$, and use it to estimate
+$f(3)$. (You may leave $\pi$ in your answer.)
+\end{enumerate}
+
+\prob{2. A balloon, a barometer, and two tables}{about 13 minutes}
+A weather balloon rises. Its altitude $a(t)$, in meters, is recorded every five minutes:
+\smallskip
+\begin{center}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+$t$ (minutes) & 0 & 5 & 10 & 15 & 20\\
+$a(t)$ (m) & 0 & 400 & 750 & 1050 & 1300\\
+\bottomrule
+\end{tabular}
+\end{center}
+\smallskip
+Air pressure $P(a)$, in kilopascals, depends only on altitude $a$:
+\smallskip
+\begin{center}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+$a$ (m) & 0 & 500 & 1000 & 1500 & 2000\\
+$P(a)$ (kPa) & 101.3 & 95.5 & 90.0 & 84.8 & 79.9\\
+\bottomrule
+\end{tabular}
+\end{center}
+\smallskip
+The pressure the balloon experiences at time $t$ is $H(t)=P\big(a(t)\big)$. There are no
+formulas; the tables are all you have.
+\begin{enumerate}
+\item Estimate $a'(10)$, with units. Then give one estimate of $a'(10)$ that is certainly
+too large and one that is certainly too small, and say what you are assuming about $a'$
+in order to be sure.
+\item Estimate $P'(750)$, with units. Say in one sentence what the sign of this number
+means physically.
+\item Estimate $H'(10)$, with units. Explain why the two numbers you combine should be
+combined the way you combined them --- in terms of what happens to the balloon over the
+next minute, not by naming a rule.
+\item A classmate computes $H'(10)$ as $P'(10)\cdot a'(10)$. Say precisely what is wrong,
+and why the number $P'(10)$ is not even the kind of quantity that belongs here.
+\end{enumerate}
+
+\prob{3. A melting snowball}{about 12 minutes}
+A snowball is melting. Assume it stays a perfect sphere, and that its volume is
+decreasing at a steady $2$ cubic centimeters per minute. Recall $V=\frac43\pi r^3$ and
+surface area $S=4\pi r^2$.
+\begin{enumerate}
+\item Draw and label a picture, and write down, with units, every rate you know and the
+rate you want.
+\item How fast is the radius shrinking at the moment the radius is $3$ cm?
+\item How fast is the surface area shrinking at that moment?
+\item Is the radius shrinking faster or slower when the snowball is smaller? Answer from
+your formula in (b), then say in a sentence why that makes physical sense.
+\end{enumerate}
+
+\prob{4. All about $f'$}{about 13 minutes}
+A function $f$ is differentiable everywhere, and its derivative is
+\[
+f'(x) = (x-2)(x+1)^2 .
+\]
+You are not told $f$ itself.
+\begin{enumerate}
+\item Find all critical numbers of $f$.
+\item Make a sign chart for $f'$, and use the first derivative test to classify each
+critical number as a local maximum, a local minimum, or neither. Justify each from the
+chart.
+\item Compute $f''$ and apply the second derivative test at each critical number. Where
+the test is silent, say so, and say which test settles the matter.
+\item A classmate writes: ``$f'(-1)=0$, and $f'$ is negative on both sides of $-1$, so the
+graph of $f$ turns around at $x=-1$ and $f$ has a local maximum there.'' Find the first
+wrong step, say why it is wrong, and describe what the graph of $f$ actually does near
+$x=-1$.
+\item On axes of your own, sketch a possible graph of $f$ on $[-3,4]$, consistent with
+everything above. Mark the critical points.
+\end{enumerate}
+
+\end{document}
