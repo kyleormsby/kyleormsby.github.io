@@ -18,16 +18,16 @@ week,date,display,type,topic,reading,resources,hw,hw_due,submit,submit_by,lab,la
 6,2026-10-07,,class,Act I synthesis: it was all a rank computation,,[video lecture](https://drive.google.com/file/d/1ccW77z4_EVvsOXP7tLYkFQEfRCs5oX5Y/view?usp=sharing) ❦ [slides](/files/372fall26/372-act1-synthesis.html),,,,,,,,,asynchronous video lecture — no in-person class ❦ includes the project overview
 6,2026-10-09,,class,"Combinatorial classes, size, and ordinary generating functions",FS I.1,[slides](/files/372fall26/372-oct09-ogf-slides.pdf),,,372hw03,10pm,,,,,
 7,2026-10-12,,class,"The admissible constructions: sum, product, sequence",FS I.2,,,,,,,,,,board presentations
-7,2026-10-14,,class,Integer partitions; Young diagrams and $q$-binomial coefficients,FS I.3 ❦ Stanley §6,,,,,,,,,,
-7,2026-10-16,,class,Project pitches,,,,,,,,,,,project proposal due ❦ project pitches (all five)
+7,2026-10-14,,class,"Multisets, powersets, and integer partitions",FS I.2–I.3,,,,,,,,,,board presentation
+7,2026-10-16,,class,Project pitches,,,,,,,,,,,project proposal due ❦ project pitches (all five) ❦ break reading: Stanley §6
 fall break,,October 17-25,break,Fall break 🍂,,,,,,,,,,,
-8,2026-10-26,,class,"$q$-binomials II: unimodality, and the Sperner callback",Stanley §6,,,,,,,,,,board presentation
-8,2026-10-28,,class,Words and regular languages: the seed of the transfer matrix,FS I.4,,,,,,,,,,
-8,2026-10-30,,class,Tree structures and the Catalan numbers,FS I.5,,,,,,,,,,problem set 4 due by 10pm
-9,2026-11-02,,class,"Labelled classes, exponential generating functions, the labelled product",FS II.1–II.2,,,,,,,,,,board presentations
+8,2026-10-26,,class,Young diagrams and $q$-binomial coefficients,Stanley §6,,,,,,,,,,
+8,2026-10-28,,class,"$q$-binomials II: unimodality, and the Sperner callback",Stanley §6,,,,,,,,,,
+8,2026-10-30,,class,Tree structures and the Catalan numbers,FS I.5,,,,,,,,,,
+9,2026-11-02,,class,"Labelled classes, exponential generating functions, the labelled product",FS II.1–II.2,,,,,,,,,,board presentation ❦ problem set 4 due by 10pm
 9,2026-11-04,,class,"Surjections, set partitions, permutations; the exp–log pattern",FS II.3–II.4,,,,,,,,,,computational lab 2 assigned
 9,2026-11-06,,class,Pólya theory as the multiset construction: the cycle index,Stanley §7 ❦ FS I.6,,,,,,,,,,annotated bibliography and computation prospectus due
-10,2026-11-09,,class,Transfer matrices: Act I and Act II are the same theorem,FS V.5–V.6,,,,,,,,,,
+10,2026-11-09,,class,"Words, automata, and transfer matrices: Act I and Act II are the same theorem",FS I.4 ❦ FS V.5–V.6,,,,,,,,,,
 10,2026-11-11,,class,Partial fractions and exact asymptotics: poles are reciprocal eigenvalues,FS IV.5,,,,,,,,,,
 10,2026-11-13,,class,"Perron–Frobenius, growth constants, and supercritical sequences",FS V.2,,,,,,,,,,problem set 5 due by 10pm
 11,2026-11-16,,class,Complex differentiability; generating functions as analytic objects,FS IV.1–IV.2,,,,,,,,,,individual project meetings this week
