@@ -1,0 +1,146 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage{caption}
+\usepackage{fullpage}
+
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\hypersetup{hidelinks}
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem*{rmk*}{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem*{bonus*}{Bonus Problem}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\cA}{\mathcal A}
+\newcommand{\cZ}{\mathcal Z}
+\newcommand{\SEQ}{\operatorname{SEQ}}
+\newcommand{\MSET}{\operatorname{MSET}}
+\newcommand{\PSET}{\operatorname{PSET}}
+\newcommand{\FF}{\mathbb F}
+\newcommand{\qbinom}[2]{\genfrac{[}{]}{0pt}{}{#1}{#2}_{\!q}}
+
+\title{Math 372: Combinatorics\\ Homework 04}
+\author{Due Friday, 30 October, 10\textsc{p.m.}, via Gradescope}
+
+\begin{document}
+\maketitle
+
+\begin{rmk*}
+\textbf{When you can start.} Problem 1 uses the constructions from Monday, October~12, and
+Problem~2 uses the multisets and partitions from Wednesday, October~14: do these two before or
+over fall break. Problem~3 needs Monday, October~26 (Young diagrams and $q$-binomial
+coefficients, which is also the break reading), and Problem~4 is best done after Wednesday,
+October~28. The second half is deliberately short.
+\end{rmk*}
+
+\begin{rmk*}
+\textbf{Conventions.} A \emph{composition} of $n$ is a finite sequence of positive integers
+with sum $n$; a \emph{partition} of $n$ is a multiset of positive integers with sum $n$, written
+as a weakly decreasing sequence $\lambda=(\lambda_1\ge\lambda_2\ge\cdots)$. The empty
+composition and the empty partition are the unique objects of size~$0$. Fibonacci numbers are
+$F_0=0$, $F_1=1$, $F_{n+1}=F_n+F_{n-1}$. For $0\le k\le N$, let $L(k,N-k)$ be the set of
+partitions with at most $k$ parts, each at most $N-k$ (the Young diagrams that fit in a box with
+$k$ rows and $N-k$ columns), ordered by containment of diagrams, and define
+\[
+\qbinom Nk=\sum_{\lambda\in L(k,N-k)}q^{|\lambda|},\qquad |\lambda|=\lambda_1+\lambda_2+\cdots.
+\]
+You may use the recurrence from class on October~26,
+$\qbinom Nk=\qbinom{N-1}{k}+q^{N-k}\qbinom{N-1}{k-1}$ for $0<k<N$, together with
+$\qbinom N0=\qbinom NN=1$.
+\end{rmk*}
+
+\begin{rmk*}
+\textbf{On write-ups.} Each problem is worth up to five points for mathematical content and up to
+two for writing. Write for another student in this course: say what you are going to show before
+you show it, justify each step, and use complete sentences. Whenever you give a specification,
+say in words what the objects are before writing the generating function. End your submission
+with a short \emph{Methods and tools} note: what software you used and for what, and how you
+checked anything a machine produced for you.
+\end{rmk*}
+
+%%% Problem 1 %%%
+\begin{prob}[specifications]
+\begin{enumerate}[(a)]
+\item Let $\cA$ be the class of binary words with no three consecutive $1$s, size $=$ length.
+Give a specification of $\cA$ in terms of $\SEQ$, $+$ and $\times$, deduce its generating
+function $A(z)$ as a single fraction, and compute $a_0,\dots,a_6$ from it. Check $a_4$ by
+listing the words of length $4$ that are \emph{not} in $\cA$.
+\item Let $\mathcal C$ be the class of compositions in which every part is at least $2$.
+Give a specification, find $C(z)$, and show that for $n\ge2$ the number $c_n$ equals the number
+of compositions of $n-2$ into parts $1$ and $2$. Then find a bijection that explains this.
+(Suggestion: rewrite each part $a\ge2$ of a composition in $\mathcal C$ as $2$ followed by
+$a-2$ ones.)
+\item Mark each part of a composition with a variable $u$: show that
+\[
+\sum_{n,k\ge0}\#\{\text{compositions of $n$ with exactly $k$ parts}\}\,u^kz^n
+=\frac{1}{1-\dfrac{uz}{1-z}},
+\]
+and deduce that the number of compositions of $n\ge1$ with exactly $k$ parts is
+$\binom{n-1}{k-1}$. Explain the same count with the ``dots and bars'' picture from class, and
+check that summing over $k$ gives the total you already know.
+\end{enumerate}
+\end{prob}
+
+%%% Problem 2 %%%
+\begin{prob}[partitions]
+\begin{enumerate}[(a)]
+\item Prove, using generating functions, that for every $n$ the number of partitions of $n$
+with no part divisible by $3$ equals the number of partitions of $n$ in which no part appears
+three or more times.
+\item Check (a) for $n=6$ by listing both sets of partitions.
+\item State and prove the analogous statement with $3$ replaced by any integer $d\ge2$. What
+statement from class is the case $d=2$?
+\end{enumerate}
+\end{prob}
+
+%%% Problem 3 %%%
+\begin{prob}[$q$-binomial coefficients]
+\begin{enumerate}[(a)]
+\item Prove the product formula
+\[
+\qbinom Nk=\frac{(1-q^N)(1-q^{N-1})\cdots(1-q^{N-k+1})}{(1-q^k)(1-q^{k-1})\cdots(1-q)},
+\]
+by showing that the right-hand side satisfies the recurrence and boundary values in the
+Conventions. (In particular the right-hand side is a polynomial, which is not obvious.)
+\item Prove the second recurrence $\qbinom Nk=q^{k}\qbinom{N-1}{k}+\qbinom{N-1}{k-1}$ by
+sorting the diagrams in $L(k,N-k)$ according to their first column.
+\item Show that the coefficients of $\qbinom Nk$ are symmetric:
+$q^{k(N-k)}\qbinom Nk\big|_{q\to q^{-1}}=\qbinom Nk$. (Find an involution of $L(k,N-k)$.)
+\end{enumerate}
+\end{prob}
+
+%%% Problem 4 %%%
+\begin{prob}[unimodality with no linear algebra, for two rows]
+Fix $n\ge1$ and consider the poset $L(2,n)$: partitions $(\lambda_1,\lambda_2)$ with
+$n\ge\lambda_1\ge\lambda_2\ge0$, graded by $\lambda_1+\lambda_2$, of rank $2n$.
+\begin{enumerate}[(a)]
+\item Show that the number of elements of rank $i$ is $\lfloor i/2\rfloor+1$ for $0\le i\le n$,
+and use (3c) or a direct argument for $n\le i\le2n$. Conclude that $L(2,n)$ is rank-symmetric
+and rank-unimodal, and write down its rank sizes when $n=4$.
+\item Find order-matchings $L(2,n)_0\to L(2,n)_1\to\cdots\to L(2,n)_n$ and
+$L(2,n)_n\leftarrow L(2,n)_{n+1}\leftarrow\cdots\leftarrow L(2,n)_{2n}$, and verify that they
+are order-matchings. (Change one part at a time.)
+\item Conclude that the largest antichain in $L(2,n)$ has $\lfloor n/2\rfloor+1$ elements, and
+draw the chains your matchings produce when $n=4$.
+\end{enumerate}
+\end{prob}
+
+%%% Bonus %%%
+\begin{bonus*}[subspaces]
+Let $q$ be a prime power and $\FF_q$ the field with $q$ elements. Show that the number of
+$k$-dimensional subspaces of $\FF_q^N$ is $\qbinom Nk$ evaluated at that $q$. (Count ordered
+bases two ways.) How many $2$-dimensional subspaces does $\FF_2^4$ have?
+\end{bonus*}
+
+\end{document}
