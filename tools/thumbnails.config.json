@@ -137,5 +137,13 @@
     "click": ".tcard[data-t=\"8\"]",
     "scrollTo": "h1",
     "wait": 800
+  },
+  "hyperbolic-models": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "wait": 2500
   }
 }

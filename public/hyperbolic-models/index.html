@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hyperbolische Ebene — projections off the hyperboloid</title>
+<link rel="stylesheet" href="/vendor/fonts/fonts.css">
+<style>
+  :root{
+    --paper:#efe7d5; --paper2:#e6dcc6; --ink:#241f1a; --ink2:#4a4138; --pencil:#9c9282; --rule:#c9bda3;
+    --chalk:#9b3a2a; --brass:#a8864a; --vitrine:#3a3632; --vitrine2:#1f1c1a; --cream:#e9e2d2;
+    --serif:'Playfair Display','Didot','Bodoni MT',Georgia,serif; --text:'EB Garamond',Garamond,'Times New Roman',serif; --frak:'UnifrakturCook','Old English Text MT',serif;
+  }
+  html,body{margin:0;height:100%;}
+  body{ background:var(--paper); color:var(--ink); font-family:var(--text); font-size:15px; line-height:1.4; display:flex; flex-direction:column; overflow:hidden; }
+  #bar{ flex:0 0 auto; background:var(--paper); border-bottom:1px solid var(--ink); padding:8px 18px 7px;
+    display:flex; flex-wrap:wrap; gap:6px 22px; align-items:baseline; }
+  #bar .title{ font-family:var(--serif); font-size:17px; letter-spacing:0.01em; white-space:nowrap; }
+  #bar .title .f{ font-family:var(--frak); font-size:30px; line-height:1; margin-right:8px; }
+  #bar .title .sub{ font-style:italic; color:var(--ink2); }
+  #epi{ flex:1 1 100%; font-style:italic; font-size:13px; color:var(--ink2); margin-top:-2px; }
+  #epi span{ font-style:normal; font-variant:small-caps; letter-spacing:0.08em; margin-left:6px; }
+  .grp{ display:flex; align-items:baseline; gap:7px; }
+  .grp label, .toggles label, .prow label{ font-variant:small-caps; letter-spacing:0.1em; font-size:13px; color:var(--ink2); }
+  select,input[type=number]{ background:transparent; color:var(--ink); border:none; border-bottom:1px solid var(--ink); border-radius:0; padding:2px 2px; font-size:14.5px; font-family:var(--text); }
+  select:focus{ outline:none; border-bottom-color:var(--chalk); }
+  button{ background:transparent; color:var(--ink); border:1px solid var(--ink); border-radius:0; padding:1px 9px; font-size:13px; font-family:var(--text); cursor:pointer; }
+  button:hover{ background:var(--paper2); }
+  button.on{ background:var(--ink); color:var(--paper); }
+  .toggles{ display:flex; gap:14px; flex-wrap:wrap; }
+  .toggles label{ display:flex; align-items:center; gap:5px; cursor:pointer; }
+  .toggles input{ accent-color:var(--ink); }
+  #params{ flex:0 0 auto; background:var(--paper2); border-bottom:1px solid var(--rule); padding:5px 18px;
+    display:flex; flex-wrap:wrap; gap:3px 26px; align-items:center; }
+  #params:empty{ display:none; }
+  .prow{ display:flex; align-items:center; gap:9px; }
+  .prow input[type=range]{ width:130px; accent-color:var(--ink); }
+  .prow .val{ font-variant-numeric:tabular-nums; font-size:13.5px; color:var(--ink); min-width:44px; }
+  #main{ flex:1 1 auto; display:flex; min-height:0; }
+  .pane{ flex:1 1 50%; position:relative; min-width:0; min-height:0; }
+  #pane3d{ background:radial-gradient(ellipse at 50% 30%, #4b4641 0%, var(--vitrine) 50%, var(--vitrine2) 100%); border-right:1px solid var(--ink); }
+  #pane2d{ background:
+      radial-gradient(ellipse at 50% 50%, rgba(255,250,236,0.55) 0%, rgba(0,0,0,0) 65%),
+      radial-gradient(ellipse at 50% 50%, var(--paper) 60%, #ddd1b6 100%); }
+  #pane2d::after{ content:''; position:absolute; inset:10px; border:1px solid var(--ink); outline:1px solid var(--ink); outline-offset:3px; pointer-events:none; }
+  canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; touch-action:none; }
+  #c3d{ cursor:grab; } #c3d:active{ cursor:grabbing; }
+  .cap{ position:absolute; left:26px; top:20px; pointer-events:none; max-width:52%; }
+  #pane3d .cap{ color:var(--cream); text-shadow:0 1px 6px #0009; }
+  .cap .h{ font-family:var(--serif); font-size:15px; }
+  .cap .s{ font-size:13px; font-style:italic; color:inherit; opacity:0.8; white-space:pre; margin-top:1px; }
+  #pane2d .cap{ color:var(--ink2); }
+  #pane2d .cap .h{ font-variant:small-caps; letter-spacing:0.12em; font-family:var(--text); font-size:14px; }
+  #fig{ position:absolute; left:0; right:0; bottom:18px; text-align:center; font-style:italic; font-size:14px; color:var(--ink); pointer-events:none; }
+  #fig b{ font-style:normal; font-weight:500; }
+  #readout{ position:absolute; left:26px; bottom:44px; font-size:13.5px; color:var(--ink2); white-space:pre-wrap; max-width:72%; background:rgba(239,231,213,0.88); padding:4px 8px 4px 0; border-top:1px solid var(--rule);
+    line-height:1.45; pointer-events:none; font-variant-numeric:tabular-nums; }
+  #readout b{ color:var(--ink); font-weight:500; }
+  #hint{ position:absolute; right:22px; bottom:16px; font-size:12.5px; font-style:italic; color:var(--cream); opacity:0.6; pointer-events:none; text-align:right; white-space:pre; }
+  #note{ position:absolute; right:22px; top:20px; max-width:40%; font-size:13px; color:var(--cream); opacity:0.85; pointer-events:none; text-align:right; line-height:1.38; text-shadow:0 1px 6px #0009; }
+  #note b{ font-variant:small-caps; letter-spacing:0.08em; font-weight:500; }
+  @media (max-width:820px){
+    #main{ flex-direction:column; }
+    #pane3d{ border-right:none; border-bottom:1px solid var(--ink); }
+    #note,#hint,#epi{ display:none; }
+    .prow input[type=range]{ width:100px; }
+    #readout{ max-width:88%; font-size:12.5px; }
+  }
+</style>
+</head>
+<body>
+<div id="bar">
+  <div class="title"><span class="f">Hyperbolische Ebene</span><span class="sub">— projections off the hyperboloid</span></div>
+  <div class="grp"><label for="feature">Figur</label>
+    <select id="feature">
+      <optgroup label="Elementary">
+        <option value="geodesic">Geodesic through two points</option>
+        <option value="triangle" selected>Triangle (drag vertices)</option>
+        <option value="idealtri">Ideal triangle</option>
+        <option value="circle">Circle</option>
+        <option value="horocycle">Horocycle</option>
+        <option value="hypercycle">Hypercycle (equidistant curve)</option>
+      </optgroup>
+      <optgroup label="Polygons">
+        <option value="regpoly">Regular polygon (any angle)</option>
+        <option value="ra5">Right-angled pentagon</option>
+        <option value="ra6">Right-angled hexagon</option>
+        <option value="idealpoly">Ideal regular n-gon</option>
+        <option value="saccheri">Saccheri quadrilateral</option>
+        <option value="lambert">Lambert quadrilateral</option>
+      </optgroup>
+      <optgroup label="Tessellations">
+        <option value="tess">Regular tessellation {p,q}</option>
+        <option value="kleinq">Klein quartic — 14-gon in {7,3}</option>
+        <option value="farey">Farey tessellation</option>
+        <option value="modular">PSL(2,ℤ) fundamental domain</option>
+      </optgroup>
+    </select>
+  </div>
+  <div class="grp"><label for="model">Projektion</label>
+    <select id="model">
+      <option value="klein">Cayley–Klein disk — from the origin onto z = 1</option>
+      <option value="poincare" selected>Poincaré disk — from (0,0,−1) onto z = 0</option>
+      <option value="halfplane">Upper half-plane — via the hemisphere</option>
+    </select>
+  </div>
+  <div class="grp"><label for="iso">Transformationsgruppe</label>
+    <select id="iso">
+      <option value="none">identity</option>
+      <option value="boost">hyperbolic — boost along x</option>
+      <option value="rot">elliptic — rotation about z</option>
+      <option value="para">parabolic — fixes the ideal point ∞</option>
+    </select>
+    <button id="isoPlay" title="animate">▶</button>
+    <button id="isoReset" title="reset to identity">⟲</button>
+  </div>
+  <div class="toggles">
+    <label><input type="checkbox" id="tPlane" checked> projection plane</label>
+    <label><input type="checkbox" id="tRays" checked> rays</label>
+    <label><input type="checkbox" id="tCone" checked> light cone</label>
+    <label><input type="checkbox" id="tGrid" checked> polar grid</label>
+    <label><input type="checkbox" id="tSpin"> auto-orbit</label>
+  </div>
+  <div id="epi">„Es ist eine Mannigfaltigkeit und in derselben eine Transformationsgruppe gegeben; man soll die der Mannigfaltigkeit angehörigen Gebilde hinsichtlich solcher Eigenschaften untersuchen, die durch die Transformationen der Gruppe nicht geändert werden.“<span>F. Klein, Erlangen 1872</span></div>
+</div>
+<div id="params"></div>
+<div id="main">
+  <div class="pane" id="pane3d">
+    <canvas id="c3d"></canvas>
+    <div class="cap"><div class="h">Modell: Hyperboloid  x² + y² − z² = −1,  z &gt; 0</div><div class="s" id="cap3d"></div></div>
+    <div id="note"></div>
+    <div id="hint">drag · trackball    wheel · zoom    shift-drag · pan    double-click · home</div>
+  </div>
+  <div class="pane" id="pane2d">
+    <canvas id="c2d"></canvas>
+    <div class="cap"><div class="h" id="cap2dh"></div><div class="s" id="cap2d"></div></div>
+    <div id="readout"></div>
+    <div id="fig"></div>
+  </div>
+</div>
+<script src="/vendor/three/r128/three.min.js"></script>
+<script>
+'use strict';
+/* ───────────────────────── Minkowski / hyperboloid core ───────────────────────── */
+const T_IDEAL = 7;                 // parameter length used to run a geodesic "to infinity"
+const md = (a,b) => a[0]*b[0] + a[1]*b[1] - a[2]*b[2];
+const add = (a,b) => [a[0]+b[0], a[1]+b[1], a[2]+b[2]];
+const sub = (a,b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
+const scl = (a,s) => [a[0]*s, a[1]*s, a[2]*s];
+const lin = (a,s,b,t) => [a[0]*s+b[0]*t, a[1]*s+b[1]*t, a[2]*s+b[2]*t];
+const isNull = v => Math.abs(md(v,v)) < 1e-7 * (1 + v[2]*v[2]);
+// normalise a timelike vector to the upper sheet
+function toH(v){ const q = -md(v,v); if (q <= 0) return null; const s = 1/Math.sqrt(q); return v[2] > 0 ? scl(v,s) : scl(v,-s); }
+function unitS(v){ const q = md(v,v); return scl(v, 1/Math.sqrt(q)); }          // spacelike unit
+// Minkowski "cross": orthogonal (in ⟨,⟩) to both u and v
+function mcross(u,v){ const a=[u[0],u[1],-u[2]], b=[v[0],v[1],-v[2]];
+  return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]]; }
+const dist = (A,B) => Math.acosh(Math.max(1, -md(A,B)));
+const polar = (r, th) => [Math.sinh(r)*Math.cos(th), Math.sinh(r)*Math.sin(th), Math.cosh(r)];
+const idealAt = th => [Math.cos(th), Math.sin(th), 1];                           // null vector
+// unit tangent at A pointing toward B (B finite or ideal)
+function dirTo(A,B){
+  if (isNull(B)) return sub(scl(B, -1/md(A,B)), A);
+  const d = add(B, scl(A, md(A,B))); return unitS(d);
+}
+function angleAt(A,B,C){ const u=dirTo(A,B), v=dirTo(A,C); return Math.acos(Math.max(-1,Math.min(1, md(u,v)))); }
+// sample the geodesic from A to B (either may be ideal)
+function seg(A,B,n){
+  const out = [];
+  const nA = isNull(A), nB = isNull(B);
+  if (!nA && !nB){ const d = dirTo(A,B), L = dist(A,B);
+    for (let i=0;i<=n;i++){ const t=L*i/n; out.push(lin(A,Math.cosh(t),d,Math.sinh(t))); } }
+  else if (nA && nB){ const s = 1/Math.sqrt(-2*md(A,B));
+    for (let i=0;i<=n;i++){ const t=T_IDEAL - 2*T_IDEAL*i/n; out.push(scl(lin(A,Math.exp(t),B,Math.exp(-t)), s)); } }
+  else if (nB){ const w = dirTo(A,B);
+    for (let i=0;i<=n;i++){ const t=T_IDEAL*i/n; out.push(lin(A,Math.cosh(t),w,Math.sinh(t))); } }
+  else return seg(B,A,n).reverse();
+  return out;
+}
+// full geodesic through two finite points, as an ideal-to-ideal segment
+function lineThrough(A,B,n){ const d = dirTo(A,B); return seg(sub(A,d), add(A,d), n); }
+function reflect(v,n){ return sub(v, scl(n, 2*md(v,n))); }      // n: unit spacelike normal of a geodesic plane
+function matApply(M,v){ return [M[0][0]*v[0]+M[0][1]*v[1]+M[0][2]*v[2], M[1][0]*v[0]+M[1][1]*v[1]+M[1][2]*v[2], M[2][0]*v[0]+M[2][1]*v[1]+M[2][2]*v[2]]; }
+function matMul(A,B){ const C=[[0,0,0],[0,0,0],[0,0,0]]; for(let i=0;i<3;i++)for(let j=0;j<3;j++)for(let k=0;k<3;k++)C[i][j]+=A[i][k]*B[k][j]; return C; }
+function matInv(M){ const [a,b,c]=M[0],[d,e,f]=M[1],[g,h,i]=M[2]; const A=e*i-f*h,B=-(d*i-f*g),C=d*h-e*g; const det=a*A+b*B+c*C;
+  return [[A/det,(c*h-b*i)/det,(b*f-c*e)/det],[B/det,(a*i-c*g)/det,(c*d-a*f)/det],[C/det,(b*g-a*h)/det,(a*e-b*d)/det]]; }
+const I3 = () => [[1,0,0],[0,1,0],[0,0,1]];
+const boostX = s => [[Math.cosh(s),0,Math.sinh(s)],[0,1,0],[Math.sinh(s),0,Math.cosh(s)]];
+const rotZ = a => [[Math.cos(a),-Math.sin(a),0],[Math.sin(a),Math.cos(a),0],[0,0,1]];
+// parabolic fixing ∞ = (0,-1,1): u ↦ u + c in the half-plane.  Built by transporting three points.
+function parabolic(c){
+  const P=[polar(0.3,0.2),polar(0.7,2.1),polar(0.5,4.0)]; const Q=P.map(p=>{const [u,v]=toHalf(p); return fromHalf(u+c,v);});
+  const Pm=[[P[0][0],P[1][0],P[2][0]],[P[0][1],P[1][1],P[2][1]],[P[0][2],P[1][2],P[2][2]]];
+  const Qm=[[Q[0][0],Q[1][0],Q[2][0]],[Q[0][1],Q[1][1],Q[2][1]],[Q[0][2],Q[1][2],Q[2][2]]];
+  return matMul(Qm, matInv(Pm));
+}
+/* ───────────────────────── the three projections ───────────────────────── */
+const toKlein = P => [P[0]/P[2], P[1]/P[2]];
+const fromKlein = (a,b) => { const s = 1/Math.sqrt(Math.max(1e-12, 1-a*a-b*b)); return [a*s, b*s, s]; };
+const toPoin = P => [P[0]/(1+P[2]), P[1]/(1+P[2])];
+const fromPoin = (a,b) => { const r2=a*a+b*b, s=1/(1-r2); return [2*a*s, 2*b*s, (1+r2)*s]; };
+const toHalf = P => [P[0]/(P[2]+P[1]), 1/(P[2]+P[1])];
+const fromHalf = (u,v) => [u/v, (1-u*u-v*v)/(2*v), (1+u*u+v*v)/(2*v)];
+const idealHalf = u => (u===Infinity) ? [0,-1,1] : [u, (1-u*u)/2, (1+u*u)/2];   // ideal point of the real line
+const MODELS = {
+  klein:    { name:'Klein disk',      to:toKlein, from:fromKlein, disk:true,
+              desc:'central projection from the origin onto the plane z = 1 — geodesics are straight chords' },
+  poincare: { name:'Poincaré disk',   to:toPoin,  from:fromPoin,  disk:true,
+              desc:'central projection from (0,0,−1), the vertex of the lower sheet, onto z = 0 — conformal; geodesics are circles ⊥ boundary' },
+  halfplane:{ name:'Upper half-plane',to:toHalf,  from:fromHalf,  disk:false,
+              desc:'Klein disk ↑ hemisphere, then stereographic projection from the equatorial point (0,−1,1) onto the vertical plane y = 1' },
+};
+/* ───────────────────────── figures ─────────────────────────
+   A figure is { curves:[{pts, kind, closed}], points:[{v, ideal, label}], rays:[v], readout }.
+   kinds: 'main' (orange), 'aux' (dim), 'fill' (closed, filled in 2D). Points are draggable in the 2D pane. */
+const fmt = (x,d=3) => (Math.abs(x)<1e-9?0:x).toFixed(d);
+const deg = x => (x*180/Math.PI).toFixed(1)+'°';
+const S = { pts: [], par: {} };   // control points (untransformed) and parameter values
+function P(i){ return S.pts[i].v; }
+function triReadout(A,B,C){
+  const a=angleAt(A,B,C), b=angleAt(B,C,A), c=angleAt(C,A,B);
+  return `angles  ${deg(a)}  ${deg(b)}  ${deg(c)}\nsum     ${deg(a+b+c)}\narea    π − sum = <b>${fmt(Math.PI-a-b-c)}</b>\nsides   ${fmt(dist(B,C))}  ${fmt(dist(C,A))}  ${fmt(dist(A,B))}`;
+}
+function regularPolygon(p, alpha, center, phase){   // interior angle alpha, centred at 'center' (translate from origin)
+  const coshR = 1/Math.tan(Math.PI/p)/Math.tan(alpha/2);
+  const R = Math.acosh(Math.max(1,coshR));
+  const V=[]; for(let k=0;k<p;k++){ V.push(alpha>1e-6 ? polar(R, phase+2*Math.PI*k/p) : idealAt(phase+2*Math.PI*k/p)); }
+  const M = transportTo(center); return V.map(v=>matApply(M,v));
+}
+// Lorentz matrix moving (0,0,1) to C along the geodesic (pure boost)
+function transportTo(C){ const r = dist([0,0,1],C); if (r<1e-9) return I3(); const th = Math.atan2(C[1],C[0]);
+  return matMul(rotZ(th), matMul(boostX(r), rotZ(-th))); }
+function polyFigure(V, label){
+  const F = { curves:[{pts:[], kind:'fill', closed:true}], points:[], rays:V.slice(), readout:'' };
+  for (let k=0;k<V.length;k++){ const s=seg(V[k],V[(k+1)%V.length],48); F.curves[0].pts.push(...(k?s.slice(1):s)); }
+  F.curves.push({pts:F.curves[0].pts, kind:'main', closed:true});
+  return F;
+}
+const FEATURES = {
+  geodesic:{ label:'geodesic', init(){ S.pts=[{v:polar(0.6,0.4)},{v:polar(0.9,2.6)}]; }, params:[],
+    build(){ const A=P(0),B=P(1); const F={curves:[{pts:lineThrough(A,B,64),kind:'main'},{pts:seg(A,B,24),kind:'main'}],points:S.pts,rays:[A,B]};
+      F.readout=`d(A,B) = arccosh(−⟨A,B⟩) = <b>${fmt(dist(A,B))}</b>\nthe geodesic is the plane through the origin, A and B, cut with the hyperboloid`; F.plane=[A,B]; return F; } },
+  triangle:{ label:'triangle', init(){ S.pts=[{v:polar(0.7,0.3),label:'A'},{v:polar(1.1,2.3),label:'B'},{v:polar(0.9,4.2),label:'C'}]; }, params:[],
+    build(){ const F=polyFigure([P(0),P(1),P(2)]); F.points=S.pts; F.readout=triReadout(P(0),P(1),P(2)); return F; } },
+  idealtri:{ label:'ideal triangle', init(){ S.pts=[{v:idealAt(0.3),ideal:true},{v:idealAt(2.4),ideal:true},{v:idealAt(4.3),ideal:true}]; }, params:[],
+    build(){ const F=polyFigure([P(0),P(1),P(2)]); F.points=S.pts; F.rays=[];
+      F.readout='all three vertices are ideal: angles 0, 0, 0\narea = π exactly — every ideal triangle is congruent to every other'; return F; } },
+  circle:{ label:'circle', init(){ S.pts=[{v:polar(0.5,1.0),label:'C'}]; }, params:[{id:'r',label:'radius r',min:0.1,max:2.5,step:0.01,def:1.0}],
+    build(){ const C=P(0), r=S.par.r, M=transportTo(C); const pts=[]; for(let i=0;i<=96;i++) pts.push(matApply(M,polar(r,2*Math.PI*i/96)));
+      const F={curves:[{pts,kind:'main',closed:true},{pts:seg(C,pts[0],12),kind:'aux'}],points:S.pts,rays:[C,pts[0],pts[48]]};
+      F.readout=`radius        ${fmt(r)}\ncircumference 2π sinh r = <b>${fmt(2*Math.PI*Math.sinh(r))}</b>\narea          4π sinh²(r/2) = <b>${fmt(4*Math.PI*Math.sinh(r/2)**2)}</b>\n(Euclidean would give ${fmt(2*Math.PI*r)}, ${fmt(Math.PI*r*r)})\nthe circle is a horizontal-plane section of the hyperboloid, boosted`; return F; } },
+  horocycle:{ label:'horocycle', init(){ S.pts=[{v:polar(0.6,2.0),label:'A'},{v:idealAt(0.4),ideal:true,label:'∞'}]; }, params:[],
+    build(){ const A=P(0); const l=scl(P(1), -1/md(P(0),P(1))); const w=unitS(mcross(A,l)); const F={curves:[],points:S.pts,rays:[A]};
+      for (const k of [1, Math.E, 1/Math.E]){ const lk=scl(l,1/k);           // horocycle ⟨Q,ℓ⟩ = −k  ⇔  ⟨Q,ℓ/k⟩ = −1
+        const A2=hcBase(l,k), w2=unitS(mcross(A2,lk)); const pts=[]; for(let i=0;i<=160;i++){ const t=-14+28*i/160; pts.push(add(add(A2,scl(w2,t)),scl(lk,t*t/2))); }
+        F.curves.push({pts,kind:k===1?'main':'aux'}); }
+      F.curves.push({pts:seg(A,P(1),24),kind:'aux'});
+      F.readout='horocycle: {Q : ⟨Q, ℓ⟩ = −1} for the null vector ℓ — a plane section parallel to a line of the light cone\nfainter: the concentric horocycles ⟨Q,ℓ⟩ = −e, −1/e\ndashed radius runs to the ideal centre'; return F; } },
+  hypercycle:{ label:'hypercycle', init(){ S.pts=[{v:polar(0.5,0.2),label:'A'},{v:polar(0.6,3.0),label:'B'}]; }, params:[{id:'d',label:'distance d',min:0.05,max:2,step:0.01,def:0.6}],
+    build(){ const A=P(0),B=P(1),d=S.par.d; const n=unitS(mcross(A,B)); const dd=dirTo(A,B); const F={curves:[{pts:lineThrough(A,B,64),kind:'aux'}],points:S.pts,rays:[]};
+      for (const sgn of [1,-1]){ const pts=[]; for(let i=0;i<=96;i++){ const t=-T_IDEAL+2*T_IDEAL*i/96; const g=lin(A,Math.cosh(t),dd,Math.sinh(t)); pts.push(lin(g,Math.cosh(d),n,sgn*Math.sinh(d))); } F.curves.push({pts,kind:'main'}); }
+      F.readout=`hypercycle: {Q : ⟨Q, n⟩ = ±sinh d}, points at distance d = ${fmt(d)} from the geodesic AB\n— a plane section parallel to the geodesic's plane through the origin`; return F; } },
+  regpoly:{ label:'regular polygon', init(){ S.pts=[{v:[0,0,1],label:'C'}]; }, params:[{id:'p',label:'sides p',min:3,max:12,step:1,def:5},{id:'alpha',label:'interior angle',min:0,max:170,step:1,def:72},{id:'phase',label:'turn',min:0,max:360,step:1,def:90}],
+    build(){ const p=S.par.p, amax=180*(p-2)/p-0.5; const a=Math.min(S.par.alpha,amax)*Math.PI/180; const V=regularPolygon(p,a,P(0),S.par.phase*Math.PI/180);
+      const F=polyFigure(V); F.points=S.pts; F.readout=`p = ${p}, interior angle ${deg(a)} (must be < ${deg((p-2)*Math.PI/p)})\narea  (p−2)π − pα = <b>${fmt((p-2)*Math.PI-p*a)}</b>\nside  ${a>1e-6?fmt(dist(V[0],V[1])):'∞'}    circumradius  ${a>1e-6?fmt(dist(P(0),V[0])):'∞'}`; return F; } },
+  ra5:{ label:'right-angled pentagon', init(){ S.pts=[{v:[0,0,1],label:'C'}]; }, params:[{id:'phase',label:'turn',min:0,max:360,step:1,def:90}],
+    build(){ const V=regularPolygon(5,Math.PI/2,P(0),S.par.phase*Math.PI/180); const F=polyFigure(V); F.points=S.pts;
+      F.readout=`regular right-angled pentagon: five right angles, area 3π − 5·π/2 = <b>${fmt(Math.PI/2)}</b>\nside ${fmt(dist(V[0],V[1]))} = arccosh(golden ratio) — four copies meet at each vertex: the {5,4} tiling`; return F; } },
+  ra6:{ label:'right-angled hexagon', init(){ S.pts=[{v:[0,0,1],label:'C'}]; }, params:[{id:'phase',label:'turn',min:0,max:360,step:1,def:90}],
+    build(){ const V=regularPolygon(6,Math.PI/2,P(0),S.par.phase*Math.PI/180); const F=polyFigure(V); F.points=S.pts;
+      F.readout=`regular right-angled hexagon: area 4π − 6·π/2 = <b>π</b>, side ${fmt(dist(V[0],V[1]))}\ntwo of these glue into a pair of pants — the building block of every hyperbolic surface`; return F; } },
+  idealpoly:{ label:'ideal n-gon', init(){ S.pts=[{v:[0,0,1],label:'C'}]; }, params:[{id:'p',label:'sides n',min:3,max:12,step:1,def:4},{id:'phase',label:'turn',min:0,max:360,step:1,def:45}],
+    build(){ const V=regularPolygon(S.par.p,0,P(0),S.par.phase*Math.PI/180); const F=polyFigure(V); F.points=S.pts; F.rays=[];
+      F.readout=`regular ideal ${S.par.p}-gon: all angles 0, area (n−2)π = <b>${fmt((S.par.p-2)*Math.PI)}</b>\nvertices are null directions on the light cone; the sides never reach them`; return F; } },
+  saccheri:{ label:'Saccheri quadrilateral', init(){ S.pts=[{v:polar(0.7,3.4),label:'A'},{v:polar(0.7,6.0),label:'B'}]; }, params:[{id:'l',label:'leg length',min:0.1,max:2.5,step:0.01,def:1.0}],
+    build(){ const A=P(0),B=P(1),l=S.par.l; let n=unitS(mcross(A,B)); if (n[1]<0 && Math.abs(n[1])>1e-9) {} // orientation: legs on the side of n
+      const D=lin(A,Math.cosh(l),n,Math.sinh(l)), C=lin(B,Math.cosh(l),n,Math.sinh(l));
+      const F=polyFigure([A,B,C,D]); F.points=S.pts; F.curves.push({pts:lineThrough(A,B,64),kind:'aux'});
+      const sm=angleAt(C,B,D); F.readout=`base AB = ${fmt(dist(A,B))}, legs ⊥ base of length ${fmt(l)}\nsummit CD = <b>${fmt(dist(C,D))}</b> (longer than the base)\nsummit angles = <b>${deg(sm)}</b> each — equal and acute\narea = 2π − 2·(π/2) − 2·summit = ${fmt(Math.PI-2*sm)}`; return F; } },
+  lambert:{ label:'Lambert quadrilateral', init(){ S.pts=[{v:[0,0,1],label:'A'}]; }, params:[{id:'p',label:'side p',min:0.1,max:1.6,step:0.01,def:0.7},{id:'q',label:'side q',min:0.1,max:1.6,step:0.01,def:0.9},{id:'phase',label:'turn',min:0,max:360,step:1,def:0}],
+    build(){ const A=P(0), p=S.par.p, q=S.par.q, M=matMul(transportTo(A),rotZ(S.par.phase*Math.PI/180));
+      const O=[0,0,1], e1=[1,0,0], e2=[0,1,0]; const B=lin(O,Math.cosh(p),e1,Math.sinh(p)), D=lin(O,Math.cosh(q),e2,Math.sinh(q));
+      const n1=mcross(B,e2), n2=mcross(D,e1); const Cv=mcross(n1,n2); const C=toH(Cv); const T=v=>matApply(M,v);
+      let F;
+      if (C){ F=polyFigure([O,B,C,D].map(T)); const phi=angleAt(C,B,D);
+        F.readout=`three right angles (at A, B, D); fourth angle φ = <b>${deg(phi)}</b>\ncos φ = sinh p · sinh q = ${fmt(Math.sinh(p)*Math.sinh(q))}\narea = π/2 − φ = ${fmt(Math.PI/2-phi)}`; }
+      else { const Bp=add(B,e2), Dp=add(D,e1); // ideal endpoints of the two perpendiculars
+        F={curves:[{pts:seg(T(O),T(B),16),kind:'main'},{pts:seg(T(O),T(D),16),kind:'main'},{pts:seg(T(B),T(Bp),32),kind:'main'},{pts:seg(T(D),T(Dp),32),kind:'main'}],points:[],rays:[T(B),T(D)]};
+        F.readout=`sinh p · sinh q = ${fmt(Math.sinh(p)*Math.sinh(q))} ≥ 1:\nthe perpendiculars at B and D never meet — no Lambert quadrilateral with these sides`; }
+      F.points=S.pts; return F; } },
+  tess:{ label:'{p,q} tessellation', init(){ S.pts=[]; },
+    fix(id){ const p=S.par.p,q=S.par.q; if (1/p+1/q<0.5) return false; const minq=n=>Math.floor(2*n/(n-2))+1;
+      if (id==='p') S.par.q=Math.max(3,minq(p)); else S.par.p=Math.max(3,minq(q)); return true; }, params:[{id:'p',label:'p',min:3,max:9,step:1,def:7},{id:'q',label:'q',min:3,max:9,step:1,def:3},{id:'depth',label:'depth ρ',min:1,max:5.5,step:0.1,def:4.0}],
+    build(){ const p=S.par.p,q=S.par.q; if (1/p+1/q>=0.5) return {curves:[],points:[],rays:[],readout:`{${p},${q}} is not hyperbolic: 1/p + 1/q ≥ 1/2`};
+      const tiles=tessellate(p,q,S.par.depth,4000); const F={curves:[],points:[],rays:tiles[0]}; const E=new Map();
+      for (const V of tiles){ for(let k=0;k<p;k++){ const a=V[k],b=V[(k+1)%p]; const key=ekey(a)+'|'+ekey(b), key2=ekey(b)+'|'+ekey(a); if(E.has(key)||E.has(key2)) continue; E.set(key,1); F.curves.push({pts:seg(a,b,10),kind:'main'}); } }
+      F.curves.push({pts:polyFigure(tiles[0]).curves[0].pts,kind:'fill',closed:true});
+      const R=Math.acosh(1/Math.tan(Math.PI/p)/Math.tan(Math.PI/q));
+      F.readout=`{${p},${q}}: ${p}-gons, ${q} at each vertex — ${tiles.length} tiles within ρ ≤ ${S.par.depth} shown\ntile area (p−2)π − 2πp/q = <b>${fmt((p-2)*Math.PI-2*Math.PI*p/q)}</b>, circumradius ${fmt(R)}\ntiles are generated by Lorentz reflections across edge planes`; return F; } },
+  kleinq:{ label:'Klein quartic', init(){ S.pts=[]; }, params:[{id:'depth',label:'depth ρ',min:3,max:4.4,step:0.1,def:3.6}],
+    build(){ const tiles=tessellate(7,3,S.par.depth,4000); const F={curves:[],points:[],rays:[],labels:[],readout:''};
+      const R=Math.acosh(1/Math.tan(Math.PI/14)/Math.tan(Math.PI/7)); const W=[]; for(let k=0;k<14;k++) W.push(polar(R, Math.PI/14+Math.PI*k/7));
+      const K=W.map(toKlein); const inside=q=>{ for(let i=0;i<14;i++){ const a=K[i],b=K[(i+1)%14]; if((b[0]-a[0])*(q[1]-a[1])-(b[1]-a[1])*(q[0]-a[0])<0) return false; } return true; };
+      const E=new Map(); let nin=0;
+      for (const V of tiles){ const c=toH(V.reduce((a,b)=>add(a,b),[0,0,0])); if (inside(toKlein(c))) nin++;
+        for(let k=0;k<7;k++){ const a=V[k],b=V[(k+1)%7]; const key=ekey(a)+'|'+ekey(b), key2=ekey(b)+'|'+ekey(a); if(E.has(key)||E.has(key2)) continue; E.set(key,1); F.curves.push({pts:seg(a,b,10),kind:'aux'}); } }
+      const G=polyFigure(W); F.curves.push({pts:G.curves[0].pts,kind:'fill',closed:true},{pts:G.curves[0].pts,kind:'main',closed:true});
+      const pair=new Array(15); for(let i=1;i<=13;i+=2){ pair[i]=(i+5-1)%14+1; pair[pair[i]]=i; } const letters='abcdefg'; let li=0; const lab=new Array(15);
+      for(let i=1;i<=14;i++){ if(!lab[i]){ lab[i]=lab[pair[i]]=letters[li++]; } }
+      for(let i=1;i<=14;i++){ const m=seg(W[i-1],W[i%14],2)[1]; const out=toH(add(m,scl(sub(m,[0,0,1]),0.06))); F.labels.push({v:out,text:lab[i]+'\u2009'+i}); }
+      F.readout=`regular 14-gon, angles 2π/7, vertices at the 14 heptagon centres at distance ${fmt(R)}\narea 12π − 14·2π/7 = <b>8π</b> = 24 heptagons (${nin} whole, the rest cut by the sides)\nsides glued in pairs a…g (side i ↔ i+5, i odd) → closed surface of genus 3:\n24 heptagons, 84 edges, 56 vertices — the Klein quartic x³y + y³z + z³x = 0`; return F; } },
+  farey:{ label:'Farey tessellation', init(){ S.pts=[]; }, params:[{id:'depth',label:'depth',min:1,max:8,step:1,def:5},{id:'width',label:'width',min:1,max:6,step:1,def:3}],
+    build(){ const F={curves:[],points:[],rays:[],readout:''}; const edges=new Set(); const add_=(u1,u2)=>{ const k=u1+'|'+u2; if(edges.has(k)||edges.has(u2+'|'+u1)) return; edges.add(k); F.curves.push({pts:seg(idealHalf(u1),idealHalf(u2),40),kind:'main'}); };
+      const W=S.par.width; for(let n=-W;n<W;n++){ add_(n,Infinity); add_(n,n+1); rec(n,1,n+1,1,S.par.depth,add_); } add_(W,Infinity);
+      F.readout=`ideal triangles with vertices at the rationals (and ∞): a/b and c/d are joined iff |ad − bc| = 1\nthe whole picture is the PSL(2,ℤ)-orbit of the triangle (0, 1, ∞)\n${F.curves.length} edges`; return F; } },
+  modular:{ label:'modular domain', init(){ S.pts=[]; }, params:[{id:'len',label:'word length',min:0,max:7,step:1,def:3}],
+    build(){ const F={curves:[],points:[],rays:[],readout:''}; const W=4; const add_=(u1,u2)=>F.curves.push({pts:seg(idealHalf(u1),idealHalf(u2),40),kind:'aux'});
+      for(let n=-W;n<W;n++){ add_(n,Infinity); add_(n,n+1); rec(n,1,n+1,1,3,add_); }
+      const doms=modularOrbit(S.par.len); let first=true;
+      for (const [a,b,c,d] of doms){ const V=[mobius(a,b,c,d,[-0.5,Math.sqrt(3)/2]), mobius(a,b,c,d,[0.5,Math.sqrt(3)/2]), mobius(a,b,c,d,null)];
+        const pts=[]; for(let k=0;k<3;k++){ const s=seg(V[k],V[(k+1)%3],28); pts.push(...(k?s.slice(1):s)); }
+        if (first){ F.curves.push({pts,kind:'fill',closed:true}); F.rays=[V[0],V[1]]; first=false; } F.curves.push({pts,kind:'main',closed:true}); }
+      F.readout=`fundamental domain {|z| ≥ 1, |Re z| ≤ ½} of PSL(2,ℤ), vertices ρ, ρ+1 and ∞\n${doms.length} images under words of length ≤ ${S.par.len} in S: z ↦ −1/z and T: z ↦ z+1\nfaint: the Farey tessellation (its barycentric subdivision is this tiling)`; return F; } },
+};
+function hcBase(l,k){ // a point A' on H with ⟨A',ℓ⟩ = −k, on the geodesic through the original base point toward ℓ
+  const A=P(0); const w=dirTo(A,P(1)); // move along the ray to the ideal centre: ⟨A cosh t + w sinh t, ℓ⟩ = −k
+  // ⟨A,ℓ⟩=−1, ⟨w,ℓ⟩ = ⟨-ℓ/⟨A,ℓ⟩ − A, ℓ⟩ = -⟨A,ℓ⟩ = 1  →  −cosh t + sinh t = −k  →  e^{−t} = k  → t = −ln k
+  const t=-Math.log(k); return lin(A,Math.cosh(t),w,Math.sinh(t));
+}
+const ekey = v => Math.round(v[0]*2000)+','+Math.round(v[1]*2000)+','+Math.round(v[2]*2000);
+function tessellate(p,q,rho,cap){
+  const R=Math.acosh(1/Math.tan(Math.PI/p)/Math.tan(Math.PI/q)); const zmax=Math.cosh(rho);
+  const V0=[]; for(let k=0;k<p;k++) V0.push(polar(R, Math.PI/2+2*Math.PI*k/p));
+  const tiles=[], seen=new Set(); const centre=V=>toH(V.reduce((a,b)=>add(a,b),[0,0,0]));
+  const queue=[V0]; seen.add(ekey(centre(V0)));
+  while(queue.length && tiles.length<cap){ const V=queue.shift(); tiles.push(V);
+    for(let k=0;k<p;k++){ const n=unitS(mcross(V[k],V[(k+1)%p])); const W=V.map(v=>reflect(v,n)); const c=centre(W); if (c[2]>zmax) continue; const key=ekey(c); if(seen.has(key)) continue; seen.add(key); queue.push(W); } }
+  return tiles;
+}
+function rec(a,b,c,d,depth,add_){ if(depth<=0) return; const m=a+c, n=b+d; add_(a/b, m/n); add_(m/n, c/d); rec(a,b,m,n,depth-1,add_); rec(m,n,c,d,depth-1,add_); }
+function mobius(a,b,c,d,z){ // z = [u,v] or null for ∞ ; returns hyperboloid point or null vector
+  if (z===null){ return c===0 ? [0,-1,1] : idealHalf(a/c); }
+  const [u,v]=z; const nr=a*u+b, ni=a*v, dr=c*u+d, di=c*v; const D=dr*dr+di*di; const U=(nr*dr+ni*di)/D, Vv=(ni*dr-nr*di)/D; return fromHalf(U,Vv);
+}
+function modularOrbit(L){ const S_=[0,-1,1,0], T_=[1,1,0,1], Ti=[1,-1,0,1]; const mul=(m,n)=>[m[0]*n[0]+m[1]*n[2],m[0]*n[1]+m[1]*n[3],m[2]*n[0]+m[3]*n[2],m[2]*n[1]+m[3]*n[3]];
+  const key=m=>{ const s=(m[0]<0||(m[0]===0&&m[2]<0))?-1:1; return m.map(x=>x*s).join(','); };
+  const seen=new Set(); let layer=[[1,0,0,1]]; const out=[]; seen.add(key(layer[0]));
+  for(let l=0;l<=L;l++){ const next=[]; for(const m of layer){ out.push(m); for(const g of [S_,T_,Ti]){ const n=mul(m,g); const k=key(n); if(seen.has(k)) continue; seen.add(k); next.push(n); } } layer=next; }
+  return out;
+}
+/* ───────────────────────── 3-D pane: a plaster model in a vitrine (three.js, z up) ───────────────────────── */
+const V3 = { rhoMax: 2.0, model:'poincare', showPlane:true, showRays:true, showCone:true, showGrid:true, spin:false };
+const c3d = document.getElementById('c3d');
+const renderer = new THREE.WebGLRenderer({canvas:c3d, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+renderer.outputEncoding = THREE.sRGBEncoding;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 200); camera.up.set(0,0,1);
+/* camera: a quaternion trackball — orientation q maps camera axes (right, up, back) to world axes; no Euler angles, no gimbal lock */
+const cam = { q: new THREE.Quaternion(), dist: 12.5, target: new THREE.Vector3(0,0,1.6) };
+(function initOrientation(az, el){ const ce=Math.cos(el); const pos=new THREE.Vector3(ce*Math.cos(az), ce*Math.sin(az), Math.sin(el));
+  const m=new THREE.Matrix4().lookAt(pos, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,1)); cam.q.setFromRotationMatrix(m); })(-1.15, 0.42);
+const HOME={ q:cam.q.clone(), dist:cam.dist, target:cam.target.clone() };
+function homeView(){ cam.q.copy(HOME.q); cam.dist=HOME.dist; cam.target.copy(HOME.target); }
+c3d.addEventListener('dblclick', homeView);
+const _back=new THREE.Vector3(), _up=new THREE.Vector3();
+function placeCamera(){ _back.set(0,0,1).applyQuaternion(cam.q); _up.set(0,1,0).applyQuaternion(cam.q);
+  camera.position.copy(cam.target).addScaledVector(_back, cam.dist); camera.up.copy(_up); camera.lookAt(cam.target); }
+// rotate the view by angle a about a unit axis given in camera coordinates (x right, y up, z back)
+const _ax=new THREE.Vector3(), _dq=new THREE.Quaternion();
+function orbit(axisCam, a){ _ax.copy(axisCam).applyQuaternion(cam.q); _dq.setFromAxisAngle(_ax, a); cam.q.premultiply(_dq).normalize(); }
+function orbitWorldZ(a){ _dq.setFromAxisAngle(new THREE.Vector3(0,0,1), a); cam.q.premultiply(_dq).normalize(); }
+scene.add(new THREE.HemisphereLight(0xfff3dc, 0x2a2622, 0.95));
+const key = new THREE.DirectionalLight(0xfff0d8, 0.6); key.position.set(3,-5,7); scene.add(key);
+const fill = new THREE.DirectionalLight(0xd9d2c4, 0.25); fill.position.set(-5,3,2); scene.add(fill);
+const COL = { ink:0x1d1814, pencil:0x6b6157, chalk:0x9b3a2a, brass:0xb08d4a, brass2:0xd4b06a, glass:0xa7c4b5, plaster:0xe9e2d2, wood:0x3b2a1e };
+const gStatic = new THREE.Group(), gProj = new THREE.Group(), gFig = new THREE.Group(); scene.add(gStatic, gProj, gFig);
+const lineMat = (color, opacity, inkOnTop) => new THREE.LineBasicMaterial({color, transparent:true, opacity, depthWrite:false, depthTest:!inkOnTop});
+function segsGeom(arr){ const g=new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(arr,3)); return g; }
+function addSegs(group, arr, color, opacity, inkOnTop){ if(!arr.length) return; const l=new THREE.LineSegments(segsGeom(arr), lineMat(color,opacity,inkOnTop)); if(inkOnTop) l.renderOrder=5; group.add(l); return l; }
+function disposeGroup(g){ while(g.children.length){ const o=g.children.pop(); if(o.geometry) o.geometry.dispose(); if(o.material){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); } } }
+function plaqueTexture(){ const c=document.createElement('canvas'); c.width=1024; c.height=256; const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,1024,256); g.addColorStop(0,'#c9a45c'); g.addColorStop(0.5,'#e2c47e'); g.addColorStop(1,'#b8903f'); x.fillStyle=g; x.fillRect(0,0,1024,256);
+  x.strokeStyle='#6d5120'; x.lineWidth=6; x.strokeRect(14,14,996,228); x.fillStyle='#3a2a10'; x.textAlign='center';
+  x.font='500 54px "EB Garamond", Garamond, serif'; x.fillText('Modell Nr. 14', 512, 96);
+  x.font='italic 40px "EB Garamond", Garamond, serif'; x.fillText('Hyperboloid mit Kleinscher Projektion', 512, 160);
+  x.font='30px "EB Garamond", Garamond, serif'; x.fillText('Mathematisches Institut · Göttingen', 512, 214);
+  const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=4; return t; }
+/* static scenery: plaster hyperboloid with incised grid, brass light cone, walnut base */
+function buildStatic(){
+  disposeGroup(gStatic);
+  const rm=V3.rhoMax, NR=48, NT=120;
+  const geo=new THREE.BufferGeometry(); const pos=[], idx=[];
+  for(let i=0;i<=NR;i++){ const r=rm*i/NR; for(let j=0;j<=NT;j++){ const th=2*Math.PI*j/NT; pos.push(Math.sinh(r)*Math.cos(th), Math.sinh(r)*Math.sin(th), Math.cosh(r)); } }
+  for(let i=0;i<NR;i++) for(let j=0;j<NT;j++){ const a=i*(NT+1)+j, b=a+NT+1; idx.push(a,b,a+1, b,b+1,a+1); }
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3)); geo.setIndex(idx); geo.computeVertexNormals();
+  const mat=new THREE.MeshStandardMaterial({color:COL.plaster, roughness:0.97, metalness:0, transparent:true, opacity:0.8, side:THREE.DoubleSide, polygonOffset:true, polygonOffsetFactor:1.5, polygonOffsetUnits:2});
+  gStatic.add(new THREE.Mesh(geo, mat));
+  if (V3.showGrid){ const arr=[];
+    for(let k=1;k*0.5<=rm+1e-9;k++){ const r=0.5*k; for(let j=0;j<NT;j++){ const a=2*Math.PI*j/NT,b=2*Math.PI*(j+1)/NT; arr.push(Math.sinh(r)*Math.cos(a),Math.sinh(r)*Math.sin(a),Math.cosh(r), Math.sinh(r)*Math.cos(b),Math.sinh(r)*Math.sin(b),Math.cosh(r)); } }
+    for(let j=0;j<24;j++){ const th=Math.PI*j/12; for(let i=0;i<NR;i++){ const r1=rm*i/NR, r2=rm*(i+1)/NR; arr.push(Math.sinh(r1)*Math.cos(th),Math.sinh(r1)*Math.sin(th),Math.cosh(r1), Math.sinh(r2)*Math.cos(th),Math.sinh(r2)*Math.sin(th),Math.cosh(r2)); } }
+    addSegs(gStatic, arr, COL.pencil, 0.45); }
+  if (V3.showCone){ const arr=[], H=Math.cosh(rm);
+    for(let j=0;j<24;j++){ const th=Math.PI*j/12; arr.push(0,0,0, H*Math.cos(th),H*Math.sin(th),H); arr.push(0,0,0, -1.5*Math.cos(th),-1.5*Math.sin(th),-1.5); }
+    for(const h of [1,2,4,H]) if(h<=H) for(let j=0;j<NT;j++){ const a=2*Math.PI*j/NT,b=2*Math.PI*(j+1)/NT; arr.push(h*Math.cos(a),h*Math.sin(a),h, h*Math.cos(b),h*Math.sin(b),h); }
+    for(let j=0;j<NT;j++){ const a=2*Math.PI*j/NT,b=2*Math.PI*(j+1)/NT; arr.push(1.5*Math.cos(a),1.5*Math.sin(a),-1.5, 1.5*Math.cos(b),1.5*Math.sin(b),-1.5); }
+    addSegs(gStatic, arr, COL.brass, 0.4); }
+  addSegs(gStatic, [-1.4,0,0, 1.4,0,0, 0,-1.4,0, 0,1.4,0, 0,0,-1.3, 0,0,1.3], COL.brass2, 0.5);
+  const o=new THREE.Mesh(new THREE.SphereGeometry(0.04,14,14), new THREE.MeshStandardMaterial({color:COL.brass2, roughness:0.35, metalness:0.8})); gStatic.add(o);
+  // walnut base, brass post, engraved plaque
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(2.1,2.2,0.16,96), new THREE.MeshStandardMaterial({color:COL.wood, roughness:0.55, metalness:0.05}));
+  base.rotation.x=Math.PI/2; base.position.z=-1.84; gStatic.add(base);
+  const post=new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,0.76,12), new THREE.MeshStandardMaterial({color:COL.brass, roughness:0.4, metalness:0.8}));
+  post.rotation.x=Math.PI/2; post.position.z=-1.38; gStatic.add(post);
+  const plaque=new THREE.Mesh(new THREE.PlaneGeometry(1.6,0.4), new THREE.MeshStandardMaterial({map:plaqueTexture(), roughness:0.5, metalness:0.6, side:THREE.DoubleSide}));
+  plaque.position.set(1.9*Math.cos(-1.15), 1.9*Math.sin(-1.15), -1.55); plaque.rotation.set(Math.PI/2, 0, -1.15+Math.PI/2, 'ZXY'); gStatic.add(plaque);
+}
+/* projection scenery for the chosen model: glass planes with brass rims */
+const PROJ = {
+  klein:    { centre:[0,0,0],  pt:P=>[P[0]/P[2],P[1]/P[2],1] },
+  poincare: { centre:[0,0,-1], pt:P=>[P[0]/(1+P[2]),P[1]/(1+P[2]),0] },
+  halfplane:{ centre:[0,-1,1], pt:P=>{ const [u,v]=toHalf(P); return [2*u,1,1+2*v]; } },
+};
+const hemiPt = P => [P[0]/P[2], P[1]/P[2], 1+1/P[2]];
+const HP_CLIP = { x:5.2, z:6.4 };
+const glassMat = (opacity, color=COL.glass) => new THREE.MeshStandardMaterial({color, transparent:true, opacity, roughness:0.25, metalness:0.1, side:THREE.DoubleSide, depthWrite:false});
+function diskMesh(z, opacity){ const mesh=new THREE.Mesh(new THREE.CircleGeometry(1,96), glassMat(opacity)); mesh.position.z=z; return mesh; }
+function circleSegs(z, r=1){ const arr=[]; for(let j=0;j<128;j++){ const a=2*Math.PI*j/128,b=2*Math.PI*(j+1)/128; arr.push(r*Math.cos(a),r*Math.sin(a),z, r*Math.cos(b),r*Math.sin(b),z); } return arr; }
+function brassDot(p){ const m=new THREE.Mesh(new THREE.SphereGeometry(0.05,14,14), new THREE.MeshStandardMaterial({color:COL.brass2, roughness:0.35, metalness:0.8})); m.position.set(p[0],p[1],p[2]); return m; }
+function buildProj(){
+  disposeGroup(gProj); if(!V3.showPlane) return;
+  const m=V3.model;
+  if (m==='klein'){ gProj.add(diskMesh(1, 0.16)); addSegs(gProj, circleSegs(1), COL.brass2, 0.95); }
+  if (m==='poincare'){ gProj.add(diskMesh(0, 0.16)); addSegs(gProj, circleSegs(0), COL.brass2, 0.95); gProj.add(brassDot([0,0,-1])); }
+  if (m==='halfplane'){ gProj.add(diskMesh(1, 0.07)); addSegs(gProj, circleSegs(1), COL.brass2, 0.5);
+    const hemi=new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32, 0, 2*Math.PI, 0, Math.PI/2), glassMat(0.16, 0xb9d6c6)); hemi.rotation.x=Math.PI/2; hemi.position.z=1; gProj.add(hemi);
+    const pl=new THREE.Mesh(new THREE.PlaneGeometry(2*HP_CLIP.x, HP_CLIP.z-1), glassMat(0.14)); pl.rotation.x=Math.PI/2; pl.position.set(0,1,(1+HP_CLIP.z)/2); gProj.add(pl);
+    const X=HP_CLIP.x,Z=HP_CLIP.z; addSegs(gProj, [-X,1,1, X,1,1], COL.brass2, 0.95); addSegs(gProj, [-X,1,1,-X,1,Z, -X,1,Z,X,1,Z, X,1,Z,X,1,1], COL.brass, 0.5);
+    gProj.add(brassDot([0,-1,1])); }
+}
+/* figure: inked curves on the plaster, their projections on the glass, brass rays, points */
+function buildFigure(F){
+  disposeGroup(gFig);
+  const zmax=Math.cosh(V3.rhoMax)*1.02, m=V3.model, pr=PROJ[m];
+  const onH={main:[],aux:[]}, onPl={main:[],aux:[]}, onHemi=[], rays=[];
+  const inPlane = q => m!=='halfplane' || (Math.abs(q[0])<=HP_CLIP.x && q[2]<=HP_CLIP.z);
+  for (const c of F.curves){ if (c.kind==='fill') continue; const pts=c.pts, k=c.kind;
+    for (let i=0;i+1<pts.length;i++){ const a=pts[i], b=pts[i+1];
+      if (a[2]<=zmax && b[2]<=zmax) onH[k].push(...a,...b);
+      if (V3.showPlane){ const qa=pr.pt(a), qb=pr.pt(b); if (inPlane(qa)&&inPlane(qb)) onPl[k].push(...qa,...qb);
+        if (m==='halfplane'){ const ha=hemiPt(a), hb=hemiPt(b); onHemi.push(...ha,...hb); } } } }
+  addSegs(gFig, onH.main, COL.ink, 1, true); addSegs(gFig, onH.aux, COL.pencil, 0.75, true);
+  addSegs(gFig, onPl.main, COL.ink, 0.9, true); addSegs(gFig, onPl.aux, COL.pencil, 0.6, true); addSegs(gFig, onHemi, COL.ink, 0.45);
+  const sph=new THREE.SphereGeometry(0.045,14,14); const matP=new THREE.MeshStandardMaterial({color:COL.chalk, roughness:0.8, depthTest:false}), matQ=new THREE.MeshStandardMaterial({color:COL.ink, roughness:0.8});
+  const dot=(p,mat)=>{ const s=new THREE.Mesh(sph,mat); s.position.set(p[0],p[1],p[2]); gFig.add(s); };
+  for (const q of F.points){ const v=q.v; if (!isNull(v) && v[2]<=zmax) dot(v,matP); if (V3.showPlane){ const w=isNull(v)? idealProj(v,m) : pr.pt(v); if (w && inPlane(w)) dot(w,matQ); } }
+  if (V3.showPlane && V3.showRays){ for (const v of F.rays){ if (isNull(v)) continue; const q=pr.pt(v); if(!inPlane(q)) continue;
+      if (m==='halfplane'){ const k=[v[0]/v[2],v[1]/v[2],1], h=hemiPt(v); if (v[2]<=zmax) rays.push(0,0,0,...v); else rays.push(0,0,0,...k); rays.push(...k,...h); rays.push(0,-1,1,...q); }
+      else { const far = v[2]<=zmax ? v : q; const c=pr.centre; const ext=lin(c,1,sub(far,c),1); rays.push(...c,...ext); } }
+    addSegs(gFig, rays, COL.brass2, 0.5); }
+  if (F.plane){ // the plane through the origin cutting out a geodesic — a sheet of glass
+    const n=unitS(mcross(F.plane[0],F.plane[1])); const a=new THREE.Vector3(n[0],n[1],-n[2]).normalize();
+    const w=2*Math.sinh(V3.rhoMax)+1; const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,w), glassMat(0.12));
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), a); gFig.add(mesh); }
+}
+function idealProj(v,m){
+  if (m==='klein') return [v[0]/v[2],v[1]/v[2],1];
+  if (m==='poincare') return [v[0]/v[2],v[1]/v[2],0];
+  const d=v[2]+v[1]; if (Math.abs(d)<1e-9) return null; return [2*v[0]/d, 1, 1];
+}
+/* interaction */
+let drag=null;
+c3d.addEventListener('pointerdown', e=>{ drag={x:e.clientX,y:e.clientY,shift:e.shiftKey}; c3d.setPointerCapture(e.pointerId); });
+c3d.addEventListener('pointermove', e=>{ if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.x=e.clientX; drag.y=e.clientY;
+  if (drag.shift){ const r=cam.dist*0.0016; const right=new THREE.Vector3(1,0,0).applyQuaternion(cam.q), up=new THREE.Vector3(0,1,0).applyQuaternion(cam.q);
+    cam.target.addScaledVector(right, -dx*r).addScaledVector(up, dy*r); }
+  else { // trackball: horizontal drag spins about the screen's vertical axis, vertical drag about its horizontal axis
+    const k=0.006; const len=Math.hypot(dx,dy); if (len>0){ const axis=new THREE.Vector3(-dy/len, -dx/len, 0); orbit(axis, len*k); } }
+  V3.spin=false; document.getElementById('tSpin').checked=false; });
+c3d.addEventListener('pointerup', ()=>drag=null); c3d.addEventListener('pointercancel', ()=>drag=null);
+c3d.addEventListener('wheel', e=>{ e.preventDefault(); cam.dist=Math.max(2, Math.min(40, cam.dist*Math.exp(e.deltaY*0.0012))); }, {passive:false});
+let pinch=null; c3d.addEventListener('touchstart', e=>{ if(e.touches.length===2) pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); }, {passive:true});
+c3d.addEventListener('touchmove', e=>{ if(e.touches.length===2 && pinch){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); cam.dist=Math.max(2,Math.min(40,cam.dist*pinch/d)); pinch=d; drag=null; } }, {passive:true});
+function resize3d(){ const w=c3d.clientWidth, h=c3d.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+/* ───────────────────────── 2-D pane: a lithographed plate ───────────────────────── */
+const c2d=document.getElementById('c2d'), ctx=c2d.getContext('2d');
+const view2={cx:0,cy:0,s:1,user:false};
+const INK='#241f1a', PENCIL='rgba(107,97,87,0.55)', CHALK='#9b3a2a';
+function resetView2(){ const w=c2d.clientWidth,h=c2d.clientHeight; if (MODELS[V3.model].disk){ view2.cx=w/2; view2.cy=h/2-14; view2.s=0.40*Math.min(w,h); } else { view2.s=Math.min(w/5.2,h/3.8); view2.cx=w/2; view2.cy=h-70; } view2.user=false; }
+const toScr = q => [view2.cx+view2.s*q[0], view2.cy-view2.s*q[1]];
+const toMod = (X,Y) => [(X-view2.cx)/view2.s, (view2.cy-Y)/view2.s];
+let Fv=null;   // current (isometry-transformed) figure
+function tracePath(mp, pts, closed){ ctx.beginPath(); let first=true;
+  for(const p of pts){ const q=mp(p); if(!isFinite(q[0])||!isFinite(q[1])) continue; const s=toScr(q); if(Math.abs(s[0])>1e6||Math.abs(s[1])>1e6) continue; if(first){ctx.moveTo(s[0],s[1]);first=false;} else ctx.lineTo(s[0],s[1]); }
+  if(closed) ctx.closePath(); }
+function hatch(w,h){ // 45° hatching over the current clip, lithograph style
+  ctx.save(); ctx.strokeStyle='rgba(36,31,26,0.42)'; ctx.lineWidth=0.7; ctx.beginPath(); const sp=5.5, n=(w+h)/sp;
+  for(let i=-n;i<n;i++){ const o=i*sp; ctx.moveTo(o, 0); ctx.lineTo(o+h, h); } ctx.stroke(); ctx.restore(); }
+function draw2d(){
+  const dpr=Math.min(2,window.devicePixelRatio||1), w=c2d.clientWidth, h=c2d.clientHeight; if(!w||!h) return;
+  if (c2d.width!==Math.round(w*dpr)||c2d.height!==Math.round(h*dpr)){ c2d.width=Math.round(w*dpr); c2d.height=Math.round(h*dpr); }
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  const M=MODELS[V3.model], mp=M.to;
+  // construction grid in pencil, boundary in ink
+  if (V3.showGrid){ ctx.save(); ctx.strokeStyle=PENCIL; ctx.lineWidth=0.6;
+    for(let k=1;k*0.5<=V3.rhoMax+1e-9;k++){ const r=0.5*k; const pts=[]; for(let j=0;j<=96;j++) pts.push(matApply(ISO.M,polar(r,2*Math.PI*j/96))); tracePath(mp,pts,false); ctx.stroke(); }
+    for(let j=0;j<24;j++){ const th=Math.PI*j/12; const pts=[]; for(let i=0;i<=40;i++) pts.push(matApply(ISO.M,polar(V3.rhoMax*i/40,th))); tracePath(mp,pts,false); ctx.stroke(); }
+    ctx.restore(); }
+  ctx.save(); ctx.strokeStyle=INK; ctx.lineWidth=1.1;
+  if (M.disk){ const [cx,cy]=toScr([0,0]); ctx.beginPath(); ctx.arc(cx,cy,view2.s,0,2*Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,view2.s+3,0,2*Math.PI); ctx.lineWidth=0.5; ctx.stroke(); }
+  else { const y0=toScr([0,0])[1]; ctx.beginPath(); ctx.moveTo(14,y0); ctx.lineTo(w-14,y0); ctx.stroke();
+    ctx.lineWidth=0.7; for(let u=-12;u<=12;u++){ const s=toScr([u,0]); if(s[0]<14||s[0]>w-14) continue; ctx.beginPath(); ctx.moveTo(s[0],y0); ctx.lineTo(s[0],y0+(u?5:9)); ctx.stroke(); } }
+  ctx.restore();
+  if (!Fv) return;
+  for (const c of Fv.curves){ if (c.kind!=='fill') continue; ctx.save(); tracePath(mp,c.pts,true); ctx.clip(); hatch(w,h); ctx.restore(); }
+  for (const c of Fv.curves){ if (c.kind==='fill') continue; tracePath(mp,c.pts,c.closed);
+    if (c.kind==='main'){ ctx.strokeStyle=INK; ctx.lineWidth=1.35; } else { ctx.strokeStyle='rgba(74,65,56,0.75)'; ctx.lineWidth=0.8; } ctx.stroke(); }
+  ctx.font='italic 15px "Playfair Display", Georgia, serif'; ctx.textBaseline='middle';
+  for (const p of Fv.points){ const q=ptModel(p); if(!q) continue; const s=toScr(q); ctx.beginPath(); ctx.arc(s[0],s[1],p.ideal?4.8:5.2,0,2*Math.PI);
+    if (p.ideal){ ctx.fillStyle='#efe7d5'; ctx.fill(); ctx.strokeStyle=CHALK; ctx.lineWidth=1.8; ctx.stroke(); } else { ctx.fillStyle=CHALK; ctx.fill(); ctx.strokeStyle=INK; ctx.lineWidth=0.8; ctx.stroke(); }
+    if (p.label){ ctx.fillStyle=INK; ctx.fillText(p.label, s[0]+9, s[1]-9); } }
+  if (Fv.labels){ ctx.font='italic 13px "Playfair Display", Georgia, serif'; ctx.textAlign='center'; ctx.fillStyle=INK;
+    for (const L of Fv.labels){ const q=mp(L.v); if(!isFinite(q[0])) continue; const s=toScr(q); ctx.fillText(L.text, s[0], s[1]); } ctx.textAlign='start'; }
+}
+function ptModel(p){ const v=p.v; if (!isNull(v)) return MODELS[V3.model].to(v);
+  if (MODELS[V3.model].disk) return [v[0]/v[2], v[1]/v[2]]; const d=v[2]+v[1]; return Math.abs(d)<1e-9 ? null : [v[0]/d, 0]; }
+/* dragging control points / panning */
+let d2=null;
+c2d.addEventListener('pointerdown', e=>{ const r=c2d.getBoundingClientRect(); const X=e.clientX-r.left, Y=e.clientY-r.top; let best=-1,bd=16;
+  if (Fv) Fv.points.forEach((p,i)=>{ const q=ptModel(p); if(!q) return; const s=toScr(q); const d=Math.hypot(s[0]-X,s[1]-Y); if(d<bd){bd=d;best=i;} });
+  d2={i:best,X,Y}; c2d.setPointerCapture(e.pointerId); c2d.style.cursor=best>=0?'grabbing':'move'; });
+c2d.addEventListener('pointermove', e=>{ const r=c2d.getBoundingClientRect(); const X=e.clientX-r.left, Y=e.clientY-r.top;
+  if (!d2){ let hit=false; if(Fv) for(const p of Fv.points){ const q=ptModel(p); if(!q) continue; const s=toScr(q); if(Math.hypot(s[0]-X,s[1]-Y)<16){hit=true;break;} } c2d.style.cursor=hit?'grab':'default'; return; }
+  if (d2.i<0){ view2.cx+=X-d2.X; view2.cy+=Y-d2.Y; view2.user=true; d2.X=X; d2.Y=Y; draw2d(); return; }
+  const p=S.pts[d2.i], M=MODELS[V3.model]; let [a,b]=toMod(X,Y); let v;
+  if (p.ideal){ if (M.disk){ const n=Math.hypot(a,b)||1; v=[a/n,b/n,1]; } else v=idealHalf(a); }
+  else if (M.disk){ const n=Math.hypot(a,b); if(n>0.985){a*=0.985/n;b*=0.985/n;} v=M.from(a,b); }
+  else { b=Math.max(b,0.02); v=M.from(a,b); }
+  p.v=matApply(ISO.Minv,v); rebuild(); });
+const endDrag=()=>{ d2=null; c2d.style.cursor='default'; };
+c2d.addEventListener('pointerup', endDrag); c2d.addEventListener('pointercancel', endDrag);
+c2d.addEventListener('wheel', e=>{ e.preventDefault(); const r=c2d.getBoundingClientRect(); const X=e.clientX-r.left,Y=e.clientY-r.top; const f=Math.exp(-e.deltaY*0.0012);
+  view2.cx=X+(view2.cx-X)*f; view2.cy=Y+(view2.cy-Y)*f; view2.s*=f; view2.user=true; draw2d(); }, {passive:false});
+c2d.addEventListener('dblclick', ()=>{ resetView2(); draw2d(); });
+/* ───────────────────────── isometry ───────────────────────── */
+const ISO={ kind:'none', s:0, playing:false, M:I3(), Minv:I3() };
+function isoMatrix(){ const s=ISO.s; let M; if (ISO.kind==='boost') M=boostX(s); else if (ISO.kind==='rot') M=rotZ(s); else if (ISO.kind==='para') M=parabolic(s); else M=I3(); ISO.M=M; ISO.Minv=matInv(M); }
+function transformFigure(F){ const M=ISO.M; if (ISO.kind==='none') return F; const T=v=>matApply(M,v);
+  return { curves:F.curves.map(c=>({pts:c.pts.map(T),kind:c.kind,closed:c.closed})), points:F.points.map(p=>({v:T(p.v),ideal:p.ideal,label:p.label})), rays:F.rays.map(T), readout:F.readout, plane:F.plane?F.plane.map(T):undefined, labels:F.labels?F.labels.map(L=>({v:T(L.v),text:L.text})):undefined }; }
+/* ───────────────────────── UI glue ───────────────────────── */
+let cur='triangle';
+const $=id=>document.getElementById(id);
+const ISO_NAMES={none:'',boost:'hyperbolic',rot:'elliptic',para:'parabolic'};
+function buildParams(){ const box=$('params'); box.innerHTML='';
+  const addRange=(id,label,min,max,step,val,fmtv,onInput)=>{ const row=document.createElement('div'); row.className='prow';
+    row.innerHTML=`<label>${label}</label><input type="range" min="${min}" max="${max}" step="${step}" value="${val}"><span class="val"></span>`;
+    const inp=row.querySelector('input'), out=row.querySelector('.val'); const upd=()=>{ out.textContent=fmtv(parseFloat(inp.value)); }; upd();
+    inp.addEventListener('input',()=>{ upd(); onInput(parseFloat(inp.value)); }); box.appendChild(row); return inp; };
+  for (const p of FEATURES[cur].params){ if (S.par[p.id]===undefined) S.par[p.id]=p.def;
+    addRange(p.id,p.label,p.min,p.max,p.step,S.par[p.id], x=>p.step>=1?String(x):x.toFixed(2), x=>{ S.par[p.id]=x; const f=FEATURES[cur]; if (f.fix && f.fix(p.id)) buildParams(); rebuild(); }); }
+  if (ISO.kind!=='none'){ const lim=ISO.kind==='rot'?Math.PI:2.2; ISO.sInput=addRange('isoS', ISO.kind==='rot'?'angle':'parameter', -lim, lim, 0.01, ISO.s, x=>x.toFixed(2), x=>{ ISO.s=x; isoMatrix(); rebuild(); }); }
+  addRange('rho','model height ρ',1.5,4,0.1,V3.rhoMax, x=>x.toFixed(1)+' (z ≤ '+Math.cosh(x).toFixed(1)+')', x=>{ V3.rhoMax=x; buildStatic(); rebuild(); });
+}
+function setFeature(id){ cur=id; S.par={}; FEATURES[id].init(); buildParams(); rebuild(); }
+const NOTES={ klein:'<b>Cayley–Klein.</b> Each point of the hyperboloid is joined to the origin; the ray meets the plane z = 1 inside the unit disk. Planes through the origin cut geodesics, so geodesics appear as chords, and distance is a logarithm of a cross-ratio with the absolute conic — Klein’s 1871 construction.',
+  poincare:'<b>Poincaré.</b> Rays from (0,0,−1), the vertex of the other sheet, meet the plane z = 0 inside the unit disk. This stereographic projection is conformal; geodesics become circular arcs orthogonal to the rim.',
+  halfplane:'<b>Half-plane.</b> The Klein point lifts straight up to the hemisphere over the disk; stereographic projection from the equatorial point (0,−1,1) carries the hemisphere to the vertical glass y = 1, where the Klein circle touches the real line at its origin.' };
+const PLATE={klein:'Tafel I — Cayley–Klein disk', poincare:'Tafel II — Poincaré disk', halfplane:'Tafel III — upper half-plane'};
+function setModel(m){ V3.model=m; $('cap2dh').textContent=PLATE[m]; $('cap2d').textContent='drag the points · drag the paper to pan · wheel to zoom · double-click to reset';
+  $('note').innerHTML=NOTES[m]; resetView2(); buildProj(); rebuild(); }
+function refine(pts, L=0.1, cap=48){ if (pts.length<2) return pts; const out=[pts[0]];
+  for (let i=0;i+1<pts.length;i++){ const a=pts[i], b=pts[i+1]; const d=Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+    if (d>L && !isNull(a) && !isNull(b)){ const k=Math.min(cap, Math.ceil(d/L)); const s=seg(a,b,k); for(let j=1;j<=k;j++) out.push(s[j]); } else out.push(b); }
+  return out; }
+function figCaption(){ const fsel=$('feature'); const n=[...fsel.options].indexOf(fsel.selectedOptions[0])+1; const name=fsel.selectedOptions[0].textContent.replace(/ \(.*\)/,'');
+  const where={klein:'in the Cayley–Klein model',poincare:'in the Poincaré model',halfplane:'in the upper half-plane'}[V3.model];
+  const iso=ISO.kind==='none'?'':`, under a ${ISO_NAMES[ISO.kind]} transformation`; return `<b>Fig. ${n}.</b> ${name} ${where}${iso}.`; }
+function rebuild(){ const F0=FEATURES[cur].build(); Fv=transformFigure(F0);
+  Fv.curves=Fv.curves.map(c=>({pts:refine(c.closed?c.pts.concat([c.pts[0]]):c.pts),kind:c.kind,closed:c.closed}));
+  buildFigure(Fv); draw2d(); $('readout').innerHTML=Fv.readout||''; $('fig').innerHTML=figCaption();
+  $('cap3d').textContent=`${MODELS[V3.model].name}: centre of projection (${PROJ[V3.model].centre.join(', ')})${ISO.kind!=='none'?'\n'+ISO_NAMES[ISO.kind]+' transformation, parameter '+ISO.s.toFixed(2):''}`; }
+$('feature').addEventListener('change', e=>setFeature(e.target.value));
+$('model').addEventListener('change', e=>setModel(e.target.value));
+$('iso').addEventListener('change', e=>{ ISO.kind=e.target.value; ISO.s=0; ISO.playing=false; $('isoPlay').textContent='▶'; $('isoPlay').classList.remove('on'); isoMatrix(); buildParams(); rebuild(); });
+$('isoPlay').addEventListener('click', ()=>{ if (ISO.kind==='none'){ $('iso').value='boost'; ISO.kind='boost'; isoMatrix(); buildParams(); } ISO.playing=!ISO.playing; $('isoPlay').textContent=ISO.playing?'❚❚':'▶'; $('isoPlay').classList.toggle('on',ISO.playing); });
+$('isoReset').addEventListener('click', ()=>{ ISO.s=0; ISO.playing=false; $('isoPlay').textContent='▶'; $('isoPlay').classList.remove('on'); isoMatrix(); buildParams(); rebuild(); });
+$('tPlane').addEventListener('change', e=>{ V3.showPlane=e.target.checked; buildProj(); rebuild(); });
+$('tRays').addEventListener('change', e=>{ V3.showRays=e.target.checked; rebuild(); });
+$('tCone').addEventListener('change', e=>{ V3.showCone=e.target.checked; buildStatic(); });
+$('tGrid').addEventListener('change', e=>{ V3.showGrid=e.target.checked; buildStatic(); draw2d(); });
+$('tSpin').addEventListener('change', e=>{ V3.spin=e.target.checked; });
+new ResizeObserver(()=>{ resize3d(); if(!view2.user) resetView2(); draw2d(); }).observe(document.getElementById('main'));
+let tPrev=performance.now();
+function loop(t){ requestAnimationFrame(loop); const dt=Math.min(0.05,(t-tPrev)/1000); tPrev=t;
+  if (V3.spin) orbitWorldZ(0.25*dt);
+  if (ISO.playing){ const lim=ISO.kind==='rot'?Math.PI:2.2; ISO.s+=0.6*dt; if (ISO.kind==='rot'){ if(ISO.s>Math.PI) ISO.s-=2*Math.PI; } else if (ISO.s>lim){ ISO.s=-lim; }
+    if (ISO.sInput) ISO.sInput.value=ISO.s; const out=ISO.sInput&&ISO.sInput.nextElementSibling; if(out) out.textContent=ISO.s.toFixed(2); isoMatrix(); rebuild(); }
+  placeCamera(); renderer.render(scene,camera); }
+/* boot */
+buildStatic(); isoMatrix(); FEATURES[cur].init(); setModel($('model').value); setFeature($('feature').value); resize3d(); resetView2(); draw2d(); requestAnimationFrame(loop);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{ draw2d(); buildStatic(); });
+</script>
+</body>
+</html>
