@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taffy on the Sphere</title>
+<style>
+  :root{
+    --bg0:#1a1d24; --bg1:#07080b; --panel:#14161c; --ink:#e8e6df; --dim:#9a9890; --rule:#2c3038;
+    --accent:#ff8c4d; --accent2:#5aa4ff; --mono:'SF Mono','Menlo','Consolas','Courier New',monospace;
+  }
+  html,body{margin:0;height:100%;}
+  body{
+    background:var(--bg1); color:var(--ink);
+    font-family:-apple-system,'Helvetica Neue',Helvetica,Arial,sans-serif; font-size:13.5px; line-height:1.45;
+    display:flex; overflow:hidden;
+  }
+  #stage{ flex:1 1 auto; position:relative; min-width:0;
+    background:radial-gradient(ellipse at 50% 42%, var(--bg0) 0%, #0f1116 55%, var(--bg1) 100%); }
+  canvas#c{ position:absolute; inset:0; width:100%; height:100%; display:block; cursor:grab; touch-action:none; }
+  canvas#c:active{ cursor:grabbing; }
+  #hud{ position:absolute; left:18px; top:14px; pointer-events:none; }
+  #hud .title{ font-size:20px; font-weight:300; letter-spacing:0.01em; text-shadow:0 1px 8px #000a; }
+  #hud .params{ font-family:var(--mono); font-size:12px; color:var(--dim); margin-top:4px; white-space:pre; text-shadow:0 1px 6px #000c; }
+  #status{ position:absolute; right:18px; bottom:14px; font-family:var(--mono); font-size:11.5px; color:var(--dim);
+    pointer-events:none; white-space:pre-wrap; max-width:60%; text-align:right; text-shadow:0 1px 6px #000c; }
+  #status.err{ color:#ff6b6b; }
+  #insetlabel{ position:absolute; left:18px; bottom:14px; font-family:var(--mono); font-size:11px; color:var(--dim); pointer-events:none; text-shadow:0 1px 6px #000c; }
+
+  #panel{ flex:0 0 320px; background:var(--panel); border-left:1px solid var(--rule); overflow-y:auto; padding:16px 18px 28px; box-sizing:border-box; }
+  #panel h2{ font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--dim); margin:18px 0 8px; font-weight:600; }
+  #panel h2:first-child{ margin-top:4px; }
+  .row{ display:flex; align-items:center; gap:8px; margin:6px 0; }
+  .row label{ flex:0 0 92px; color:var(--dim); font-size:12.5px; }
+  .row input[type=range]{ flex:1 1 auto; min-width:0; accent-color:var(--accent); }
+  .row .val{ flex:0 0 58px; font-family:var(--mono); font-size:11.5px; color:var(--ink); text-align:right; }
+  select,input[type=number],input[type=text]{ background:#0d0f13; color:var(--ink); border:1px solid var(--rule); border-radius:4px; padding:4px 6px; font-size:12.5px; font-family:inherit; }
+  input[type=number]{ width:52px; font-family:var(--mono); text-align:center; }
+  select{ flex:1 1 auto; }
+  button{ background:#1e2229; color:var(--ink); border:1px solid var(--rule); border-radius:5px; padding:5px 10px; font-size:12.5px; cursor:pointer; }
+  button:hover{ border-color:#4a5160; }
+  button.primary{ background:var(--accent); color:#1a0e06; border-color:var(--accent); font-weight:600; }
+  .matrix{ display:inline-grid; grid-template-columns:auto auto; gap:4px 6px; align-items:center; }
+  .matrix .br{ font-size:28px; font-weight:200; color:var(--dim); }
+  .strands{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px 8px; }
+  .strands label{ display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12px; cursor:pointer; }
+  .sw{ width:12px; height:12px; border-radius:3px; display:inline-block; }
+  .toggles label{ display:flex; align-items:center; gap:6px; margin:4px 0; font-size:12.5px; cursor:pointer; }
+  .note{ color:var(--dim); font-size:12px; margin-top:6px; }
+  .note b{ color:var(--ink); font-weight:500; }
+  .note code{ font-family:var(--mono); font-size:11.5px; }
+  kbd{ font-family:var(--mono); font-size:11px; border:1px solid var(--rule); border-radius:3px; padding:0 4px; color:var(--ink); }
+  #readout{ font-family:var(--mono); font-size:11.5px; color:var(--dim); white-space:pre; line-height:1.55; }
+  #readout b{ color:var(--ink); font-weight:500; }
+  #panelToggle{ display:none; position:absolute; right:12px; top:12px; z-index:5; }
+  @media (max-width:760px){
+    body{ flex-direction:column; }
+    #panel{ flex:0 0 auto; max-height:46vh; border-left:none; border-top:1px solid var(--rule); }
+    #stage{ flex:1 1 auto; }
+    #status{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c"></canvas>
+  <div id="hud"><div class="title">Taffy on the sphere</div><div class="params" id="hudp"></div></div>
+  <div id="insetlabel"></div>
+  <div id="status"></div>
+</div>
+<aside id="panel">
+  <h2>Puller</h2>
+  <div class="row"><label>preset</label><select id="preset"></select></div>
+  <div class="row" style="align-items:flex-start">
+    <label style="padding-top:8px">matrix M</label>
+    <span class="br" style="font-size:40px;font-weight:200;color:var(--dim);line-height:1">(</span>
+    <div class="matrix" id="mat">
+      <input type="number" id="ma" value="2" step="1"><input type="number" id="mb" value="1" step="1">
+      <input type="number" id="mc" value="1" step="1"><input type="number" id="md" value="1" step="1">
+    </div>
+    <span class="br" style="font-size:40px;font-weight:200;color:var(--dim);line-height:1">)</span>
+  </div>
+  <div class="row"><label>lattice τ</label><select id="lattice"><option value="square">square i</option><option value="hex">hexagonal e^{iπ/3}</option><option value="custom">custom</option></select></div>
+  <div class="row" id="taurow" style="display:none"><label>τ = </label><input type="number" id="taure" value="0.25" step="0.05"> + <input type="number" id="tauim" value="1.1" step="0.05"> i</div>
+
+  <h2>Taffy</h2>
+  <div class="row"><label>shape</label><select id="mode"><option value="loop">loop around a pair of rods</option><option value="arc">arc between a pair of rods</option></select></div>
+  <div class="strands" id="strands"></div>
+  <div class="row" id="epsrow"><label>loop offset ε</label><input type="range" id="eps" min="0.01" max="0.45" step="0.01" value="0.2"><span class="val" id="epsv">0.200</span></div>
+  <div class="row" id="fillrow"><label>fill lines</label><input type="range" id="fill" min="1" max="10" step="1" value="1"><span class="val" id="fillv">1</span></div>
+  <div class="note">Rods are the four 2-torsion points of T²: <code>0=(0,0)</code> at ∞, <code>1=(½,0)</code>, <code>2=(½,½)</code>, <code>3=(0,½)</code>. A loop on the sphere enclosing rods i and j lifts to a closed geodesic of T² parallel to the segment p<sub>i</sub>p<sub>j</sub>, offset by ε (the disk around the two branch points lifts to an annulus); pulling it n times gives the closed geodesic of slope M<sup>n</sup>(p<sub>j</sub>−p<sub>i</sub>). "Fill lines" draws nested loops at offsets ε·k/K so the taffy reads as a band. The arc itself is the ε = 0 limit. Rod 0 sits at ∞ (the north pole) and is fixed by every M: for the 3-rod pullers it is the extra puncture of S<sub>0,4</sub>, for Thibodeau's 4-rod puller it is a rod.</div>
+
+  <h2>Pulling</h2>
+  <div class="row"><label>time s</label><input type="range" id="time" min="0" max="8" step="0.002" value="0"><span class="val" id="timev">0.000</span></div>
+  <div class="row"><label>max stage</label><input type="range" id="maxstage" min="1" max="14" step="1" value="8"><span class="val" id="maxstagev">8</span></div>
+  <div class="row"><label>speed</label><input type="range" id="speed" min="0.02" max="1.5" step="0.01" value="0.25"><span class="val" id="speedv">0.25/s</span></div>
+  <div class="row"><button class="primary" id="play">▶ play</button><button id="step">+1 stage</button><button id="reset">⟲ reset</button><button id="loopb" title="loop back to s = 0 at the end">loop: on</button></div>
+
+  <h2>Look</h2>
+  <div class="row"><label>line width</label><input type="range" id="width" min="0.5" max="8" step="0.25" value="2.5"><span class="val" id="widthv">2.5 px</span></div>
+  <div class="row"><label>detail</label><input type="range" id="detail" min="100" max="1500" step="50" value="500"><span class="val" id="detailv">500/u</span></div>
+  <div class="row"><label>chart zoom</label><input type="range" id="sigma" min="-1.5" max="1.5" step="0.01" value="0"><span class="val" id="sigmav">×1.00</span></div>
+  <div class="row"><label>sphere</label><input type="range" id="sphereop" min="0" max="1" step="0.02" value="0.72"><span class="val" id="sphereopv">72%</span></div>
+  <div class="toggles">
+    <label><input type="checkbox" id="showsphere" checked> show the sphere (uncheck for strands only)</label>
+    <label><input type="checkbox" id="rods" checked> rods (branch points of ℘)</label>
+    <label><input type="checkbox" id="orbits" checked> rod orbits over one period</label>
+    <label><input type="checkbox" id="inset" checked> flat torus inset</label>
+    <label><input type="checkbox" id="grad"> colour strands along their length</label>
+    <label><input type="checkbox" id="spin"> slowly spin the sphere</label>
+  </div>
+
+  <h2>Readout</h2>
+  <div id="readout"></div>
+
+  <h2>What you are seeing</h2>
+  <div class="note">
+    The involution ι(z) = −z on the torus T² = ℂ/Λ has four fixed points, and the Weierstrass function ℘ : T² → ℂ∪{∞} is exactly the quotient map T² → T²/ι, a sphere branched over ℘(0) = ∞ and the three half-period values e₁, e₂, e₃. A linear map φ(x) = Mx on T² commutes with ι, so it descends through ℘ to a map of the sphere that permutes the four branch points — the rods of a taffy puller. The taffy is a loop around two rods; its lift is a closed geodesic of the torus, and the puller just changes its slope (Thiffeault, <i>The mathematics of taffy pullers</i>).<br><br>
+    To make the pulling continuous we run the one-parameter group M<sup>s</sup>: at time s the strand is M<sup>s</sup>γ in the plane, the lattice is Λ<sub>s</sub> = M<sup>s</sup>Λ, and the picture is ℘<sub>Λ<sub>s</sub></sub>(M<sup>s</sup>z). At integer s the lattice is back to Λ and the picture is the s-th iterate of the puller; in between, the branch points e<sub>i</sub>(Λ<sub>s</sub>) move and come back permuted — that is the rod motion. Strand length grows like λ<sup>s</sup>, λ the dilatation.<br><br>
+    Every vertex is computed on the GPU from the theta-series for ℘. <kbd>space</kbd> play · <kbd>←</kbd><kbd>→</kbd> scrub · drag to orbit · wheel to zoom.
+  </div>
+</aside>
+
+<script src="/vendor/three/r128/three.min.js"></script>
+<script id="mathlib">
+// ---------- complex helpers (arrays [re, im]) ----------
+const C = {
+  add:(a,b)=>[a[0]+b[0],a[1]+b[1]], sub:(a,b)=>[a[0]-b[0],a[1]-b[1]],
+  mul:(a,b)=>[a[0]*b[0]-a[1]*b[1], a[0]*b[1]+a[1]*b[0]],
+  div:(a,b)=>{const d=b[0]*b[0]+b[1]*b[1]; return [(a[0]*b[0]+a[1]*b[1])/d, (a[1]*b[0]-a[0]*b[1])/d];},
+  scale:(a,s)=>[a[0]*s,a[1]*s], abs:a=>Math.hypot(a[0],a[1]), abs2:a=>a[0]*a[0]+a[1]*a[1],
+  sin:v=>[Math.sin(v[0])*Math.cosh(v[1]), Math.cos(v[0])*Math.sinh(v[1])],
+  cos:v=>[Math.cos(v[0])*Math.cosh(v[1]), -Math.sin(v[0])*Math.sinh(v[1])],
+};
+const PI = Math.PI;
+// exp(i π τ m)
+function qpow(m, tau){ const r=Math.exp(-PI*m*tau[1]), a=PI*m*tau[0]; return [r*Math.cos(a), r*Math.sin(a)]; }
+function theta1(v, tau){ let s=[0,0]; for(let n=0;n<8;n++){ const m=(n+.5)*(n+.5); const t=C.mul(qpow(m,tau), C.sin(C.scale(v,2*n+1))); s = n%2? C.sub(s,t): C.add(s,t);} return C.scale(s,2); }
+function theta2(v, tau){ let s=[0,0]; for(let n=0;n<8;n++){ const m=(n+.5)*(n+.5); s = C.add(s, C.mul(qpow(m,tau), C.cos(C.scale(v,2*n+1))));} return C.scale(s,2); }
+function theta3(v, tau){ let s=[1,0]; for(let n=1;n<=8;n++){ s = C.add(s, C.scale(C.mul(qpow(n*n,tau), C.cos(C.scale(v,2*n))),2)); } return s; }
+function theta4(v, tau){ let s=[1,0]; for(let n=1;n<=8;n++){ const t=C.scale(C.mul(qpow(n*n,tau), C.cos(C.scale(v,2*n))),2); s = n%2? C.sub(s,t): C.add(s,t);} return s; }
+
+// Lagrange-reduce the lattice spanned by complex w1, w2 (det>0). Returns {om1, om2, tau} with Im tau > 0, |Re tau| <= 1/2, |tau| >= 1.
+function reduceLattice(w1, w2){
+  let a=w1.slice(), b=w2.slice();
+  for(let it=0; it<60; it++){
+    if (C.abs2(b) < C.abs2(a)) { const t=a; a=b; b=t; }
+    const r = C.div(b,a); const k = Math.round(r[0]);
+    if (k===0) break;
+    b = C.sub(b, C.scale(a,k));
+  }
+  let tau = C.div(b,a);
+  if (tau[1] < 0){ b = C.scale(b,-1); tau = C.div(b,a); }
+  if (tau[0] < -0.5 + 1e-9){ b = C.add(b,a); tau = C.div(b,a); }
+  return {om1:a, om2:b, tau};
+}
+// Everything the shader (and JS) needs about a lattice given by basis columns of a 2x2 real matrix BA (lattice coords -> plane).
+function latticeData(BA){
+  const w1=[BA[0],BA[1]], w2=[BA[2],BA[3]];   // column-major: col0 = (BA[0],BA[1])
+  const R = reduceLattice(w1,w2);
+  const tau=R.tau, zero=[0,0];
+  const t20=theta2(zero,tau), t30=theta3(zero,tau);
+  const t20_4=C.mul(C.mul(t20,t20),C.mul(t20,t20)), t30_4=C.mul(C.mul(t30,t30),C.mul(t30,t30));
+  const c0=C.scale(C.add(t20_4,t30_4), PI*PI/3);
+  return {BA, om1:R.om1, om2:R.om2, tau, t20, t30, c0, om1sq:C.mul(R.om1,R.om1)};
+}
+// ℘_Λ(BA·y) for y in lattice coordinates; returns complex, or null for the pole.
+function wp(L, y){
+  const z=[L.BA[0]*y[0]+L.BA[2]*y[1], L.BA[1]*y[0]+L.BA[3]*y[1]];
+  let zp=C.div(z,L.om1);
+  let b=zp[1]/L.tau[1], a=zp[0]-b*L.tau[0];
+  a-=Math.floor(a+.5+1e-5); b-=Math.floor(b+.5+1e-5);
+  zp=[a+b*L.tau[0], b*L.tau[1]];
+  const v=C.scale(zp,PI);
+  const t1=theta1(v,L.tau), t4=theta4(v,L.tau);
+  if (C.abs2(t1) < 1e-28) return null;
+  const r=C.scale(C.mul(C.mul(L.t20,L.t30), C.div(t4,t1)), PI);
+  const w=C.sub(C.mul(r,r), L.c0);
+  return C.div(w, L.om1sq);
+}
+// stereographic chart: complex w -> unit sphere (north pole = ∞ = +y)
+function toSphere(w, sigma){
+  if (!w) return [0,1,0];
+  const u=[w[0]/sigma, w[1]/sigma]; const d=u[0]*u[0]+u[1]*u[1];
+  if (!(d<1e12)) return [0,1,0];
+  return [2*u[0]/(d+1), (d-1)/(d+1), -2*u[1]/(d+1)];
+}
+
+// ---------- SL2 one-parameter group  M^s  (Chebyshev / Cayley–Hamilton) ----------
+// M = [a,b,c,d] row-major: (a b; c d).  Assumes trace >= 0 (caller normalises sign).
+function matPow(M, s){
+  const tr=M[0]+M[3];
+  let A, B; // M^s = A*M + B*I
+  if (tr > 2 + 1e-12){ const mu=Math.acosh(tr/2); const sh=Math.sinh(mu); A=Math.sinh(s*mu)/sh; B=-Math.sinh((s-1)*mu)/sh; }
+  else if (tr < 2 - 1e-12){ const th=Math.acos(tr/2); const sn=Math.sin(th); A=Math.sin(s*th)/sn; B=-Math.sin((s-1)*th)/sn; }
+  else { A=s; B=1-s; }
+  return [A*M[0]+B, A*M[1], A*M[2], A*M[3]+B];
+}
+function matMul(P,Q){ return [P[0]*Q[0]+P[1]*Q[2], P[0]*Q[1]+P[1]*Q[3], P[2]*Q[0]+P[3]*Q[2], P[2]*Q[1]+P[3]*Q[3]]; }
+function matVec(P,v){ return [P[0]*v[0]+P[1]*v[1], P[2]*v[0]+P[3]*v[1]]; }
+function matPowInt(M,n){ let R=[1,0,0,1]; for(let i=0;i<n;i++) R=matMul(R,M); return R; }
+function frac(x){ return x-Math.floor(x); }
+function dilatation(M){ const tr=Math.abs(M[0]+M[3]); return tr>2? (tr+Math.sqrt(tr*tr-4))/2 : 1; }
+
+const HALF=[[0,0],[.5,0],[.5,.5],[0,.5]];   // rods p0,p1,p2,p3 as in the paper
+function halfIndex(v){ const a=frac(v[0]+1e-9), b=frac(v[1]+1e-9); const i=Math.round(a*2), j=Math.round(b*2); return (i===0&&j===0)?0:(i===1&&j===0)?1:(i===1&&j===1)?2:3; }
+function rodPermutation(M){ return HALF.map(h=>halfIndex(matVec(M,h))); }
+if (typeof module!=='undefined') module.exports={C,theta1,theta2,theta3,theta4,reduceLattice,latticeData,wp,toSphere,matPow,matMul,matVec,matPowInt,rodPermutation,dilatation,HALF};
+</script>
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const status=$('status');
+function setStatus(msg, err){ status.textContent=msg; status.className=err?'err':''; }
+if (typeof THREE==='undefined'){ setStatus('three.js failed to load — check your connection.', true); return; }
+
+// ---------- presets ----------
+const STRAND_COLORS={ '12':'#ff5a5a', '23':'#5aa4ff', '03':'#5ad17a', '01':'#ffb347', '02':'#f5e663', '13':'#c58aff' };
+const STRAND_KEYS=['01','02','03','12','13','23'];
+const PRESETS=[
+  {id:'nitz', name:'Nitz 3-rod, figure-8 rods (Fig. 3) — M=(2 1;1 1)', M:[2,1,1,1], strands:['23'], lattice:'square'},
+  {id:'std3', name:'Standard 3-rod (Fig. 2) — M=(5 2;2 1)', M:[5,2,2,1], strands:['23'], lattice:'square'},
+  {id:'thib4', name:'Thibodeau 4-rod (Fig. 6) — M=(3 2;4 3)', M:[3,2,4,3], strands:['03'], lattice:'square'},
+  {id:'conj4', name:'4-rod conjugate form — M=(5 2;2 1), all four rods', M:[5,2,2,1], strands:['12'], lattice:'square'},
+  {id:'twist', name:'Dehn twist (parabolic, no stretching) — M=(1 1;0 1)', M:[1,1,0,1], strands:['12'], lattice:'square'},
+  {id:'rot', name:'Order-4 rotation (elliptic) — M=(0 -1;1 0)', M:[0,-1,1,0], strands:['12'], lattice:'square'},
+  {id:'custom', name:'custom', M:null},
+];
+const presetSel=$('preset');
+PRESETS.forEach(p=>{ const o=document.createElement('option'); o.value=p.id; o.textContent=p.name; presetSel.appendChild(o); });
+const strandsDiv=$('strands'); const strandBoxes={};
+STRAND_KEYS.forEach(k=>{ const l=document.createElement('label'); const cb=document.createElement('input'); cb.type='checkbox'; cb.dataset.k=k;
+  const sw=document.createElement('span'); sw.className='sw'; sw.style.background=STRAND_COLORS[k];
+  l.appendChild(cb); l.appendChild(sw); l.appendChild(document.createTextNode(k[0]+'–'+k[1])); strandsDiv.appendChild(l); strandBoxes[k]=cb; });
+
+// ---------- state ----------
+const S={ sphereOp:0.72, showSphere:true, mode:'loop', eps:0.2, fillK:1, M:[2,1,1,1], Mraw:[2,1,1,1], tau0:[0,1], B:null, s:0, playing:false, loop:true, maxStage:8, speed:.25,
+  width:2.5, detail:500, sigmaExp:0, sigma0:1, strands:[], stage:-1, perm:[0,1,2,3], lambda:1, showRods:true, showOrbits:true, showInset:true, grad:false, spin:false,
+  capped:false, samples:0 };
+
+// ---------- three.js setup ----------
+const canvas=$('c');
+let renderer;
+try{ renderer=new THREE.WebGLRenderer({canvas, antialias:true, alpha:false, powerPreference:'high-performance'}); }
+catch(e){ setStatus('WebGL is not available: '+e.message, true); return; }
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+renderer.setClearColor(0x000000, 0);
+renderer.autoClear=false;
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(38, 1, 0.05, 50);
+const orbit={theta:3.75, phi:1.25, dist:3.4, target:new THREE.Vector3(0,0,0)};
+function placeCamera(){ const sp=Math.sin(orbit.phi); camera.position.set(orbit.dist*sp*Math.sin(orbit.theta), orbit.dist*Math.cos(orbit.phi), orbit.dist*sp*Math.cos(orbit.theta)); camera.lookAt(orbit.target); }
+placeCamera();
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const key=new THREE.DirectionalLight(0xffffff, 0.75); key.position.set(2,3,2.5); scene.add(key);
+const fill=new THREE.DirectionalLight(0x8fb3ff, 0.25); fill.position.set(-3,-1,-2); scene.add(fill);
+const sphereMat=new THREE.MeshPhongMaterial({color:0x232732, specular:0x333844, shininess:28, transparent:true, opacity:0.72, depthWrite:false});
+const sphere=new THREE.Mesh(new THREE.SphereGeometry(0.986, 96, 64), sphereMat); sphere.renderOrder=2;
+scene.add(sphere);
+// faint graticule: equator + meridian through e1
+const gratMat=new THREE.LineBasicMaterial({color:0x3a404c, transparent:true, opacity:0.7});
+(function(){ const pts=[]; for(let i=0;i<=128;i++){ const a=i/128*2*PI; pts.push(new THREE.Vector3(Math.cos(a)*0.99,0,Math.sin(a)*0.99)); } scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), gratMat)); })();
+
+// rods
+const rodGroup=new THREE.Group(); scene.add(rodGroup);
+const ROD_COLORS=[0xbfc3cc, 0xffffff, 0xffffff, 0xffffff];
+const rodMeshes=[];
+for(let i=0;i<4;i++){ const m=new THREE.Mesh(new THREE.SphereGeometry(i?0.028:0.02, 24, 16), new THREE.MeshPhongMaterial({color:ROD_COLORS[i], emissive:0x222222})); rodGroup.add(m); rodMeshes.push(m); }
+const orbitGroup=new THREE.Group(); scene.add(orbitGroup);
+
+// ---------- strand shader ----------
+const GLSL_COMMON=`
+precision highp float;
+uniform mat2 uBA; uniform vec2 uOm1, uOm2, uTau, uT20, uT30, uC0; uniform float uSigma;
+const float PI = 3.14159265358979;
+vec2 cmul(vec2 a, vec2 b){ return vec2(a.x*b.x - a.y*b.y, a.x*b.y + a.y*b.x); }
+vec2 cdiv(vec2 a, vec2 b){ float d = dot(b,b); return vec2(a.x*b.x + a.y*b.y, a.y*b.x - a.x*b.y)/d; }
+float coshf(float x){ float e = exp(x); return 0.5*(e + 1.0/e); }
+float sinhf(float x){ float e = exp(x); return 0.5*(e - 1.0/e); }
+vec2 csin(vec2 v){ return vec2(sin(v.x)*coshf(v.y), cos(v.x)*sinhf(v.y)); }
+vec2 ccos(vec2 v){ return vec2(cos(v.x)*coshf(v.y), -sin(v.x)*sinhf(v.y)); }
+vec2 qpow(float m){ float r = exp(-PI*m*uTau.y); float a = PI*m*uTau.x; return r*vec2(cos(a), sin(a)); }
+vec2 theta1(vec2 v){ vec2 s = vec2(0.0); for(int n=0;n<6;n++){ float k=float(n); float sg = (mod(k,2.0)<0.5)?1.0:-1.0; s += sg*cmul(qpow((k+0.5)*(k+0.5)), csin((2.0*k+1.0)*v)); } return 2.0*s; }
+vec2 theta4(vec2 v){ vec2 s = vec2(1.0,0.0); for(int n=1;n<=6;n++){ float k=float(n); float sg = (mod(k,2.0)<0.5)?1.0:-1.0; s += 2.0*sg*cmul(qpow(k*k), ccos(2.0*k*v)); } return s; }
+// reduced coordinates (a,b) of lattice point y: BA*y = (a + b tau) * om1, a,b in [-1/2,1/2)
+vec2 reduced(vec2 y){ vec2 z = uBA*y; vec2 zp = cdiv(z,uOm1); float b = zp.y/uTau.y; float a = zp.x - b*uTau.x; a -= floor(a+0.5+1e-5); b -= floor(b+0.5+1e-5); return vec2(a,b); }
+vec3 wpSphere(vec2 ab){
+  vec2 zp = vec2(ab.x + ab.y*uTau.x, ab.y*uTau.y);
+  vec2 v = PI*zp; vec2 t1 = theta1(v); vec2 t4 = theta4(v);
+  if (dot(t1,t1) < 1e-20) return vec3(0.0,1.0,0.0);
+  vec2 r = PI*cmul(cmul(uT20,uT30), cdiv(t4,t1)); vec2 w = cmul(r,r) - uC0; w = cdiv(w, cmul(uOm1,uOm1));
+  vec2 u = w/uSigma; float d = dot(u,u);
+  if (!(d < 1e12)) return vec3(0.0,1.0,0.0);
+  return vec3(2.0*u.x, d-1.0, -2.0*u.y)/(d+1.0);
+}
+`;
+const VS_SPHERE=GLSL_COMMON+`
+attribute vec2 corner; attribute vec2 pStart; attribute vec2 pEnd; attribute float tStart; attribute float tEnd;
+uniform vec2 uRes; uniform float uWidth;
+varying float vT; varying float vFace;
+void main(){
+  vec3 P0 = wpSphere(reduced(pStart)); vec3 P1 = wpSphere(reduced(pEnd));
+  vec4 c0 = projectionMatrix*modelViewMatrix*vec4(P0,1.0); vec4 c1 = projectionMatrix*modelViewMatrix*vec4(P1,1.0);
+  float aspect = uRes.x/uRes.y;
+  vec2 n0 = c0.xy/c0.w, n1 = c1.xy/c1.w;
+  vec2 dir = n1-n0; dir.x *= aspect; float len = length(dir); dir = (len>1e-9)? dir/len : vec2(1.0,0.0);
+  vec2 perp = vec2(-dir.y, dir.x);
+  bool first = corner.x < 0.5;
+  vec4 c = first ? c0 : c1; vec3 P = first ? P0 : P1;
+  vec2 off = perp*corner.y + dir*(first? -0.5 : 0.5);
+  off *= uWidth/uRes.y; off.x /= aspect;
+  c.xy += off*c.w;
+  gl_Position = c;
+  vT = first ? tStart : tEnd;
+  vFace = dot(normalize(P), normalize(cameraPosition - P));
+}`;
+const FS=`
+precision highp float;
+uniform vec3 uColor; uniform float uGrad; uniform float uFaceCut; uniform float uFaceMax; uniform float uDim;
+varying float vT; varying float vFace;
+vec3 hsl(float h){ vec3 k = vec3(0.0,2.0,4.0); return 0.55+0.45*cos(6.2831*(h+0.0)+k); }
+void main(){
+  if (vFace < uFaceCut || vFace >= uFaceMax) discard;
+  vec3 col = uColor*uDim;
+  if (uGrad > 0.5) col = mix(uColor, hsl(vT*0.85), 0.75);
+  gl_FragColor = vec4(col, 1.0);
+}`;
+const VS_INSET=GLSL_COMMON+`
+attribute vec2 corner; attribute vec2 pStart; attribute vec2 pEnd; attribute float tStart; attribute float tEnd;
+uniform vec2 uRes; uniform float uWidth;
+varying float vT; varying float vFace;
+vec2 plane(vec2 ab){ return ab.x*uOm1 + ab.y*uOm2; }
+void main(){
+  vec2 a0 = reduced(pStart), a1 = reduced(pEnd);
+  vec2 d = a1 - a0;
+  bool wrap = abs(d.x) > 0.5 || abs(d.y) > 0.5;
+  vec2 Q0 = plane(a0), Q1 = plane(a1);
+  vec4 c0 = projectionMatrix*modelViewMatrix*vec4(Q0,0.0,1.0); vec4 c1 = projectionMatrix*modelViewMatrix*vec4(Q1,0.0,1.0);
+  float aspect = uRes.x/uRes.y;
+  vec2 n0 = c0.xy/c0.w, n1 = c1.xy/c1.w;
+  vec2 dir = n1-n0; dir.x *= aspect; float len = length(dir); dir = (len>1e-9)? dir/len : vec2(1.0,0.0);
+  vec2 perp = vec2(-dir.y, dir.x);
+  bool first = corner.x < 0.5;
+  vec4 c = first ? c0 : c1;
+  vec2 off = perp*corner.y + dir*(first? -0.5 : 0.5);
+  off *= uWidth/uRes.y; off.x /= aspect;
+  c.xy += off*c.w;
+  if (wrap) c = vec4(0.0,0.0,2.0,1.0);
+  gl_Position = c;
+  vT = first ? tStart : tEnd; vFace = 1.0;
+}`;
+const shared={ uBA:{value:new Float32Array([1,0,0,1])}, uOm1:{value:new THREE.Vector2(1,0)}, uOm2:{value:new THREE.Vector2(0,1)}, uTau:{value:new THREE.Vector2(0,1)},
+  uT20:{value:new THREE.Vector2(1,0)}, uT30:{value:new THREE.Vector2(1,0)}, uC0:{value:new THREE.Vector2(0,0)}, uSigma:{value:1},
+  uRes:{value:new THREE.Vector2(1,1)}, uInsetRes:{value:new THREE.Vector2(1,1)}, uWidth:{value:2.5}, uInsetWidth:{value:1}, uGrad:{value:0} };
+function makeMaterial(vs, inset, color, back){
+  const u={ uBA:shared.uBA, uOm1:shared.uOm1, uOm2:shared.uOm2, uTau:shared.uTau, uT20:shared.uT20, uT30:shared.uT30, uC0:shared.uC0, uSigma:shared.uSigma,
+    uRes: inset? shared.uInsetRes : shared.uRes, uWidth: inset? shared.uInsetWidth : shared.uWidth, uGrad:shared.uGrad, uColor:{value:new THREE.Color(color)}, uFaceCut:{value: (inset||back)? -2 : -0.02}, uFaceMax:{value: back? -0.02 : 1e9}, uDim:{value: back? 0.55 : 1.0} };
+  return new THREE.ShaderMaterial({vertexShader:vs, fragmentShader:FS, uniforms:u, depthTest:!inset, depthWrite:!inset, side:THREE.DoubleSide});
+}
+const quadCorner=new Float32Array([0,-1, 0,1, 1,-1, 1,1]);
+const quadIndex=[0,1,2, 2,1,3];
+function makeStrandGeometry(points /* Float32Array of (x,y,t) * (N+1) */, N){
+  const g=new THREE.InstancedBufferGeometry();
+  g.setIndex(quadIndex);
+  g.setAttribute('corner', new THREE.BufferAttribute(quadCorner, 2));
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(12), 3)); // dummy, required by three
+  const ib=new THREE.InstancedInterleavedBuffer(points, 3, 1);
+  g.setAttribute('pStart', new THREE.InterleavedBufferAttribute(ib, 2, 0));
+  g.setAttribute('tStart', new THREE.InterleavedBufferAttribute(ib, 1, 2));
+  g.setAttribute('pEnd', new THREE.InterleavedBufferAttribute(ib, 2, 3));
+  g.setAttribute('tEnd', new THREE.InterleavedBufferAttribute(ib, 1, 5));
+  g.instanceCount=N;
+  g.boundingSphere=new THREE.Sphere(new THREE.Vector3(), 10);
+  return g;
+}
+
+// ---------- inset scene ----------
+const insetScene=new THREE.Scene();
+const insetCam=new THREE.OrthographicCamera(-1,1,1,-1,-10,10); insetCam.position.set(0,0,5); insetCam.lookAt(0,0,0);
+const paraLine=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3(),new THREE.Vector3()]), new THREE.LineBasicMaterial({color:0x6b7280}));
+insetScene.add(paraLine);
+const insetRods=[]; for(let i=0;i<4;i++){ const m=new THREE.Mesh(new THREE.CircleGeometry(1,20), new THREE.MeshBasicMaterial({color:ROD_COLORS[i]})); insetScene.add(m); insetRods.push(m); }
+const insetBg=new THREE.Mesh(new THREE.PlaneGeometry(2,2), new THREE.MeshBasicMaterial({color:0x0b0d11, transparent:true, opacity:0.82}));
+const insetBgScene=new THREE.Scene(); insetBgScene.add(insetBg); const bgCam=new THREE.OrthographicCamera(-1,1,1,-1,-1,1);
+
+// ---------- strands ----------
+const strandObjs={}; // key -> array of copies {mesh, insetMesh, N, capped}
+function strandEndpoints(k){ return [HALF[+k[0]], HALF[+k[1]]]; }
+// the straight curves (in lattice coordinates, before M^n) that realise pair k: {p, d, shade}
+function strandSpecs(k){
+  const [a,b]=strandEndpoints(k); const d=[b[0]-a[0], b[1]-a[1]];
+  if (S.mode==='arc') return [{p:a, d, shade:1}];
+  const n=[-d[1], d[0]]; const ln=Math.hypot(n[0],n[1]); const nh=[n[0]/ln, n[1]/ln]; const D=[2*d[0], 2*d[1]];
+  const K=S.fillK, out=[];
+  for(let j=1;j<=K;j++){ const e=S.eps*j/K; out.push({p:[a[0]+e*nh[0], a[1]+e*nh[1]], d:D, shade:j/K}); }
+  return out;
+}
+const TOTAL_CAP=3<<20;
+function buildStrand(k, stage){
+  const specs=strandSpecs(k);
+  const Mn=matPowInt(S.M, stage), Mn1=matMul(S.M, Mn); const B=S.B;
+  let arr=strandObjs[k]; if(!arr){ arr=[]; strandObjs[k]=arr; }
+  while(arr.length>specs.length){ const o=arr.pop(); scene.remove(o.mesh); scene.remove(o.backMesh); insetScene.remove(o.insetMesh); o.mesh.geometry.dispose(); o.mesh.material.dispose(); o.backMesh.material.dispose(); o.insetMesh.material.dispose(); }
+  specs.forEach((sp,ci)=>{
+    // length at the END of the stage (plane coordinates) sets the sample count
+    const dEnd=matVec(Mn1,sp.d); const dp=[B[0]*dEnd[0]+B[2]*dEnd[1], B[1]*dEnd[0]+B[3]*dEnd[1]];
+    const L=Math.hypot(dp[0],dp[1]);
+    let N=Math.ceil(L*S.detail); const NMAX=Math.max(4096, Math.floor(TOTAL_CAP/Math.max(1,S.activeCount||1))); let capped=false;
+    if (N>NMAX){ N=NMAX; capped=true; } if (N<64) N=64;
+    const Mp=matVec(Mn,sp.p), Md=matVec(Mn,sp.d);
+    const pts=new Float32Array((N+1)*3);
+    for(let i=0;i<=N;i++){ const t=i/N; pts[3*i]=frac(Mp[0]+t*Md[0]); pts[3*i+1]=frac(Mp[1]+t*Md[1]); pts[3*i+2]=t; }
+    const g=makeStrandGeometry(pts, N);
+    const col=new THREE.Color(STRAND_COLORS[k]).lerp(new THREE.Color(0xffffff), 0.55*(1-sp.shade));
+    let o=arr[ci];
+    if (!o){ o={mesh:new THREE.Mesh(g, makeMaterial(VS_SPHERE,false,col,false)), backMesh:new THREE.Mesh(g, makeMaterial(VS_SPHERE,false,col,true)), insetMesh:new THREE.Mesh(g, makeMaterial(VS_INSET,true,col)), N};
+      o.mesh.frustumCulled=false; o.backMesh.frustumCulled=false; o.insetMesh.frustumCulled=false; o.mesh.renderOrder=3; o.backMesh.renderOrder=1; scene.add(o.mesh); scene.add(o.backMesh); insetScene.add(o.insetMesh); arr[ci]=o; }
+    else { o.mesh.geometry.dispose(); o.mesh.geometry=g; o.backMesh.geometry=g; o.insetMesh.geometry=g; o.N=N; [o.mesh,o.backMesh,o.insetMesh].forEach(m=>m.material.uniforms.uColor.value.copy(col)); }
+    o.capped=capped;
+  });
+}
+function removeStrand(k){ const arr=strandObjs[k]; if(!arr) return; arr.forEach(o=>{ scene.remove(o.mesh); scene.remove(o.backMesh); insetScene.remove(o.insetMesh); o.mesh.geometry.dispose(); o.mesh.material.dispose(); o.backMesh.material.dispose(); o.insetMesh.material.dispose(); }); delete strandObjs[k]; }
+function rebuildStrands(force){
+  const stage=Math.max(0, Math.floor(S.s));
+  const want=STRAND_KEYS.filter(k=>strandBoxes[k].checked);
+  Object.keys(strandObjs).forEach(k=>{ if(!want.includes(k)) removeStrand(k); });
+  S.activeCount=want.length*(S.mode==='arc'?1:S.fillK);
+  if (stage!==S.stage || force){ S.stage=stage; want.forEach(k=>buildStrand(k,stage)); }
+  else want.forEach(k=>{ if(!strandObjs[k]) buildStrand(k,stage); });
+  const all=[].concat(...Object.values(strandObjs));
+  S.capped=all.some(o=>o.capped); S.samples=all.reduce((a,o)=>a+o.N,0);
+}
+
+// ---------- per-frame lattice / flow ----------
+let L=null;
+function flowMatrix(f){ const A=matPow(S.M, f); const B=S.B; // BA column-major
+  return [B[0]*A[0]+B[2]*A[2], B[1]*A[0]+B[3]*A[2], B[0]*A[1]+B[2]*A[3], B[1]*A[1]+B[3]*A[3]]; }
+function rodPosition(i, s){ const n=Math.floor(s), f=s-n; const Ld=latticeData(flowMatrix(f)); const h=matVec(matPowInt(S.M,n), HALF[i]); return toSphere(wp(Ld,[frac(h[0]),frac(h[1])]), S.sigma()); }
+S.sigma=function(){ return S.sigma0*Math.pow(2,-S.sigmaExp); };
+function computeSigma0(){ const Ld=latticeData(flowMatrix(0)); let s2=0; for(let i=1;i<4;i++){ const w=wp(Ld,HALF[i]); s2+=w?C.abs2(w):0; } S.sigma0=Math.sqrt(s2/3)||1; }
+function updateFrame(){
+  const n=Math.floor(S.s), f=S.s-n;
+  const BA=flowMatrix(f); L=latticeData(BA);
+  shared.uBA.value.set(BA); shared.uOm1.value.set(L.om1[0],L.om1[1]); shared.uOm2.value.set(L.om2[0],L.om2[1]); shared.uTau.value.set(L.tau[0],L.tau[1]);
+  shared.uT20.value.set(L.t20[0],L.t20[1]); shared.uT30.value.set(L.t30[0],L.t30[1]); shared.uC0.value.set(L.c0[0],L.c0[1]); shared.uSigma.value=S.sigma();
+  shared.uWidth.value=S.width; shared.uInsetWidth.value=Math.max(0.7, S.width*0.4); shared.uGrad.value=S.grad?1:0;
+  // rods
+  const Mn=matPowInt(S.M,n);
+  for(let i=0;i<4;i++){ const h=matVec(Mn,HALF[i]); const y=[frac(h[0]),frac(h[1])]; const P=toSphere(wp(L,y), S.sigma()); rodMeshes[i].position.set(P[0],P[1],P[2]);
+    // inset marker: reduced coords
+    const z=[BA[0]*y[0]+BA[2]*y[1], BA[1]*y[0]+BA[3]*y[1]]; const zp=C.div(z,L.om1); let b=zp[1]/L.tau[1], a=zp[0]-b*L.tau[0]; a-=Math.floor(a+.5+1e-6); b-=Math.floor(b+.5+1e-6);
+    const q=C.add(C.scale(L.om1,a), C.scale(L.om2,b)); insetRods[i].position.set(q[0],q[1],0.1); }
+  sphere.visible=S.showSphere; sphereMat.opacity=S.sphereOp;
+  rodGroup.visible=S.showRods; orbitGroup.visible=S.showOrbits&&S.showRods;
+  // inset parallelogram + camera
+  const ha=C.scale(L.om1,.5), hb=C.scale(L.om2,.5);
+  const v=[C.sub(C.scale(ha,-1),hb), C.sub(ha,hb), C.add(ha,hb), C.sub(hb,ha)]; const pa=paraLine.geometry.attributes.position; v.forEach((p,i)=>pa.setXYZ(i,p[0],p[1],0)); pa.needsUpdate=true;
+  let x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity; v.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);});
+  const cx=(x0+x1)/2, cy=(y0+y1)/2, half=Math.max(x1-x0,y1-y0)/2*1.12; insetCam.left=cx-half; insetCam.right=cx+half; insetCam.top=cy+half; insetCam.bottom=cy-half; insetCam.updateProjectionMatrix();
+  const rr=half*0.035; insetRods.forEach((m,i)=>m.scale.setScalar(i?rr:rr*0.7));
+}
+
+// rod orbits over one period (each permutation cycle once)
+function rebuildOrbits(){
+  while(orbitGroup.children.length){ const c=orbitGroup.children.pop(); c.geometry.dispose(); c.material.dispose(); }
+  const perm=S.perm; const seen=new Set();
+  for(let i=1;i<4;i++){ if(seen.has(i)) continue; let cyc=[i]; let j=perm[i]; while(j!==i){ cyc.push(j); seen.add(j); j=perm[j]; } seen.add(i);
+    const period=cyc.length; const pts=[]; const steps=160*period;
+    for(let k=0;k<=steps;k++){ const s=k/steps*period; const P=rodPosition(i,s); pts.push(new THREE.Vector3(P[0],P[1],P[2]).multiplyScalar(1.004)); }
+    const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({color:0xd8dce6, transparent:true, opacity:0.55}));
+    orbitGroup.add(line); }
+}
+
+// ---------- apply matrix / lattice ----------
+function applyPuller(){
+  let M=[+$('ma').value||0, +$('mb').value||0, +$('mc').value||0, +$('md').value||0].map(Math.round);
+  const det=M[0]*M[3]-M[1]*M[2];
+  if (det!==1){ setStatus('det M = '+det+' — need det = 1 for a map of the torus (ad − bc = 1).', true); return false; }
+  S.Mraw=M.slice(); if (M[0]+M[3] < 0) M=M.map(x=>-x);   // −I acts trivially on the sphere
+  S.M=M; S.perm=rodPermutation(M); S.lambda=dilatation(M);
+  const lat=$('lattice').value; $('taurow').style.display= lat==='custom'?'':'none';
+  S.tau0 = lat==='hex'? [.5,Math.sqrt(3)/2] : lat==='square'? [0,1] : [+$('taure').value||0, Math.max(0.05, +$('tauim').value||1)];
+  S.B=[1,0,S.tau0[0],S.tau0[1]];
+  computeSigma0(); rebuildOrbits(); rebuildStrands(true); setStatus(''); return true;
+}
+function loadPreset(id){ const p=PRESETS.find(x=>x.id===id); if(!p||!p.M) return; $('ma').value=p.M[0]; $('mb').value=p.M[1]; $('mc').value=p.M[2]; $('md').value=p.M[3];
+  STRAND_KEYS.forEach(k=>strandBoxes[k].checked=p.strands.includes(k)); $('lattice').value=p.lattice; S.s=0; $('time').value=0; applyPuller(); }
+
+// ---------- UI wiring ----------
+presetSel.addEventListener('change',()=>loadPreset(presetSel.value));
+['ma','mb','mc','md','taure','tauim'].forEach(id=>$(id).addEventListener('change',()=>{ presetSel.value='custom'; applyPuller(); }));
+$('lattice').addEventListener('change',()=>{ applyPuller(); });
+STRAND_KEYS.forEach(k=>strandBoxes[k].addEventListener('change',()=>rebuildStrands(false)));
+$('mode').addEventListener('change',e=>{ S.mode=e.target.value; const loop=S.mode==='loop'; $('epsrow').style.display=loop?'':'none'; $('fillrow').style.display=loop?'':'none'; rebuildStrands(true); });
+$('eps').addEventListener('input',e=>{ $('epsv').textContent=(+e.target.value).toFixed(3); });
+$('eps').addEventListener('change',e=>{ S.eps=+e.target.value; rebuildStrands(true); });
+$('fill').addEventListener('input',e=>{ $('fillv').textContent=e.target.value; });
+$('fill').addEventListener('change',e=>{ S.fillK=+e.target.value; rebuildStrands(true); });
+const timeEl=$('time');
+timeEl.addEventListener('input',()=>{ S.s=+timeEl.value; });
+$('maxstage').addEventListener('input',e=>{ S.maxStage=+e.target.value; $('maxstagev').textContent=S.maxStage; timeEl.max=S.maxStage; if(S.s>S.maxStage){S.s=S.maxStage;} });
+$('speed').addEventListener('input',e=>{ S.speed=+e.target.value; $('speedv').textContent=S.speed.toFixed(2)+'/s'; });
+$('width').addEventListener('input',e=>{ S.width=+e.target.value; $('widthv').textContent=S.width.toFixed(2)+' px'; });
+$('detail').addEventListener('change',e=>{ S.detail=+e.target.value; $('detailv').textContent=S.detail+'/u'; rebuildStrands(true); });
+$('detail').addEventListener('input',e=>{ $('detailv').textContent=e.target.value+'/u'; });
+$('sigma').addEventListener('input',e=>{ S.sigmaExp=+e.target.value; $('sigmav').textContent='×'+Math.pow(2,S.sigmaExp).toFixed(2); rebuildOrbits(); });
+$('rods').addEventListener('change',e=>S.showRods=e.target.checked);
+$('showsphere').addEventListener('change',e=>S.showSphere=e.target.checked);
+$('sphereop').addEventListener('input',e=>{ S.sphereOp=+e.target.value; $('sphereopv').textContent=Math.round(S.sphereOp*100)+'%'; });
+$('orbits').addEventListener('change',e=>S.showOrbits=e.target.checked);
+$('inset').addEventListener('change',e=>S.showInset=e.target.checked);
+$('grad').addEventListener('change',e=>S.grad=e.target.checked);
+$('spin').addEventListener('change',e=>S.spin=e.target.checked);
+const playBtn=$('play');
+function setPlaying(p){ S.playing=p; playBtn.textContent=p?'❚❚ pause':'▶ play'; }
+playBtn.addEventListener('click',()=>setPlaying(!S.playing));
+$('step').addEventListener('click',()=>{ S.s=Math.min(S.maxStage, Math.floor(S.s+1e-9)+1); });
+$('reset').addEventListener('click',()=>{ S.s=0; setPlaying(false); });
+$('loopb').addEventListener('click',e=>{ S.loop=!S.loop; e.target.textContent='loop: '+(S.loop?'on':'off'); });
+window.addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+  if(e.code==='Space'){ e.preventDefault(); setPlaying(!S.playing); }
+  else if(e.key==='ArrowRight'){ S.s=Math.min(S.maxStage,S.s+(e.shiftKey?1:0.02)); }
+  else if(e.key==='ArrowLeft'){ S.s=Math.max(0,S.s-(e.shiftKey?1:0.02)); }
+  else if(e.key==='r'){ S.s=0; } });
+
+// orbit controls (pointer)
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY}; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove',e=>{ if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag={x:e.clientX,y:e.clientY};
+  orbit.theta-=dx*0.006; orbit.phi=Math.min(Math.PI-0.05, Math.max(0.05, orbit.phi-dy*0.006)); placeCamera(); });
+canvas.addEventListener('pointerup',()=>drag=null); canvas.addEventListener('pointercancel',()=>drag=null);
+canvas.addEventListener('wheel',e=>{ e.preventDefault(); orbit.dist=Math.min(12, Math.max(1.4, orbit.dist*Math.exp(e.deltaY*0.0012))); placeCamera(); },{passive:false});
+// pinch zoom
+let pinch=null;
+canvas.addEventListener('touchstart',e=>{ if(e.touches.length===2){ pinch=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); drag=null; } },{passive:true});
+canvas.addEventListener('touchmove',e=>{ if(e.touches.length===2&&pinch){ const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY); orbit.dist=Math.min(12,Math.max(1.4,orbit.dist*pinch/d)); pinch=d; placeCamera(); } },{passive:true});
+canvas.addEventListener('touchend',()=>pinch=null);
+
+// ---------- resize / render ----------
+function resize(){ const stage=$('stage'); const w=stage.clientWidth, h=stage.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+  const pr=renderer.getPixelRatio(); shared.uRes.value.set(w*pr,h*pr); }
+window.addEventListener('resize',resize); resize();
+
+const readout=$('readout'), hudp=$('hudp');
+function fmtPerm(){ const p=S.perm; const names=['∞','1','2','3']; const cyc=[]; const seen=new Set(); for(let i=0;i<4;i++){ if(seen.has(i)||p[i]===i){seen.add(i);continue;} let c=[i],j=p[i]; while(j!==i){c.push(j);seen.add(j);j=p[j];} seen.add(i); cyc.push('('+c.map(k=>names[k]).join(' ')+')'); } return cyc.length?cyc.join(''):'identity'; }
+let lastT=performance.now(), fpsAcc=0, fpsN=0, fps=0;
+function frame(now){
+  requestAnimationFrame(frame);
+  const dt=Math.min(0.1,(now-lastT)/1000); lastT=now; fpsAcc+=dt; fpsN++; if(fpsAcc>0.5){ fps=fpsN/fpsAcc; fpsAcc=0; fpsN=0; }
+  if (S.playing){ S.s+=S.speed*dt; if(S.s>=S.maxStage){ if(S.loop) S.s=0; else { S.s=S.maxStage; setPlaying(false); } } }
+  if (S.spin){ orbit.theta+=dt*0.12; placeCamera(); }
+  timeEl.value=S.s; $('timev').textContent=S.s.toFixed(3);
+  rebuildStrands(false); updateFrame();
+  const stageEl=$('stage'); const w=stageEl.clientWidth, h=stageEl.clientHeight, pr=renderer.getPixelRatio();
+  renderer.setViewport(0,0,w,h); renderer.setScissorTest(false); renderer.clear(true,true,true);
+  renderer.render(scene,camera);
+  if (S.showInset){ const sz=Math.round(Math.min(w,h)*0.3); const m=14;
+    shared.uInsetRes.value.set(sz*pr,sz*pr); renderer.setViewport(m,m,sz,sz); renderer.setScissor(m,m,sz,sz); renderer.setScissorTest(true);
+    renderer.clearDepth(); renderer.render(insetBgScene,bgCam); renderer.clearDepth(); renderer.render(insetScene,insetCam); renderer.setScissorTest(false); }
+  $('insetlabel').textContent = S.showInset ? 'flat torus ℂ/Λₛ, reduced fundamental domain' : '';
+  const tr=S.Mraw[0]+S.Mraw[3]; const kind= Math.abs(tr)>2?'Anosov':Math.abs(tr)===2?'parabolic':'finite order';
+  let stretch=1; { const keys=Object.keys(strandObjs); if(keys.length){ const Ms=matPow(S.M,S.s); const B=S.B; let acc=0;
+    keys.forEach(k=>{ const [p,q]=strandEndpoints(k); const d=[q[0]-p[0],q[1]-p[1]]; const e=matVec(Ms,d);
+      const v0=[B[0]*d[0]+B[2]*d[1], B[1]*d[0]+B[3]*d[1]], v1=[B[0]*e[0]+B[2]*e[1], B[1]*e[0]+B[3]*e[1]]; acc+=Math.hypot(v1[0],v1[1])/Math.hypot(v0[0],v0[1]); });
+    stretch=acc/keys.length; } }
+  readout.innerHTML = `trace <b>${tr}</b> · ${kind}\ndilatation λ = <b>${S.lambda.toFixed(6)}</b>\nrod permutation <b>${fmtPerm()}</b>\nstrand length ×<b>${stretch<1000?stretch.toFixed(2):stretch.toExponential(2)}</b> (∼λ^s)\nreduced τ = <b>${L.tau[0].toFixed(3)} + ${L.tau[1].toFixed(3)}i</b>\nsamples <b>${S.samples.toLocaleString()}</b>${S.capped?' (capped)':''} · ${fps.toFixed(0)} fps`;
+  hudp.textContent = `M = (${S.Mraw[0]} ${S.Mraw[1]}; ${S.Mraw[2]} ${S.Mraw[3]})   s = ${S.s.toFixed(2)}   λ = ${S.lambda.toFixed(4)}`;
+}
+loadPreset('nitz');
+setPlaying(true);
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

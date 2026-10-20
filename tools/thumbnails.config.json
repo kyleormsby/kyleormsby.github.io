@@ -145,5 +145,14 @@
     },
     "scale": 1,
     "wait": 2500
+  },
+  "taffy-sphere": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "wait": 14000,
+    "_note": "page autoplays at 0.25 stages/s; 14 s lands near stage 3.5"
   }
 }
