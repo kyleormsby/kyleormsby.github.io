@@ -8,6 +8,17 @@
       "note": "",
       "items": [
         {
+          "title": "Pontryagin–Thom, $\\pi_0$ of the motivic sphere, and principal quadratic divisors",
+          "meta": "Preprint.",
+          "links": [
+            {
+              "text": "arXiv:2610.29065",
+              "url": "https://arxiv.org/abs/2610.29065"
+            }
+          ],
+          "abstract": "Segal computed $\\pi_0$ of the equivariant sphere spectrum as the Burnside ring by a Pontryagin–Thom construction, transversality, and marks. We carry out the same argument in the motivic setting over a field $k$: the Burnside ring is replaced by the Grothendieck ring $A^u(\\Gamma_k)$ of finite étale $k$-schemes decorated with a unit, the marks by the Dress map $d(L,u)=\\mathrm{tr}_{L/k}\\langle u\\rangle$ into $\\mathrm{GW}(k)$, and a Pontryagin–Thom map $A^u(\\Gamma_k)\\to\\pi_0(\\mathbb{S}_k)(k)$ is shown to be surjective with kernel $\\ker(d)$. This gives $\\pi_0(\\mathbb{S}_k)(k)\\cong\\mathrm{GW}(k)$ for infinite perfect fields of characteristic $\\ne 2$ without Morel's computation. We then identify $\\ker(d)$, by a reciprocity law on $\\mathbb{P}^1$, as the group of principal quadratic divisors of rational functions, so that $\\pi_0$ of the motivic sphere is the unit-decorated Burnside ring of $\\Gamma_k$ modulo principal quadratic divisors. The transversality step is proved by an elementary “re-topping” argument."
+        },
+        {
           "title": "Enumerating submonoids of finite commutative monoids",
           "meta": "Submitted.",
           "links": [
