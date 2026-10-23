@@ -51,7 +51,7 @@
               "url": "/files/Ninfty.pdf"
             }
           ],
-          "abstract": "I summarize the main result of <a href=\"http://arxiv.org/abs/2310.13835\"><i>Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick game</i></a> enumerating transfer systems for rank 2 elementary Abelian $p$-groups, and use this to enumerate compatible pairs of transfer systems (in the sense of bi-incomplete Tambara functors) for the same group of equivariance. Based on joint work with Linus Bao, Christy Hazel, Tia Karkos, Alice Kessler, Austin Nicolas, Jeremie Park, Cait Schleff, and Scotty Tilton via the <a href=\"/eCHT_REU/\">eCHT REU</a>."
+          "abstract": "I summarize the main result of [*Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick games*](http://arxiv.org/abs/2310.13835) enumerating transfer systems for rank 2 elementary Abelian $p$-groups, and use this to enumerate compatible pairs of transfer systems (in the sense of bi-incomplete Tambara functors) for the same group of equivariance. Based on joint work with Linus Bao, Christy Hazel, Tia Karkos, Alice Kessler, Austin Nicolas, Jeremie Park, Cait Schleff, and Scotty Tilton via the [eCHT REU](/eCHT_REU/)."
         },
         {
           "title": "Transfer systems for rank two elementary Abelian groups: Characteristic functions and matchstick games",
@@ -65,7 +65,7 @@
               "url": "http://arxiv.org/abs/2310.13835"
             }
           ],
-          "coauthors": "Linus Bao, Christy Hazel, Tia Karkos, Alice Kessler, Austin Nicolas, Jeremie Park, Cait Schleff, and Scotty Tilton via the <a href=\"/eCHT_REU/\">eCHT REU</a>",
+          "coauthors": "Linus Bao, Christy Hazel, Tia Karkos, Alice Kessler, Austin Nicolas, Jeremie Park, Cait Schleff, and Scotty Tilton via the [eCHT REU](/eCHT_REU/)",
           "abstract": "We prove that Hill's characteristic function $\\chi$ for transfer systems on a lattice $P$ surjects onto interior operators for $P$. Moreover, the fibers of $\\chi$ have unique maxima which are exactly the saturated transfer systems. In order to apply this theorem in examples relevant to equivariant homotopy theory, we develop the theory of saturated transfer systems on modular lattices, ultimately producing a ``matchstick game'' that puts saturated transfer systems in bijection with certain structured subsets of covering relations. After an interlude developing a recursion for transfer systems on certain combinations of bounded posets, we apply these results to determine the full lattice of transfer systems for rank two elementary Abelian groups."
         },
         {
@@ -111,7 +111,7 @@
             }
           ],
           "coauthors": "Scott Balchin and Ethan MacBrough",
-          "abstract": "We isolate a class of groups — called <i>lossless groups</i> — for which homotopy classes of $G$-$N_\\infty$ operads are in bijection with certain restricted transfer systems on the poset of conjugacy classes $\\operatorname{Sub}(G)/G$."
+          "abstract": "We isolate a class of groups — called *lossless groups* — for which homotopy classes of $G$-$N_\\infty$ operads are in bijection with certain restricted transfer systems on the poset of conjugacy classes $\\operatorname{Sub}(G)/G$."
         },
         {
           "title": "Composition closed premodel structures and the Kreweras lattice",
@@ -552,7 +552,7 @@
               "url": "http://people.reed.edu/~ormsbyk/projectproject/"
             }
           ],
-          "abstract": "This is a Reed College summer research <em>Project</em> dedicated to <em>Projecting</em> mathematical ideas into the visual realm. The team consists of Henry Blanchette, Cameron Fish, Chris Henn, Kyle Ormsby, Lana Tollas, and Jalan Ziyad. The blog contains details about what we make, how we make it, and the math underlying all of it."
+          "abstract": "This is a Reed College summer research *Project* dedicated to *Projecting* mathematical ideas into the visual realm. The team consists of Henry Blanchette, Cameron Fish, Chris Henn, Kyle Ormsby, Lana Tollas, and Jalan Ziyad. The blog contains details about what we make, how we make it, and the math underlying all of it."
         }
       ]
     },

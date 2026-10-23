@@ -51,7 +51,7 @@ const count = sections.reduce((n, s) => n + s.items.length, 0);
                     <p set:html={inline(it.abstract)} />
                     {it.coauthors && (
                       <p class="dim" style="margin:0">
-                        <span class="label">with</span> {it.coauthors}
+                        <span class="label">with</span>{' '}<span set:html={inline(it.coauthors)} />
                       </p>
                     )}
                   </div>
@@ -65,8 +65,8 @@ const count = sections.reduce((n, s) => n + s.items.length, 0);
       {s.style === 'talk' && (
         <div>
           {s.items.map((it) => (
-            <div class="entry">
-              <span class="label">{it.date}</span>
+            <div class="entry talk">
+              <span class="label talk-date">{it.date}</span>
               <div>
                 <em set:html={inline(it.title ?? '')} />
                 {it.venue && <div class="dim" style="font-size:0.94rem;margin-top:var(--s1)">{it.venue}</div>}
@@ -96,6 +96,10 @@ const count = sections.reduce((n, s) => n + s.items.length, 0);
     border-top: 1px solid var(--rule);
     max-width: 58rem;
   }
+  /* The global .entry date column (7rem) is sized for short labels; the
+     longest talk date, "11 September 2025", needs ~8.1rem in the mono label. */
+  .talk-date { white-space: nowrap; }
+  @media (min-width: 40.01rem) { .entry.talk { grid-template-columns: 9rem 1fr; } }
   .pub:last-child { border-bottom: 1px solid var(--rule); }
   .pub h3 { margin: 0; font-size: 1.15rem; line-height: 1.3; }
 
