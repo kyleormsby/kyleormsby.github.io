@@ -73,6 +73,18 @@ const maps = [
     tags: ['partitions', 'lattices'],
   },
   {
+    slug: 'young-lattice',
+    title: 'Young diagrams in a box',
+    formula: '<i>L</i>(<i>m</i>,<i>n</i>) = B<sub><i>mn</i></sub>/(<i>S<sub>m</sub></i> ≀ <i>S<sub>n</sub></i>)',
+    href: '/young-lattice/',
+    thumb: '/thumbs/young-lattice.png',
+    blurb:
+      'Partitions whose Young diagram fits in an <i>m</i>×<i>n</i> box, ordered by containment: the interval below the rectangle in Young’s lattice. ' +
+      'Drawn as Stanley’s quotient of the Boolean algebra on the box’s cells by the group that shuffles each row and shuffles the rows; a second view slides every subset onto its diagram. ' +
+      'Edges carry the entries of the up operator on orbit sums, and the panel checks that it is injective below the middle, which is why the <i>q</i>-binomial coefficients are unimodal.',
+    tags: ['partitions', 'posets'],
+  },
+  {
     slug: 'tamari-lattice',
     title: 'Tamari lattice',
     formula: '<i>T</i><sub><i>n</i>+1</sub> on trees and on transfer systems on [<i>n</i>]; NC(<i>n</i>+1)',
@@ -88,7 +100,7 @@ const maps = [
 
 <Base
   title="Hasse diagrams · Kyle Ormsby"
-  description="Zoomable Hasse diagrams built for Math 372: the quotient posets of unlabeled graphs, necklaces, simplicial complexes and finite spaces, the partition lattice and its quotient by the symmetric group, and the Tamari lattice on binary trees, transfer systems and noncrossing partitions."
+  description="Zoomable Hasse diagrams built for Math 372: the quotient posets of unlabeled graphs, necklaces, simplicial complexes and finite spaces, the partition lattice and its quotient by the symmetric group, Young diagrams in a box, and the Tamari lattice on binary trees, transfer systems and noncrossing partitions."
   wide
 >
   <div style="max-width:var(--measure)">
@@ -96,7 +108,8 @@ const maps = [
     <h1 style="margin-top:var(--s3)">Hasse diagrams</h1>
     <p class="lede dim" style="margin-top:var(--s4)">
       Zoomable Hasse diagrams — unlabeled graphs, necklaces, simplicial
-      complexes, finite spaces, the partition lattice, the Tamari lattice —
+      complexes, finite spaces, the partition lattice, Young diagrams in a
+      box, the Tamari lattice —
       drawn large enough to
       wander around in.
     </p>

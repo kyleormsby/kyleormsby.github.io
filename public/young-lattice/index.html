@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Young Diagrams in a Box — L(m,n) as a quotient of a Boolean algebra</title>
+<meta name="description" content="A zoomable Hasse diagram of L(m,n), the partitions whose Young diagram fits in an m×n box, drawn as Stanley's quotient B_mn/(S_m ≀ S_n): the subsets of the box's cells slide onto their orbits. Built for Math 372 at Reed College.">
+<link rel="stylesheet" href="/vendor/fonts/fonts.css">
+<style>
+  :root {
+    --bg: #F3F4F6; --panel: #FFFFFF; --ink: #1B1F2A; --muted: #646B7A; --line: #DADDE4;
+    --accent: #2F5D8A; --accent-ink: #FFFFFF; --hot: #C8501E; --hot-soft: #F3D9CC; --down: #8A6A1F;
+    --map-bg: #FAFAFB; --edge: rgba(27,31,42,0.18); --cell: #1B1F2A; --box: #B4B9C4; --cluster: rgba(27,31,42,0.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161C; --panel: #1C1F27; --ink: #E8E9EE; --muted: #9AA0AC; --line: #2C3039;
+      --accent: #8AB4E3; --accent-ink: #10131A; --hot: #F08A4B; --hot-soft: #4A2A18; --down: #D9B25A;
+      --map-bg: #171A21; --edge: rgba(232,233,238,0.16); --cell: #E8E9EE; --box: #4A505C; --cluster: rgba(232,233,238,0.05);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161C; --panel: #1C1F27; --ink: #E8E9EE; --muted: #9AA0AC; --line: #2C3039;
+    --accent: #8AB4E3; --accent-ink: #10131A; --hot: #F08A4B; --hot-soft: #4A2A18; --down: #D9B25A;
+    --map-bg: #171A21; --edge: rgba(232,233,238,0.16); --cell: #E8E9EE; --box: #4A505C; --cluster: rgba(232,233,238,0.05);
+  }
+  html, body { height: 100%; }
+  body { background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", system-ui, sans-serif;
+         font-size: 14px; line-height: 1.4; margin: 0; display: flex; flex-direction: column; }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; padding: 10px 16px; border-bottom: 1px solid var(--line);
+         background: var(--panel); }
+  h1 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 20px; margin: 0; letter-spacing: -0.01em; white-space: nowrap; }
+  .bar .sub { color: var(--muted); font-size: 13px; }
+  .ctl { display: flex; align-items: center; gap: 6px; }
+  .ctl .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-right: 2px; }
+  .seg { display: flex; gap: 3px; }
+  .seg button, .btn { font: inherit; font-size: 13px; font-weight: 500; border: 1px solid var(--line); background: var(--panel);
+    color: var(--ink); border-radius: 5px; padding: 4px 9px; cursor: pointer; }
+  .seg button[aria-pressed="true"], .btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .seg button:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .ctl input[type=checkbox] { accent-color: var(--accent); }
+  .legend { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--muted); }
+  .legend .sw { display: inline-block; width: 16px; height: 3px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+  main { flex: 1; min-height: 0; position: relative; display: flex; }
+  #cv { flex: 1; min-width: 0; background: var(--map-bg); cursor: grab; touch-action: none; display: block; }
+  #cv.dragging { cursor: grabbing; }
+  aside { width: 320px; border-left: 1px solid var(--line); background: var(--panel); padding: 14px 16px; overflow-y: auto; }
+  aside h2 { font-family: "Fraunces", Georgia, serif; font-weight: 600; font-size: 16px; margin: 0 0 6px; }
+  aside h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; margin: 16px 0 6px; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-variant-numeric: tabular-nums; font-size: 13px; margin: 0; }
+  .kv dt { color: var(--muted); } .kv dd { margin: 0; }
+  table { border-collapse: collapse; font-size: 13px; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 2px 8px 2px 0; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 500; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; overflow-wrap: anywhere; }
+  .hint { color: var(--muted); font-size: 12.5px; margin-top: 12px; }
+  .hint b { color: var(--ink); font-weight: 600; }
+  .note { color: var(--muted); font-size: 12.5px; margin: 6px 0 0; }
+  #capnote:empty { display: none; }
+  .short { display: none; }
+  @media (max-width: 760px) {
+    .bar { gap: 6px 12px; padding: 8px 10px; }
+    .bar .sub, .legend { display: none; }
+    h1 { font-size: 17px; }
+    .seg button, .btn { padding: 4px 7px; font-size: 12px; }
+    .long { display: none; } .short { display: inline; }
+    main { flex-direction: column; }
+    #cv { flex: 1 1 auto; min-height: 0; }
+    aside { width: auto; flex: 0 0 auto; max-height: 42%; border-left: 0; border-top: 1px solid var(--line); padding: 10px 14px; }
+  }
+  .credit { max-width: 1240px; margin: 12px auto; padding-inline: 16px; font-size: 13px; color: var(--muted); }
+  .credit a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div><h1>Young Diagrams in a Box</h1><div class="sub"><i>L</i>(<i>m</i>,<i>n</i>) = B<sub><i>mn</i></sub>/(<i>S<sub>m</sub></i> ≀ <i>S<sub>n</sub></i>): subsets of an <i>m</i>×<i>n</i> box, up to shuffling each row and shuffling the rows</div></div>
+  <div class="ctl"><span class="label">rows m</span><div class="seg" id="msel" role="group" aria-label="number of rows"></div></div>
+  <div class="ctl"><span class="label">columns n</span><div class="seg" id="nsel" role="group" aria-label="number of columns"></div></div>
+  <div class="ctl"><span class="label">draw</span>
+    <div class="seg" role="group" aria-label="poset">
+      <button id="viewSub" aria-pressed="true" title="All subsets of the m×n box, grouped by orbit"><span class="long">subsets B<sub>mn</sub></span><span class="short">subsets</span></button>
+      <button id="viewOrb" aria-pressed="false" title="The orbits: Young diagrams in the box"><span class="long">orbits <i>L</i>(<i>m</i>,<i>n</i>)</span><span class="short">orbits</span></button>
+    </div>
+  </div>
+  <div class="ctl"><label><input id="counts" type="checkbox" checked> cover counts</label></div>
+  <div class="ctl"><button class="btn" id="fit">Fit</button></div>
+  <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>covers above</span><span><span class="sw" style="background:var(--down)"></span>covered below</span><span><span class="sw" style="background:var(--hot)"></span>hovered orbit</span></div>
+</div>
+
+<main>
+  <canvas id="cv" aria-label="Hasse diagram of L(m,n) and of the Boolean algebra it is a quotient of"></canvas>
+  <aside id="panel">
+    <h2 id="p-title">Hover an element</h2>
+    <div id="info"></div>
+    <p class="note" id="capnote"></p>
+    <h3>Counts</h3>
+    <div id="counts-out"></div>
+    <h3>The callback to Chapter 5</h3>
+    <div id="callback"></div>
+    <p class="hint">Drag to pan, scroll or pinch to zoom. Hover an element to see its covers; click to pin it. The <i>mn</i> cells of an <i>m</i>×<i>n</i> box form a set, and its subsets under inclusion are the Boolean algebra B<sub><i>mn</i></sub>. The group <i>S<sub>m</sub></i> ≀ <i>S<sub>n</sub></i> shuffles the cells within each row (a copy of <i>S<sub>n</sub></i> for each of the <i>m</i> rows) and shuffles the rows (<i>S<sub>m</sub></i>), so it has (<i>n</i>!)<sup><i>m</i></sup>·<i>m</i>! elements. Shuffling within rows forgets <b>which</b> cells are chosen and keeps how many are chosen in each row; shuffling rows forgets which row had which count. What survives is the row counts sorted into decreasing order: a partition whose Young diagram fits in the box. Stanley's Theorem 6.9 says the orbit order (one orbit below another when some member of the first lies inside some member of the second) is containment of Young diagrams; the only real step is that if <i>a<sub>i</sub></i> ≤ <i>b<sub>i</sub></i> for every row, the <i>j</i>th largest <i>a</i> is at most the <i>j</i>th largest <i>b</i>. So <i>L</i>(<i>m</i>,<i>n</i>) is a quotient of a Boolean algebra, Chapter 5's theorem makes it rank-symmetric, rank-unimodal and Sperner, and the coefficients of the <i>q</i>-binomial coefficient, which are its rank sizes, are symmetric and unimodal. The <b>orbits</b> button slides every subset onto its Young diagram, so the cover edges of B<sub><i>mn</i></sub> pile up on the cover edges of the quotient; each quotient edge is labeled with how many members of the upper orbit cover one fixed member of the lower orbit, the entries of the up operator on orbit sums. Within a row the diagrams are sorted by content (the sum of column minus row over their cells), so that conjugation is a left–right reflection when <i>m</i> = <i>n</i>.</p>
+  </aside>
+</main>
+<script>
+(() => {
+"use strict";
+const SUBSET_CAP = 12;                       // draw B_mn only when mn <= 12 (4096 subsets)
+const $ = id => document.getElementById(id);
+const cv = $("cv"), ctx = cv.getContext("2d"), info = $("info");
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+let M = 2, N = 3, view = "sub", morph = 0, morphTarget = 0, showCounts = true;
+let P = null;        // the model
+let cam = { k: 1, x: 0, y: 0 }, camTarget = null;
+let hover = null, pinned = null;
+
+/* ---------- combinatorics ---------- */
+function partitionsInBox(m, n) {            // arrays of length m, weakly decreasing, entries <= n
+  const out = [];
+  (function rec(pre, max) {
+    if (pre.length === m) { out.push(pre.slice()); return; }
+    for (let v = max; v >= 0; v--) { pre.push(v); rec(pre, v); pre.pop(); }
+  })([], n);
+  return out;
+}
+const fact = k => { let r = 1n; for (let i = 2n; i <= BigInt(k); i++) r *= i; return r; };
+const binom = (a, b) => { if (b < 0 || b > a) return 0; let r = 1; for (let i = 1; i <= b; i++) r = r * (a - b + i) / i; return Math.round(r); };
+const keyOf = lam => lam.join(",");
+const showLam = lam => { const t = lam.filter(v => v > 0); return t.length ? t.join(t.some(v => v > 9) ? "," : "") : "∅"; };
+const content = lam => { let c = 0; lam.forEach((r, i) => { for (let j = 0; j < r; j++) c += j - i; }); return c; };
+function orbitSize(lam, n) {
+  const mult = {}; lam.forEach(v => mult[v] = (mult[v] || 0) + 1);
+  let s = Number(fact(lam.length)); Object.values(mult).forEach(k => s /= Number(fact(k)));
+  lam.forEach(v => s *= binom(n, v)); return s;
+}
+function rankOf(A) {                          // rank of a small integer matrix (array of rows), floats with pivoting
+  const R = A.map(r => r.slice()); const rows = R.length, cols = rows ? R[0].length : 0; let rk = 0;
+  for (let c = 0; c < cols && rk < rows; c++) {
+    let piv = rk; for (let r = rk + 1; r < rows; r++) if (Math.abs(R[r][c]) > Math.abs(R[piv][c])) piv = r;
+    if (Math.abs(R[piv][c]) < 1e-9) continue;
+    [R[rk], R[piv]] = [R[piv], R[rk]];
+    for (let r = rk + 1; r < rows; r++) { const f = R[r][c] / R[rk][c]; if (f) for (let j = c; j < cols; j++) R[r][j] -= f * R[rk][j]; }
+    rk++;
+  }
+  return rk;
+}
+
+function build(m, n) {
+  const mn = m * n;
+  const lams = partitionsInBox(m, n);
+  const orbits = lams.map(lam => ({ lam, key: keyOf(lam), rank: lam.reduce((a, b) => a + b, 0), c: content(lam), size: orbitSize(lam, n) }));
+  const byKey = new Map(orbits.map((o, i) => [o.key, i]));
+  const ranks = Array.from({ length: mn + 1 }, () => []);
+  orbits.forEach((o, i) => ranks[o.rank].push(i));
+  ranks.forEach(r => r.sort((a, b) => orbits[a].c - orbits[b].c || orbits[b].key.localeCompare(orbits[a].key)));
+  ranks.forEach(r => r.forEach((oi, k) => orbits[oi].pos = k));
+
+  // quotient covers with Stanley's counts: add one cell to a row of length v (< n); every such row contributes n - v cells
+  const qedges = [];
+  orbits.forEach((o, i) => {
+    const seen = new Map();
+    o.lam.forEach((v, r) => {
+      if (v >= n) return;
+      const mu = o.lam.slice(); mu[r] = v + 1; mu.sort((a, b) => b - a);
+      const j = byKey.get(keyOf(mu)); seen.set(j, (seen.get(j) || 0) + (n - v));
+    });
+    seen.forEach((cnt, j) => qedges.push({ a: i, b: j, cnt }));
+  });
+  orbits.forEach(o => { o.up = []; o.down = []; });
+  qedges.forEach((e, ei) => { orbits[e.a].up.push(ei); orbits[e.b].down.push(ei); });
+
+  // layout: orbits view
+  const qs = 11, qw = n * qs, qh = m * qs;
+  const qdx = Math.max(qw + 26, 46), qdy = qh + 46;
+  orbits.forEach(o => { const p = ranks[o.rank].length; o.qx = (o.pos - (p - 1) / 2) * qdx; o.qy = -o.rank * qdy; });
+
+  // subsets
+  const model = { m, n, mn, orbits, ranks, qedges, qs, qw, qh, subsets: null };
+  if (mn <= SUBSET_CAP) {
+    const S = 1 << mn, rowMask = (1 << n) - 1;
+    const pc = x => { let c = 0; while (x) { x &= x - 1; c++; } return c; };
+    const orbitOf = new Int32Array(S), members = orbits.map(() => []);
+    for (let s = 0; s < S; s++) {
+      const cnt = []; for (let r = 0; r < m; r++) cnt.push(pc((s >> (r * n)) & rowMask));
+      cnt.sort((a, b) => b - a); const oi = byKey.get(keyOf(cnt)); orbitOf[s] = oi; members[oi].push(s);
+    }
+    // cluster layout: each orbit's members in a small grid; clusters side by side within a rank
+    const ss = 5, sw = n * ss, sh = m * ss, pad = 4, gapX = 18, gapY = 34;
+    const sx = new Float32Array(S), sy = new Float32Array(S), clusters = [];
+    let yBase = 0;
+    for (let r = 0; r <= mn; r++) {
+      const row = ranks[r]; const dims = row.map(oi => {
+        const k = members[oi].length; const cols = Math.max(1, Math.ceil(Math.sqrt(k * (sh + pad) / (sw + pad))));
+        return { oi, cols, rows: Math.ceil(k / cols), w: cols * (sw + pad) - pad, h: Math.ceil(k / cols) * (sh + pad) - pad };
+      });
+      const total = dims.reduce((a, d) => a + d.w, 0) + gapX * (dims.length - 1);
+      const rowH = Math.max(...dims.map(d => d.h));
+      let x = -total / 2;
+      dims.forEach(d => {
+        const cy = yBase - rowH / 2;
+        clusters[d.oi] = { x: x - 6, y: cy - d.h / 2 - 6, w: d.w + 12, h: d.h + 12, cx: x + d.w / 2, cy };
+        members[d.oi].forEach((s, k) => {
+          const c = k % d.cols, rr = Math.floor(k / d.cols);
+          sx[s] = x + c * (sw + pad) + sw / 2; sy[s] = cy - d.h / 2 + rr * (sh + pad) + sh / 2;
+        });
+        x += d.w + gapX;
+      });
+      yBase -= rowH + gapY;
+    }
+    model.subsets = { S, orbitOf, members, sx, sy, ss, sw, sh, clusters };
+  }
+  return model;
+}
+
+/* ---------- camera ---------- */
+function bounds(which) {
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  const add = (x, y, w, h) => { x0 = Math.min(x0, x - w / 2); x1 = Math.max(x1, x + w / 2); y0 = Math.min(y0, y - h / 2); y1 = Math.max(y1, y + h / 2); };
+  if (which === "sub" && P.subsets) { const U = P.subsets; for (let s = 0; s < U.S; s++) add(U.sx[s], U.sy[s], U.sw, U.sh); }
+  else P.orbits.forEach(o => add(o.qx, o.qy, P.qw, P.qh));
+  return { x0, x1, y0, y1 };
+}
+function fitCam(which) {
+  const b = bounds(which), W = cv.clientWidth, H = cv.clientHeight, m = 28;
+  const k = Math.min((W - 2 * m) / Math.max(1, b.x1 - b.x0), (H - 2 * m) / Math.max(1, b.y1 - b.y0), 6);
+  return { k, x: W / 2 - k * (b.x0 + b.x1) / 2, y: H / 2 - k * (b.y0 + b.y1) / 2 };
+}
+const toScreen = (x, y) => [x * cam.k + cam.x, y * cam.k + cam.y];
+const toWorld = (X, Y) => [(X - cam.x) / cam.k, (Y - cam.y) / cam.k];
+
+/* ---------- drawing ---------- */
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(cv.clientWidth * dpr); cv.height = Math.round(cv.clientHeight * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); draw();
+}
+function glyph(x, y, cell, test, colorFill, colorBox, alpha) {
+  const w = P.n * cell, h = P.m * cell, X = x - w / 2, Y = y - h / 2;
+  ctx.globalAlpha = alpha;
+  if (cell * cam.k < 1.6) {                   // far away: a dot
+    ctx.fillStyle = colorFill; ctx.fillRect(X, Y, w, h); return;
+  }
+  ctx.fillStyle = colorFill;
+  for (let i = 0; i < P.m; i++) for (let j = 0; j < P.n; j++) if (test(i, j)) ctx.fillRect(X + j * cell, Y + i * cell, cell, cell);
+  ctx.strokeStyle = colorBox; ctx.lineWidth = Math.max(0.6 / cam.k, cell * 0.06);
+  ctx.beginPath();
+  for (let i = 0; i <= P.m; i++) { ctx.moveTo(X, Y + i * cell); ctx.lineTo(X + w, Y + i * cell); }
+  for (let j = 0; j <= P.n; j++) { ctx.moveTo(X + j * cell, Y); ctx.lineTo(X + j * cell, Y + h); }
+  ctx.stroke();
+}
+const lerp = (a, b, t) => a + (b - a) * t;
+const ease = t => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+
+function draw() {
+  if (!P) return;
+  const W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== Math.round(W * (window.devicePixelRatio || 1)) || cv.height !== Math.round(H * (window.devicePixelRatio || 1))) {
+    cv.width = Math.round(W * (window.devicePixelRatio || 1)); cv.height = Math.round(H * (window.devicePixelRatio || 1));
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+  ctx.save(); ctx.translate(cam.x, cam.y); ctx.scale(cam.k, cam.k);
+  const t = ease(morph), U = P.subsets;
+  const C = { edge: css("--edge"), cell: css("--cell"), box: css("--box"), accent: css("--hot"),
+              up: css("--accent"), down: css("--down"), cluster: css("--cluster"), soft: css("--hot-soft"), ink: css("--ink"), bg: css("--map-bg") };
+  const focus = pinned || hover;
+
+  if (U && t < 1) {
+    const a = 1 - t;
+    const px = s => lerp(U.sx[s], P.orbits[U.orbitOf[s]].qx, t), py = s => lerp(U.sy[s], P.orbits[U.orbitOf[s]].qy, t);
+    // orbit clusters
+    if (t < 0.05) {
+      U.clusters.forEach((cl, oi) => {
+        const hot = focus && ((focus.kind === "orb" && focus.i === oi) || (focus.kind === "sub" && U.orbitOf[focus.i] === oi));
+        ctx.globalAlpha = 1; ctx.fillStyle = hot ? C.soft : C.cluster;
+        roundRect(cl.x, cl.y, cl.w, cl.h, 5); ctx.fill();
+      });
+    }
+    // edges of B_mn
+    ctx.globalAlpha = a * (P.mn > 9 ? 0.5 : 1); ctx.strokeStyle = C.edge; ctx.lineWidth = 0.6 / Math.max(cam.k, 0.25);
+    ctx.beginPath();
+    for (let s = 0; s < U.S; s++) for (let c = 0; c < P.mn; c++) if (!(s >> c & 1)) {
+      const u = s | (1 << c); ctx.moveTo(px(s), py(s) - U.sh / 2); ctx.lineTo(px(u), py(u) + U.sh / 2);
+    }
+    ctx.stroke();
+    // focus edges
+    if (focus && focus.kind === "sub") {
+      const s = focus.i; ctx.lineWidth = 1.6 / cam.k; ctx.globalAlpha = a;
+      for (let c = 0; c < P.mn; c++) {
+        const u = s ^ (1 << c), up = !(s >> c & 1);
+        ctx.strokeStyle = up ? C.up : C.down; ctx.beginPath();
+        if (up) { ctx.moveTo(px(s), py(s) - U.sh / 2); ctx.lineTo(px(u), py(u) + U.sh / 2); }
+        else { ctx.moveTo(px(s), py(s) + U.sh / 2); ctx.lineTo(px(u), py(u) - U.sh / 2); }
+        ctx.stroke();
+      }
+    }
+    for (let s = 0; s < U.S; s++) {
+      const oi = U.orbitOf[s];
+      const hot = focus && ((focus.kind === "sub" && U.orbitOf[focus.i] === oi) || (focus.kind === "orb" && focus.i === oi));
+      const me = focus && focus.kind === "sub" && focus.i === s;
+      glyph(px(s), py(s), U.ss, (i, j) => s >> (i * P.n + j) & 1, hot || me ? C.accent : C.cell, me ? C.accent : C.box, a * (hot && !me ? 0.45 : 1));
+    }
+  }
+
+  if (t > 0) {
+    // quotient edges
+    const maxc = P.n;
+    P.qedges.forEach((e, ei) => {
+      const A = P.orbits[e.a], B = P.orbits[e.b];
+      let col = C.edge, alpha = t, lw = (0.7 + 2.2 * (e.cnt - 1) / Math.max(1, maxc * P.m - 1)) / Math.max(cam.k, 0.3);
+      if (focus && focus.kind === "orb") {
+        if (e.a === focus.i) { col = C.up; lw *= 1.8; } else if (e.b === focus.i) { col = C.down; lw *= 1.8; }
+      }
+      ctx.globalAlpha = alpha; ctx.strokeStyle = col; ctx.lineWidth = lw * Math.max(1, cam.k) / Math.max(1, cam.k);
+      ctx.beginPath(); ctx.moveTo(A.qx, A.qy - P.qh / 2); ctx.lineTo(B.qx, B.qy + P.qh / 2); ctx.stroke();
+    });
+    if (showCounts && t > 0.6 && P.qs * cam.k > 5) {
+      ctx.globalAlpha = t; ctx.font = `${11 / cam.k}px system-ui, sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      P.qedges.forEach(e => {
+        const A = P.orbits[e.a], B = P.orbits[e.b];
+        const x = lerp(A.qx, B.qx, 0.5), y = lerp(A.qy - P.qh / 2, B.qy + P.qh / 2, 0.5);
+        const hot = focus && focus.kind === "orb" && (e.a === focus.i || e.b === focus.i);
+        const label = String(e.cnt), w = ctx.measureText(label).width + 4 / cam.k, h = 13 / cam.k;
+        ctx.fillStyle = C.bg; ctx.fillRect(x - w / 2, y - h / 2, w, h);
+        ctx.fillStyle = hot ? (e.a === focus.i ? C.up : C.down) : C.ink; ctx.fillText(label, x, y);
+      });
+    }
+    P.orbits.forEach((o, oi) => {
+      const hot = focus && ((focus.kind === "orb" && focus.i === oi) || (focus.kind === "sub" && U && U.orbitOf[focus.i] === oi));
+      glyph(o.qx, o.qy, P.qs, (i, j) => j < o.lam[i], hot ? C.accent : C.cell, hot ? C.accent : C.box, t);
+    });
+  }
+  ctx.restore(); ctx.globalAlpha = 1;
+}
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+}
+
+/* ---------- hit testing and info ---------- */
+function hit(X, Y) {
+  const [x, y] = toWorld(X, Y), t = ease(morph), U = P.subsets, slack = 3 / cam.k;
+  if (U && t < 0.5) {
+    for (let s = 0; s < U.S; s++) {
+      if (Math.abs(x - U.sx[s]) <= U.sw / 2 + slack && Math.abs(y - U.sy[s]) <= U.sh / 2 + slack) return { kind: "sub", i: s };
+    }
+    for (let oi = 0; oi < P.orbits.length; oi++) {
+      const cl = U.clusters[oi]; if (x >= cl.x && x <= cl.x + cl.w && y >= cl.y && y <= cl.y + cl.h) return { kind: "orb", i: oi };
+    }
+    return null;
+  }
+  for (let oi = 0; oi < P.orbits.length; oi++) {
+    const o = P.orbits[oi];
+    if (Math.abs(x - o.qx) <= P.qw / 2 + slack && Math.abs(y - o.qy) <= P.qh / 2 + slack) return { kind: "orb", i: oi };
+  }
+  return null;
+}
+function cellsText(s) {
+  const rows = []; for (let i = 0; i < P.m; i++) { let r = ""; for (let j = 0; j < P.n; j++) r += (s >> (i * P.n + j) & 1) ? "■" : "□"; rows.push(r); }
+  return rows.join(" / ");
+}
+function describe(f) {
+  if (!f) return "";
+  if (f.kind === "sub") {
+    const s = f.i, o = P.orbits[P.subsets.orbitOf[s]];
+    let up = P.mn - o.rank;
+    return `<span class="mono">${cellsText(s)}</span><br>${o.rank} cell${o.rank === 1 ? "" : "s"}; row counts sorted give λ = <b>${showLam(o.lam)}</b>,
+      an orbit of ${o.size} subset${o.size === 1 ? "" : "s"}.<br>Covered by ${up} subsets, covers ${o.rank}.`;
+  }
+  const o = P.orbits[f.i];
+  const ups = o.up.map(ei => P.qedges[ei]).map(e => `${showLam(P.orbits[e.b].lam)} <span style="color:var(--muted)">(×${e.cnt})</span>`);
+  const downs = o.down.map(ei => P.qedges[ei]).map(e => showLam(P.orbits[e.a].lam));
+  return `<b>λ = ${showLam(o.lam)}</b>, rank ${o.rank}; orbit of ${o.size} subset${o.size === 1 ? "" : "s"} of the ${P.m}×${P.n} box.<br>
+    <span style="color:var(--accent)">Covered by</span>: ${ups.join(", ") || "nothing (the full box)"}.<br>
+    <span style="color:var(--down)">Covers</span>: ${downs.join(", ") || "nothing (the empty diagram)"}.<br>
+    <span style="color:var(--muted)">×k: each subset in this orbit is covered by k subsets in that one.</span>`;
+}
+function refreshInfo() {
+  const f = pinned || hover;
+  $("p-title").textContent = !f ? "Hover an element" : (f.kind === "sub" ? "A subset of the box" : "A Young diagram") + (pinned ? " (pinned)" : "");
+  info.innerHTML = describe(f);
+}
+
+/* ---------- readouts ---------- */
+function polyString(coeffs) {
+  const sup = d => String(d).split("").map(c => "⁰¹²³⁴⁵⁶⁷⁸⁹"[+c]).join("");
+  return coeffs.map((c, d) => c === 0 ? null : (d === 0 ? `${c}` : `${c === 1 ? "" : c}q${d === 1 ? "" : sup(d)}`)).filter(Boolean).join(" + ");
+}
+function readouts() {
+  const sizes = P.ranks.map(r => r.length), m = P.m, n = P.n;
+  const G = fact(n) ** BigInt(m) * fact(m);
+  const unimodal = (() => { let i = 0; while (i + 1 < sizes.length && sizes[i] <= sizes[i + 1]) i++; while (i + 1 < sizes.length && sizes[i] >= sizes[i + 1]) i++; return i === sizes.length - 1; })();
+  const symmetric = sizes.every((v, i) => v === sizes[sizes.length - 1 - i]);
+  $("counts-out").innerHTML = `
+    <dl class="kv">
+      <dt>subsets</dt><dd>2<sup>${P.mn}</sup> = ${(2 ** P.mn).toLocaleString()}</dd>
+      <dt>group order</dt><dd>(${n}!)<sup>${m}</sup>·${m}! = ${G.toLocaleString()}</dd>
+      <dt>orbits</dt><dd>C(${m + n}, ${m}) = ${binom(m + n, m).toLocaleString()}</dd>
+      <dt>rank sizes</dt><dd class="mono">${sizes.join(" ")}</dd>
+      <dt>symmetric</dt><dd>${symmetric ? "yes" : "no"}</dd>
+      <dt>unimodal</dt><dd>${unimodal ? "yes" : "no"}</dd>
+    </dl>
+    <p class="note">The rank sizes are the coefficients of</p>
+    <p class="mono" style="margin:2px 0 0">[${m + n} choose ${m}]<sub>q</sub> = ${polyString(sizes)}</p>`;
+  // up-operator matrices on orbit sums, ranks below the middle
+  const half = Math.floor(P.mn / 2), rows = [];
+  for (let i = 0; i < Math.ceil(P.mn / 2); i++) {
+    const lo = P.ranks[i], hi = P.ranks[i + 1];
+    const A = hi.map(b => lo.map(a => { const e = P.orbits[a].up.map(ei => P.qedges[ei]).find(e => e.b === b); return e ? e.cnt : 0; }));
+    const rk = rankOf(A);
+    rows.push(`<tr><td>${i} → ${i + 1}</td><td>${lo.length} → ${hi.length}</td><td>${rk}</td><td>${rk === lo.length ? "injective" : "not injective"}</td></tr>`);
+  }
+  $("callback").innerHTML = rows.length ? `<table><tr><th>U<sub>i</sub></th><th>sizes</th><th>rank</th><th></th></tr>${rows.join("")}</table>
+    <p class="note">The matrix of the up operator <i>U<sub>i</sub></i> on orbit sums has the edge labels as entries. Below the middle rank it is injective, which is how Theorem 5.8 proves that the quotient is Sperner; above the middle, the down operator does the same job.</p>` : "";
+}
+
+/* ---------- state changes ---------- */
+function rebuild() {
+  M = Math.max(1, Math.min(7, M)); N = Math.max(1, Math.min(7, N));
+  ["msel", "nsel"].forEach((id, k) => [...$(id).children].forEach(b => b.setAttribute("aria-pressed", +b.dataset.v === (k ? N : M))));
+  try { localStorage.setItem("young-lattice", JSON.stringify({ m: M, n: N, view })); } catch (e) {}
+  P = build(M, N); hover = pinned = null;
+  const canSub = !!P.subsets;
+  $("viewSub").disabled = !canSub;
+  $("capnote").textContent = canSub ? "" :
+    `B_${M * N} has ${(2 ** (M * N)).toLocaleString()} subsets, too many to draw, so only the quotient is shown (subsets are drawn for mn ≤ ${SUBSET_CAP}).`;
+  if (!canSub) view = "orb";
+  setView(view, true); showCounts = $("counts").checked; readouts(); refreshInfo();
+}
+function setView(v, instant) {
+  view = (v === "sub" && !P.subsets) ? "orb" : v;
+  try { localStorage.setItem("young-lattice", JSON.stringify({ m: M, n: N, view })); } catch (e) {}
+  $("viewSub").setAttribute("aria-pressed", view === "sub"); $("viewOrb").setAttribute("aria-pressed", view === "orb");
+  morphTarget = view === "orb" ? 1 : 0;
+  if (instant) { morph = morphTarget; cam = fitCam(view); camTarget = null; draw(); }
+  else { camTarget = fitCam(view); animate(); }
+}
+let animating = false;
+function animate() {
+  if (animating) return; animating = true;
+  const camStart = { ...cam }, m0 = morph, t0 = performance.now(), dur = 1100;
+  const step = now => {
+    const u = Math.min(1, (now - t0) / dur);
+    morph = lerp(m0, morphTarget, u);
+    if (camTarget) { const e = ease(u); cam = { k: Math.exp(lerp(Math.log(camStart.k), Math.log(camTarget.k), e)), x: lerp(camStart.x, camTarget.x, e), y: lerp(camStart.y, camTarget.y, e) }; }
+    draw();
+    if (u < 1) requestAnimationFrame(step); else { animating = false; camTarget = null; }
+  };
+  requestAnimationFrame(step);
+}
+
+/* ---------- input ---------- */
+const pointers = new Map(); let dragMoved = false, pinchStart = null;
+cv.addEventListener("pointerdown", e => {
+  cv.setPointerCapture(e.pointerId); pointers.set(e.pointerId, { x: e.offsetX, y: e.offsetY }); dragMoved = false;
+  if (pointers.size === 2) { const [p, q] = [...pointers.values()]; pinchStart = { d: Math.hypot(p.x - q.x, p.y - q.y), cam: { ...cam }, cx: (p.x + q.x) / 2, cy: (p.y + q.y) / 2 }; }
+  cv.classList.add("dragging");
+});
+cv.addEventListener("pointermove", e => {
+  const prev = pointers.get(e.pointerId);
+  if (!prev) { const h = hit(e.offsetX, e.offsetY); if ((h && (!hover || h.kind !== hover.kind || h.i !== hover.i)) || (!h && hover)) { hover = h; refreshInfo(); draw(); } return; }
+  if (pointers.size === 2 && pinchStart) {
+    pointers.set(e.pointerId, { x: e.offsetX, y: e.offsetY });
+    const [p, q] = [...pointers.values()], d = Math.hypot(p.x - q.x, p.y - q.y), f = d / pinchStart.d;
+    const k = pinchStart.cam.k * f, cx = pinchStart.cx, cy = pinchStart.cy;
+    cam = { k, x: cx - (cx - pinchStart.cam.x) * f, y: cy - (cy - pinchStart.cam.y) * f }; dragMoved = true; draw(); return;
+  }
+  const dx = e.offsetX - prev.x, dy = e.offsetY - prev.y;
+  if (Math.abs(dx) + Math.abs(dy) > 2) dragMoved = true;
+  cam.x += dx; cam.y += dy; pointers.set(e.pointerId, { x: e.offsetX, y: e.offsetY }); draw();
+});
+const end = e => {
+  if (pointers.has(e.pointerId) && !dragMoved && pointers.size === 1) {
+    const h = hit(e.offsetX, e.offsetY);
+    pinned = (h && pinned && h.kind === pinned.kind && h.i === pinned.i) ? null : h; refreshInfo(); draw();
+  }
+  pointers.delete(e.pointerId); if (pointers.size < 2) pinchStart = null; if (!pointers.size) cv.classList.remove("dragging");
+};
+cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
+cv.addEventListener("pointerleave", () => { if (!pointers.size && hover) { hover = null; refreshInfo(); draw(); } });
+cv.addEventListener("wheel", e => {
+  e.preventDefault(); const f = Math.exp(-e.deltaY * 0.0015), X = e.offsetX, Y = e.offsetY;
+  cam = { k: cam.k * f, x: X - (X - cam.x) * f, y: Y - (Y - cam.y) * f }; draw();
+}, { passive: false });
+
+["msel", "nsel"].forEach((id, k) => {
+  for (let v = 1; v <= 7; v++) {
+    const b = document.createElement("button"); b.textContent = v; b.dataset.v = v; b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", () => { if (k) N = v; else M = v; rebuild(); });
+    $(id).appendChild(b);
+  }
+});
+try { const s = JSON.parse(localStorage.getItem("young-lattice") || "{}");
+  if (s.m >= 1 && s.m <= 7) M = s.m; if (s.n >= 1 && s.n <= 7) N = s.n; if (s.view === "orb" || s.view === "sub") view = s.view; } catch (e) {}
+$("viewSub").addEventListener("click", () => setView("sub"));
+$("viewOrb").addEventListener("click", () => setView("orb"));
+$("counts").addEventListener("change", e => { showCounts = e.target.checked; draw(); });
+$("fit").addEventListener("click", () => { camTarget = fitCam(view); morphTarget = morph; animate(); });
+let lastSize = "";
+new ResizeObserver(() => {
+  const sz = cv.clientWidth + "x" + cv.clientHeight; if (sz === lastSize) return;
+  const first = !lastSize; lastSize = sz; resize(); if (first || !animating) { cam = fitCam(view); draw(); }
+}).observe(cv);
+if (window.matchMedia) window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", draw);
+
+rebuild(); resize(); cam = fitCam(view); draw();
+})();
+</script>
+<p class="credit">Made for <a href="/372fall26/">Math 372: Combinatorics</a> at Reed College, fall 2026. <i>L</i>(<i>m</i>,<i>n</i>) is the interval below the <i>m</i>×<i>n</i> rectangle in Young's lattice (Stanley, <i>Algebraic Combinatorics</i>, Chapter 6, Theorem 6.9; Chapter 5 for quotients of Boolean algebras). Its rank-generating function is the <i>q</i>-binomial coefficient [<i>m</i>+<i>n</i> choose <i>m</i>]<sub><i>q</i></sub>. Everything on this page is computed in the browser; the subsets are drawn only for <i>mn</i> ≤ 12, since B<sub>16</sub> has 65 536 elements, and the quotient stops at 7×7, which has 3432. Part of <a href="/viz/">e-infinity.space/viz</a>; see also the other <a href="/viz/hasse-diagrams/">Hasse diagrams</a>.</p>
+</body>
+</html>

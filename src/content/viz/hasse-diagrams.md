@@ -8,4 +8,4 @@ tags:
   - combinatorics
 ---
 
-Zoomable Hasse diagrams built for Math 372: the quotient posets of unlabeled graphs, necklaces, simplicial complexes and finite spaces, the partition lattice and its quotient by the symmetric group, and the Tamari lattice drawn on binary trees, transfer systems on a chain, and noncrossing partitions.
+Zoomable Hasse diagrams built for Math 372: the quotient posets of unlabeled graphs, necklaces, simplicial complexes and finite spaces, the partition lattice and its quotient by the symmetric group, Young diagrams in a box as a quotient of a Boolean algebra, and the Tamari lattice drawn on binary trees, transfer systems on a chain, and noncrossing partitions.

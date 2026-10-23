@@ -154,5 +154,9 @@
     "scale": 1,
     "wait": 14000,
     "_note": "page autoplays at 0.25 stages/s; 14 s lands near stage 3.5"
+  },
+  "young-lattice": {
+    "click": "#viewOrb",
+    "wait": 3000
   }
 }
