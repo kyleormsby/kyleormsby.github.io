@@ -56,3 +56,11 @@
 @font-face{font-family:'Playfair Display';font-style:italic;font-weight:400;font-display:swap;src:url('./files/playfair-display-latin-400-italic.woff2') format('woff2');}
 @font-face{font-family:'Playfair Display';font-style:italic;font-weight:400;font-display:swap;src:url('./files/playfair-display-latin-ext-400-italic.woff2') format('woff2');}
 @font-face{font-family:'UnifrakturCook';font-style:normal;font-weight:700;font-display:swap;src:url('./files/unifrakturcook-latin-700-normal.woff2') format('woff2');}
+@font-face{font-family:'Young Serif';font-style:normal;font-weight:400;font-display:swap;src:url('./files/young-serif-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:'Young Serif';font-style:normal;font-weight:400;font-display:swap;src:url('./files/young-serif-latin-ext-400-normal.woff2') format('woff2');}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400;font-display:swap;src:url('./files/instrument-sans-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:400;font-display:swap;src:url('./files/instrument-sans-latin-ext-400-normal.woff2') format('woff2');}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:500;font-display:swap;src:url('./files/instrument-sans-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:500;font-display:swap;src:url('./files/instrument-sans-latin-ext-500-normal.woff2') format('woff2');}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:600;font-display:swap;src:url('./files/instrument-sans-latin-600-normal.woff2') format('woff2');}
+@font-face{font-family:'Instrument Sans';font-style:normal;font-weight:600;font-display:swap;src:url('./files/instrument-sans-latin-ext-600-normal.woff2') format('woff2');}

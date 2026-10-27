@@ -158,5 +158,14 @@
   "young-lattice": {
     "click": "#viewOrb",
     "wait": 3000
+  },
+  "flavor-complex": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "scrollTo": "#stage",
+    "wait": 2500
   }
 }
