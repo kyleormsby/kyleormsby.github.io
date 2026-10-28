@@ -167,5 +167,14 @@
     "scale": 1,
     "scrollTo": "#stage",
     "wait": 2500
+  },
+  "farey-zoom": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "click": "#minbtn",
+    "wait": 1500
   }
 }

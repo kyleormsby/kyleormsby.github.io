@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Farey zoom</title>
+<style>
+  :root{
+    --paper:#f4efe5; --ink:#17140f; --muted:#6d6457; --panel:rgba(244,239,229,.88); --line:rgba(23,20,15,.15);
+    --accent:#a2462a; --blue:#2f5f9c; --faint:rgba(23,20,15,.07); --gold:#b0841f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#14120f; --ink:#ebe4d6; --muted:#9a9184; --panel:rgba(20,18,15,.88); --line:rgba(235,228,214,.17);
+      --accent:#e08a62; --blue:#7fa8de; --faint:rgba(235,228,214,.07); --gold:#e0b858; }
+  }
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:14px/1.45 ui-serif,Georgia,"Iowan Old Style",serif;overflow:hidden}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #panel{position:fixed;left:14px;top:14px;width:min(350px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:var(--panel);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;box-shadow:0 8px 30px rgba(0,0,0,.12);box-sizing:border-box}
+  #panel h1{font-size:17px;margin:0 0 2px;font-weight:600;letter-spacing:.01em}
+  .stats{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12.5px;margin:0 0 6px}
+  .stats b{color:var(--ink);font-weight:600}
+  .seg{display:flex;gap:0;margin:6px 0 6px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{flex:1;border:0;border-radius:0;padding:4px 0;font-size:12.5px}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .row{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}
+  .row label{width:84px;color:var(--muted);flex:none}
+  .row input[type=range]{flex:1;min-width:80px;accent-color:var(--accent)}
+  .row input[type=number]{width:90px;font:inherit;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:2px 5px}
+  .row input[type=checkbox]{accent-color:var(--accent)}
+  .row select{flex:1;font:inherit;font-size:13px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:2px 4px;min-width:0}
+  .row output{width:52px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px;flex:none}
+  .btns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  button{font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer}
+  button:hover{border-color:var(--ink)}
+  button.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  details{margin-top:8px}
+  details summary{cursor:pointer;color:var(--muted);font-size:12.5px;user-select:none}
+  details p{margin:6px 0;font-size:13px}
+  .m{font-style:italic}
+  .acc{color:var(--accent)} .blu{color:var(--blue)} .mut{color:var(--muted)}
+  .nav{margin-top:9px;padding-top:7px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+  .nav a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
+  .nav a:hover{color:var(--ink)} .nav b{color:var(--ink);font-weight:600}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;font-variant-numeric:tabular-nums;margin:0 .1em}
+  .frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .15em}
+  #tip{position:fixed;pointer-events:none;display:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12.5px;
+    font-variant-numeric:tabular-nums;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:300px;z-index:5}
+  @media (max-width:600px){ #panel{left:8px;top:8px;width:calc(100vw - 16px);padding:9px 11px 8px;max-height:46vh} .row label{width:74px} }
+
+  #ctr{font-variant-numeric:tabular-nums;font-size:12.5px;word-break:break-all;line-height:1.45;margin:4px 0}
+  #cf{font-size:12.5px;line-height:1.5;margin:2px 0 4px;word-break:break-word}
+  .chk{display:flex;gap:12px;font-size:13px;color:var(--muted);margin:6px 0 2px;flex-wrap:wrap}
+  .chk label{display:inline-flex;gap:4px;align-items:center;cursor:pointer}
+  .chk input{accent-color:var(--accent);margin:0}
+  .presets{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 2px;align-items:center}
+  .presets span{font-size:12.5px;color:var(--muted);margin-right:2px}
+  .presets button{padding:2px 8px}
+  #panel.min .hideable{display:none}
+  #minbtn{float:right;border:0;padding:0 2px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="tip"></div>
+<div id="panel">
+  <button id="minbtn" title="collapse panel">–</button>
+  <h1>Farey zoom</h1>
+  <div class="stats">zoom <b id="zm">×1</b> · <b id="ncirc">0</b> circles · <b id="nedge">0</b> edges</div>
+  <div class="hideable">
+  <div id="ctr"></div>
+  <div id="cf"></div>
+  <div class="presets"><span>fly to</span><button data-go="phi">φ</button><button data-go="sq2">√2</button><button data-go="e">e</button><button data-go="pi">π</button><button data-go="cb2">∛2</button><button data-go="home">home</button></div>
+  <div class="btns" style="margin-top:4px"><button id="dive">dive ↓</button><button id="out">zoom out</button></div>
+  <div class="chk"><label><input type="checkbox" id="cCirc" checked>Ford circles</label><label><input type="checkbox" id="cEdge" checked>geodesics</label><label><input type="checkbox" id="cLab" checked>labels</label><label><input type="checkbox" id="cCut" checked>cutting sequence</label><label><input type="checkbox" id="cCol" checked>tint by q</label></div>
+  <details><summary>what is this?</summary>
+    <p>This is the <b>Farey tessellation</b> of the upper half-plane. Each pair of Farey neighbours <span class="m">a/b</span>, <span class="m">c/d</span>, with |<span class="m">ad − bc</span>| = 1, is joined by a hyperbolic geodesic: a semicircle, or a vertical line when one end is ∞. Each rational <span class="m">p/q</span> also carries its <b>Ford circle</b>, of diameter 1/<span class="m">q</span>², tangent to the line at <span class="m">p/q</span>. Two Ford circles touch exactly when their fractions are neighbours.</p>
+    <p>Scroll or pinch to zoom without limit, and drag to pan. Circles and geodesics fade in once they are a couple of pixels across, and labels once the circles are big enough to hold them. The arithmetic is exact (BigInt), so zooming to 10¹⁰⁰ is fine. Click a circle to fly to it.</p>
+    <p><b>Cutting sequence:</b> the dashed line is the vertical geodesic from ∞ down to the centre point <span class="m">x</span> = <span class="m">n</span> + [0; <span class="m">a</span>₁, <span class="m">a</span>₂, <span class="m">a</span>₃, …], which lies between the integers <span class="m">n</span> and <span class="m">n</span> + 1. Each ideal triangle it passes through is shaded by the edge it leaves through: <span class="blu">L</span> (blue) for the triangle’s left edge, <span class="acc">R</span> (rust) for its right edge. The topmost triangle, with vertices <span class="m">n</span>, <span class="m">n</span> + 1 and ∞, counts as <span class="blu">L</span>.</p>
+    <p>Reading from the top down, the shading comes in <b>runs</b>: maximal blocks of consecutive triangles of the same colour. There are <span class="m">a</span>₁ blue triangles, then <span class="m">a</span>₂ rust, then <span class="m">a</span>₃ blue, and so on. So the run lengths are exactly the continued-fraction terms of <span class="m">x</span>. The panel lists them in matching colours, as many as the current zoom resolves. Once you have zoomed in, the earliest triangles are above the window, so the runs you can see start partway through.</p>
+    <p>Near a rational point, the fan of geodesics from that cusp is infinite and gets arbitrarily dense. Where neighbouring arcs are less than a pixel apart they are drawn as a shaded region. Keys: + and − zoom, 0 goes home, d dives.</p>
+  </details>
+  </div>
+</div>
+<script>
+(() => {
+const cv = document.getElementById('c'), ctx = cv.getContext('2d'), panel = document.getElementById('panel'), tip = document.getElementById('tip');
+const $ = (id) => document.getElementById(id);
+let C = {};
+const readCols = () => { const s = getComputedStyle(document.documentElement); for (const k of ['paper', 'ink', 'muted', 'line', 'accent', 'blue', 'faint', 'gold']) C[k] = s.getPropertyValue('--' + k).trim(); C.dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  C.inkRGB = C.dark ? '235,228,214' : '23,20,15'; };
+readCols(); matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readCols(); dirty = true; });
+
+// ---------- high-precision targets (dyadic, 420 bits) ----------
+const CB = 420n, ONE = 1n << CB;
+const isqrt = (n) => { let x = 1n << (BigInt(n.toString(2).length) / 2n + 1n); while (true) { const y = (x + n / x) >> 1n; if (y >= x) { while (x * x > n) x--; while ((x + 1n) * (x + 1n) <= n) x++; return x; } x = y; } };
+const icbrt = (n) => { let x = 1n << (BigInt(n.toString(2).length) / 3n + 1n); while (true) { const y = (2n * x + n / (x * x)) / 3n; if (y >= x) { while (x * x * x > n) x--; while ((x + 1n) ** 3n <= n) x++; return x; } x = y; } };
+const atanInv = (m, G) => { let sum = 0n, term = (1n << G) / m, k = 1n, sign = 1n; const m2 = m * m; while (term) { sum += sign * term / k; term /= m2; k += 2n; sign = -sign; } return sum; };
+const TG = CB + 32n;
+const TARGETS = {
+  pi: (16n * atanInv(5n, TG) - 4n * atanInv(239n, TG)) >> 32n,
+  e: (() => { let E = 0n, t = 1n << TG; for (let k = 1n; t; k++) { E += t; t /= k; } return E >> 32n; })(),
+  phi: (ONE + isqrt(5n * ONE * ONE)) / 2n,
+  sq2: isqrt(2n * ONE * ONE),
+  cb2: icbrt(2n * ONE * ONE * ONE),
+};
+
+// ---------- view: centre c = cN / 2^K (exact dyadic), scale s px per unit ----------
+let K = 64, TWOK = 1n << 64n, cN = 1n << 63n, s = 600, sK = 600 / 2 ** 64;
+let W = 0, H = 0, dpr = 1, X0 = 0, baseY = 0, topY = 0, xL = 0, xR = 0, Htop = 0, xiMin = 0, xiMax = 0, sHome = 600;
+let dirty = true, show = { circ: true, edge: true, lab: true, cut: true, col: true };
+const SMAX = 1e120;
+const needK = (sc) => Math.max(64, Math.ceil(Math.log2(sc)) + 40);
+const setK = (k) => { if (k > K) cN <<= BigInt(k - K); else if (k < K) cN >>= BigInt(K - k); K = k; TWOK = 1n << BigInt(K); sK = s * 2 ** -K; };
+const setS = (ns) => { s = Math.min(SMAX, Math.max(sMin(), ns)); const k = needK(s); if (k > K || k < K - 64) setK(k); else sK = s * 2 ** -K; };
+const sMin = () => (xR - xL) / 60;
+const exactXi = (p, q) => Number(p * TWOK - cN * q) * sK / Number(q);
+const panPx = (dxi) => { cN -= BigInt(Math.round(dxi / sK)); dirty = true; };
+const zoomAt = (mx, f) => { const ns = Math.min(SMAX, Math.max(sMin(), s * f)); f = ns / s; if (f === 1) return;
+  const xi = mx - X0 + (Math.random() - 0.5) * 0.01; cN += BigInt(Math.round(xi * (1 - 1 / f) / sK)); setS(ns); dirty = true; };
+
+const layout = () => { dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const pr = panel.getBoundingClientRect(), wide = W >= 860 && !panel.classList.contains('min');
+  xL = wide ? pr.right + 8 : 0; xR = W; topY = (!wide && W < 860) ? Math.min(pr.bottom + 6, H * 0.5) : 0; baseY = H - 34; Htop = baseY - topY; X0 = (xL + xR) / 2;
+  xiMin = xL - X0 - 2; xiMax = xR - X0 + 2; dirty = true; };
+addEventListener('resize', () => { layout(); });
+
+// ---------- geometry helpers (ξ = screen x − X0, h = height in px above the real line) ----------
+const HC = () => Htop + 60;
+const vert = (p, q, xi) => ({ p, q, qn: Number(q), xi: xi === undefined ? exactXi(p, q) : xi });
+const mediant = (a, b) => { const p = a.p + b.p, q = a.q + b.q;
+  if (Math.abs(a.xi) < 1e6 && Math.abs(b.xi) < 1e6) return vert(p, q, (a.qn * a.xi + b.qn * b.xi) / (a.qn + b.qn)); return vert(p, q); };
+// sample a geodesic semicircle (endpoints Lxi < Rxi, diameter D px) as screen points clipped to the window
+const arcPts = (Lxi, Rxi, D) => { // sampled in screen coordinates, so far-off endpoints never cancel
+  const hc = HC(), a = Math.max(Lxi, xiMin - 60), b = Math.min(Rxi, xiMax + 60); if (!(a <= b)) return [];
+  const xs = [a, b]; for (let i = 1; i < 64; i++) xs.push(a + (b - a) * i / 64);
+  for (let i = 0; i <= 28; i++) { const h = hc * (i / 28) ** 2; if (h > D / 2) break; const u = h * h / (D / 2 + Math.sqrt(D * D / 4 - h * h));
+    if (Lxi + u >= a && Lxi + u <= b) xs.push(Lxi + u); if (Rxi - u >= a && Rxi - u <= b) xs.push(Rxi - u); }
+  xs.sort((p, q) => p - q); return xs.map(x => [x, Math.min(hc, Math.sqrt(Math.max(0, (x - Lxi) * (Rxi - x))))]); };
+const BIG = 2e4;
+const pathArc = (g, Lxi, Rxi, D, close) => { // adds the semicircle to the current path (optionally closed along the axis)
+  if (D / 2 < BIG) { const cx = X0 + Lxi + D / 2; if (close) { g.moveTo(X0 + Lxi, baseY); } else g.moveTo(X0 + Lxi, baseY);
+    g.arc(cx, baseY, D / 2, Math.PI, 2 * Math.PI); if (close) g.closePath(); return; }
+  const pts = arcPts(Lxi, Rxi, D); if (!pts.length) return;
+  g.moveTo(X0 + pts[0][0], baseY - pts[0][1]); for (let i = 1; i < pts.length; i++) g.lineTo(X0 + pts[i][0], baseY - pts[i][1]);
+  if (close) { g.lineTo(X0 + pts[pts.length - 1][0], baseY); g.lineTo(X0 + pts[0][0], baseY); g.closePath(); } };
+
+// ---------- traversal ----------
+let edges = [], circles = [], dense = [], tris = [], nNodes = 0;
+const T_EDGE = 1.4, T_DENSE = 2.6, T_CIRC = 2.2;
+// visual gap (px) between consecutive fan arcs of diameters D > Dn sharing the endpoint u = 0,
+// measured where the window [lo, hi] (in u) actually shows them: far endpoints, apexes and 8 sample heights
+const u1 = (D, h) => h * h / (D / 2 + Math.sqrt(Math.max(0, D * D / 4 - h * h)));
+const nearSpacing = (D, Dn, lo, hi) => { const inW = (u) => u >= lo && u <= hi; let sp = 0;
+  if (inW(D) || inW(Dn)) sp = D - Dn;
+  if (D / 2 <= Htop && (inW(D / 2) || inW(Dn / 2))) sp = Math.max(sp, (D - Dn) / 2);
+  for (let i = 1; i <= 8; i++) { const h = Htop * i / 8; if (h > D / 2) break;
+    const a1 = u1(D, h), a2 = D - a1;
+    if (h > Dn / 2) { if (inW(a1) || inW(a2)) sp = Math.max(sp, h - Dn / 2); continue; }
+    const b1 = u1(Dn, h), b2 = Dn - b1;
+    if (inW(a1) || inW(b1)) sp = Math.max(sp, Math.abs(a1 - b1));
+    if (inW(a2) || inW(b2)) sp = Math.max(sp, Math.abs(a2 - b2)); }
+  return sp; };
+const addEdge = (L, R, D) => { edges.push([L.xi, R.xi, D]); };
+const addCircle = (v) => { const r = s / (2 * v.qn * v.qn); if (2 * r < T_CIRC) return; if (v.xi + r < xiMin - 2 || v.xi - r > xiMax + 2) return; circles.push([v, r]); };
+const considerTri = (L, R, M, D) => { if (show.cut && L.xi < 0 && R.xi > 0 && D > 3) tris.push([L.xi, M.xi, R.xi, D, s / (L.qn * M.qn), s / (M.qn * R.qn), M.xi > 0 ? 'L' : 'R']); };
+const run = (F, P0, dir, stack) => { // fixed vertex F; partners P_k = kF + P0 approach F from side dir
+  const Fq = F.qn, lo = dir > 0 ? xiMin - F.xi : F.xi - xiMax, hi = dir > 0 ? xiMax - F.xi : F.xi - xiMin;
+  if (hi < 0) return;
+  const Dk = (k) => s / (Fq * (k * Fq + P0.qn));
+  const above = (D) => lo > 0 && D > hi && Math.min(Math.sqrt(lo * (D - lo)), Math.sqrt(hi * (D - hi))) > Htop;
+  let k = 1;
+  if (lo > 0) { const thr = Math.max(lo + Htop * Htop / lo, hi > 0 ? hi + Htop * Htop / hi : 0); const kj = Math.floor((s / (Fq * thr) - P0.qn) / Fq) - 1; if (kj > 1 && isFinite(kj)) k = kj; }
+  const safe = Math.abs(F.xi) < 1e6;
+  const mk = (kk, D) => { const kb = BigInt(kk), p = kb * F.p + P0.p, q = kb * F.q + P0.q; return vert(p, q, safe ? F.xi + dir * D : undefined); };
+  let Pk = k === 1 ? null : mk(k, Dk(k)); if (Pk) addCircle(Pk);
+  let pk, qk; if (Pk) { pk = Pk.p; qk = Pk.q; }
+  // P_1 (the mediant) was created by the caller; rebuild cheaply
+  if (!Pk) { Pk = mk(1, Dk(1)); pk = Pk.p; qk = Pk.q; }
+  for (let guard = 0; guard < 6000; guard++) {
+    const D = Dk(k); if (D < T_EDGE || D < lo) break;
+    const Dn = Dk(k + 1), childVis = D >= lo && Dn <= hi;
+    const vis = !above(D), visN = Dn >= lo && !above(Dn);
+    if (vis && visN) { const sp = Math.max(childVis ? D - Dn : 0, nearSpacing(D, Dn, lo, hi));
+      if (sp < T_DENSE) { dense.push(dir > 0 ? [F.xi, Pk.xi, D] : [Pk.xi, F.xi, D]); break; } }
+    const [L, R] = dir > 0 ? [F, Pk] : [Pk, F];
+    if (vis) addEdge(L, R, D); nNodes++;
+    const pn = pk + F.p, qn = qk + F.q, Pn = vert(pn, qn, safe ? F.xi + dir * Dn : undefined); addCircle(Pn);
+    considerTri(L, R, Pn, D);
+    if (childVis && D - Dn >= T_EDGE) stack.push(dir > 0 ? [Pn, Pk] : [Pk, Pn]);
+    k++; pk = pn; qk = qn; Pk = Pn;
+  } };
+const traverse = () => { edges = []; circles = []; dense = []; tris = []; nNodes = 0;
+  // integers in view
+  const fdiv = (a, b) => { const q = a / b; return (a % b !== 0n && (a < 0n) !== (b < 0n)) ? q - 1n : q; };
+  const nLo = fdiv(cN + BigInt(Math.floor(xiMin / sK)), TWOK) - 1n, nHi = fdiv(cN + BigInt(Math.ceil(xiMax / sK)), TWOK) + 2n;
+  const ints = []; for (let n = nLo; n <= nHi; n++) ints.push(vert(n, 1n));
+  for (const v of ints) addCircle(v);
+  const stack = []; for (let i = 0; i + 1 < ints.length; i++) stack.push([ints[i], ints[i + 1]]);
+  while (stack.length && nNodes < 80000) { const [L, R] = stack.pop(); const D = s / (L.qn * R.qn);
+    if (D < T_EDGE || R.xi < xiMin || L.xi > xiMax) continue;
+    addEdge(L, R, D); nNodes++; const M = mediant(L, R); addCircle(M); considerTri(L, R, M, D);
+    run(L, R, +1, stack); run(R, L, -1, stack); }
+  return ints; };
+
+// ---------- drawing ----------
+const tintQ = (qn, a) => { if (!show.col) return `rgba(${C.inkRGB},${a * 0.5})`; const h = (205 + 52 * Math.log2(qn)) % 360; return `hsla(${h}, ${C.dark ? 45 : 50}%, ${C.dark ? 62 : 46}%, ${a})`; };
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+const fracText = (g, v, x, y, size, alpha) => { const ps = v.p < 0n ? '−' + (-v.p).toString() : v.p.toString(), qs = v.q.toString();
+  g.font = `${size}px ui-serif, Georgia, serif`; g.fillStyle = `rgba(${C.inkRGB},${alpha})`; g.strokeStyle = g.fillStyle; g.textAlign = 'center';
+  if (v.q === 1n) { g.textBaseline = 'middle'; g.fillText(ps, x, y); return; }
+  const w = Math.max(g.measureText(ps).width, g.measureText(qs).width) + size * 0.25;
+  g.textBaseline = 'alphabetic'; g.fillText(ps, x, y - size * 0.14); g.textBaseline = 'top'; g.fillText(qs, x, y + size * 0.1);
+  g.lineWidth = Math.max(0.8, size / 15); g.beginPath(); g.moveTo(x - w / 2, y - size * 0.02); g.lineTo(x + w / 2, y - size * 0.02); g.stroke(); };
+const circlePath = (g, v, r) => { const x = X0 + v.xi;
+  if (r < BIG) { g.moveTo(x + r, baseY - r); g.arc(x, baseY - r, r, 0, 2 * Math.PI); return; }
+  const hc = HC(), a = Math.max(xiMin - 60, v.xi - r), b = Math.min(xiMax + 60, v.xi + r); if (a > b) return; const pts = [];
+  for (let i = 0; i <= 80; i++) { const xi = a + (b - a) * i / 80, dx = xi - v.xi; const y = dx * dx / (r + Math.sqrt(Math.max(0, r * r - dx * dx))); pts.push([xi, Math.min(hc, y)]); }
+  g.moveTo(X0 + pts[0][0], baseY - hc); for (const [xi, y] of pts) g.lineTo(X0 + xi, baseY - y); g.lineTo(X0 + pts[pts.length - 1][0], baseY - hc); g.closePath(); };
+let lastInts = [];
+const draw = () => { const t0 = performance.now();
+  const ints = traverse(); lastInts = ints;
+  ctx.fillStyle = C.paper; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.beginPath(); ctx.rect(xL, topY, xR - xL, baseY - topY + 1); ctx.clip();
+  // Ford circle at ∞: the line Im z = 1
+  const yInf = baseY - s; if (yInf > topY - 2 && show.circ) { ctx.fillStyle = `rgba(${C.inkRGB},0.035)`; ctx.fillRect(xL, topY, xR - xL, yInf - topY); ctx.strokeStyle = `rgba(${C.inkRGB},0.5)`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(xL, yInf); ctx.lineTo(xR, yInf); ctx.stroke(); }
+  // cutting-sequence triangles
+  const triCol = (side) => side === 'L' ? (C.dark ? 'rgba(127,168,222,0.10)' : 'rgba(47,95,156,0.10)') : (C.dark ? 'rgba(224,138,98,0.09)' : 'rgba(162,70,42,0.09)');
+  if (show.cut) for (let i = 0; i + 1 < ints.length; i++) { const v = ints[i], w = ints[i + 1]; if (!(v.xi < 0 && w.xi > 0)) continue;
+    // the triangle (n, n+1, ∞): the strip above the geodesic from n to n+1 — the first L of the cutting sequence
+    const a0 = Math.max(v.xi, xiMin - 60), a1 = Math.min(w.xi, xiMax + 60), hc = HC();
+    ctx.beginPath(); ctx.rect(X0 + a0, baseY - hc, a1 - a0, hc); pathArc(ctx, v.xi, w.xi, s, true); ctx.fillStyle = triCol('L'); ctx.fill('evenodd'); }
+  if (show.cut) for (const [l, m, r, D, D1, D2, side] of tris) { ctx.beginPath(); pathArc(ctx, l, r, D, true); pathArc(ctx, l, m, D1, true); pathArc(ctx, m, r, D2, true);
+    ctx.fillStyle = triCol(side); ctx.fill('evenodd'); }
+  // Ford circles
+  if (show.circ) { for (const [v, r] of circles) { const a = clamp01((2 * r - T_CIRC) / 10); ctx.beginPath(); circlePath(ctx, v, r); ctx.fillStyle = tintQ(v.qn, a * (r > 250 ? 0.06 : r > 60 ? 0.1 : 0.16)); ctx.fill();
+      ctx.strokeStyle = tintQ(v.qn, 0.85 * a); ctx.lineWidth = r > 60 ? 1.3 : 1; ctx.stroke(); } }
+  // geodesics
+  if (show.edge) {
+    ctx.fillStyle = `rgba(${C.inkRGB},0.5)`; for (const [l, r, D] of dense) { ctx.beginPath(); pathArc(ctx, l, r, D, true); ctx.fill(); }
+    const buckets = [[], [], []]; for (const e of edges) { const D = e[2]; buckets[D < 12 ? 0 : D < 200 ? 1 : 2].push(e); }
+    const st = [[0.45, 0.8], [0.7, 0.9], [0.85, 1.25]];
+    buckets.forEach((b, i) => { ctx.strokeStyle = `rgba(${C.inkRGB},${st[i][0]})`; ctx.lineWidth = st[i][1]; ctx.beginPath(); for (const [l, r, D] of b) pathArc(ctx, l, r, D, false); ctx.stroke(); });
+    // vertical geodesics n — ∞
+    ctx.strokeStyle = `rgba(${C.inkRGB},0.85)`; ctx.lineWidth = 1.25; ctx.beginPath(); for (const v of ints) { if (v.xi < xiMin || v.xi > xiMax) continue; ctx.moveTo(X0 + v.xi, baseY); ctx.lineTo(X0 + v.xi, topY); } ctx.stroke();
+  }
+  if (show.cut) { ctx.strokeStyle = C.accent; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(X0, topY); ctx.lineTo(X0, baseY); ctx.stroke(); ctx.setLineDash([]); }
+  // labels
+  if (show.lab) for (const [v, r] of circles) { if (2 * r < 22) continue; const x = X0 + v.xi; if (x < xL - 20 || x > xR + 20) continue;
+    const yc = baseY - Math.min(r, Htop * 0.62); const digits = Math.max(v.p.toString().length + (v.p < 0n ? 1 : 0), v.q.toString().length);
+    let fs = Math.min(30, r * 0.5, (1.5 * Math.min(r, 400)) / (0.56 * digits + 0.3)); if (r > Htop * 0.62) fs = Math.min(30, (xR - xL) / (0.56 * digits + 0.3) * 0.3);
+    if (fs < 8.5) continue; const a = clamp01((2 * r - 22) / 26) * clamp01((fs - 8.5) / 3);
+    fracText(ctx, v, x, yc, fs, 0.92 * a); }
+  ctx.restore();
+  // real axis
+  ctx.strokeStyle = C.muted; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(xL, baseY + 0.5); ctx.lineTo(xR, baseY + 0.5); ctx.stroke();
+  // scale bar
+  { const unit = 10 ** Math.floor(Math.log10(150 / s)); let len = unit * s, lab = unit; for (const m of [2, 5]) if (unit * m * s < 170) { len = unit * m * s; lab = unit * m; }
+    ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(xR - 20 - len, baseY + 16); ctx.lineTo(xR - 20, baseY + 16); ctx.moveTo(xR - 20 - len, baseY + 12); ctx.lineTo(xR - 20 - len, baseY + 20); ctx.moveTo(xR - 20, baseY + 12); ctx.lineTo(xR - 20, baseY + 20); ctx.stroke();
+    const e = Math.round(Math.log10(lab)), mant = Math.round(lab / 10 ** e); ctx.font = '11.5px ui-serif, Georgia, serif'; ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(Math.abs(e) <= 3 ? String(+lab.toPrecision(2)) : `${mant === 1 ? '' : mant + '·'}10${sup(e)}`, xR - 26 - len, baseY + 16); }
+  panelUpdate(); lastMs = performance.now() - t0;
+};
+let lastMs = 0;
+const sup = (k) => String(k).split('').map(d => d === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('');
+
+// ---------- panel ----------
+const panelUpdate = () => { const z = s / sHome; const e = Math.log10(z);
+  $('zm').textContent = e < 3 ? '×' + (+z.toPrecision(3)) : '×10' + sup(Math.floor(e)); $('ncirc').textContent = circles.length.toLocaleString(); $('nedge').textContent = (edges.length + dense.length).toLocaleString();
+  // centre decimal
+  const digits = Math.min(80, Math.max(4, Math.ceil(Math.log10(s)) + 1)); const neg = cN < 0n; const a = neg ? -cN : cN;
+  const ip = a >> BigInt(K), frac = a - (ip << BigInt(K)); const fd = (frac * 10n ** BigInt(digits)) >> BigInt(K);
+  $('ctr').innerHTML = `<span class="mut">centre ≈</span> ${neg ? '−' : ''}${ip}.${fd.toString().padStart(digits, '0')}`;
+  // continued fraction of the centre, as far as resolved
+  let N = cN, D = TWOK; const terms = []; let q0 = 0n, q1 = 1n; const qmax = Math.sqrt(s / 1.5);
+  for (let i = 0; i < 60 && D; i++) { let t = N / D; if (N < 0n && t * D !== N) t -= 1n; const q2 = t * q1 + q0; if (i > 0 && Number(q2) > qmax) break; terms.push(t); [N, D] = [D, N - t * D]; q0 = q1; q1 = q2; }
+  const h = terms.map((t, i) => i === 0 ? `${t < 0n ? '−' + (-t) : t}` : `<span class="${i % 2 ? 'blu' : 'acc'}">${t}</span>`);
+  $('cf').innerHTML = `<span class="mut">CF</span> [${h[0]}${h.length > 1 ? '; ' + h.slice(1).join(', ') : ''}${D ? ', …' : ''}]`; };
+
+// ---------- flying ----------
+let fly = null, diving = false;
+const flyTo = (targetN, targetBits, s1, dur) => { // target = targetN / 2^targetBits
+  s1 = Math.min(SMAX, Math.max(sMin(), s1)); const kf = Math.max(K, needK(Math.max(s, s1)), 64); setK(kf);
+  const c1 = targetBits >= kf ? targetN >> BigInt(targetBits - kf) : targetN << BigInt(kf - targetBits);
+  const s0 = s; dur = dur || Math.min(12, 0.8 + 0.22 * Math.abs(Math.log10(s1 / s0)));
+  fly = { c0: cN, c1, Dn: Number(c1 - cN), s0, s1, t: 0, dur }; diving = false; $('dive').classList.remove('primary'); };
+const flyStep = (dt) => { const f = fly; f.t = Math.min(1, f.t + dt / f.dur); const e = f.t < 0.5 ? 2 * f.t * f.t : 1 - (-2 * f.t + 2) ** 2 / 2;
+  const st = f.s0 * (f.s1 / f.s0) ** e; const r = f.s0 / f.s1;
+  const h = Math.abs(Math.log(f.s1 / f.s0)) < 0.05 ? 1 - e : (f.s0 / st - r) / (1 - r);
+  cN = f.c1 - BigInt(Math.round(f.Dn * h)); s = st; sK = s * 2 ** -K; if (f.t >= 1) { cN = f.c1; fly = null; const k = needK(s); if (k > K) setK(k); } dirty = true; };
+const flyToFrac = (p, q) => { const kf = Math.max(K, needK(s * 1e3)); const N = (p << BigInt(kf)) / q; const r = s / (2 * Number(q) ** 2); flyTo(N, kf, s * (Htop * 0.42) / r); };
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { const g = b.dataset.go;
+  if (g === 'home') { flyTo(1n << 63n, 64, sHome); return; } flyTo(TARGETS[g], Number(CB), 1e34 * sHome); });
+$('dive').onclick = () => { diving = !diving; fly = null; $('dive').classList.toggle('primary', diving); };
+$('out').onclick = () => { const kb = K; flyTo(cN, kb, s / 1e3, 1.4); };
+$('minbtn').onclick = () => { panel.classList.toggle('min'); $('minbtn').textContent = panel.classList.contains('min') ? '+' : '–'; layout(); };
+for (const [id, k] of [['cCirc', 'circ'], ['cEdge', 'edge'], ['cLab', 'lab'], ['cCut', 'cut'], ['cCol', 'col']]) $(id).onchange = () => { show[k] = $(id).checked; dirty = true; };
+addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT') return;
+  if (e.key === '+' || e.key === '=') zoomAt(X0, 1.6); else if (e.key === '-') zoomAt(X0, 1 / 1.6); else if (e.key === '0') flyTo(1n << 63n, 64, sHome); else if (e.key === 'd') $('dive').onclick(); });
+
+// ---------- pointer ----------
+const ptrs = new Map(); let pinch = null, moved = 0, downAt = null;
+cv.addEventListener('wheel', (e) => { e.preventDefault(); fly = null; zoomAt(e.clientX, Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0018))); }, { passive: false });
+cv.addEventListener('pointerdown', (e) => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); moved = 0; downAt = [e.clientX, e.clientY]; fly = null;
+  if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = Math.hypot(a[0] - b[0], a[1] - b[1]); } });
+cv.addEventListener('pointermove', (e) => {
+  if (ptrs.has(e.pointerId)) { const o = ptrs.get(e.pointerId), dx = e.clientX - o[0], dy = e.clientY - o[1]; ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptrs.size === 1) { panPx(dx); moved += Math.abs(dx) + Math.abs(dy); }
+    else if (ptrs.size === 2 && pinch) { const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); zoomAt((a[0] + b[0]) / 2, d / pinch); pinch = d; moved = 99; }
+    tip.style.display = 'none'; return; }
+  hoverAt(e.clientX, e.clientY); });
+cv.addEventListener('pointerup', (e) => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null;
+  if (moved < 5 && downAt) { const v = hitCircle(e.clientX, e.clientY); if (v) flyToFrac(v.p, v.q); } downAt = null; });
+cv.addEventListener('pointercancel', (e) => { ptrs.delete(e.pointerId); pinch = null; });
+cv.addEventListener('pointerleave', () => { tip.style.display = 'none'; });
+const hitCircle = (mx, my) => { let best = null, br = Infinity; const xi = mx - X0, h = baseY - my; if (h < 0) return null;
+  for (const [v, r] of circles) { const dx = xi - v.xi; if (Math.abs(dx) > r) continue; const lowY = dx * dx / (r + Math.sqrt(r * r - dx * dx)); const hiY = 2 * r - lowY;
+    if (h >= lowY && h <= hiY && r < br) { br = r; best = v; } } return best; };
+const hoverAt = (mx, my) => { const v = hitCircle(mx, my); if (!v) { tip.style.display = 'none'; cv.style.cursor = 'grab'; return; } cv.style.cursor = 'pointer';
+  const str = (b) => { const t = (b < 0n ? '−' : '') + (b < 0n ? -b : b).toString(); return t.length > 40 ? t.slice(0, 18) + '…' + t.slice(-12) + ` (${t.length} digits)` : t; };
+  // CF of p/q
+  let N = v.p, D = v.q; const a = []; while (D && a.length < 40) { let t = N / D; if (N < 0n && t * D !== N) t -= 1n; a.push(t); [N, D] = [D, N - t * D]; }
+  tip.style.display = 'block'; tip.style.left = Math.min(W - 280, mx + 14) + 'px'; tip.style.top = Math.max(4, my - 70) + 'px';
+  tip.innerHTML = `<b>${str(v.p)}${v.q === 1n ? '' : ' / ' + str(v.q)}</b><br><span class="mut">CF [${a[0]}${a.length > 1 ? '; ' + a.slice(1).join(', ') : ''}${D ? ', …' : ''}] · click to fly here</span>`; };
+
+// ---------- loop ----------
+let last = performance.now();
+const frame = (now) => { const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  if (fly) flyStep(dt); else if (diving) { zoomAt(X0, Math.exp(dt * 1.15)); if (s >= SMAX) { diving = false; $('dive').classList.remove('primary'); } }
+  if (dirty) { dirty = false; draw(); }
+  requestAnimationFrame(frame); };
+layout(); sHome = (xR - xL) / 1.25 * (1 + Math.SQRT2 * 1e-9); s = sHome; setK(needK(s)); cN = 1n << BigInt(K - 1); sK = s * 2 ** -K;
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
