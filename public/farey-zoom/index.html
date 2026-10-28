@@ -56,6 +56,11 @@
   .presets{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 2px;align-items:center}
   .presets span{font-size:12.5px;color:var(--muted);margin-right:2px}
   .presets button{padding:2px 8px}
+  #exprrow{display:flex;gap:6px;margin:6px 0 2px}
+  #expr{flex:1;min-width:0;font:inherit;font-size:13.5px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 7px}
+  #expr:focus{outline:none;border-color:var(--ink)}
+  #exprmsg{font-size:12px;color:var(--muted);min-height:1.2em;word-break:break-all}
+  #exprmsg.bad{color:var(--accent)}
   #panel.min .hideable{display:none}
   #minbtn{float:right;border:0;padding:0 2px;color:var(--muted);font-size:13px}
 </style>
@@ -73,11 +78,14 @@
   <div id="cf"></div>
   <div id="lockinfo" class="mut" style="font-size:12px;margin:-2px 0 4px"></div>
   <div class="presets"><span>fly to</span><button data-go="phi">φ</button><button data-go="sq2">√2</button><button data-go="e">e</button><button data-go="pi">π</button><button data-go="cb2">∛2</button><button data-go="home">home</button></div>
+  <form id="exprrow" autocomplete="off"><input id="expr" spellcheck="false" placeholder="zoom to… e.g. sqrt(3)+1, pi^2/6, cos(1)" aria-label="number to zoom in on"><button type="submit">go</button></form>
+  <div id="exprmsg"></div>
   <div class="btns" style="margin-top:4px"><button id="dive">dive ↓</button><button id="out">zoom out</button></div>
   <div class="chk"><label><input type="checkbox" id="cCirc" checked>Ford circles</label><label><input type="checkbox" id="cEdge" checked>geodesics</label><label><input type="checkbox" id="cLab" checked>labels</label><label><input type="checkbox" id="cCut" checked>cutting sequence</label><label><input type="checkbox" id="cCol" checked>tint by q</label></div>
   <details><summary>what is this?</summary>
     <p>This is the <b>Farey tessellation</b> of the upper half-plane. Each pair of Farey neighbours <span class="m">a/b</span>, <span class="m">c/d</span>, with |<span class="m">ad − bc</span>| = 1, is joined by a hyperbolic geodesic: a semicircle, or a vertical line when one end is ∞. Each rational <span class="m">p/q</span> also carries its <b>Ford circle</b>, of diameter 1/<span class="m">q</span>², tangent to the line at <span class="m">p/q</span>. Two Ford circles touch exactly when their fractions are neighbours.</p>
-    <p>Scroll or pinch to zoom without limit, and drag to pan. Circles and geodesics fade in once they are a couple of pixels across, and labels once the circles are big enough to hold them. The arithmetic is exact (BigInt), so zooming to 10¹⁰⁰ is fine. Click a circle to fly to it. Flying to a circle or to one of the constants locks the centre on that exact number, so further zooming stays on it however deep you go. Dragging releases the lock. The panel’s continued fraction is always that of the centre of the screen.</p>
+    <p>Scroll or pinch to zoom without limit, and drag to pan. Circles and geodesics fade in once they are a couple of pixels across, and labels once the circles are big enough to hold them. The arithmetic is exact (BigInt), so zooming to 10¹⁰⁰ is fine. Click a circle to fly to it. Choosing a constant or typing a number starts a voyage: the view jumps home, slides until that number’s vertical geodesic is at the centre (in the disk, the geodesic from ∞ rotates until it is the vertical diameter), then dives along it. Space or the dive button pauses and resumes. The centre is locked on the exact number, so the dive stays on it however deep it goes; dragging releases the lock. The panel’s continued fraction is always that of the centre of the screen.</p>
+    <p><b>Zoom to any number:</b> type an expression in the box and press go. It understands integers, decimals like 1.618 or 2.5e-3, fractions, + − × ÷, ^ for powers, ! for factorials, implicit multiplication (2pi, 3√2), and the constants pi, e, phi and tau. Functions: sqrt, cbrt, root(x, n), exp, ln (or log), log10, log2, log(x, b), the trig functions sin, cos, tan, cot, sec, csc and their inverses asin, acos, atan, atan2(y, x), the hyperbolic functions sinh, cosh, tanh, asinh, acosh, atanh, and abs, floor, ceil. The arithmetic is exact for rationals (1/7, sqrt(9/4) and (−8)^(1/3) are recognised as fractions) and otherwise uses 700-bit fixed point, so the number is known well beyond the deepest zoom. The address bar keeps the expression, so a link reopens the same dive.</p>
     <p><b>Cutting sequence:</b> the dashed line is the vertical geodesic from ∞ down to the centre point <span class="m">x</span> = <span class="m">n</span> + [0; <span class="m">a</span>₁, <span class="m">a</span>₂, <span class="m">a</span>₃, …], which lies between the integers <span class="m">n</span> and <span class="m">n</span> + 1. Each ideal triangle it passes through is shaded by the edge it leaves through: <span class="blu">L</span> (blue) for the triangle’s left edge, <span class="acc">R</span> (rust) for its right edge. The topmost triangle, with vertices <span class="m">n</span>, <span class="m">n</span> + 1 and ∞, counts as <span class="blu">L</span>.</p>
     <p>Reading from the top down, the shading comes in <b>runs</b>: maximal blocks of consecutive triangles of the same colour. There are <span class="m">a</span>₁ blue triangles, then <span class="m">a</span>₂ rust, then <span class="m">a</span>₃ blue, and so on. So the run lengths are exactly the continued-fraction terms of <span class="m">x</span>. The panel lists them in matching colours, as many as the current zoom resolves. Once you have zoomed in, the earliest triangles are above the window, so the runs you can see start partway through.</p>
     <p><b>Poincaré disk:</b> the same tessellation seen from the point <span class="m">z</span>₀ halfway up the half-plane window, directly above the centre point <span class="m">x</span>. A Möbius transformation carries the half-plane to the disk, sending <span class="m">z</span>₀ to the centre, ∞ to the top and <span class="m">x</span> to the bottom. Zooming in moves <span class="m">z</span>₀ down the vertical geodesic toward <span class="m">x</span>, so the disk view travels along that geodesic, and the cutting-sequence triangles stream past the centre. Toward a quadratic irrational the picture settles into a repeating cycle: toward φ, each zoom by a factor of φ² gives the mirror image and φ⁴ repeats it exactly. Drag sideways to slide along a horocycle, drag vertically or scroll to move toward or away from <span class="m">x</span>, and click a horocycle to fly to it.</p>
@@ -86,6 +94,176 @@
   </div>
 </div>
 <script>
+// ---- BigCalc: parse and evaluate a real expression to ~700 bits ----
+// Values are either exact rationals {p, q} (q > 0, reduced) or fixed-point approximations {x} meaning x / 2^P.
+const BigCalc = (() => {
+  const P = 700, PB = BigInt(P), ONE = 1n << PB;
+  const abs = (a) => a < 0n ? -a : a;
+  const gcd = (a, b) => { a = abs(a); b = abs(b); while (b) [a, b] = [b, a % b]; return a; };
+  const fdiv = (a, b) => { const q = a / b; return (a % b !== 0n && (a < 0n) !== (b < 0n)) ? q - 1n : q; };
+  const rdiv = (a, b) => fdiv(2n * a + b, 2n * b);                     // round to nearest
+  const bitlen = (a) => a === 0n ? 0 : abs(a).toString(2).length;
+  const iroot = (n, k) => { // floor(n^(1/k)), n ≥ 0
+    if (n < 2n) return n; const kb = BigInt(k); let x = 1n << (BigInt(bitlen(n)) / kb + 1n);
+    while (true) { const y = ((kb - 1n) * x + n / x ** (kb - 1n)) / kb; if (y >= x) break; x = y; }
+    while (x ** kb > n) x--; while ((x + 1n) ** kb <= n) x++; return x; };
+  class CalcError extends Error {}
+  const err = (m) => { throw new CalcError(m); };
+  const R = (p, q = 1n) => { if (q === 0n) err('division by zero'); if (q < 0n) { p = -p; q = -q; } const g = gcd(p, q) || 1n; return { p: p / g, q: q / g }; };
+  const A = (x) => ({ x });
+  const fix = (v) => 'x' in v ? v.x : fdiv(v.p << PB, v.q);
+  const mul = (a, b) => (a * b) >> PB;
+  const div = (a, b) => { if (b === 0n) err('division by zero'); return fdiv(a << PB, b); };
+  const isInt = (v) => !('x' in v) && v.q === 1n;
+  // ---- constants ----
+  const atanhInv = (m) => { let sum = 0n, t = ONE / m, n = 1n; const m2 = m * m; while (t) { sum += t / n; t /= m2; n += 2n; } return sum; }; // atanh(1/m)
+  const atanInv = (m) => { let sum = 0n, t = ONE / m, n = 1n, sg = 1n; const m2 = m * m; while (t) { sum += sg * t / n; t /= m2; n += 2n; sg = -sg; } return sum; };
+  const PI = 16n * atanInv(5n) - 4n * atanInv(239n), LN2 = 2n * atanhInv(3n);
+  // ---- elementary functions on fixed-point values ----
+  const sqrtF = (x) => { if (x < 0n) err('sqrt of a negative number'); return iroot(x << PB, 2); };
+  const expF = (x) => {
+    if (x > (5000n << PB)) err('exp argument too large');
+    const k = rdiv(x, LN2); let r = x - k * LN2; const m = 24n; r >>= m;
+    let sum = ONE, t = ONE; for (let n = 1n; t !== 0n; n++) { t = mul(t, r) / n; sum += t; }
+    for (let i = 0n; i < m; i++) sum = mul(sum, sum);
+    return k >= 0n ? sum << k : sum >> -k; };
+  const lnF = (x) => {
+    if (x <= 0n) err('log of a non-positive number');
+    const k = BigInt(bitlen(x) - 1 - P); const m = k >= 0n ? x >> k : x << -k;   // m in [1, 2)
+    const z = div(m - ONE, m + ONE), z2 = mul(z, z); let sum = 0n, t = z;
+    for (let n = 1n; t !== 0n; n += 2n) { sum += t / n; t = mul(t, z2); }
+    return 2n * sum + k * LN2; };
+  const sincosF = (x) => {
+    const n = rdiv(x, 2n * PI); let r = x - n * 2n * PI; const m = 12n; r >>= m;
+    let s = 0n, c = 0n, t = ONE; // Taylor: t = r^k / k!
+    for (let k = 0n; t !== 0n; k++) { const term = t; if (k % 4n === 0n) c += term; else if (k % 4n === 1n) s += term; else if (k % 4n === 2n) c -= term; else s -= term; t = mul(t, r) / (k + 1n); }
+    for (let i = 0n; i < m; i++) { [s, c] = [2n * mul(s, c), 2n * mul(c, c) - ONE]; }
+    return [s, c]; };
+  const atanF = (x) => {
+    if (x < 0n) return -atanF(-x);
+    if (x > ONE) return PI / 2n - atanF(div(ONE, x));
+    let k = 0n; for (; k < 5n; k++) x = div(x, ONE + sqrtF(ONE + mul(x, x)));    // atan x = 2 atan(x / (1 + √(1+x²)))
+    let sum = 0n, t = x, sg = 1n; const x2 = mul(x, x);
+    for (let n = 1n; t !== 0n; n += 2n) { sum += sg * t / n; t = mul(t, x2); sg = -sg; }
+    return sum << k; };
+  const asinF = (x) => { if (x > ONE || x < -ONE) err('asin argument outside [−1, 1]'); if (x === ONE) return PI / 2n; if (x === -ONE) return -PI / 2n;
+    return atanF(div(x, sqrtF(ONE - mul(x, x)))); };
+  // ---- exact helpers ----
+  const exactRoot = (v, k) => { // exact k-th root of a rational if it is one, else null
+    if (v.p < 0n && k % 2 === 0) return null; const sg = v.p < 0n ? -1n : 1n;
+    const a = iroot(abs(v.p), k), b = iroot(v.q, k); const kb = BigInt(k);
+    return (a ** kb === abs(v.p) && b ** kb === v.q) ? R(sg * a, b) : null; };
+  const rootF = (x, k) => { // real k-th root of a fixed value
+    if (x < 0n) { if (k % 2 === 0) err('even root of a negative number'); return -rootF(-x, k); }
+    return iroot(x << (BigInt(k - 1) * PB), k); };
+  // ---- arithmetic on values ----
+  const add = (a, b) => ('x' in a || 'x' in b) ? A(fix(a) + fix(b)) : R(a.p * b.q + b.p * a.q, a.q * b.q);
+  const neg = (a) => 'x' in a ? A(-a.x) : R(-a.p, a.q);
+  const times = (a, b) => ('x' in a || 'x' in b) ? A(mul(fix(a), fix(b))) : R(a.p * b.p, a.q * b.q);
+  const over = (a, b) => { if (!('x' in b) && b.p === 0n) err('division by zero');
+    return ('x' in a || 'x' in b) ? A(div(fix(a), fix(b))) : R(a.p * b.q, a.q * b.p); };
+  const power = (a, b) => {
+    if (isInt(b) && abs(b.p) <= 100000n) { const n = b.p;
+      if (!('x' in a)) { if (a.p === 0n && n < 0n) err('division by zero');
+        if (Math.abs(Number(n)) * Math.max(bitlen(a.p), bitlen(a.q)) < 200000) return n >= 0n ? R(a.p ** n, a.q ** n) : R(a.q ** -n, a.p ** -n); }
+      let base = fix(a), e = n < 0n ? -n : n, r = ONE; while (e) { if (e & 1n) r = mul(r, base); base = mul(base, base); e >>= 1n; }
+      return A(n < 0n ? div(ONE, r) : r); }
+    if (!('x' in b) && !('x' in a) && b.q <= 64n) { const rt = exactRoot(a, Number(b.q)); if (rt) return power(rt, R(b.p)); }
+    const ax = fix(a);
+    if (ax === 0n) { if (fix(b) > 0n) return R(0n); err('0 to a non-positive power'); }
+    if (ax < 0n) { if ('x' in b || b.q % 2n === 0n) err('negative base with a non-integer exponent');
+      const m = A(expF(mul(fix(b), lnF(-ax)))); return b.p % 2n === 0n ? m : neg(m); }
+    return A(expF(mul(fix(b), lnF(ax)))); };
+  // ---- functions ----
+  const F1 = {
+    sqrt: (v) => (!('x' in v) && exactRoot(v, 2)) || A(sqrtF(fix(v))),
+    cbrt: (v) => (!('x' in v) && exactRoot(v, 3)) || A(rootF(fix(v), 3)),
+    exp: (v) => (!('x' in v) && v.p === 0n) ? R(1n) : A(expF(fix(v))),
+    ln: (v) => (!('x' in v) && v.p === v.q) ? R(0n) : A(lnF(fix(v))),
+    log10: (v) => over(F1.ln(v), A(lnF(10n << PB))), log2: (v) => over(F1.ln(v), A(LN2)),
+    sin: (v) => (!('x' in v) && v.p === 0n) ? R(0n) : A(sincosF(fix(v))[0]),
+    cos: (v) => (!('x' in v) && v.p === 0n) ? R(1n) : A(sincosF(fix(v))[1]),
+    tan: (v) => { const [s, c] = sincosF(fix(v)); return A(div(s, c)); },
+    cot: (v) => { const [s, c] = sincosF(fix(v)); return A(div(c, s)); },
+    sec: (v) => A(div(ONE, sincosF(fix(v))[1])), csc: (v) => A(div(ONE, sincosF(fix(v))[0])),
+    atan: (v) => (!('x' in v) && v.p === 0n) ? R(0n) : A(atanF(fix(v))),
+    asin: (v) => (!('x' in v) && v.p === 0n) ? R(0n) : A(asinF(fix(v))),
+    acos: (v) => A(PI / 2n - asinF(fix(v))),
+    sinh: (v) => { const e = expF(fix(v)); return A((e - div(ONE, e)) / 2n); },
+    cosh: (v) => { const e = expF(fix(v)); return A((e + div(ONE, e)) / 2n); },
+    tanh: (v) => { const e2 = expF(2n * fix(v)); return A(div(e2 - ONE, e2 + ONE)); },
+    asinh: (v) => { const x = fix(v); return A(lnF(x + sqrtF(mul(x, x) + ONE))); },
+    acosh: (v) => { const x = fix(v); if (x < ONE) err('acosh argument below 1'); return A(lnF(x + sqrtF(mul(x, x) - ONE))); },
+    atanh: (v) => { const x = fix(v); if (x <= -ONE || x >= ONE) err('atanh argument outside (−1, 1)'); return A(lnF(div(ONE + x, ONE - x)) / 2n); },
+    abs: (v) => 'x' in v ? A(abs(v.x)) : R(abs(v.p), v.q),
+    floor: (v) => R('x' in v ? v.x >> PB : fdiv(v.p, v.q)),
+    ceil: (v) => R('x' in v ? -((-v.x) >> PB) : -fdiv(-v.p, v.q)),
+  };
+  const ALIAS = { arcsin: 'asin', arccos: 'acos', arctan: 'atan', arsinh: 'asinh', arcosh: 'acosh', artanh: 'atanh', log: 'ln', '√': 'sqrt', '∛': 'cbrt' };
+  const F2 = {
+    root: (v, n) => { if (!isInt(n) || n.p < 1n || n.p > 64n) err('root(x, n) needs an integer n from 1 to 64'); const k = Number(n.p);
+      return (!('x' in v) && exactRoot(v, k)) || A(rootF(fix(v), k)); },
+    log: (v, b) => over(F1.ln(v), F1.ln(b)),
+    atan2: (y, x) => { const Y = fix(y), X = fix(x); if (X === 0n && Y === 0n) err('atan2(0, 0)');
+      if (X > 0n) return A(atanF(div(Y, X))); if (X < 0n) return A(atanF(div(Y, X)) + (Y >= 0n ? PI : -PI)); return A(Y > 0n ? PI / 2n : -PI / 2n); },
+  };
+  const CONST = { pi: () => A(PI), 'π': () => A(PI), tau: () => A(2n * PI), 'τ': () => A(2n * PI), e: () => A(expF(ONE)),
+    phi: () => A((ONE + sqrtF(5n << PB)) / 2n), 'φ': () => A((ONE + sqrtF(5n << PB)) / 2n), golden: () => A((ONE + sqrtF(5n << PB)) / 2n) };
+  // ---- tokenizer + recursive-descent parser ----
+  const tokenize = (src) => {
+    src = src.replace(/[−–]/g, '-').replace(/[×·⋅]/g, '*').replace(/÷/g, '/').replace(/\*\*/g, '^');
+    const toks = []; let i = 0;
+    while (i < src.length) { const c = src[i];
+      if (/\s/.test(c)) { i++; continue; }
+      let m = /^(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?/.exec(src.slice(i));
+      if (m) { toks.push({ t: 'num', v: m[0] }); i += m[0].length; continue; }
+      m = /^[A-Za-zπτφ][A-Za-z0-9]*/.exec(src.slice(i));
+      if (m) { toks.push({ t: 'id', v: m[0] }); i += m[0].length; continue; }
+      if (c === '√' || c === '∛') { toks.push({ t: 'id', v: c }); i++; continue; }
+      if ('+-*/^(),!'.includes(c)) { toks.push({ t: c }); i++; continue; }
+      err(`unexpected character “${c}”`); }
+    return toks; };
+  const numVal = (s) => { const m = /^(\d*)\.?(\d*)(?:[eE]([+-]?\d+))?$/.exec(s); const ip = m[1] || '0', fp = m[2] || '', ex = Number(m[3] || 0);
+    if (Math.abs(ex) > 1000) err('exponent too large');
+    let p = BigInt(ip + fp), q = 10n ** BigInt(fp.length); if (ex >= 0) p *= 10n ** BigInt(ex); else q *= 10n ** BigInt(-ex); return R(p, q); };
+  const parse = (src) => {
+    const toks = tokenize(src); let k = 0;
+    const peek = () => toks[k], next = () => toks[k++], expect = (t) => { if (!toks[k] || toks[k].t !== t) err(`expected “${t}”`); k++; };
+    const startsPrimary = (tk) => tk && (tk.t === 'num' || tk.t === 'id' || tk.t === '(');
+    const expr = () => { let v = term(); while (peek() && (peek().t === '+' || peek().t === '-')) { const op = next().t, w = term(); v = op === '+' ? add(v, w) : add(v, neg(w)); } return v; };
+    const term = () => { let v = unary();
+      while (true) { const tk = peek();
+        if (tk && (tk.t === '*' || tk.t === '/')) { next(); const w = unary(); v = tk.t === '*' ? times(v, w) : over(v, w); }
+        else if (startsPrimary(tk)) v = times(v, powr());   // implicit multiplication: 2pi, 3sqrt(2), (1+x)(1-x)
+        else return v; } };
+    const unary = () => { const tk = peek(); if (tk && tk.t === '-') { next(); return neg(unary()); } if (tk && tk.t === '+') { next(); return unary(); } return powr(); };
+    const powr = () => { const b = postfix(); if (peek() && peek().t === '^') { next(); return power(b, unary()); } return b; };
+    const postfix = () => { let v = primary();
+      while (peek() && peek().t === '!') { next(); if (!isInt(v) || v.p < 0n || v.p > 3000n) err('factorial needs an integer from 0 to 3000'); let f = 1n; for (let i = 2n; i <= v.p; i++) f *= i; v = R(f); }
+      return v; };
+    const primary = () => { const tk = next(); if (!tk) err('unexpected end of input');
+      if (tk.t === 'num') return numVal(tk.v);
+      if (tk.t === '(') { const v = expr(); expect(')'); return v; }
+      if (tk.t === 'id') { const name = ALIAS[tk.v.toLowerCase()] ? tk.v.toLowerCase() : tk.v.toLowerCase();
+        const lc = tk.v.toLowerCase();
+        if (CONST[tk.v] || CONST[lc]) return (CONST[tk.v] || CONST[lc])();
+        const fname = ALIAS[lc] || ALIAS[tk.v] || lc;
+        if (peek() && peek().t === '(') { next(); const args = [expr()]; while (peek() && peek().t === ',') { next(); args.push(expr()); } expect(')');
+          if (args.length === 1 && F1[fname]) return F1[fname](args[0]);
+          if (args.length === 2 && F2[lc]) return F2[lc](args[0], args[1]);
+          if (args.length === 2 && F2[fname]) return F2[fname](args[0], args[1]);
+          if (!F1[fname] && !F2[fname] && !F2[lc]) err(`unknown function “${tk.v}”`);
+          err(`${tk.v} doesn’t take ${args.length} argument${args.length > 1 ? 's' : ''}`); }
+        if (F1[fname]) return F1[fname](powr());              // sqrt 2, √2, sin x without parentheses
+        err(`unknown name “${tk.v}”`); }
+      err(`unexpected “${tk.t}”`); };
+    const v = expr(); if (k < toks.length) err(`unexpected “${toks[k].t === 'num' || toks[k].t === 'id' ? toks[k].v : toks[k].t}”`);
+    return v; };
+  const toDecimal = (v, digits = 40) => { const x = fix(v), neg = x < 0n, a = neg ? -x : x, ip = a >> PB, f = ((a - (ip << PB)) * 10n ** BigInt(digits)) >> PB;
+    return (neg ? '−' : '') + ip + '.' + f.toString().padStart(digits, '0'); };
+  return { P, parse, fix, toDecimal, CalcError, isExact: (v) => !('x' in v) };
+})();
+
 (() => {
 const cv = document.getElementById('c'), ctx = cv.getContext('2d'), panel = document.getElementById('panel'), tip = document.getElementById('tip');
 const $ = (id) => document.getElementById(id);
@@ -94,7 +272,7 @@ const readCols = () => { const s = getComputedStyle(document.documentElement); f
   C.inkRGB = C.dark ? '235,228,214' : '23,20,15'; };
 readCols(); matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readCols(); dirty = true; });
 
-// ---------- high-precision targets (dyadic, 420 bits) ----------
+// ---------- high-precision targets (dyadic, 480 bits) ----------
 const CB = 480n, ONE = 1n << CB;   // 480 bits: enough for the deepest zoom (needK(SMAX) ≈ 440)
 const isqrt = (n) => { let x = 1n << (BigInt(n.toString(2).length) / 2n + 1n); while (true) { const y = (x + n / x) >> 1n; if (y >= x) { while (x * x > n) x--; while ((x + 1n) * (x + 1n) <= n) x++; return x; } x = y; } };
 const icbrt = (n) => { let x = 1n << (BigInt(n.toString(2).length) / 3n + 1n); while (true) { const y = (2n * x + n / (x * x)) / 3n; if (y >= x) { while (x * x * x > n) x--; while ((x + 1n) ** 3n <= n) x++; return x; } x = y; } };
@@ -177,10 +355,13 @@ const run = (F, P0, dir, stack) => { // fixed vertex F; partners P_k = kF + P0 a
   if (hi < 0) return;
   const Dk = (k) => s / (Fq * (k * Fq + P0.qn));
   const above = (D) => lo > 0 && D > hi && Math.min(Math.sqrt(lo * (D - lo)), Math.sqrt(hi * (D - hi))) > Htop;
-  let k = 1;
-  if (lo > 0) { const thr = Math.max(lo + Htop * Htop / lo, hi > 0 ? hi + Htop * Htop / hi : 0); const kj = Math.floor((s / (Fq * thr) - P0.qn) / Fq) - 1; if (kj > 1 && isFinite(kj)) k = kj; }
   const safe = Math.abs(F.xi) < 1e6;
   const mk = (kk, D) => { const kb = BigInt(kk), p = kb * F.p + P0.p, q = kb * F.q + P0.q; return vert(p, q, safe ? F.xi + dir * D : undefined); };
+  let k = 1;
+  if (lo > 0) { const thr = Math.max(lo + Htop * Htop / lo, hi > 0 ? hi + Htop * Htop / hi : 0); const kj = Math.floor((s / (Fq * thr) - P0.qn) / Fq) - 1;
+    if (kj > 1 && isFinite(kj)) { k = kj;
+      // the skipped partners lie beyond the window; a few of their Ford circles can still reach back into it
+      for (let j = kj - 1; j >= 2; j--) { const qj = j * Fq + P0.qn, Dj = s / (Fq * qj), rj = s / (2 * qj * qj); if (Dj - rj > hi + 2 || 2 * rj < T_CIRC) break; addCircle(mk(j, Dj)); } } }
   let Pk = k === 1 ? null : mk(k, Dk(k)); if (Pk) addCircle(Pk);
   let pk, qk; if (Pk) { pk = Pk.p; qk = Pk.q; }
   // P_1 (the mediant) was created by the caller; rebuild cheaply
@@ -190,7 +371,8 @@ const run = (F, P0, dir, stack) => { // fixed vertex F; partners P_k = kF + P0 a
     const Dn = Dk(k + 1), childVis = D >= lo && Dn <= hi;
     const vis = !above(D), visN = Dn >= lo && !above(Dn);
     if (vis && visN) { const sp = Math.max(childVis ? D - Dn : 0, nearSpacing(D, Dn, lo, hi));
-      if (sp < T_DENSE) { dense.push(dir > 0 ? [F.xi, Pk.xi, D] : [Pk.xi, F.xi, D]); break; } }
+      if (sp < T_DENSE) { dense.push(dir > 0 ? [F.xi, Pk.xi, D] : [Pk.xi, F.xi, D]);
+        for (let j = k + 1; j < k + 400; j++) { const qj = j * Fq + P0.qn; if (s / (qj * qj) < T_CIRC) break; addCircle(mk(j, s / (Fq * qj))); } break; } }
     const [L, R] = dir > 0 ? [F, Pk] : [Pk, F];
     if (vis) addEdge(L, R, D); nNodes++;
     const pn = pk + F.p, qn = qk + F.q, Pn = vert(pn, qn, safe ? F.xi + dir * Dn : undefined); addCircle(Pn);
@@ -363,12 +545,13 @@ const panelUpdate = () => { const z = s / sHome; const e = Math.log10(z);
   const ip = a >> BigInt(K), frac = a - (ip << BigInt(K)); const fd = (frac * 10n ** BigInt(digits)) >> BigInt(K);
   $('ctr').innerHTML = `<span class="mut">centre ≈</span> ${neg ? '−' : ''}${ip}.${fd.toString().padStart(digits, '0')}`;
   // continued fraction of the centre, as far as resolved
-  let N = cN, D = TWOK; const terms = []; let q0 = 0n, q1 = 1n; const qmax = Math.sqrt(s / 1.5);
+  let N = cN, D = TWOK; if (lock && lock.pq) [N, D] = lock.pq;   // a locked rational: expand the fraction itself
+  const terms = []; let q0 = 0n, q1 = 1n; const qmax = Math.sqrt(s / 1.5);
   for (let i = 0; i < 1000 && D; i++) { let t = N / D; if (N < 0n && t * D !== N) t -= 1n; const q2 = t * q1 + q0; if (i > 0 && Number(q2) > qmax) break; terms.push(t); [N, D] = [D, N - t * D]; q0 = q1; q1 = q2; }
   const h = terms.map((t, i) => i === 0 ? `${t < 0n ? '−' + (-t) : t}` : `<span class="${i % 2 ? 'blu' : 'acc'}">${t}</span>`);
   const tail = h.slice(1), body = tail.length > 46 ? tail.slice(0, 28).join(', ') + `, <span class="mut">… ${tail.length - 40} more …</span>, ` + tail.slice(-12).join(', ') : tail.join(', ');
   $('cf').innerHTML = `<span class="mut">CF of centre</span> [${h[0]}${tail.length ? '; ' + body : ''}${D ? ', …' : ''}]` + (tail.length > 46 ? ` <span class="mut">(${tail.length} terms)</span>` : '');
-  $('lockinfo').textContent = lock ? `locked on ${lock.label}: zoom stays centred on it; drag to release` : (mode === 'disk' ? 'scroll zooms toward the cursor’s direction' : 'scroll zooms toward the cursor'); };
+  $('lockinfo').textContent = fly && fly.kind === 'pan' ? `bringing ${fly.lk.label} to the centre…` : lock ? `locked on ${lock.label}${diving ? ' and diving (space pauses)' : ': zoom stays centred on it; drag to release'}` : (mode === 'disk' ? 'scroll zooms toward the cursor’s direction' : 'scroll zooms toward the cursor'); };
 
 // ---------- flying ----------
 let fly = null, diving = false;
@@ -378,24 +561,42 @@ const flyTo = (targetN, targetBits, s1, dur, lk = null) => { // target = targetN
   const s0 = s; dur = dur || Math.min(12, 0.8 + 0.22 * Math.abs(Math.log10(s1 / s0)));
   fly = { c0: cN, c1, Dn: Number(c1 - cN), s0, s1, t: 0, dur, lk }; diving = false; $('dive').classList.remove('primary'); };
 const flyStep = (dt) => { const f = fly; f.t = Math.min(1, f.t + dt / f.dur); const e = f.t < 0.5 ? 2 * f.t * f.t : 1 - (-2 * f.t + 2) ** 2 / 2;
+  if (f.kind === 'pan') { cN = f.c0 + BigInt(Math.round(f.Dn * e)); if (f.t >= 1) { cN = f.c1; fly = null; lock = f.lk; setDiving(true); } dirty = true; return; }
   const st = f.s0 * (f.s1 / f.s0) ** e; const r = f.s0 / f.s1;
   const h = Math.abs(Math.log(f.s1 / f.s0)) < 0.05 ? 1 - e : (f.s0 / st - r) / (1 - r);
   cN = f.c1 - BigInt(Math.round(f.Dn * h)); s = st; sK = s * 2 ** -K; if (f.t >= 1) { cN = f.c1; fly = null; lock = f.lk; const k = needK(s); if (k > K) setK(k); if (lock) cN = lock.at(K); } dirty = true; };
 const fdivB = (a, b) => { const q = a / b; return (a % b !== 0n && (a < 0n) !== (b < 0n)) ? q - 1n : q; };
-const flyToFrac = (p, q) => { const kf = Math.max(K, needK(s * 1e3)); const N = fdivB(p << BigInt(kf), q); const qn = Number(q), r = s / (2 * qn * qn);
+const flyToFrac = (p, q, label) => { const kf = Math.max(K, needK(s * 1e3)); const N = fdivB(p << BigInt(kf), q); const qn = Number(q), r = s / (2 * qn * qn);
   const short = (b) => { const t = b.toString(); return t.length > 14 ? t.slice(0, 6) + '…' + t.slice(-4) : t; };
-  flyTo(N, kf, mode === 'disk' ? 0.7 * ETA * qn * qn : s * (Htop * 0.42) / r, undefined, { label: q === 1n ? short(p) : short(p) + '/' + short(q), at: (k) => fdivB(p << BigInt(k), q) }); };
+  flyTo(N, kf, mode === 'disk' ? 0.7 * ETA * qn * qn : s * (Htop * 0.42) / r, undefined, { label: label || (q === 1n ? short(p) : short(p) + '/' + short(q)), at: (k) => fdivB(p << BigInt(k), q), pq: [p, q] }); };
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { const g = b.dataset.go;
   if (g === 'home') { flyTo(1n << 63n, 64, sHome); return; }
-  flyTo(TARGETS[g], Number(CB), 1e34 * sHome, undefined, { label: b.textContent, at: (k) => TARGETS[g] >> BigInt(Number(CB) - k) }); });
-$('dive').onclick = () => { diving = !diving; fly = null; $('dive').classList.toggle('primary', diving); };
+  voyage({ label: b.textContent, at: (k) => TARGETS[g] >> BigInt(Number(CB) - k) }); });
+const setDiving = (v) => { diving = v; $('dive').classList.toggle('primary', v); $('dive').textContent = v ? 'pause' : 'dive ↓'; };
+$('dive').onclick = () => { setDiving(!diving); fly = null; };
+// voyage to a target: jump home, pan until the target's geodesic is the vertical one at the centre, then dive on it
+const voyage = (lk) => { fly = null; setDiving(false); lock = null;
+  s = sHome; setK(needK(s)); cN = 1n << BigInt(K - 1); sK = s * 2 ** -K;
+  const c1 = lk.at(K), Dn = Number(c1 - cN), units = Math.abs(Dn) / Number(TWOK);
+  fly = { kind: 'pan', c0: cN, c1, Dn, t: 0, dur: Math.min(5, 0.9 + 0.7 * Math.log10(1 + units)), lk }; dirty = true; };
 $('out').onclick = () => { const kb = K; flyTo(cN, kb, s / 1e3, 1.4, lock); };
 const setMode = (m) => { mode = m; document.querySelectorAll('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === m)); tip.style.display = 'none'; dirty = true; };
 document.querySelectorAll('#mode button').forEach(b => b.onclick = () => setMode(b.dataset.m));
 $('minbtn').onclick = () => { panel.classList.toggle('min'); $('minbtn').textContent = panel.classList.contains('min') ? '+' : '–'; layout(); };
 for (const [id, k] of [['cCirc', 'circ'], ['cEdge', 'edge'], ['cLab', 'lab'], ['cCut', 'cut'], ['cCol', 'col']]) $(id).onchange = () => { show[k] = $(id).checked; dirty = true; };
 addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT') return;
-  if (e.key === '+' || e.key === '=') zoomAt(X0, 1.6); else if (e.key === '-') zoomAt(X0, 1 / 1.6); else if (e.key === '0') flyTo(1n << 63n, 64, sHome); else if (e.key === 'd') $('dive').onclick(); else if (e.key === 'm') setMode(mode === 'disk' ? 'half' : 'disk'); });
+  if (e.key === ' ') { e.preventDefault(); $('dive').onclick(); } else if (e.key === '+' || e.key === '=') zoomAt(X0, 1.6); else if (e.key === '-') zoomAt(X0, 1 / 1.6); else if (e.key === '0') flyTo(1n << 63n, 64, sHome); else if (e.key === 'd') $('dive').onclick(); else if (e.key === 'm') setMode(mode === 'disk' ? 'half' : 'disk'); });
+
+// ---------- zoom to an expression ----------
+const goExpr = (src, quiet) => { const msg = $('exprmsg'); src = src.trim(); if (!src) return false;
+  let v; try { v = BigCalc.parse(src); } catch (e) { if (!quiet) { msg.textContent = e instanceof BigCalc.CalcError ? e.message : 'could not read that'; msg.className = 'bad'; } return false; }
+  const X = BigCalc.fix(v), P = BigCalc.P; if ((X < 0n ? -X : X) >> BigInt(P) > 10n ** 12n) { msg.textContent = 'that number is too large to fly to (|x| ≤ 10¹²)'; msg.className = 'bad'; return false; }
+  const label = src.length > 26 ? src.slice(0, 24) + '…' : src;
+  if (BigCalc.isExact(v)) { msg.innerHTML = `= ${v.q === 1n ? v.p : v.p + '/' + v.q} <span class="mut">(exact rational)</span>`; voyage({ label, at: (k) => fdivB(v.p << BigInt(k), v.q), pq: [v.p, v.q] }); }
+  else { msg.textContent = '≈ ' + BigCalc.toDecimal(v, 32) + '…'; voyage({ label, at: (k) => X >> BigInt(P - k) }); }
+  msg.className = ''; try { history.replaceState(null, '', '#x=' + encodeURIComponent(src)); } catch (e) {}
+  return true; };
+$('exprrow').addEventListener('submit', (e) => { e.preventDefault(); goExpr($('expr').value); $('expr').blur(); });
 
 // ---------- pointer ----------
 const ptrs = new Map(); let pinch = null, moved = 0, downAt = null;
@@ -429,11 +630,12 @@ const hoverAt = (mx, my) => { const v = hitCircle(mx, my); if (!v) { tip.style.d
 // ---------- loop ----------
 let last = performance.now();
 const frame = (now) => { const dt = Math.min(0.1, (now - last) / 1000); last = now;
-  if (fly) flyStep(dt); else if (diving) { zoomAt(X0, Math.exp(dt * 1.15)); if (s >= SMAX) { diving = false; $('dive').classList.remove('primary'); } }
+  if (fly) flyStep(dt); else if (diving) { zoomAt(X0, Math.exp(dt * 1.15)); if (s >= SMAX) setDiving(false); }
   if (dirty) { dirty = false; draw(); }
   requestAnimationFrame(frame); };
 layout(); sHome = (xR - xL) / 1.25 * (1 + Math.SQRT2 * 1e-9); s = sHome; setK(needK(s)); cN = 1n << BigInt(K - 1); sK = s * 2 ** -K;
 requestAnimationFrame(frame);
+{ const m = /^#x=(.+)$/.exec(location.hash); if (m) { const src = decodeURIComponent(m[1]); $('expr').value = src; setTimeout(() => goExpr(src), 300); } }
 })();
 </script>
 </body>
