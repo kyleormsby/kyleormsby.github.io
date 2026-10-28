@@ -68,17 +68,20 @@
   <h1>Farey zoom</h1>
   <div class="stats">zoom <b id="zm">×1</b> · <b id="ncirc">0</b> circles · <b id="nedge">0</b> edges</div>
   <div class="hideable">
+  <div class="seg" id="mode"><button data-m="half" class="on">upper half-plane</button><button data-m="disk">Poincaré disk</button></div>
   <div id="ctr"></div>
   <div id="cf"></div>
+  <div id="lockinfo" class="mut" style="font-size:12px;margin:-2px 0 4px"></div>
   <div class="presets"><span>fly to</span><button data-go="phi">φ</button><button data-go="sq2">√2</button><button data-go="e">e</button><button data-go="pi">π</button><button data-go="cb2">∛2</button><button data-go="home">home</button></div>
   <div class="btns" style="margin-top:4px"><button id="dive">dive ↓</button><button id="out">zoom out</button></div>
   <div class="chk"><label><input type="checkbox" id="cCirc" checked>Ford circles</label><label><input type="checkbox" id="cEdge" checked>geodesics</label><label><input type="checkbox" id="cLab" checked>labels</label><label><input type="checkbox" id="cCut" checked>cutting sequence</label><label><input type="checkbox" id="cCol" checked>tint by q</label></div>
   <details><summary>what is this?</summary>
     <p>This is the <b>Farey tessellation</b> of the upper half-plane. Each pair of Farey neighbours <span class="m">a/b</span>, <span class="m">c/d</span>, with |<span class="m">ad − bc</span>| = 1, is joined by a hyperbolic geodesic: a semicircle, or a vertical line when one end is ∞. Each rational <span class="m">p/q</span> also carries its <b>Ford circle</b>, of diameter 1/<span class="m">q</span>², tangent to the line at <span class="m">p/q</span>. Two Ford circles touch exactly when their fractions are neighbours.</p>
-    <p>Scroll or pinch to zoom without limit, and drag to pan. Circles and geodesics fade in once they are a couple of pixels across, and labels once the circles are big enough to hold them. The arithmetic is exact (BigInt), so zooming to 10¹⁰⁰ is fine. Click a circle to fly to it.</p>
+    <p>Scroll or pinch to zoom without limit, and drag to pan. Circles and geodesics fade in once they are a couple of pixels across, and labels once the circles are big enough to hold them. The arithmetic is exact (BigInt), so zooming to 10¹⁰⁰ is fine. Click a circle to fly to it. Flying to a circle or to one of the constants locks the centre on that exact number, so further zooming stays on it however deep you go. Dragging releases the lock. The panel’s continued fraction is always that of the centre of the screen.</p>
     <p><b>Cutting sequence:</b> the dashed line is the vertical geodesic from ∞ down to the centre point <span class="m">x</span> = <span class="m">n</span> + [0; <span class="m">a</span>₁, <span class="m">a</span>₂, <span class="m">a</span>₃, …], which lies between the integers <span class="m">n</span> and <span class="m">n</span> + 1. Each ideal triangle it passes through is shaded by the edge it leaves through: <span class="blu">L</span> (blue) for the triangle’s left edge, <span class="acc">R</span> (rust) for its right edge. The topmost triangle, with vertices <span class="m">n</span>, <span class="m">n</span> + 1 and ∞, counts as <span class="blu">L</span>.</p>
     <p>Reading from the top down, the shading comes in <b>runs</b>: maximal blocks of consecutive triangles of the same colour. There are <span class="m">a</span>₁ blue triangles, then <span class="m">a</span>₂ rust, then <span class="m">a</span>₃ blue, and so on. So the run lengths are exactly the continued-fraction terms of <span class="m">x</span>. The panel lists them in matching colours, as many as the current zoom resolves. Once you have zoomed in, the earliest triangles are above the window, so the runs you can see start partway through.</p>
-    <p>Near a rational point, the fan of geodesics from that cusp is infinite and gets arbitrarily dense. Where neighbouring arcs are less than a pixel apart they are drawn as a shaded region. Keys: + and − zoom, 0 goes home, d dives.</p>
+    <p><b>Poincaré disk:</b> the same tessellation seen from the point <span class="m">z</span>₀ halfway up the half-plane window, directly above the centre point <span class="m">x</span>. A Möbius transformation carries the half-plane to the disk, sending <span class="m">z</span>₀ to the centre, ∞ to the top and <span class="m">x</span> to the bottom. Zooming in moves <span class="m">z</span>₀ down the vertical geodesic toward <span class="m">x</span>, so the disk view travels along that geodesic, and the cutting-sequence triangles stream past the centre. Toward a quadratic irrational the picture settles into a repeating cycle: toward φ, each zoom by a factor of φ² gives the mirror image and φ⁴ repeats it exactly. Drag sideways to slide along a horocycle, drag vertically or scroll to move toward or away from <span class="m">x</span>, and click a horocycle to fly to it.</p>
+    <p>Near a rational point, the fan of geodesics from that cusp is infinite and gets arbitrarily dense. Where neighbouring arcs are less than a pixel apart they are drawn as a shaded region. Keys: + and − zoom, 0 goes home, d dives, m switches between the half-plane and the disk.</p>
   </details>
   </div>
 </div>
@@ -92,7 +95,7 @@ const readCols = () => { const s = getComputedStyle(document.documentElement); f
 readCols(); matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readCols(); dirty = true; });
 
 // ---------- high-precision targets (dyadic, 420 bits) ----------
-const CB = 420n, ONE = 1n << CB;
+const CB = 480n, ONE = 1n << CB;   // 480 bits: enough for the deepest zoom (needK(SMAX) ≈ 440)
 const isqrt = (n) => { let x = 1n << (BigInt(n.toString(2).length) / 2n + 1n); while (true) { const y = (x + n / x) >> 1n; if (y >= x) { while (x * x > n) x--; while ((x + 1n) * (x + 1n) <= n) x++; return x; } x = y; } };
 const icbrt = (n) => { let x = 1n << (BigInt(n.toString(2).length) / 3n + 1n); while (true) { const y = (2n * x + n / (x * x)) / 3n; if (y >= x) { while (x * x * x > n) x--; while ((x + 1n) ** 3n <= n) x++; return x; } x = y; } };
 const atanInv = (m, G) => { let sum = 0n, term = (1n << G) / m, k = 1n, sign = 1n; const m2 = m * m; while (term) { sum += sign * term / k; term /= m2; k += 2n; sign = -sign; } return sum; };
@@ -106,23 +109,28 @@ const TARGETS = {
 };
 
 // ---------- view: centre c = cN / 2^K (exact dyadic), scale s px per unit ----------
+// lock: after flying to a target, the centre stays exactly on it (recomputed at every precision) until the user pans
+let lock = null;
 let K = 64, TWOK = 1n << 64n, cN = 1n << 63n, s = 600, sK = 600 / 2 ** 64;
 let W = 0, H = 0, dpr = 1, X0 = 0, baseY = 0, topY = 0, xL = 0, xR = 0, Htop = 0, xiMin = 0, xiMax = 0, sHome = 600;
+let mode = 'half', DX = 0, DY = 0, DR = 100, ETA = 100;
 let dirty = true, show = { circ: true, edge: true, lab: true, cut: true, col: true };
 const SMAX = 1e120;
 const needK = (sc) => Math.max(64, Math.ceil(Math.log2(sc)) + 40);
-const setK = (k) => { if (k > K) cN <<= BigInt(k - K); else if (k < K) cN >>= BigInt(K - k); K = k; TWOK = 1n << BigInt(K); sK = s * 2 ** -K; };
+const setK = (k) => { if (k > K) cN <<= BigInt(k - K); else if (k < K) cN >>= BigInt(K - k); K = k; TWOK = 1n << BigInt(K); sK = s * 2 ** -K; if (lock) cN = lock.at(K); };
 const setS = (ns) => { s = Math.min(SMAX, Math.max(sMin(), ns)); const k = needK(s); if (k > K || k < K - 64) setK(k); else sK = s * 2 ** -K; };
 const sMin = () => (xR - xL) / 60;
 const exactXi = (p, q) => Number(p * TWOK - cN * q) * sK / Number(q);
-const panPx = (dxi) => { cN -= BigInt(Math.round(dxi / sK)); dirty = true; };
+const panPx = (dxi) => { if (dxi) lock = null; cN -= BigInt(Math.round(dxi / sK)); dirty = true; };
 const zoomAt = (mx, f) => { const ns = Math.min(SMAX, Math.max(sMin(), s * f)); f = ns / s; if (f === 1) return;
+  if (lock) { setS(ns); cN = lock.at(K); dirty = true; return; }   // locked: zoom about the target itself
   const xi = mx - X0 + (Math.random() - 0.5) * 0.01; cN += BigInt(Math.round(xi * (1 - 1 / f) / sK)); setS(ns); dirty = true; };
 
 const layout = () => { dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const pr = panel.getBoundingClientRect(), wide = W >= 860 && !panel.classList.contains('min');
   xL = wide ? pr.right + 8 : 0; xR = W; topY = (!wide && W < 860) ? Math.min(pr.bottom + 6, H * 0.5) : 0; baseY = H - 34; Htop = baseY - topY; X0 = (xL + xR) / 2;
-  xiMin = xL - X0 - 2; xiMax = xR - X0 + 2; dirty = true; };
+  xiMin = xL - X0 - 2; xiMax = xR - X0 + 2; ETA = Htop / 2;
+  DX = X0; DY = (topY + H) / 2; DR = Math.max(60, Math.min(xR - xL, H - topY) / 2 - 18); dirty = true; };
 addEventListener('resize', () => { layout(); });
 
 // ---------- geometry helpers (ξ = screen x − X0, h = height in px above the real line) ----------
@@ -203,6 +211,88 @@ const traverse = () => { edges = []; circles = []; dense = []; tris = []; nNodes
     run(L, R, +1, stack); run(R, L, -1, stack); }
   return ints; };
 
+
+// ---------- Poincaré disk ----------
+// Ψ(z) = i (z − iη)/(z + iη) in half-plane px coordinates (z = ξ + i h): sends the viewpoint z₀ = iη (above the
+// centre point) to 0, ∞ to i and the centre point x to −i. A boundary point ξ lands at angle α = −π/2 + 2 atan(ξ/η).
+let dEdges = [], dCircles = [], dDense = [], dTris = [], dInf = null;
+const alphaOf = (xi) => -Math.PI / 2 + 2 * Math.atan(xi / ETA);
+const dpt = (a) => [DX + DR * Math.cos(a), DY - DR * Math.sin(a)];
+const chordPx = (a1, a2) => 2 * DR * Math.abs(Math.sin((a2 - a1) / 2));
+const horoRho = (v) => { // Euclidean radius (unit disk) of the image of the Ford circle of v
+  const d = s / (v.qn * v.qn), a = alphaOf(v.xi), wx = Math.cos(a), wy = Math.sin(a);
+  const nr = ETA - d, ni = v.xi, dr = v.xi, di = d + ETA, dd = dr * dr + di * di;
+  const ux = (nr * dr + ni * di) / dd, uy = (ni * dr - nr * di) / dd;   // Ψ(top point of the Ford circle)
+  const den = 2 * (1 - (ux * wx + uy * wy)); if (!(den > 1e-13)) return 0;
+  return ((ux - wx) ** 2 + (uy - wy) ** 2) / den; };
+const addCircleD = (v) => { const rho = horoRho(v); if (!(2 * rho * DR >= T_CIRC)) return; const a = alphaOf(v.xi);
+  dCircles.push([v, DX + DR * (1 - rho) * Math.cos(a), DY - DR * (1 - rho) * Math.sin(a), DR * rho]); };
+const triD = (L, R, M) => { if (show.cut && L.xi < 0 && R.xi > 0) { const aL = alphaOf(L.xi), aR = alphaOf(R.xi); if ((aR - aL) * DR > 3) dTris.push([aL, alphaOf(M.xi), aR, M.xi > 0 ? 'L' : 'R']); } };
+const runD = (F, P0, dir, stack) => {
+  const aF = alphaOf(F.xi), safe = Math.abs(F.xi) < 1e6;
+  const mk = (k) => { const kb = BigInt(Math.round(k)), p = kb * F.p + P0.p, q = kb * F.q + P0.q, qn = Number(q);
+    return vert(p, q, safe ? F.xi + dir * s / (F.qn * qn) : undefined); };
+  const span = (P) => Math.abs(alphaOf(P.xi) - aF) * DR;
+  const gap = (P, Pn) => Math.abs(alphaOf(Pn.xi) - alphaOf(P.xi)) * DR;
+  const dStar = Math.max(Math.abs(F.xi), ETA), kb = Math.floor((s / (F.qn * dStar) - P0.qn) / F.qn);
+  let k = 1, P = mk(1);
+  for (let guard = 0; guard < 4000; guard++) {
+    if (span(P) < T_EDGE) break;
+    const Pn = mk(k + 1);
+    if (gap(P, Pn) >= T_DENSE) {
+      const [L, R] = dir > 0 ? [F, P] : [P, F]; const aL = alphaOf(L.xi), aR = alphaOf(R.xi);
+      if (chordPx(aL, aR) >= T_EDGE) dEdges.push([aL, aR]); nNodes++;
+      addCircleD(Pn); triD(L, R, Pn); stack.push(dir > 0 ? [Pn, P] : [P, Pn]);
+      k++; P = Pn; continue; }
+    // a stretch of arcs closer than a pixel or two: gallop to its end, shade it as one lens
+    const bad = (j) => { const Pj = mk(j), Pj1 = mk(j + 1); return span(Pj) < T_EDGE || gap(Pj, Pj1) >= T_DENSE; };
+    // gaps peak where the fan passes closest to the viewpoint's foot (distance d* from F); never gallop past it
+    let lo = k, step = 1; const cap = (j) => (lo < kb && j > kb) ? Math.max(lo + 1, kb) : j; let hi = cap(k + 1);
+    for (let it = 0; it < 200 && !bad(hi) && hi !== kb; it++) { lo = hi; step *= 2; hi = cap(lo + step); }
+    while (hi - lo > 1) { const mid = Math.floor((lo + hi) / 2); if (mid <= lo || mid >= hi) break; if (bad(mid)) hi = mid; else lo = mid; }
+    const PE = mk(hi); dDense.push([aF, alphaOf(P.xi), alphaOf(PE.xi)]);
+    k = hi; P = PE; } };
+const traverseDisk = () => { dEdges = []; dCircles = []; dDense = []; dTris = []; dInf = null; nNodes = 0;
+  const fdiv = (a, b) => { const q = a / b; return (a % b !== 0n && (a < 0n) !== (b < 0n)) ? q - 1n : q; };
+  const M = BigInt(Math.min(3000, Math.ceil(2 * DR * ETA / (T_EDGE * s)) + 2)), n0 = fdiv(cN, TWOK);
+  const ints = []; for (let n = n0 - M; n <= n0 + M + 1n; n++) ints.push(vert(n, 1n));
+  for (const v of ints) { addCircleD(v); const a = alphaOf(v.xi); if (chordPx(a, Math.PI / 2) >= T_EDGE) dEdges.push([a, Math.PI / 2]); }
+  const stack = [];
+  for (let i = 0; i + 1 < ints.length; i++) { const v = ints[i], w = ints[i + 1]; stack.push([v, w]);
+    if (v.xi < 0 && w.xi > 0) dInf = [alphaOf(v.xi), alphaOf(w.xi)]; }
+  while (stack.length && nNodes < 60000) { const [L, R] = stack.pop(); const aL = alphaOf(L.xi), aR = alphaOf(R.xi);
+    if ((aR - aL) * DR < T_EDGE) continue;
+    if (chordPx(aL, aR) >= T_EDGE) dEdges.push([aL, aR]); nNodes++;
+    const Mv = mediant(L, R); addCircleD(Mv); triD(L, R, Mv);
+    runD(L, R, +1, stack); runD(R, L, -1, stack); } };
+const geoTo = (g, a1, a2) => { // geodesic from the boundary point at a1 (current point) to a2
+  const [x2, y2] = dpt(a2), D = Math.acos(Math.max(-1, Math.min(1, Math.cos(a2 - a1))));
+  if (D < 1e-9 || D > Math.PI - 1e-6) g.lineTo(x2, y2); else g.arcTo(DX, DY, x2, y2, DR * Math.tan(D / 2)); };
+const drawDisk = () => {
+  traverseDisk();
+  ctx.fillStyle = C.paper; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.beginPath(); ctx.arc(DX, DY, DR, 0, 2 * Math.PI); ctx.clip();
+  const triCol = (side) => side === 'L' ? (C.dark ? 'rgba(127,168,222,0.2)' : 'rgba(47,95,156,0.17)') : (C.dark ? 'rgba(224,138,98,0.2)' : 'rgba(162,70,42,0.15)');
+  const tri = (a, b, c, side) => { ctx.beginPath(); ctx.moveTo(...dpt(a)); geoTo(ctx, a, b); geoTo(ctx, b, c); geoTo(ctx, c, a); ctx.closePath(); ctx.fillStyle = triCol(side); ctx.fill(); };
+  if (show.circ) { const rI = ETA / (s + ETA); // Ford circle at ∞ = horocycle at the top
+    ctx.beginPath(); ctx.arc(DX, DY - DR * (1 - rI), DR * rI, 0, 2 * Math.PI); ctx.fillStyle = `rgba(${C.inkRGB},0.035)`; ctx.fill(); ctx.strokeStyle = `rgba(${C.inkRGB},0.5)`; ctx.lineWidth = 1; ctx.stroke();
+    for (const [v, x, y, r] of dCircles) { const a = clamp01((2 * r - T_CIRC) / 10); ctx.beginPath(); ctx.arc(x, y, r, 0, 2 * Math.PI);
+      ctx.fillStyle = tintQ(v.qn, a * (r > 120 ? 0.07 : r > 30 ? 0.11 : 0.16)); ctx.fill(); ctx.strokeStyle = tintQ(v.qn, 0.85 * a); ctx.lineWidth = r > 30 ? 1.3 : 1; ctx.stroke(); } }
+  if (show.cut) { if (dInf) tri(dInf[0], dInf[1], Math.PI / 2, 'L'); for (const [a, m, b, side] of dTris) tri(a, m, b, side); }
+  if (show.edge) {
+    ctx.fillStyle = `rgba(${C.inkRGB},0.78)`;
+    for (const [aF, a1, a2] of dDense) { ctx.beginPath(); ctx.moveTo(...dpt(aF)); geoTo(ctx, aF, a1); ctx.arc(DX, DY, DR, -a1, -a2, a2 > a1); geoTo(ctx, a2, aF); ctx.closePath(); ctx.fill(); }
+    const buckets = [[], [], []]; for (const e of dEdges) { const c = chordPx(e[0], e[1]); buckets[c < 12 ? 0 : c < 120 ? 1 : 2].push(e); }
+    const st = [[0.45, 0.8], [0.7, 0.9], [0.85, 1.25]];
+    buckets.forEach((b, i) => { ctx.strokeStyle = `rgba(${C.inkRGB},${st[i][0]})`; ctx.lineWidth = st[i][1]; ctx.beginPath(); for (const [a1, a2] of b) { ctx.moveTo(...dpt(a1)); geoTo(ctx, a1, a2); } ctx.stroke(); }); }
+  if (show.cut) { ctx.strokeStyle = C.accent; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(DX, DY - DR); ctx.lineTo(DX, DY + DR); ctx.stroke(); ctx.setLineDash([]); }
+  if (show.lab) for (const [v, x, y, r] of dCircles) { if (2 * r < 22) continue; const digits = Math.max(v.p.toString().length + (v.p < 0n ? 1 : 0), v.q.toString().length);
+    const fs = Math.min(30, r * 0.5, 1.5 * r / (0.56 * digits + 0.3)); if (fs < 8.5) continue;
+    fracText(ctx, v, x, y, fs, 0.92 * clamp01((2 * r - 22) / 26) * clamp01((fs - 8.5) / 3)); }
+  ctx.restore();
+  ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(DX, DY, DR, 0, 2 * Math.PI); ctx.stroke();
+  ctx.font = '12px ui-serif, Georgia, serif'; ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText('∞', DX, DY - DR - 4); };
+
 // ---------- drawing ----------
 const tintQ = (qn, a) => { if (!show.col) return `rgba(${C.inkRGB},${a * 0.5})`; const h = (205 + 52 * Math.log2(qn)) % 360; return `hsla(${h}, ${C.dark ? 45 : 50}%, ${C.dark ? 62 : 46}%, ${a})`; };
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
@@ -219,22 +309,23 @@ const circlePath = (g, v, r) => { const x = X0 + v.xi;
   g.moveTo(X0 + pts[0][0], baseY - hc); for (const [xi, y] of pts) g.lineTo(X0 + xi, baseY - y); g.lineTo(X0 + pts[pts.length - 1][0], baseY - hc); g.closePath(); };
 let lastInts = [];
 const draw = () => { const t0 = performance.now();
+  if (mode === 'disk') { drawDisk(); panelUpdate(); lastMs = performance.now() - t0; return; }
   const ints = traverse(); lastInts = ints;
   ctx.fillStyle = C.paper; ctx.fillRect(0, 0, W, H);
   ctx.save(); ctx.beginPath(); ctx.rect(xL, topY, xR - xL, baseY - topY + 1); ctx.clip();
   // Ford circle at ∞: the line Im z = 1
   const yInf = baseY - s; if (yInf > topY - 2 && show.circ) { ctx.fillStyle = `rgba(${C.inkRGB},0.035)`; ctx.fillRect(xL, topY, xR - xL, yInf - topY); ctx.strokeStyle = `rgba(${C.inkRGB},0.5)`; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(xL, yInf); ctx.lineTo(xR, yInf); ctx.stroke(); }
+  // Ford circles
+  if (show.circ) { for (const [v, r] of circles) { const a = clamp01((2 * r - T_CIRC) / 10); ctx.beginPath(); circlePath(ctx, v, r); ctx.fillStyle = tintQ(v.qn, a * (r > 250 ? 0.06 : r > 60 ? 0.1 : 0.16)); ctx.fill();
+      ctx.strokeStyle = tintQ(v.qn, 0.85 * a); ctx.lineWidth = r > 60 ? 1.3 : 1; ctx.stroke(); } }
   // cutting-sequence triangles
-  const triCol = (side) => side === 'L' ? (C.dark ? 'rgba(127,168,222,0.10)' : 'rgba(47,95,156,0.10)') : (C.dark ? 'rgba(224,138,98,0.09)' : 'rgba(162,70,42,0.09)');
+  const triCol = (side) => side === 'L' ? (C.dark ? 'rgba(127,168,222,0.2)' : 'rgba(47,95,156,0.17)') : (C.dark ? 'rgba(224,138,98,0.2)' : 'rgba(162,70,42,0.15)');
   if (show.cut) for (let i = 0; i + 1 < ints.length; i++) { const v = ints[i], w = ints[i + 1]; if (!(v.xi < 0 && w.xi > 0)) continue;
     // the triangle (n, n+1, ∞): the strip above the geodesic from n to n+1 — the first L of the cutting sequence
     const a0 = Math.max(v.xi, xiMin - 60), a1 = Math.min(w.xi, xiMax + 60), hc = HC();
     ctx.beginPath(); ctx.rect(X0 + a0, baseY - hc, a1 - a0, hc); pathArc(ctx, v.xi, w.xi, s, true); ctx.fillStyle = triCol('L'); ctx.fill('evenodd'); }
   if (show.cut) for (const [l, m, r, D, D1, D2, side] of tris) { ctx.beginPath(); pathArc(ctx, l, r, D, true); pathArc(ctx, l, m, D1, true); pathArc(ctx, m, r, D2, true);
     ctx.fillStyle = triCol(side); ctx.fill('evenodd'); }
-  // Ford circles
-  if (show.circ) { for (const [v, r] of circles) { const a = clamp01((2 * r - T_CIRC) / 10); ctx.beginPath(); circlePath(ctx, v, r); ctx.fillStyle = tintQ(v.qn, a * (r > 250 ? 0.06 : r > 60 ? 0.1 : 0.16)); ctx.fill();
-      ctx.strokeStyle = tintQ(v.qn, 0.85 * a); ctx.lineWidth = r > 60 ? 1.3 : 1; ctx.stroke(); } }
   // geodesics
   if (show.edge) {
     ctx.fillStyle = `rgba(${C.inkRGB},0.5)`; for (const [l, r, D] of dense) { ctx.beginPath(); pathArc(ctx, l, r, D, true); ctx.fill(); }
@@ -257,7 +348,7 @@ const draw = () => { const t0 = performance.now();
   // scale bar
   { const unit = 10 ** Math.floor(Math.log10(150 / s)); let len = unit * s, lab = unit; for (const m of [2, 5]) if (unit * m * s < 170) { len = unit * m * s; lab = unit * m; }
     ctx.strokeStyle = C.muted; ctx.beginPath(); ctx.moveTo(xR - 20 - len, baseY + 16); ctx.lineTo(xR - 20, baseY + 16); ctx.moveTo(xR - 20 - len, baseY + 12); ctx.lineTo(xR - 20 - len, baseY + 20); ctx.moveTo(xR - 20, baseY + 12); ctx.lineTo(xR - 20, baseY + 20); ctx.stroke();
-    const e = Math.round(Math.log10(lab)), mant = Math.round(lab / 10 ** e); ctx.font = '11.5px ui-serif, Georgia, serif'; ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    const e = Math.floor(Math.log10(lab) + 1e-9), mant = Math.round(lab / 10 ** e); ctx.font = '11.5px ui-serif, Georgia, serif'; ctx.fillStyle = C.muted; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
     ctx.fillText(Math.abs(e) <= 3 ? String(+lab.toPrecision(2)) : `${mant === 1 ? '' : mant + '·'}10${sup(e)}`, xR - 26 - len, baseY + 16); }
   panelUpdate(); lastMs = performance.now() - t0;
 };
@@ -266,54 +357,66 @@ const sup = (k) => String(k).split('').map(d => d === '-' ? '⁻' : '⁰¹²³�
 
 // ---------- panel ----------
 const panelUpdate = () => { const z = s / sHome; const e = Math.log10(z);
-  $('zm').textContent = e < 3 ? '×' + (+z.toPrecision(3)) : '×10' + sup(Math.floor(e)); $('ncirc').textContent = circles.length.toLocaleString(); $('nedge').textContent = (edges.length + dense.length).toLocaleString();
+  $('zm').textContent = e < 3 ? '×' + (+z.toPrecision(3)) : '×10' + sup(Math.floor(e)); $('ncirc').textContent = circles.length.toLocaleString(); $('nedge').textContent = (mode === 'disk' ? dEdges.length + dDense.length : edges.length + dense.length).toLocaleString(); if (mode === 'disk') $('ncirc').textContent = dCircles.length.toLocaleString();
   // centre decimal
   const digits = Math.min(80, Math.max(4, Math.ceil(Math.log10(s)) + 1)); const neg = cN < 0n; const a = neg ? -cN : cN;
   const ip = a >> BigInt(K), frac = a - (ip << BigInt(K)); const fd = (frac * 10n ** BigInt(digits)) >> BigInt(K);
   $('ctr').innerHTML = `<span class="mut">centre ≈</span> ${neg ? '−' : ''}${ip}.${fd.toString().padStart(digits, '0')}`;
   // continued fraction of the centre, as far as resolved
   let N = cN, D = TWOK; const terms = []; let q0 = 0n, q1 = 1n; const qmax = Math.sqrt(s / 1.5);
-  for (let i = 0; i < 60 && D; i++) { let t = N / D; if (N < 0n && t * D !== N) t -= 1n; const q2 = t * q1 + q0; if (i > 0 && Number(q2) > qmax) break; terms.push(t); [N, D] = [D, N - t * D]; q0 = q1; q1 = q2; }
+  for (let i = 0; i < 1000 && D; i++) { let t = N / D; if (N < 0n && t * D !== N) t -= 1n; const q2 = t * q1 + q0; if (i > 0 && Number(q2) > qmax) break; terms.push(t); [N, D] = [D, N - t * D]; q0 = q1; q1 = q2; }
   const h = terms.map((t, i) => i === 0 ? `${t < 0n ? '−' + (-t) : t}` : `<span class="${i % 2 ? 'blu' : 'acc'}">${t}</span>`);
-  $('cf').innerHTML = `<span class="mut">CF</span> [${h[0]}${h.length > 1 ? '; ' + h.slice(1).join(', ') : ''}${D ? ', …' : ''}]`; };
+  const tail = h.slice(1), body = tail.length > 46 ? tail.slice(0, 28).join(', ') + `, <span class="mut">… ${tail.length - 40} more …</span>, ` + tail.slice(-12).join(', ') : tail.join(', ');
+  $('cf').innerHTML = `<span class="mut">CF of centre</span> [${h[0]}${tail.length ? '; ' + body : ''}${D ? ', …' : ''}]` + (tail.length > 46 ? ` <span class="mut">(${tail.length} terms)</span>` : '');
+  $('lockinfo').textContent = lock ? `locked on ${lock.label}: zoom stays centred on it; drag to release` : (mode === 'disk' ? 'scroll zooms toward the cursor’s direction' : 'scroll zooms toward the cursor'); };
 
 // ---------- flying ----------
 let fly = null, diving = false;
-const flyTo = (targetN, targetBits, s1, dur) => { // target = targetN / 2^targetBits
-  s1 = Math.min(SMAX, Math.max(sMin(), s1)); const kf = Math.max(K, needK(Math.max(s, s1)), 64); setK(kf);
+const flyTo = (targetN, targetBits, s1, dur, lk = null) => { // target = targetN / 2^targetBits; lk = lock to hold afterwards
+  lock = null; s1 = Math.min(SMAX, Math.max(sMin(), s1)); const kf = Math.max(K, needK(Math.max(s, s1)), 64); setK(kf);
   const c1 = targetBits >= kf ? targetN >> BigInt(targetBits - kf) : targetN << BigInt(kf - targetBits);
   const s0 = s; dur = dur || Math.min(12, 0.8 + 0.22 * Math.abs(Math.log10(s1 / s0)));
-  fly = { c0: cN, c1, Dn: Number(c1 - cN), s0, s1, t: 0, dur }; diving = false; $('dive').classList.remove('primary'); };
+  fly = { c0: cN, c1, Dn: Number(c1 - cN), s0, s1, t: 0, dur, lk }; diving = false; $('dive').classList.remove('primary'); };
 const flyStep = (dt) => { const f = fly; f.t = Math.min(1, f.t + dt / f.dur); const e = f.t < 0.5 ? 2 * f.t * f.t : 1 - (-2 * f.t + 2) ** 2 / 2;
   const st = f.s0 * (f.s1 / f.s0) ** e; const r = f.s0 / f.s1;
   const h = Math.abs(Math.log(f.s1 / f.s0)) < 0.05 ? 1 - e : (f.s0 / st - r) / (1 - r);
-  cN = f.c1 - BigInt(Math.round(f.Dn * h)); s = st; sK = s * 2 ** -K; if (f.t >= 1) { cN = f.c1; fly = null; const k = needK(s); if (k > K) setK(k); } dirty = true; };
-const flyToFrac = (p, q) => { const kf = Math.max(K, needK(s * 1e3)); const N = (p << BigInt(kf)) / q; const r = s / (2 * Number(q) ** 2); flyTo(N, kf, s * (Htop * 0.42) / r); };
+  cN = f.c1 - BigInt(Math.round(f.Dn * h)); s = st; sK = s * 2 ** -K; if (f.t >= 1) { cN = f.c1; fly = null; lock = f.lk; const k = needK(s); if (k > K) setK(k); if (lock) cN = lock.at(K); } dirty = true; };
+const fdivB = (a, b) => { const q = a / b; return (a % b !== 0n && (a < 0n) !== (b < 0n)) ? q - 1n : q; };
+const flyToFrac = (p, q) => { const kf = Math.max(K, needK(s * 1e3)); const N = fdivB(p << BigInt(kf), q); const qn = Number(q), r = s / (2 * qn * qn);
+  const short = (b) => { const t = b.toString(); return t.length > 14 ? t.slice(0, 6) + '…' + t.slice(-4) : t; };
+  flyTo(N, kf, mode === 'disk' ? 0.7 * ETA * qn * qn : s * (Htop * 0.42) / r, undefined, { label: q === 1n ? short(p) : short(p) + '/' + short(q), at: (k) => fdivB(p << BigInt(k), q) }); };
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { const g = b.dataset.go;
-  if (g === 'home') { flyTo(1n << 63n, 64, sHome); return; } flyTo(TARGETS[g], Number(CB), 1e34 * sHome); });
+  if (g === 'home') { flyTo(1n << 63n, 64, sHome); return; }
+  flyTo(TARGETS[g], Number(CB), 1e34 * sHome, undefined, { label: b.textContent, at: (k) => TARGETS[g] >> BigInt(Number(CB) - k) }); });
 $('dive').onclick = () => { diving = !diving; fly = null; $('dive').classList.toggle('primary', diving); };
-$('out').onclick = () => { const kb = K; flyTo(cN, kb, s / 1e3, 1.4); };
+$('out').onclick = () => { const kb = K; flyTo(cN, kb, s / 1e3, 1.4, lock); };
+const setMode = (m) => { mode = m; document.querySelectorAll('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === m)); tip.style.display = 'none'; dirty = true; };
+document.querySelectorAll('#mode button').forEach(b => b.onclick = () => setMode(b.dataset.m));
 $('minbtn').onclick = () => { panel.classList.toggle('min'); $('minbtn').textContent = panel.classList.contains('min') ? '+' : '–'; layout(); };
 for (const [id, k] of [['cCirc', 'circ'], ['cEdge', 'edge'], ['cLab', 'lab'], ['cCut', 'cut'], ['cCol', 'col']]) $(id).onchange = () => { show[k] = $(id).checked; dirty = true; };
 addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT') return;
-  if (e.key === '+' || e.key === '=') zoomAt(X0, 1.6); else if (e.key === '-') zoomAt(X0, 1 / 1.6); else if (e.key === '0') flyTo(1n << 63n, 64, sHome); else if (e.key === 'd') $('dive').onclick(); });
+  if (e.key === '+' || e.key === '=') zoomAt(X0, 1.6); else if (e.key === '-') zoomAt(X0, 1 / 1.6); else if (e.key === '0') flyTo(1n << 63n, 64, sHome); else if (e.key === 'd') $('dive').onclick(); else if (e.key === 'm') setMode(mode === 'disk' ? 'half' : 'disk'); });
 
 // ---------- pointer ----------
 const ptrs = new Map(); let pinch = null, moved = 0, downAt = null;
-cv.addEventListener('wheel', (e) => { e.preventDefault(); fly = null; zoomAt(e.clientX, Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0018))); }, { passive: false });
+cv.addEventListener('wheel', (e) => { e.preventDefault(); fly = null; zoomAt(mode === 'disk' ? diskAim(e.clientX, e.clientY) : e.clientX, Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0018))); }, { passive: false });
+// in the disk, zoom toward the boundary point the cursor points at (within ±3η of the centre point)
+const diskAim = (mx, my) => { const a = Math.atan2(DY - my, mx - DX); return X0 + Math.max(-3 * ETA, Math.min(3 * ETA, ETA * Math.tan((a + Math.PI / 2) / 2))); };
 cv.addEventListener('pointerdown', (e) => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); moved = 0; downAt = [e.clientX, e.clientY]; fly = null;
   if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = Math.hypot(a[0] - b[0], a[1] - b[1]); } });
 cv.addEventListener('pointermove', (e) => {
   if (ptrs.has(e.pointerId)) { const o = ptrs.get(e.pointerId), dx = e.clientX - o[0], dy = e.clientY - o[1]; ptrs.set(e.pointerId, [e.clientX, e.clientY]);
-    if (ptrs.size === 1) { panPx(dx); moved += Math.abs(dx) + Math.abs(dy); }
-    else if (ptrs.size === 2 && pinch) { const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); zoomAt((a[0] + b[0]) / 2, d / pinch); pinch = d; moved = 99; }
+    if (ptrs.size === 1) { if (mode === 'disk') { panPx(dx * 2 * ETA / DR); if (dy) zoomAt(X0, Math.exp(-2 * dy / DR)); } else panPx(dx); moved += Math.abs(dx) + Math.abs(dy); }
+    else if (ptrs.size === 2 && pinch) { const [a, b] = [...ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); zoomAt(mode === 'disk' ? diskAim((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) : (a[0] + b[0]) / 2, d / pinch); pinch = d; moved = 99; }
     tip.style.display = 'none'; return; }
   hoverAt(e.clientX, e.clientY); });
 cv.addEventListener('pointerup', (e) => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null;
   if (moved < 5 && downAt) { const v = hitCircle(e.clientX, e.clientY); if (v) flyToFrac(v.p, v.q); } downAt = null; });
 cv.addEventListener('pointercancel', (e) => { ptrs.delete(e.pointerId); pinch = null; });
 cv.addEventListener('pointerleave', () => { tip.style.display = 'none'; });
-const hitCircle = (mx, my) => { let best = null, br = Infinity; const xi = mx - X0, h = baseY - my; if (h < 0) return null;
+const hitCircle = (mx, my) => { let best = null, br = Infinity;
+  if (mode === 'disk') { for (const [v, x, y, r] of dCircles) if (Math.hypot(mx - x, my - y) <= r && r < br) { br = r; best = v; } return best; }
+  const xi = mx - X0, h = baseY - my; if (h < 0) return null;
   for (const [v, r] of circles) { const dx = xi - v.xi; if (Math.abs(dx) > r) continue; const lowY = dx * dx / (r + Math.sqrt(r * r - dx * dx)); const hiY = 2 * r - lowY;
     if (h >= lowY && h <= hiY && r < br) { br = r; best = v; } } return best; };
 const hoverAt = (mx, my) => { const v = hitCircle(mx, my); if (!v) { tip.style.display = 'none'; cv.style.cursor = 'grab'; return; } cv.style.cursor = 'pointer';
