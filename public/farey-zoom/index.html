@@ -81,6 +81,7 @@
   <form id="exprrow" autocomplete="off"><input id="expr" spellcheck="false" placeholder="zoom to… e.g. sqrt(3)+1, pi^2/6, cos(1)" aria-label="number to zoom in on"><button type="submit">go</button></form>
   <div id="exprmsg"></div>
   <div class="btns" style="margin-top:4px"><button id="dive">dive ↓</button><button id="out">zoom out</button></div>
+  <div class="row" style="margin:4px 0 0"><label for="detail" style="width:auto;margin-right:4px">detail</label><input id="detail" type="range" min="0" max="5" step="1" value="0" style="flex:1"><output id="detailOut" style="width:auto">shade under 1 px</output></div>
   <div class="chk"><label><input type="checkbox" id="cCirc" checked>Ford circles</label><label><input type="checkbox" id="cEdge" checked>geodesics</label><label><input type="checkbox" id="cLab" checked>labels</label><label><input type="checkbox" id="cCut" checked>cutting sequence</label><label><input type="checkbox" id="cCol" checked>tint by q</label></div>
   <details><summary>what is this?</summary>
     <p>This is the <b>Farey tessellation</b> of the upper half-plane. Each pair of Farey neighbours <span class="m">a/b</span>, <span class="m">c/d</span>, with |<span class="m">ad − bc</span>| = 1, is joined by a hyperbolic geodesic: a semicircle, or a vertical line when one end is ∞. Each rational <span class="m">p/q</span> also carries its <b>Ford circle</b>, of diameter 1/<span class="m">q</span>², tangent to the line at <span class="m">p/q</span>. Two Ford circles touch exactly when their fractions are neighbours.</p>
@@ -89,7 +90,7 @@
     <p><b>Cutting sequence:</b> the dashed line is the vertical geodesic from ∞ down to the centre point <span class="m">x</span> = <span class="m">n</span> + [0; <span class="m">a</span>₁, <span class="m">a</span>₂, <span class="m">a</span>₃, …], which lies between the integers <span class="m">n</span> and <span class="m">n</span> + 1. Each ideal triangle it passes through is shaded by the edge it leaves through: <span class="blu">L</span> (blue) for the triangle’s left edge, <span class="acc">R</span> (rust) for its right edge. The topmost triangle, with vertices <span class="m">n</span>, <span class="m">n</span> + 1 and ∞, counts as <span class="blu">L</span>.</p>
     <p>Reading from the top down, the shading comes in <b>runs</b>: maximal blocks of consecutive triangles of the same colour. There are <span class="m">a</span>₁ blue triangles, then <span class="m">a</span>₂ rust, then <span class="m">a</span>₃ blue, and so on. So the run lengths are exactly the continued-fraction terms of <span class="m">x</span>. The panel lists them in matching colours, as many as the current zoom resolves. Once you have zoomed in, the earliest triangles are above the window, so the runs you can see start partway through.</p>
     <p><b>Poincaré disk:</b> the same tessellation seen from the point <span class="m">z</span>₀ halfway up the half-plane window, directly above the centre point <span class="m">x</span>. A Möbius transformation carries the half-plane to the disk, sending <span class="m">z</span>₀ to the centre, ∞ to the top and <span class="m">x</span> to the bottom. Zooming in moves <span class="m">z</span>₀ down the vertical geodesic toward <span class="m">x</span>, so the disk view travels along that geodesic, and the cutting-sequence triangles stream past the centre. Toward a quadratic irrational the picture settles into a repeating cycle: toward φ, each zoom by a factor of φ² gives the mirror image and φ⁴ repeats it exactly. Drag sideways to slide along a horocycle, drag vertically or scroll to move toward or away from <span class="m">x</span>, and click a horocycle to fly to it.</p>
-    <p>Near a rational point, the fan of geodesics from that cusp is infinite and gets arbitrarily dense. Where neighbouring arcs are less than a pixel apart they are drawn as a shaded region. Keys: + and − zoom, 0 goes home, d dives, m switches between the half-plane and the disk.</p>
+    <p>Near a rational point, the fan of geodesics from that cusp is infinite and gets arbitrarily dense. Where neighbouring arcs crowd closer than a pixel they are drawn as a shaded region. The <b>detail</b> slider lowers that threshold, down to two arcs per pixel, so that more of each fan is drawn arc by arc; the near-pixel spacing interferes with the pixel grid and makes moiré patterns. The shaded picture is always drawn first; the slider then spends a per-frame budget redrawing the shaded regions arc by arc, largest arcs first, so whatever the budget cannot reach stays shaded rather than vanishing. Keys: + and − zoom, 0 goes home, d dives, m switches between the half-plane and the disk.</p>
   </details>
   </div>
 </div>
@@ -333,7 +334,13 @@ const pathArc = (g, Lxi, Rxi, D, close) => { // adds the semicircle to the curre
 
 // ---------- traversal ----------
 let edges = [], circles = [], dense = [], tris = [], nNodes = 0;
-const T_EDGE = 1.4, T_DENSE = 2.6, T_CIRC = 2.2;
+const T_EDGE = 1.4, T_CIRC = 2.2;
+// pass 1 shades every stretch of arcs closer than T_DENSE px; the detail slider then spends a budget of arc-pixels
+// redrawing those shaded lenses arc by arc (largest arcs first) down to a finest spacing, so nothing is ever left blank
+const T_DENSE = 1.0, nBudget = 120000;   // arcs 1 px apart still read as lines; below that they merge into tone
+const DETAIL = [[1.0, 0], [0.85, 6e5], [0.7, 1.0e6], [0.6, 1.5e6], [0.5, 2.0e6], [0.5, 2.6e6]];   // finest spacing ≈ 1/8 px: below that arcs add no ink, only cost
+let tRefine = 2.6, pxBudget = 0, pxLeft = 0, lenses = [], fineEdges = [], dFine = [];
+
 // visual gap (px) between consecutive fan arcs of diameters D > Dn sharing the endpoint u = 0,
 // measured where the window [lo, hi] (in u) actually shows them: far endpoints, apexes and 8 sample heights
 const u1 = (D, h) => h * h / (D / 2 + Math.sqrt(Math.max(0, D * D / 4 - h * h)));
@@ -348,6 +355,9 @@ const nearSpacing = (D, Dn, lo, hi) => { const inW = (u) => u >= lo && u <= hi; 
     if (inW(a2) || inW(b2)) sp = Math.max(sp, Math.abs(a2 - b2)); }
   return sp; };
 const addEdge = (L, R, D) => { edges.push([L.xi, R.xi, D]); };
+// ink coverage of 0.8-px arcs at alpha 0.45 spaced g px apart, never lighter than the default lens shade
+const lensAlpha = (g) => { const a = 1 - Math.pow(0.55, 0.8 / Math.max(g || 1.0, 0.5)); return Math.max(0.38, Math.min(0.62, a)); };   // pale ink on dark paper reads heavier
+const arcCost = (D) => Math.max(8, Math.min(Math.PI * D / 2, xiMax - xiMin + 2 * Htop));
 const addCircle = (v) => { const r = s / (2 * v.qn * v.qn); if (2 * r < T_CIRC) return; if (v.xi + r < xiMin - 2 || v.xi - r > xiMax + 2) return; circles.push([v, r]); };
 const considerTri = (L, R, M, D) => { if (show.cut && L.xi < 0 && R.xi > 0 && D > 3) tris.push([L.xi, M.xi, R.xi, D, s / (L.qn * M.qn), s / (M.qn * R.qn), M.xi > 0 ? 'L' : 'R']); };
 const run = (F, P0, dir, stack) => { // fixed vertex F; partners P_k = kF + P0 approach F from side dir
@@ -371,8 +381,13 @@ const run = (F, P0, dir, stack) => { // fixed vertex F; partners P_k = kF + P0 a
     const Dn = Dk(k + 1), childVis = D >= lo && Dn <= hi;
     const vis = !above(D), visN = Dn >= lo && !above(Dn);
     if (vis && visN) { const sp = Math.max(childVis ? D - Dn : 0, nearSpacing(D, Dn, lo, hi));
-      if (sp < T_DENSE) { dense.push(dir > 0 ? [F.xi, Pk.xi, D] : [Pk.xi, F.xi, D]);
-        for (let j = k + 1; j < k + 400; j++) { const qj = j * Fq + P0.qn; if (s / (qj * qj) < T_CIRC) break; addCircle(mk(j, s / (Fq * qj))); } break; } }
+      if (sp < T_DENSE) { dense.push(dir > 0 ? [F.xi, Pk.xi, D, sp] : [Pk.xi, F.xi, D, sp]);
+        lenses.push({ F, P0, dir, k, D, idx: dense.length - 1, lo, hi });
+        for (let j = k + 1; j < k + 400; j++) { const qj = j * Fq + P0.qn; if (s / (qj * qj) < T_CIRC) break; addCircle(mk(j, s / (Fq * qj))); }
+        // the lens's leading arc F—P_k is visible on its own: draw it and descend into its triangle (it may hold the whole view)
+        { const [L, R] = dir > 0 ? [F, Pk] : [Pk, F]; if (vis) addEdge(L, R, D); const Pn = vert(pk + F.p, qk + F.q, safe ? F.xi + dir * Dn : undefined);
+          considerTri(L, R, Pn, D); if (childVis && D - Dn >= T_EDGE) stack.push(dir > 0 ? [Pn, Pk] : [Pk, Pn]); }
+        break; } }
     const [L, R] = dir > 0 ? [F, Pk] : [Pk, F];
     if (vis) addEdge(L, R, D); nNodes++;
     const pn = pk + F.p, qn = qk + F.q, Pn = vert(pn, qn, safe ? F.xi + dir * Dn : undefined); addCircle(Pn);
@@ -380,27 +395,43 @@ const run = (F, P0, dir, stack) => { // fixed vertex F; partners P_k = kF + P0 a
     if (childVis && D - Dn >= T_EDGE) stack.push(dir > 0 ? [Pn, Pk] : [Pk, Pn]);
     k++; pk = pn; qk = qn; Pk = Pn;
   } };
-const traverse = () => { edges = []; circles = []; dense = []; tris = []; nNodes = 0;
+const traverse = () => { edges = []; circles = []; dense = []; tris = []; lenses = []; fineEdges = []; nNodes = 0;
   // integers in view
   const fdiv = (a, b) => { const q = a / b; return (a % b !== 0n && (a < 0n) !== (b < 0n)) ? q - 1n : q; };
   const nLo = fdiv(cN + BigInt(Math.floor(xiMin / sK)), TWOK) - 1n, nHi = fdiv(cN + BigInt(Math.ceil(xiMax / sK)), TWOK) + 2n;
   const ints = []; for (let n = nLo; n <= nHi; n++) ints.push(vert(n, 1n));
   for (const v of ints) addCircle(v);
   const stack = []; for (let i = 0; i + 1 < ints.length; i++) stack.push([ints[i], ints[i + 1]]);
-  while (stack.length && nNodes < 80000) { const [L, R] = stack.pop(); const D = s / (L.qn * R.qn);
+  while (stack.length && nNodes < nBudget) { const [L, R] = stack.pop(); const D = s / (L.qn * R.qn);
     if (D < T_EDGE || R.xi < xiMin || L.xi > xiMax) continue;
     addEdge(L, R, D); nNodes++; const M = mediant(L, R); addCircle(M); considerTri(L, R, M, D);
     run(L, R, +1, stack); run(R, L, -1, stack); }
-  return ints; };
+  refine(); return ints; };
+const refine = () => { pxLeft = pxBudget; if (!pxLeft || !lenses.length) return;
+  lenses.sort((a, b) => b.D - a.D);
+  for (const ln of lenses) { if (pxLeft <= 0) break;
+    const { F, P0, dir, lo } = ln, Fq = F.qn, safe = Math.abs(F.xi) < 1e6; let j = ln.k;
+    const Dj = (j) => s / (Fq * (j * Fq + P0.qn));
+    const xiOf = (j, D) => safe ? F.xi + dir * D : exactXi(BigInt(j) * F.p + P0.p, BigInt(j) * F.q + P0.q);
+    while (pxLeft > 0) { const D = Dj(j); if (D < T_EDGE || D < lo) break;
+      if (D - Dj(j + 1) < tRefine) break;
+      const xi = xiOf(j, D), g = D - Dj(j + 1); fineEdges.push(dir > 0 ? [F.xi, xi, D, g] : [xi, F.xi, D, g]); pxLeft -= arcCost(D); j++; }
+    { const D = Dj(j), xi = xiOf(j, D), g = D - Dj(j + 1); dense[ln.idx] = dir > 0 ? [F.xi, xi, D, g] : [xi, F.xi, D, g]; } }   // remaining tail stays shaded
+  dense = dense.filter(Boolean); };
 
 
 // ---------- Poincaré disk ----------
 // Ψ(z) = i (z − iη)/(z + iη) in half-plane px coordinates (z = ξ + i h): sends the viewpoint z₀ = iη (above the
 // centre point) to 0, ∞ to i and the centre point x to −i. A boundary point ξ lands at angle α = −π/2 + 2 atan(ξ/η).
-let dEdges = [], dCircles = [], dDense = [], dTris = [], dInf = null;
-const alphaOf = (xi) => -Math.PI / 2 + 2 * Math.atan(xi / ETA);
+let dEdges = [], dCircles = [], dDense = [], dTris = [], dInf = null, dLenses = [];
+const addEdgeD = (a1, a2) => { dEdges.push([a1, a2]); };
+const arcCostD = (a1, a2) => { const d = Math.acos(Math.max(-1, Math.min(1, Math.cos(a2 - a1)))); return Math.max(8, Math.min(2 * Math.PI * DR, DR * Math.tan(d / 2) * (Math.PI - d))); };
+// boundary angle of the real point ξ. For |ξ| > η use the form measured from the top, π/2 − 2·atan(η/ξ) (mod sign), which keeps
+// full precision for the far-away points that crowd toward ∞; the naive −π/2 + 2·atan(ξ/η) saturates there.
+const alphaOf = (xi) => Math.abs(xi) <= ETA ? -Math.PI / 2 + 2 * Math.atan(xi / ETA) : (xi > 0 ? Math.PI / 2 - 2 * Math.atan(ETA / xi) : Math.PI / 2 + 2 * Math.atan(ETA / -xi));
 const dpt = (a) => [DX + DR * Math.cos(a), DY - DR * Math.sin(a)];
 const chordPx = (a1, a2) => 2 * DR * Math.abs(Math.sin((a2 - a1) / 2));
+const spanOf = (aL, aR) => aR >= aL ? aR - aL : aR - aL + 2 * Math.PI;
 const horoRho = (v) => { // Euclidean radius (unit disk) of the image of the Ford circle of v
   const d = s / (v.qn * v.qn), a = alphaOf(v.xi), wx = Math.cos(a), wy = Math.sin(a);
   const nr = ETA - d, ni = v.xi, dr = v.xi, di = d + ETA, dd = dr * dr + di * di;
@@ -409,51 +440,98 @@ const horoRho = (v) => { // Euclidean radius (unit disk) of the image of the For
   return ((ux - wx) ** 2 + (uy - wy) ** 2) / den; };
 const addCircleD = (v) => { const rho = horoRho(v); if (!(2 * rho * DR >= T_CIRC)) return; const a = alphaOf(v.xi);
   dCircles.push([v, DX + DR * (1 - rho) * Math.cos(a), DY - DR * (1 - rho) * Math.sin(a), DR * rho]); };
-const triD = (L, R, M) => { if (show.cut && L.xi < 0 && R.xi > 0) { const aL = alphaOf(L.xi), aR = alphaOf(R.xi); if ((aR - aL) * DR > 3) dTris.push([aL, alphaOf(M.xi), aR, M.xi > 0 ? 'L' : 'R']); } };
+const triD = (L, R, M) => { if (show.cut && L.xi < 0 && R.xi > 0) { const aL = alphaOf(L.xi), aR = alphaOf(R.xi); if (spanOf(aL, aR) * DR > 3) dTris.push([aL, alphaOf(M.xi), aR, M.xi > 0 ? 'L' : 'R']); } };
 const runD = (F, P0, dir, stack) => {
   const aF = alphaOf(F.xi), safe = Math.abs(F.xi) < 1e6;
   const mk = (k) => { const kb = BigInt(Math.round(k)), p = kb * F.p + P0.p, q = kb * F.q + P0.q, qn = Number(q);
     return vert(p, q, safe ? F.xi + dir * s / (F.qn * qn) : undefined); };
-  const span = (P) => Math.abs(alphaOf(P.xi) - aF) * DR;
-  const gap = (P, Pn) => Math.abs(alphaOf(Pn.xi) - alphaOf(P.xi)) * DR;
-  const dStar = Math.max(Math.abs(F.xi), ETA), kb = Math.floor((s / (F.qn * dStar) - P0.qn) / F.qn);
+  const span = (P) => chordPx(alphaOf(P.xi), aF);
+  const gap = (P, Pn) => chordPx(alphaOf(P.xi), alphaOf(Pn.xi)) * 0.5;
+  // k at which the partner P_k = kF + P0 passes closest to the viewpoint's foot (ξ = 0), where the fan's visible gaps peak.
+  // P_k.ξ = F.ξ + dir·s/(Fq·(k·Fq + P0q)); solving P_k.ξ = 0 gives k* below. If the fan never crosses ξ = 0 (F and its partners
+  // all on one side), the gaps are monotone and no cap is needed.
+  const crosses = (F.xi > 0) !== (dir > 0);   // partners lie on the side dir of F; they reach ξ = 0 only if that is toward 0
+  const kStar = crosses ? (s / (F.qn * Math.abs(F.xi)) - P0.qn) / F.qn : Infinity;
+  const kb = isFinite(kStar) && kStar > 1 ? Math.floor(kStar) : Infinity;
   let k = 1, P = mk(1);
-  for (let guard = 0; guard < 4000; guard++) {
+  // the fan's visible extent peaks at k ≈ kb (closest approach to the viewpoint); before the peak a sub-pixel span only means
+  // the fan has not yet swung into view, so jump ahead (binary search) to the first visible partner instead of giving up
+  if (span(P) < T_EDGE && isFinite(kb) && kb > 1) { let lo = 1, hi = Math.min(kb, 1e9); if (span(mk(hi)) >= T_EDGE) { while (hi - lo > 1) { const mid = Math.floor((lo + hi) / 2); if (span(mk(mid)) >= T_EDGE) hi = mid; else lo = mid; } k = hi; P = mk(k); } }
+  for (let guard = 0; guard < 6000; guard++) {
     if (span(P) < T_EDGE) break;
     const Pn = mk(k + 1);
     if (gap(P, Pn) >= T_DENSE) {
       const [L, R] = dir > 0 ? [F, P] : [P, F]; const aL = alphaOf(L.xi), aR = alphaOf(R.xi);
-      if (chordPx(aL, aR) >= T_EDGE) dEdges.push([aL, aR]); nNodes++;
+      if (chordPx(aL, aR) >= T_EDGE) addEdgeD(aL, aR); nNodes++;
       addCircleD(Pn); triD(L, R, Pn); stack.push(dir > 0 ? [Pn, P] : [P, Pn]);
       k++; P = Pn; continue; }
-    // a stretch of arcs closer than a pixel or two: gallop to its end, shade it as one lens
-    const bad = (j) => { const Pj = mk(j), Pj1 = mk(j + 1); return span(Pj) < T_EDGE || gap(Pj, Pj1) >= T_DENSE; };
+    // a stretch of arcs closer than a pixel or two (or the frame's arc budget is spent): gallop to its end, shade it as one lens
+    const bad = (j) => { const Pj = mk(j); if (span(Pj) < T_EDGE) return true; return gap(Pj, mk(j + 1)) >= T_DENSE; };
     // gaps peak where the fan passes closest to the viewpoint's foot (distance d* from F); never gallop past it
     let lo = k, step = 1; const cap = (j) => (lo < kb && j > kb) ? Math.max(lo + 1, kb) : j; let hi = cap(k + 1);
     for (let it = 0; it < 200 && !bad(hi) && hi !== kb; it++) { lo = hi; step *= 2; hi = cap(lo + step); }
+    if (hi <= k) hi = k + 1;   // always advance
     while (hi - lo > 1) { const mid = Math.floor((lo + hi) / 2); if (mid <= lo || mid >= hi) break; if (bad(mid)) hi = mid; else lo = mid; }
-    const PE = mk(hi); dDense.push([aF, alphaOf(P.xi), alphaOf(PE.xi)]);
+    // the lens's leading arc F—P is itself visible (span ≥ T_EDGE): draw it, and descend into its triangle, which may hold
+    // everything in view; the lens then shades the arcs strictly beyond it
+    { const [L, R] = dir > 0 ? [F, P] : [P, F]; const aL = alphaOf(L.xi), aR = alphaOf(R.xi);
+      if (chordPx(aL, aR) >= T_EDGE) addEdgeD(aL, aR); nNodes++; const Pn = mk(k + 1); addCircleD(Pn); triD(L, R, Pn); stack.push(dir > 0 ? [Pn, P] : [P, Pn]); }
+    const PE = mk(hi); dDense.push([aF, alphaOf(P.xi), alphaOf(PE.xi), T_DENSE, dir]); dLenses.push({ F, P0, dir, k, kEnd: hi, idx: dDense.length - 1, chord: chordPx(aF, alphaOf(P.xi)) });
     k = hi; P = PE; } };
-const traverseDisk = () => { dEdges = []; dCircles = []; dDense = []; dTris = []; dInf = null; nNodes = 0;
+// the Farey parent of p/q on the side AWAY from the centre of view (ξ further out): the other endpoint of the fan that
+// runs from p/q outward toward ∞ — needed to seed the two outer fans of the band's bracketing interval
+const RATparents = (v) => { if (v.q === 1n) return null; const p = v.p, q = v.q;
+  let [r0, r1, s0, s1] = [q, ((p % q) + q) % q, 0n, 1n]; while (r1) { const t = r0 / r1; [r0, r1] = [r1, r0 - t * r1]; [s0, s1] = [s1, s0 - t * s1]; }
+  const sq = ((s0 % q) + q) % q, r = (p * sq - 1n) / q;  // r/sq < p/q < (p−r)/(q−sq), both neighbours
+  const lo = vert(r, sq), hi = vert(p - r, q - sq); return v.xi < 0 ? lo : hi; };
+const traverseDisk = () => { dEdges = []; dCircles = []; dDense = []; dTris = []; dLenses = []; dFine = []; dInf = null; nNodes = 0;
   const fdiv = (a, b) => { const q = a / b; return (a % b !== 0n && (a < 0n) !== (b < 0n)) ? q - 1n : q; };
-  const M = BigInt(Math.min(3000, Math.ceil(2 * DR * ETA / (T_EDGE * s)) + 2)), n0 = fdiv(cN, TWOK);
-  const ints = []; for (let n = n0 - M; n <= n0 + M + 1n; n++) ints.push(vert(n, 1n));
-  for (const v of ints) { addCircleD(v); const a = alphaOf(v.xi); if (chordPx(a, Math.PI / 2) >= T_EDGE) dEdges.push([a, Math.PI / 2]); }
-  const stack = [];
-  for (let i = 0; i + 1 < ints.length; i++) { const v = ints[i], w = ints[i + 1]; stack.push([v, w]);
-    if (v.xi < 0 && w.xi > 0) dInf = [alphaOf(v.xi), alphaOf(w.xi)]; }
-  while (stack.length && nNodes < 60000) { const [L, R] = stack.pop(); const aL = alphaOf(L.xi), aR = alphaOf(R.xi);
-    if ((aR - aL) * DR < T_EDGE) continue;
-    if (chordPx(aL, aR) >= T_EDGE) dEdges.push([aL, aR]); nNodes++;
+  const n0 = fdiv(cN, TWOK);
+  // seed: descend the Stern–Brocot tree from [n0, n0+1] while the interval still contains the whole band of the real line that
+  // the disk resolves (|ξ| ≲ ETA·DR/T_EDGE, beyond which points are within a pixel of ∞). Every interval on the way down is a
+  // Farey interval, and its two ends are the cusps whose fans reach into view; its mediant edge is drawn along the way.
+  const band = ETA * DR / T_EDGE * 2;
+  let L = vert(n0, 1n), R = vert(n0 + 1n, 1n); const ints = []; const stack = [];
+  const seenKey = new Set();
+  // descend while the mediant still lies outside the band (so the band is wholly on one side of it); stop as soon as the
+  // mediant falls inside the band — that mediant's two triangles then cover everything visible and the walk takes over
+  for (let depth = 0; depth < 20000; depth++) {
+    const M = mediant(L, R);
+    if (M.xi > band) R = M; else if (M.xi < -band) L = M; else break;
+  }
+  ints.push(L, R); stack.push([L, R]); dInf = [alphaOf(L.xi), alphaOf(R.xi)];
+  for (const v of ints) { addCircleD(v); const a = alphaOf(v.xi); if (chordPx(a, Math.PI / 2) >= T_EDGE) addEdgeD(a, Math.PI / 2); }
+  // the fans of L and R that lie OUTSIDE [L, R] (toward ∞) also sweep through the disk: walk them like any other fan
+  if (L.q > 1n || R.q > 1n) { const pL = RATparents(L), pR = RATparents(R); if (pL) runD(L, pL, -1, stack); if (pR) runD(R, pR, +1, stack); }
+  else { // integers: fans n−1, n−2, … and n+1, n+2, … toward ∞
+    const walk = (dirn) => { let n = dirn > 0 ? R.p : L.p, prev = dirn > 0 ? R : L;
+      for (let i = 0; i < 20000; i++) { n += BigInt(dirn); const v = vert(n, 1n); const a = alphaOf(v.xi);
+        if (chordPx(a, Math.PI / 2) < T_EDGE) break; addCircleD(v); addEdgeD(a, Math.PI / 2); stack.push(dirn > 0 ? [prev, v] : [v, prev]); prev = v; } };
+    walk(+1); walk(-1); }
+  while (stack.length && nNodes < nBudget) { const [L, R] = stack.pop(); const aL = alphaOf(L.xi), aR = alphaOf(R.xi);
+    if (spanOf(aL, aR) * DR < T_EDGE && !(L.xi < -band && R.xi > band)) continue;
+    if (chordPx(aL, aR) >= T_EDGE) addEdgeD(aL, aR); nNodes++;
     const Mv = mediant(L, R); addCircleD(Mv); triD(L, R, Mv);
-    runD(L, R, +1, stack); runD(R, L, -1, stack); } };
+    runD(L, R, +1, stack); runD(R, L, -1, stack); }
+  refineD(); };
+const refineD = () => { pxLeft = pxBudget; if (!pxLeft || !dLenses.length) return;
+  dLenses.sort((a, b) => b.chord - a.chord);
+  for (const ln of dLenses) { if (pxLeft <= 0) break;
+    const { F, P0, dir, kEnd } = ln, aF = alphaOf(F.xi), safe = Math.abs(F.xi) < 1e6; let j = ln.k;
+    const aOf = (j) => { const qn = j * F.qn + P0.qn; return alphaOf(safe ? F.xi + dir * s / (F.qn * qn) : exactXi(BigInt(j) * F.p + P0.p, BigInt(j) * F.q + P0.q)); };
+    let a = aOf(j);
+    while (pxLeft > 0 && j < kEnd) { const an = aOf(j + 1); if (chordPx(an, a) < tRefine) break;
+      dFine.push(dir > 0 ? [aF, a, chordPx(an, a)] : [a, aF, chordPx(an, a)]); pxLeft -= arcCostD(aF, a); j++; a = an; }
+    // shade whatever was not drawn: from the last drawn arc to the lens's original far end (a zero span paints nothing)
+    dDense[ln.idx] = [aF, a, dDense[ln.idx][2], chordPx(aOf(Math.min(j + 1, kEnd)), a), dir]; }
+  dDense = dDense.filter(Boolean); };
 const geoTo = (g, a1, a2) => { // geodesic from the boundary point at a1 (current point) to a2
   const [x2, y2] = dpt(a2), D = Math.acos(Math.max(-1, Math.min(1, Math.cos(a2 - a1))));
   if (D < 1e-9 || D > Math.PI - 1e-6) g.lineTo(x2, y2); else g.arcTo(DX, DY, x2, y2, DR * Math.tan(D / 2)); };
 const drawDisk = () => {
   traverseDisk();
   ctx.fillStyle = C.paper; ctx.fillRect(0, 0, W, H);
-  ctx.save(); ctx.beginPath(); ctx.arc(DX, DY, DR, 0, 2 * Math.PI); ctx.clip();
+  // no clip: geodesics, horocycles, lenses and labels all lie inside the disk by construction
   const triCol = (side) => side === 'L' ? (C.dark ? 'rgba(127,168,222,0.2)' : 'rgba(47,95,156,0.17)') : (C.dark ? 'rgba(224,138,98,0.2)' : 'rgba(162,70,42,0.15)');
   const tri = (a, b, c, side) => { ctx.beginPath(); ctx.moveTo(...dpt(a)); geoTo(ctx, a, b); geoTo(ctx, b, c); geoTo(ctx, c, a); ctx.closePath(); ctx.fillStyle = triCol(side); ctx.fill(); };
   if (show.circ) { const rI = ETA / (s + ETA); // Ford circle at ∞ = horocycle at the top
@@ -462,16 +540,17 @@ const drawDisk = () => {
       ctx.fillStyle = tintQ(v.qn, a * (r > 120 ? 0.07 : r > 30 ? 0.11 : 0.16)); ctx.fill(); ctx.strokeStyle = tintQ(v.qn, 0.85 * a); ctx.lineWidth = r > 30 ? 1.3 : 1; ctx.stroke(); } }
   if (show.cut) { if (dInf) tri(dInf[0], dInf[1], Math.PI / 2, 'L'); for (const [a, m, b, side] of dTris) tri(a, m, b, side); }
   if (show.edge) {
-    ctx.fillStyle = `rgba(${C.inkRGB},0.78)`;
-    for (const [aF, a1, a2] of dDense) { ctx.beginPath(); ctx.moveTo(...dpt(aF)); geoTo(ctx, aF, a1); ctx.arc(DX, DY, DR, -a1, -a2, a2 > a1); geoTo(ctx, a2, aF); ctx.closePath(); ctx.fill(); }
+    // rim arc from a1 to a2: the sweep that does NOT pass through the cusp aF (the cusp is a vertex of the lens, never on its rim arc)
+    const ccwSweep = (aF, a1, a2) => { const tw = 2 * Math.PI, n = (x) => ((x % tw) + tw) % tw; const d12 = n(a2 - a1), d1F = n(aF - a1); return !(d1F < d12); };
+    for (const [aF, a1, a2, g] of dDense) { if (chordPx(a1, a2) < 0.05) continue; const ccw = ccwSweep(aF, a1, a2); ctx.fillStyle = `rgba(${C.inkRGB},${lensAlpha(g)})`; ctx.beginPath(); ctx.moveTo(...dpt(aF)); geoTo(ctx, aF, a1); ctx.arc(DX, DY, DR, -a1, -a2, ccw); geoTo(ctx, a2, aF); ctx.closePath(); ctx.fill(); }
     const buckets = [[], [], []]; for (const e of dEdges) { const c = chordPx(e[0], e[1]); buckets[c < 12 ? 0 : c < 120 ? 1 : 2].push(e); }
     const st = [[0.45, 0.8], [0.7, 0.9], [0.85, 1.25]];
-    buckets.forEach((b, i) => { ctx.strokeStyle = `rgba(${C.inkRGB},${st[i][0]})`; ctx.lineWidth = st[i][1]; ctx.beginPath(); for (const [a1, a2] of b) { ctx.moveTo(...dpt(a1)); geoTo(ctx, a1, a2); } ctx.stroke(); }); }
+    buckets.forEach((b, i) => { ctx.strokeStyle = `rgba(${C.inkRGB},${st[i][0]})`; ctx.lineWidth = st[i][1]; ctx.beginPath(); for (const [a1, a2] of b) { ctx.moveTo(...dpt(a1)); geoTo(ctx, a1, a2); } ctx.stroke(); });
+    ctx.strokeStyle = `rgba(${C.inkRGB},0.45)`; ctx.lineWidth = 0.8; ctx.beginPath(); for (const [a1, a2] of dFine) { ctx.moveTo(...dpt(a1)); geoTo(ctx, a1, a2); } ctx.stroke(); }
   if (show.cut) { ctx.strokeStyle = C.accent; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(DX, DY - DR); ctx.lineTo(DX, DY + DR); ctx.stroke(); ctx.setLineDash([]); }
   if (show.lab) for (const [v, x, y, r] of dCircles) { if (2 * r < 22) continue; const digits = Math.max(v.p.toString().length + (v.p < 0n ? 1 : 0), v.q.toString().length);
     const fs = Math.min(30, r * 0.5, 1.5 * r / (0.56 * digits + 0.3)); if (fs < 8.5) continue;
     fracText(ctx, v, x, y, fs, 0.92 * clamp01((2 * r - 22) / 26) * clamp01((fs - 8.5) / 3)); }
-  ctx.restore();
   ctx.strokeStyle = C.muted; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(DX, DY, DR, 0, 2 * Math.PI); ctx.stroke();
   ctx.font = '12px ui-serif, Georgia, serif'; ctx.fillStyle = C.muted; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText('∞', DX, DY - DR - 4); };
 
@@ -510,10 +589,11 @@ const draw = () => { const t0 = performance.now();
     ctx.fillStyle = triCol(side); ctx.fill('evenodd'); }
   // geodesics
   if (show.edge) {
-    ctx.fillStyle = `rgba(${C.inkRGB},0.5)`; for (const [l, r, D] of dense) { ctx.beginPath(); pathArc(ctx, l, r, D, true); ctx.fill(); }
+    for (const [l, r, D, g] of dense) { if (D < 0.05) continue; ctx.fillStyle = `rgba(${C.inkRGB},${lensAlpha(g)})`; ctx.beginPath(); pathArc(ctx, l, r, D, true); ctx.fill(); }
     const buckets = [[], [], []]; for (const e of edges) { const D = e[2]; buckets[D < 12 ? 0 : D < 200 ? 1 : 2].push(e); }
     const st = [[0.45, 0.8], [0.7, 0.9], [0.85, 1.25]];
     buckets.forEach((b, i) => { ctx.strokeStyle = `rgba(${C.inkRGB},${st[i][0]})`; ctx.lineWidth = st[i][1]; ctx.beginPath(); for (const [l, r, D] of b) pathArc(ctx, l, r, D, false); ctx.stroke(); });
+    ctx.strokeStyle = `rgba(${C.inkRGB},0.45)`; ctx.lineWidth = 0.8; ctx.beginPath(); for (const [l, r, D] of fineEdges) pathArc(ctx, l, r, D, false); ctx.stroke();
     // vertical geodesics n — ∞
     ctx.strokeStyle = `rgba(${C.inkRGB},0.85)`; ctx.lineWidth = 1.25; ctx.beginPath(); for (const v of ints) { if (v.xi < xiMin || v.xi > xiMax) continue; ctx.moveTo(X0 + v.xi, baseY); ctx.lineTo(X0 + v.xi, topY); } ctx.stroke();
   }
@@ -539,7 +619,7 @@ const sup = (k) => String(k).split('').map(d => d === '-' ? '⁻' : '⁰¹²³�
 
 // ---------- panel ----------
 const panelUpdate = () => { const z = s / sHome; const e = Math.log10(z);
-  $('zm').textContent = e < 3 ? '×' + (+z.toPrecision(3)) : '×10' + sup(Math.floor(e)); $('ncirc').textContent = circles.length.toLocaleString(); $('nedge').textContent = (mode === 'disk' ? dEdges.length + dDense.length : edges.length + dense.length).toLocaleString(); if (mode === 'disk') $('ncirc').textContent = dCircles.length.toLocaleString();
+  $('zm').textContent = e < 3 ? '×' + (+z.toPrecision(3)) : '×10' + sup(Math.floor(e)); $('ncirc').textContent = circles.length.toLocaleString(); $('nedge').textContent = (mode === 'disk' ? dEdges.length + dFine.length + dDense.length : edges.length + fineEdges.length + dense.length).toLocaleString(); if (mode === 'disk') $('ncirc').textContent = dCircles.length.toLocaleString();
   // centre decimal
   const digits = Math.min(80, Math.max(4, Math.ceil(Math.log10(s)) + 1)); const neg = cN < 0n; const a = neg ? -cN : cN;
   const ip = a >> BigInt(K), frac = a - (ip << BigInt(K)); const fd = (frac * 10n ** BigInt(digits)) >> BigInt(K);
@@ -583,6 +663,7 @@ $('out').onclick = () => { const kb = K; flyTo(cN, kb, s / 1e3, 1.4, lock); };
 const setMode = (m) => { mode = m; document.querySelectorAll('#mode button').forEach(b => b.classList.toggle('on', b.dataset.m === m)); tip.style.display = 'none'; dirty = true; };
 document.querySelectorAll('#mode button').forEach(b => b.onclick = () => setMode(b.dataset.m));
 $('minbtn').onclick = () => { panel.classList.toggle('min'); $('minbtn').textContent = panel.classList.contains('min') ? '+' : '–'; layout(); };
+$('detail').oninput = () => { [tRefine, pxBudget] = DETAIL[+$('detail').value]; $('detailOut').textContent = pxBudget ? `arcs down to ${tRefine} px` : 'shade under 1 px'; dirty = true; };
 for (const [id, k] of [['cCirc', 'circ'], ['cEdge', 'edge'], ['cLab', 'lab'], ['cCut', 'cut'], ['cCol', 'col']]) $(id).onchange = () => { show[k] = $(id).checked; dirty = true; };
 addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT') return;
   if (e.key === ' ') { e.preventDefault(); $('dive').onclick(); } else if (e.key === '+' || e.key === '=') zoomAt(X0, 1.6); else if (e.key === '-') zoomAt(X0, 1 / 1.6); else if (e.key === '0') flyTo(1n << 63n, 64, sHome); else if (e.key === 'd') $('dive').onclick(); else if (e.key === 'm') setMode(mode === 'disk' ? 'half' : 'disk'); });
