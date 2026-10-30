@@ -23,7 +23,7 @@ week,date,display,type,topic,reading,resources,hw,hw_due,submit,submit_by,lab,la
 fall break,,October 17-25,break,Fall break 🍂,,,,,,,,,,,
 8,2026-10-26,,class,Young diagrams and $q$-binomial coefficients,Stanley §6,[Young diagrams in a box](/young-lattice/),,,,,,,,,
 8,2026-10-28,,class,"$q$-binomials II: unimodality, and the Sperner callback",Stanley §6,[Young diagrams in a box](/young-lattice/),,,,,,,,,
-8,2026-10-30,,class,Tree structures and the Catalan numbers,FS I.5,,,,,,,,,,
+8,2026-10-30,,class,Tree structures and the Catalan numbers,FS I.5,[Sage notebook: four classes](/files/372fall26/372-oct30-four-classes.ipynb),,,,,,,,,
 9,2026-11-02,,class,"Labelled classes, exponential generating functions, the labelled product",FS II.1–II.2,,,,372hw04,10pm,,,,,board presentation
 9,2026-11-04,,class,"Surjections, set partitions, permutations; the exp–log pattern",FS II.3–II.4,,,,,,,,,,computational lab 2 assigned
 9,2026-11-06,,class,Pólya theory as the multiset construction: the cycle index,Stanley §7 ❦ FS I.6,,,,,,,,,,annotated bibliography and computation prospectus due
