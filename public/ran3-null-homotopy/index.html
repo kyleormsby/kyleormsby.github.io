@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ran₃(S¹) ≅ S³ — a null-homotopy of the diagonal</title>
+<link rel="stylesheet" href="/vendor/fonts/fonts.css">
+<style>
+  :root{
+    --bg:#101418; --bg2:#171c22; --panel:#1b2129; --rule:#2c3540; --fg:#e8e2d6; --fg2:#a9a399; --dim:#6d6a63;
+    --gold:#e2b25a; --rose:#e06c75; --teal:#5cc8c0; --violet:#b48cf0; --band:#4f7fa8;
+    --serif:'Cormorant Garamond',Garamond,'Times New Roman',serif; --mono:'IBM Plex Mono',Menlo,Consolas,monospace;
+  }
+  html,body{margin:0;height:100%;}
+  body{background:var(--bg);color:var(--fg);font-family:var(--serif);font-size:16px;line-height:1.4;display:flex;flex-direction:column;overflow:hidden;}
+  #bar{flex:0 0 auto;padding:10px 18px 8px;border-bottom:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:4px 26px;align-items:baseline;background:var(--bg2);}
+  #bar h1{margin:0;font-size:21px;font-weight:500;letter-spacing:0.01em;white-space:nowrap;}
+  #bar h1 em{font-style:italic;color:var(--fg2);font-weight:400;}
+  #bar .sub{flex:1 1 100%;font-size:14px;color:var(--fg2);font-style:italic;margin-top:-2px;}
+  #ctl{flex:0 0 auto;padding:7px 18px;border-bottom:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;background:var(--panel);font-size:14px;}
+  .grp{display:flex;align-items:center;gap:8px;}
+  .grp label{font-variant:small-caps;letter-spacing:0.1em;color:var(--fg2);font-size:13.5px;}
+  input[type=range]{accent-color:var(--gold);width:220px;}
+  #s-range{width:min(420px,38vw);}
+  select{background:transparent;color:var(--fg);border:none;border-bottom:1px solid var(--fg2);font-family:var(--serif);font-size:13.5px;}
+  .val{font-family:var(--mono);font-size:12.5px;color:var(--fg);min-width:52px;}
+  button{background:transparent;color:var(--fg);border:1px solid var(--fg2);border-radius:2px;padding:2px 11px;font-size:13.5px;font-family:var(--serif);cursor:pointer;}
+  button:hover{border-color:var(--gold);color:var(--gold);}
+  button.on{background:var(--gold);color:#1a1510;border-color:var(--gold);}
+  .tog{display:flex;align-items:center;gap:5px;cursor:pointer;color:var(--fg2);}
+  .tog input{accent-color:var(--gold);}
+  #main{flex:1 1 auto;display:flex;min-height:0;}
+  #pane3d{flex:1 1 62%;position:relative;min-width:0;background:radial-gradient(ellipse at 50% 40%,#232b35 0%,#131920 55%,#0b0e12 100%);}
+  #pane2d{flex:1 1 38%;position:relative;min-width:0;border-left:1px solid var(--rule);background:var(--bg2);display:flex;flex-direction:column;}
+  canvas{display:block;}
+  #c3d{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;}
+  #c3d:active{cursor:grabbing;}
+  #stage{position:absolute;left:22px;top:16px;max-width:min(520px,70%);pointer-events:none;}
+  #stage .k{font-family:var(--mono);font-size:11.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);}
+  #stage .t{font-size:17px;margin-top:2px;}
+  #stage .d{font-size:14.5px;color:var(--fg2);margin-top:3px;line-height:1.38;}
+  #legend{position:absolute;right:20px;top:16px;font-size:13.5px;color:var(--fg2);text-align:right;line-height:1.5;pointer-events:none;}
+  #legend i{display:inline-block;width:22px;height:3px;vertical-align:middle;margin-left:7px;border-radius:2px;}
+  #hint{position:absolute;right:20px;bottom:12px;font-size:12.5px;font-style:italic;color:var(--dim);pointer-events:none;}
+  #pane2d .lab{position:absolute;left:16px;top:10px;font-variant:small-caps;letter-spacing:0.12em;font-size:13px;color:var(--fg2);pointer-events:none;}
+  #strands{flex:1 1 55%;position:relative;min-height:0;}
+  #circle{flex:1 1 45%;position:relative;min-height:0;border-top:1px solid var(--rule);}
+  #strands canvas,#circle canvas{position:absolute;inset:0;width:100%;height:100%;}
+  #explain{flex:0 0 auto;max-height:34%;overflow:auto;padding:10px 16px 12px;border-top:1px solid var(--rule);font-size:14.5px;color:var(--fg2);line-height:1.45;}
+  #explain b{color:var(--fg);font-weight:500;}
+  #explain .m{font-family:var(--mono);font-size:12.5px;color:var(--fg);}
+  @media (max-width:900px){
+    #main{flex-direction:column;}
+    #pane3d{flex:1 1 55%;}
+    #pane2d{flex:1 1 45%;border-left:none;border-top:1px solid var(--rule);}
+    #legend,#hint{display:none;}
+    #explain{display:none;}
+    #stage .d{display:none;}
+  }
+</style>
+</head>
+<body>
+<div id="bar">
+  <h1>Ran₃(S¹) ≅ S³ <em>— a null-homotopy of the diagonal S¹ → Ran₃(S¹)</em></h1>
+  <div class="sub">Bott’s sphere drawn through Mostovoy’s lattices: finite subsets of the circle become points of S³ (stereographically projected). The circle of singletons is a trefoil; the pairs form a Möbius band spanning it; triples fill the rest — and let the trefoil contract.</div>
+</div>
+<div id="ctl">
+  <div class="grp"><label for="s-range">homotopy time</label><input type="range" id="s-range" min="0" max="3" step="0.002" value="0"><span class="val" id="s-val">s = 0.000</span></div>
+  <div class="grp"><button id="play">▶ play</button><label for="speed">speed</label><input type="range" id="speed" min="0.05" max="1" step="0.01" value="0.25" style="width:90px"></div>
+  <div class="grp"><label for="th-range">marker θ</label><input type="range" id="th-range" min="0" max="1" step="0.001" value="0.13" style="width:120px"><label class="tog"><input type="checkbox" id="th-run" checked>run</label></div>
+  <div class="grp">
+    <label class="tog"><input type="checkbox" id="show-band" checked>Möbius band Ran₂</label>
+    <label class="tog"><input type="checkbox" id="show-trace" checked>swept disk</label><select id="trace-mode"><option value="all">since s = 0</option><option value="stage" selected>this stage only</option></select>
+    <label class="tog"><input type="checkbox" id="show-ref">axes of symmetry</label>
+  </div>
+</div>
+<div id="main">
+  <div id="pane3d">
+    <canvas id="c3d"></canvas>
+    <div id="stage"><div class="k" id="st-k"></div><div class="t" id="st-t"></div><div class="d" id="st-d"></div></div>
+    <div id="legend">
+      Ran₁(S¹) = singletons, a trefoil<i style="background:var(--gold)"></i><br>
+      the loop γ<sub>s</sub> at time s<i style="background:var(--rose)"></i><br>
+      Ran₂(S¹) = pairs, a Möbius band<i style="background:var(--band);opacity:.8"></i><br>
+      disk swept so far<i style="background:var(--violet);opacity:.8"></i>
+    </div>
+    <div id="hint">drag to orbit · wheel to zoom</div>
+  </div>
+  <div id="pane2d">
+    <div id="strands"><canvas id="c-strands"></canvas><div class="lab">the loop γ<sub>s</sub> as strands: θ → γ<sub>s</sub>(θ) ⊂ S¹</div></div>
+    <div id="circle"><canvas id="c-circle"></canvas><div class="lab">the configuration γ<sub>s</sub>(θ) at the marker</div></div>
+    <div id="explain">
+      <b>What is drawn.</b> A point of Ran₃(S¹) is a nonempty subset of the circle with at most three elements. Following Mostovoy, such a subset is the set of directions (doubled angles) from the vertices of an acute triangle to its circumcentre; the triangle generates a lattice in ℂ, and Weierstrass’ <span class="m">(g₂, g₃)</span> of that lattice, normalised, is a point of S³ ⊂ ℂ². Singletons ↔ degenerate lattices ↔ the (2,3) torus knot <span class="m">g₂³ = 27g₃²</span>; pairs ↔ rectangular lattices ↔ a Möbius band whose core is the circle of antipodal pairs (square lattices). The picture is a stereographic projection of that S³ from a point on the circle of equilateral triples (hexagonal lattices).<br><br>
+      <b>The homotopy</b> γ<sub>s</sub>, s ∈ [0,3], starts at the diagonal γ₀(θ) = {θ}.
+      <b>Stage 1</b> (s ≤ 1): {θ, θ + sπ} — a second point grows out of the first; the loop slides across the Möbius band and lands on its core, traversed twice. In Ran₂ this is as far as one can go: the boundary of a Möbius band is twice its core, so γ₀ is not null-homotopic there.
+      <b>Stage 2</b> (1 ≤ s ≤ 2): still inside the band, the doubled core is slid to the doubled loop m(t) = {p, p + t}, which keeps one point fixed at p = −π/2.
+      <b>Stage 3</b> (2 ≤ s ≤ 3): using a genuine third point, m contracts: {p, p + 2πr, p + 2πr + (1−r)t} with r = s − 2 — one point sits at p, a second runs once around the circle, and the third sweeps the arc between them. The image of this last stage, the set of subsets containing p, is a dunce hat {p} ∪ Ran₂(S¹) inside Ran₃(S¹).
+    </div>
+  </div>
+</div>
+<script src="/vendor/three/r128/three.min.js"></script>
+<script>
+// ───────────────────────── Ran₃(S¹) → S³ (Mostovoy / Weierstrass) ─────────────────────────
+const TAU = 2*Math.PI;
+const SIG3=[1,9,28,73,126,252,344,585,757,1134,1332], SIG5=[1,33,244,1057,3126,8052,16808,33825,59293,103158,161052];
+function cmul(a,b){return [a[0]*b[0]-a[1]*b[1], a[0]*b[1]+a[1]*b[0]];}
+function cdiv(a,b){const d=b[0]*b[0]+b[1]*b[1];return [(a[0]*b[0]+a[1]*b[1])/d,(a[1]*b[0]-a[0]*b[1])/d];}
+function cabs(a){return Math.hypot(a[0],a[1]);}
+function cexp(a){const e=Math.exp(a[0]);return [e*Math.cos(a[1]),e*Math.sin(a[1])];}
+function cpow(a,n){let r=[1,0];for(let i=0;i<n;i++)r=cmul(r,a);return r;}
+// Gauss reduction of a lattice basis
+function reduce(w1,w2){
+  for(let i=0;i<64;i++){
+    if(cabs(w1)>cabs(w2)){const t=w1;w1=w2;w2=t;}
+    const t=cdiv(w2,w1), n=Math.round(t[0]);
+    w2=[w2[0]-n*w1[0], w2[1]-n*w1[1]];
+    if(cabs(w2)>=cabs(w1)-1e-15) break;
+  }
+  if((w1[0]*w2[1]-w1[1]*w2[0])<0) w2=[-w2[0],-w2[1]];
+  return [w1,w2];
+}
+// (g2,g3) of the lattice ⟨w1,w2⟩, with the cusp stretched: Im τ ↦ 1 + log(Im τ)/2π above 1
+function g2g3(w1,w2){
+  [w1,w2]=reduce(w1,w2);
+  const A=Math.sqrt(Math.abs(w1[0]*w2[1]-w1[1]*w2[0]));
+  w1=[w1[0]/A,w1[1]/A]; w2=[w2[0]/A,w2[1]/A];
+  const tau=cdiv(w2,w1); let y=tau[1]; if(y>1) y=1+Math.log(y)/TAU;
+  const q=cexp([-TAU*y, TAU*tau[0]]);
+  let E4=[1,0],E6=[1,0],qn=[1,0];
+  for(let n=1;n<=11;n++){qn=cmul(qn,q);E4=[E4[0]+240*SIG3[n-1]*qn[0],E4[1]+240*SIG3[n-1]*qn[1]];E6=[E6[0]-504*SIG5[n-1]*qn[0],E6[1]-504*SIG5[n-1]*qn[1]];}
+  const c4=4*Math.PI**4/3, c6=8*Math.PI**6/27;
+  const g2=cdiv(E4,cpow(w1,4)), g3=cdiv(E6,cpow(w1,6));
+  return [[c4*g2[0],c4*g2[1]],[c6*g3[0],c6*g3[1]]];
+}
+const ETA_K=(()=>{let a=1;for(let i=0;i<40;i++){a-= (a*a+a*a*a/27-1)/(2*a+a*a/9);} return Math.atan2(Math.sqrt(a*a*a/27),a);})();
+const KPOW=Math.log(2)/Math.log((Math.PI/2)/ETA_K);
+// subset of S¹ (array of 1–3 angles) → point (G2,G3) of the round S³ ⊂ ℂ²
+function toS3(th){
+  const al=th.map(t=>((t/2)%Math.PI+Math.PI)%Math.PI); while(al.length<3) al.push(al[0]); al.sort((a,b)=>a-b);
+  const P=[[Math.cos(al[0]),Math.sin(al[0])],[-Math.cos(al[1]),-Math.sin(al[1])],[Math.cos(al[2]),Math.sin(al[2])]];
+  const w1=[P[1][0]-P[0][0],P[1][1]-P[0][1]], w2=[P[2][0]-P[0][0],P[2][1]-P[0][1]];
+  let g2,g3;
+  const area=Math.abs(w1[0]*w2[1]-w1[1]*w2[0]);
+  if(area<1e-12){ // degenerate lattice along the common line (perpendicular to direction al[0])
+    const a=al[0]; g2=[Math.cos(4*a),-Math.sin(4*a)]; const k=1/Math.sqrt(27); g3=[-k*Math.cos(6*a),k*Math.sin(6*a)];
+  } else { [g2,g3]=g2g3(w1,w2); }
+  // normalise onto |g2|²x² + |g3|²x³ = 1 (scaling the lattice)
+  const a2=g2[0]*g2[0]+g2[1]*g2[1], a3=g3[0]*g3[0]+g3[1]*g3[1];
+  let x=Math.min(a2>0?1/Math.sqrt(a2):1e9, a3>0?Math.cbrt(1/a3):1e9);
+  for(let i=0;i<40;i++){const F=a2*x*x+a3*x*x*x-1, dF=2*a2*x+3*a3*x*x; const nx=x-F/dF; if(!(nx>0)) break; if(Math.abs(nx-x)<1e-15*x){x=nx;break;} x=nx;}
+  const r2=Math.sqrt(a2)*x, r3=Math.sqrt(a3)*x*Math.sqrt(x);
+  // fatten: Hopf angle η ↦ (π/2)(η/(π/2))^k so the trefoil sits on the Clifford torus
+  let eta=Math.atan2(r3,r2); eta=(Math.PI/2)*Math.pow(eta/(Math.PI/2),KPOW);
+  const p2=Math.atan2(g2[1],g2[0]), p3=Math.atan2(g3[1],g3[0]);
+  return [Math.cos(eta)*Math.cos(p2),Math.cos(eta)*Math.sin(p2),Math.sin(eta)*Math.cos(p3),Math.sin(eta)*Math.sin(p3)];
+}
+// stereographic projection from (0, e^{iβ0}) with β0 = 3π/2, i.e. from G3 = −i
+function stereo(G){
+  const d=1+G[3]; // 1 − Re(G3·e^{−iβ0}) = 1 − Re(G3·i) = 1 + Im G3
+  return new THREE.Vector3(G[0]/d, G[2]/d, G[1]/d); // (Re g2, −Re(…)…) arranged so the hexagonal axis is vertical
+}
+function config3(th){ return stereo(toS3(th)); }
+// ───────────────────────── the homotopy γ_s(θ), s ∈ [0,3] ─────────────────────────
+const P0=-Math.PI/2;
+function gamma(th,s){
+  if(s<=1) return [th, th+s*Math.PI];
+  const tt=((th%Math.PI)+Math.PI)%Math.PI;
+  if(s<=2){const u=s-1, h=(1-u)*Math.PI/2+u*tt; return [tt-Math.PI/2+h, tt-Math.PI/2-h];}
+  const r=Math.min(s-2,1), t=2*tt; return [P0, P0+TAU*r, P0+TAU*r+(1-r)*t];
+}
+</script>
+<script>
+// ───────────────────────── precompute the swept disk on a (θ, s) grid ─────────────────────────
+const NT=240, NS=361; // θ samples (closed loop), s samples 0..3
+const GRID=new Float32Array(NT*NS*3);
+for(let j=0;j<NS;j++){const s=3*j/(NS-1);for(let i=0;i<NT;i++){const th=TAU*i/NT;const v=config3(gamma(th,s));const k=3*(j*NT+i);GRID[k]=v.x;GRID[k+1]=v.y;GRID[k+2]=v.z;}}
+function gridPoint(i,j){const k=3*(j*NT+i);return new THREE.Vector3(GRID[k],GRID[k+1],GRID[k+2]);}
+
+// ───────────────────────── scene ─────────────────────────
+const canvas=document.getElementById('c3d');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(38,1,0.05,200);
+scene.add(new THREE.HemisphereLight(0xdfe6f0,0x1a1f28,0.9));
+const key=new THREE.DirectionalLight(0xfff2dc,0.9);key.position.set(4,6,3);scene.add(key);
+const fill=new THREE.DirectionalLight(0xa8c4ff,0.35);fill.position.set(-5,-2,-4);scene.add(fill);
+
+// camera orbit
+const cam={theta:0.55,phi:1.05,dist:8.6,target:new THREE.Vector3(0,0.15,0)};
+function placeCamera(){const sp=Math.sin(cam.phi);camera.position.set(cam.dist*sp*Math.cos(cam.theta),cam.dist*Math.cos(cam.phi),cam.dist*sp*Math.sin(cam.theta)).add(cam.target);camera.lookAt(cam.target);}
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;cam.theta-=(e.clientX-drag.x)*0.008;cam.phi=Math.max(0.05,Math.min(Math.PI-0.05,cam.phi-(e.clientY-drag.y)*0.008));drag={x:e.clientX,y:e.clientY};placeCamera();});
+canvas.addEventListener('pointerup',()=>drag=null);canvas.addEventListener('pointercancel',()=>drag=null);
+canvas.addEventListener('wheel',e=>{e.preventDefault();cam.dist=Math.max(2,Math.min(30,cam.dist*Math.exp(e.deltaY*0.0012)));placeCamera();},{passive:false});
+let pinch=null;
+canvas.addEventListener('touchmove',e=>{if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(pinch)cam.dist=Math.max(2,Math.min(30,cam.dist*pinch/d));pinch=d;drag=null;placeCamera();}},{passive:true});
+canvas.addEventListener('touchend',()=>pinch=null);
+
+// trefoil = singletons
+function tubeFromPoints(pts,radius,color,emissive,segs){
+  const curve=new THREE.CatmullRomCurve3(pts,true,'centripetal');
+  const geo=new THREE.TubeGeometry(curve,segs||pts.length*2,radius,12,true);
+  const mat=new THREE.MeshStandardMaterial({color,emissive:emissive||0x000000,roughness:0.45,metalness:0.15});
+  return new THREE.Mesh(geo,mat);
+}
+const trefoilPts=[];for(let i=0;i<360;i++)trefoilPts.push(config3([TAU*i/360]));
+scene.add(tubeFromPoints(trefoilPts,0.028,0xe2b25a,0x3a2a08,720));
+
+// Möbius band = pairs {φ, φ+g}, g∈(0,π], φ∈[0,2π)
+(function(){
+  const NG=56,NP=240;const pos=[],idx=[];
+  for(let a=0;a<=NG;a++){const g=Math.PI*(0.004+0.996*a/NG);for(let b=0;b<NP;b++){const ph=TAU*b/NP;const v=config3([ph,ph+g]);pos.push(v.x,v.y,v.z);}}
+  for(let a=0;a<NG;a++)for(let b=0;b<NP;b++){const b2=(b+1)%NP,o=a*NP;idx.push(o+b,o+b2,o+NP+b, o+b2,o+NP+b2,o+NP+b);}
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setIndex(idx);geo.computeVertexNormals();
+  const mat=new THREE.MeshPhysicalMaterial({color:0x4f7fa8,transparent:true,opacity:0.42,side:THREE.DoubleSide,roughness:0.35,metalness:0.05,depthWrite:false,emissive:0x0c1a26});
+  const m=new THREE.Mesh(geo,mat);m.name='band';scene.add(m);
+})();
+
+// reference: hexagonal axis (equilateral triples) and square circle (antipodal pairs)
+const refGroup=new THREE.Group();refGroup.visible=false;scene.add(refGroup);
+(function(){
+  const axis=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,-12,0),new THREE.Vector3(0,12,0)]),new THREE.LineDashedMaterial({color:0x8e9aa8,dashSize:0.12,gapSize:0.08,transparent:true,opacity:0.7}));axis.computeLineDistances();refGroup.add(axis);
+  const cp=[];for(let i=0;i<=200;i++)cp.push(config3([TAU*i/200,TAU*i/200+Math.PI]));
+  const circ=new THREE.Line(new THREE.BufferGeometry().setFromPoints(cp),new THREE.LineDashedMaterial({color:0x8e9aa8,dashSize:0.1,gapSize:0.07,transparent:true,opacity:0.8}));circ.computeLineDistances();refGroup.add(circ);
+})();
+
+// swept disk: one big strip mesh over the grid; draw range reveals rows ≤ s
+const trace=(function(){
+  const idx=[];
+  for(let j=0;j<NS-1;j++)for(let i=0;i<NT;i++){const i2=(i+1)%NT,o=j*NT;idx.push(o+i,o+NT+i,o+i2, o+i2,o+NT+i,o+NT+i2);}
+  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(GRID,3));geo.setIndex(idx);geo.computeVertexNormals();
+  const mat=new THREE.MeshPhysicalMaterial({color:0xb48cf0,transparent:true,opacity:0.24,side:THREE.DoubleSide,roughness:0.5,depthWrite:false,emissive:0x1e1230});
+  const m=new THREE.Mesh(geo,mat);scene.add(m);return m;
+})();
+
+// the moving loop γ_s and the marker
+let loopMesh=null;
+const marker=new THREE.Mesh(new THREE.SphereGeometry(0.075,24,16),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xe06c75,emissiveIntensity:0.6,roughness:0.3}));scene.add(marker);
+function loopPoints(s){const pts=[];for(let i=0;i<NT;i++)pts.push(config3(gamma(TAU*i/NT,s)));return pts;}
+function rebuildLoop(s){
+  if(loopMesh){scene.remove(loopMesh);loopMesh.geometry.dispose();}
+  loopMesh=tubeFromPoints(loopPoints(s),0.045,0xe06c75,0x4a1a20,NT*2);scene.add(loopMesh);
+}
+
+// ───────────────────────── 2-D panels ─────────────────────────
+const cs=document.getElementById('c-strands'),cc=document.getElementById('c-circle');
+function fit(c){const r=c.parentElement.getBoundingClientRect();const dpr=Math.min(devicePixelRatio,2);if(c.width!==Math.round(r.width*dpr)||c.height!==Math.round(r.height*dpr)){c.width=Math.round(r.width*dpr);c.height=Math.round(r.height*dpr);}return [r.width,r.height,dpr];}
+const COLS=['#e2b25a','#5cc8c0','#b48cf0'];
+function drawStrands(s,thMark){
+  const [W,H,dpr]=fit(cs);const g=cs.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  const L=44,R=16,T=38,B=30,w=W-L-R,h=H-T-B;
+  g.strokeStyle='#2c3540';g.lineWidth=1;g.strokeRect(L,T,w,h);
+  g.fillStyle='#6d6a63';g.font='12px IBM Plex Mono, monospace';g.textAlign='center';
+  g.fillText('0',L,T+h+16);g.fillText('π',L+w/2,T+h+16);g.fillText('2π',L+w,T+h+16);g.fillText('θ',L+w/2,T+h+28);
+  g.textAlign='right';g.fillText('0',L-6,T+h+4);g.fillText('π',L-6,T+h/2+4);g.fillText('2π',L-6,T+4);
+  g.save();g.translate(12,T+h/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillText('points of γₛ(θ)',0,0);g.restore();
+  // faint identification marks for p
+  const N=480;
+  g.lineWidth=2.2;
+  for(let i=0;i<=N;i++){const th=TAU*i/N;const c=gamma(th,s);const x=L+w*th/TAU;
+    // sort points to keep colours stable along θ: colour by rank of ((pt−th) mod 2π)
+    const pts=c.map(v=>((v%TAU)+TAU)%TAU);
+    pts.forEach((pt,k)=>{g.fillStyle=COLS[k];g.beginPath();g.arc(x,T+h*(1-pt/TAU),1.5,0,TAU);g.fill();});
+  }
+  const xm=L+w*thMark/TAU;g.strokeStyle='#e06c75';g.lineWidth=1.2;g.beginPath();g.moveTo(xm,T);g.lineTo(xm,T+h);g.stroke();
+}
+function drawCircle(s,thMark){
+  const [W,H,dpr]=fit(cc);const g=cc.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2+8,R=Math.min(W,H)*0.33;
+  g.strokeStyle='#5a6572';g.lineWidth=1.5;g.beginPath();g.arc(cx,cy,R,0,TAU);g.stroke();
+  g.fillStyle='#6d6a63';g.font='12px IBM Plex Mono, monospace';g.textAlign='center';
+  g.fillText('0',cx+R-14,cy+4);g.fillText('π',cx-R+14,cy+4);g.fillText('π/2',cx,cy-R+16);g.fillText('3π/2',cx,cy+R-10);
+  const c=gamma(thMark,s);const pts=[...new Set(c.map(v=>Math.round(((v%TAU)+TAU)%TAU*1e4)/1e4))];
+  // tick for p when relevant
+  if(s>1){g.strokeStyle='#3a4450';g.beginPath();const a=P0;g.moveTo(cx+(R-7)*Math.cos(a),cy-(R-7)*Math.sin(a));g.lineTo(cx+(R+7)*Math.cos(a),cy-(R+7)*Math.sin(a));g.stroke();g.fillStyle='#6d6a63';g.fillText('p',cx+(R-18)*Math.cos(a),cy-(R-18)*Math.sin(a)+4);}
+  c.forEach((v,k)=>{const a=v;g.fillStyle=COLS[k];g.beginPath();g.arc(cx+R*Math.cos(a),cy-R*Math.sin(a),7,0,TAU);g.fill();g.strokeStyle='#101418';g.lineWidth=1.5;g.stroke();});
+  g.fillStyle='#a9a399';g.font='14px Cormorant Garamond, serif';g.textAlign='center';
+  const txt=pts.length===1?'a singleton':pts.length===2?'a pair':'a triple';
+  g.fillText(`γₛ(θ) = {${pts.map(v=>(v/Math.PI).toFixed(2)+'π').join(', ')}} — ${txt}`,cx,H-10);
+}
+
+// ───────────────────────── stage captions ─────────────────────────
+const stages=[
+  ['stage 1 · s ∈ [0,1]','a second point grows: γₛ(θ) = {θ, θ + sπ}','The loop of singletons slides across the Möbius band of pairs; at s = 1 it has become the band’s core — the circle of antipodal pairs — covered twice. Nothing inside Ran₂ can take it further.'],
+  ['stage 2 · s ∈ [1,2]','sliding the doubled core to the doubled loop m(t) = {p, p + t}','Still inside the Möbius band. One point of each pair is steered towards p = −π/2; the loop m fixes p and lets the other point run once around the circle. (m is homotopic to the core, so this is just a homotopy within the band.)'],
+  ['stage 3 · s ∈ [2,3]','the third point: {p, p + 2πr, p + 2πr + (1−r)t}, r = s − 2','A second point travels once around the circle, back to p, while the third point sweeps the arc between them. These are genuine triples — points of S³ off the Möbius band — and they fill a disk bounding m. The loop collapses to the singleton {p}.'],
+];
+function setStage(s){const k=s<1?0:s<2?1:2;document.getElementById('st-k').textContent=stages[k][0];document.getElementById('st-t').textContent=stages[k][1];document.getElementById('st-d').textContent=stages[k][2];}
+
+// ───────────────────────── UI & loop ─────────────────────────
+const sRange=document.getElementById('s-range'),sVal=document.getElementById('s-val'),playBtn=document.getElementById('play'),speed=document.getElementById('speed');
+const traceMode=document.getElementById('trace-mode');traceMode.addEventListener('change',()=>{dirty=true;});
+const thRange=document.getElementById('th-range'),thRun=document.getElementById('th-run');
+window.setS=v=>{S=v;dirty=true;};
+let S=0,playing=false,lastT=performance.now(),dirty=true;
+sRange.addEventListener('input',()=>{S=parseFloat(sRange.value);dirty=true;});
+playBtn.addEventListener('click',()=>{playing=!playing;playBtn.textContent=playing?'❚❚ pause':'▶ play';playBtn.classList.toggle('on',playing);if(playing&&S>=3){S=0;}});
+document.getElementById('show-band').addEventListener('change',e=>scene.getObjectByName('band').visible=e.target.checked);
+document.getElementById('show-trace').addEventListener('change',e=>trace.visible=e.target.checked);
+document.getElementById('show-ref').addEventListener('change',e=>refGroup.visible=e.target.checked);
+function resize(){const r=canvas.parentElement.getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();}
+window.addEventListener('resize',()=>{resize();dirty=true;});
+resize();placeCamera();
+function frame(now){
+  const dt=Math.min(0.1,(now-lastT)/1000);lastT=now;
+  if(playing){S+=dt*parseFloat(speed.value);if(S>=3){S=3;playing=false;playBtn.textContent='▶ play';playBtn.classList.remove('on');}sRange.value=S;dirty=true;}
+  if(thRun.checked){thRange.value=((parseFloat(thRange.value)+dt*0.09)%1).toFixed(4);}
+  const thM=parseFloat(thRange.value)*TAU;
+  if(dirty){
+    rebuildLoop(S);setStage(S);sVal.textContent='s = '+S.toFixed(3);
+    const rows=Math.max(1,Math.min(NS-1,Math.floor(S/3*(NS-1))));const from=traceMode.value==='stage'?Math.min(rows-1,Math.floor(Math.min(2,Math.floor(S))/3*(NS-1))):0;trace.geometry.setDrawRange(from*NT*6,(rows-from)*NT*6);
+    dirty=false;
+  }
+  marker.position.copy(config3(gamma(thM,S)));
+  drawStrands(S,thM);drawCircle(S,thM);
+  renderer.render(scene,camera);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

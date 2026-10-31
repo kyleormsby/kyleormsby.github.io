@@ -176,5 +176,13 @@
     "scale": 1,
     "click": "#minbtn",
     "wait": 1500
+  },
+  "ran3-null-homotopy": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "wait": 3000
   }
 }
