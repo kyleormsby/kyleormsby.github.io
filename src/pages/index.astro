@@ -55,10 +55,10 @@ try {
   <ul class="gallery">
     {viz.map((v) => (
       <li class="card">
-        <a class="frame" href={v.data.href} aria-label={v.data.title}>
+        <a class="frame" href={v.data.href} aria-label={v.data.title.replace(/<[^>]+>/g, '')}>
           {v.data.thumb && <img src={v.data.thumb} alt="" loading="lazy" width="800" height="600" />}
         </a>
-        <h3><a href={v.data.href}>{v.data.title}</a></h3>
+        <h3><a href={v.data.href} set:html={v.data.title}></a></h3>
         <div class="tags label">{v.data.tags.map((t) => <span>{t}</span>)}</div>
       </li>
     ))}

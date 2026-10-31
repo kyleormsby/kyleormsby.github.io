@@ -1,5 +1,5 @@
 ---
-title: "The norm N(C₂→S₃)"
+title: "The norm N(C<sub>2</sub>→S<sub>3</sub>)"
 href: /normC2S3/
 year: 2026
 thumb: /thumbs/normC2S3.png

@@ -1,5 +1,5 @@
 ---
-title: "Ran₃(S¹) ≅ S³"
+title: "Ran<sub>3</sub>(S¹) ≅ S³"
 href: /ran3-null-homotopy/
 year: 2026
 thumb: /thumbs/ran3-null-homotopy.png

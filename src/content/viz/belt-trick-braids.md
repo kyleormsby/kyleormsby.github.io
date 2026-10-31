@@ -1,5 +1,5 @@
 ---
-title: "The belt trick in Bₙ(S²)"
+title: "The belt trick in B<sub>n</sub>(S²)"
 href: /belt-trick-braids/
 year: 2026
 thumb: /thumbs/belt-trick-braids.png

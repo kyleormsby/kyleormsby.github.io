@@ -65,11 +65,12 @@
   <div class="sub">Bott’s sphere drawn through Mostovoy’s lattices: finite subsets of the circle become points of S³ (stereographically projected). The circle of singletons is a trefoil; the pairs form a Möbius band spanning it; triples fill the rest — and let the trefoil contract.</div>
 </div>
 <div id="ctl">
-  <div class="grp"><label for="s-range">homotopy time</label><input type="range" id="s-range" min="0" max="3" step="0.002" value="0"><span class="val" id="s-val">s = 0.000</span></div>
+  <div class="grp"><label for="s-range">homotopy time</label><input type="range" id="s-range" min="0" max="3" step="0.0001" value="0"><span class="val" id="s-val">s = 0.0000</span></div>
   <div class="grp"><button id="play">▶ play</button><label for="speed">speed</label><input type="range" id="speed" min="0.05" max="1" step="0.01" value="0.25" style="width:90px"></div>
   <div class="grp"><label for="th-range">marker θ</label><input type="range" id="th-range" min="0" max="1" step="0.001" value="0.13" style="width:120px"><label class="tog"><input type="checkbox" id="th-run" checked>run</label></div>
   <div class="grp">
     <label class="tog"><input type="checkbox" id="show-band" checked>Möbius band Ran₂</label>
+    <label for="mode" style="font-variant:small-caps;letter-spacing:0.1em;color:var(--fg2);font-size:13.5px">contract</label><select id="mode"><option value="dunce" selected>through the dunce hat</option><option value="radial">straight to the origin</option></select>
     <label class="tog"><input type="checkbox" id="show-trace" checked>swept disk</label><select id="trace-mode"><option value="all">since s = 0</option><option value="stage" selected>this stage only</option></select>
     <label class="tog"><input type="checkbox" id="show-ref">axes of symmetry</label>
   </div>
@@ -94,7 +95,7 @@
       <b>The homotopy</b> γ<sub>s</sub>, s ∈ [0,3], starts at the diagonal γ₀(θ) = {θ}.
       <b>Stage 1</b> (s ≤ 1): {θ, θ + sπ} — a second point grows out of the first; the loop slides across the Möbius band and lands on its core, traversed twice. In Ran₂ this is as far as one can go: the boundary of a Möbius band is twice its core, so γ₀ is not null-homotopic there.
       <b>Stage 2</b> (1 ≤ s ≤ 2): still inside the band, the doubled core is slid to the doubled loop m(t) = {p, p + t}, which keeps one point fixed at p = −π/2.
-      <b>Stage 3</b> (2 ≤ s ≤ 3): using a genuine third point, m contracts: {p, p + 2πr, p + 2πr + (1−r)t} with r = s − 2 — one point sits at p, a second runs once around the circle, and the third sweeps the arc between them. The image of this last stage, the set of subsets containing p, is a dunce hat {p} ∪ Ran₂(S¹) inside Ran₃(S¹).
+      <b>Stage 3</b> (2 ≤ s ≤ 3): using a genuine third point, m contracts: {p, p + 2πr, p + 2πr + (1−r)t} with r = s − 2 — one point sits at p, a second runs once around the circle, and the third sweeps the arc between them. The image of this last stage, the set of subsets containing p, is a dunce hat {p} ∪ Ran₂(S¹) inside Ran₃(S¹).<br><br><b>Or straight to the origin.</b> The other setting of <i>contract</i> replaces stages 2–3 by the obvious move in the picture: the doubled core is the unit circle of the horizontal plane, so shrink it radially across the flat disk it bounds. That disk is explicit in S³ (lattices with g₃ purely imaginary) but not in configurations: each of its points is sent back to a subset of S¹ by inverting the whole construction — recover j, solve j(τ) by Newton’s method, rebuild the acute triangle — which is how the strand diagram is filled in. Its centre is one equilateral triple, and on the way in the disk passes through three singletons of the trefoil.
     </div>
   </div>
 </div>
@@ -133,7 +134,8 @@ function g2g3(w1,w2){
   return [[c4*g2[0],c4*g2[1]],[c6*g3[0],c6*g3[1]]];
 }
 const ETA_K=(()=>{let a=1;for(let i=0;i<40;i++){a-= (a*a+a*a*a/27-1)/(2*a+a*a/9);} return Math.atan2(Math.sqrt(a*a*a/27),a);})();
-const KPOW=Math.log(2)/Math.log((Math.PI/2)/ETA_K);
+const UK=ETA_K/(Math.PI/2), AFAT=(1-UK)/UK; // smooth Möbius-type fattening u ↦ a u/(1+(a−1)u), sends the trefoil's Hopf angle to π/4 with finite slope at the core
+const fatten=u=>AFAT*u/(1+(AFAT-1)*u), unfatten=v=>v/(AFAT-(AFAT-1)*v);
 // subset of S¹ (array of 1–3 angles) → point (G2,G3) of the round S³ ⊂ ℂ²
 function toS3(th){
   const al=th.map(t=>((t/2)%Math.PI+Math.PI)%Math.PI); while(al.length<3) al.push(al[0]); al.sort((a,b)=>a-b);
@@ -150,7 +152,7 @@ function toS3(th){
   for(let i=0;i<40;i++){const F=a2*x*x+a3*x*x*x-1, dF=2*a2*x+3*a3*x*x; const nx=x-F/dF; if(!(nx>0)) break; if(Math.abs(nx-x)<1e-15*x){x=nx;break;} x=nx;}
   const r2=Math.sqrt(a2)*x, r3=Math.sqrt(a3)*x*Math.sqrt(x);
   // fatten: Hopf angle η ↦ (π/2)(η/(π/2))^k so the trefoil sits on the Clifford torus
-  let eta=Math.atan2(r3,r2); eta=(Math.PI/2)*Math.pow(eta/(Math.PI/2),KPOW);
+  let eta=Math.atan2(r3,r2); eta=(Math.PI/2)*fatten(eta/(Math.PI/2));
   const p2=Math.atan2(g2[1],g2[0]), p3=Math.atan2(g3[1],g3[0]);
   return [Math.cos(eta)*Math.cos(p2),Math.cos(eta)*Math.sin(p2),Math.sin(eta)*Math.cos(p3),Math.sin(eta)*Math.sin(p3)];
 }
@@ -168,12 +170,83 @@ function gamma(th,s){
   if(s<=2){const u=s-1, h=(1-u)*Math.PI/2+u*tt; return [tt-Math.PI/2+h, tt-Math.PI/2-h];}
   const r=Math.min(s-2,1), t=2*tt; return [P0, P0+TAU*r, P0+TAU*r+(1-r)*t];
 }
+
+// ───────────────────────── the inverse: S³ → Ran₃(S¹) (for the radial contraction) ─────────────────────────
+function E46(tau){ // Eisenstein series at τ (already cusp-stretched)
+  const q=cexp([-TAU*tau[1], TAU*tau[0]]);let E4=[1,0],E6=[1,0],qn=[1,0];
+  for(let n=1;n<=11;n++){qn=cmul(qn,q);E4=[E4[0]+240*SIG3[n-1]*qn[0],E4[1]+240*SIG3[n-1]*qn[1]];E6=[E6[0]-504*SIG5[n-1]*qn[0],E6[1]-504*SIG5[n-1]*qn[1]];}
+  return [E4,E6];
+}
+function nuOf(tau){const [E4,E6]=E46(tau);return cdiv(cmul(E6,E6),cpow(E4,3));} // ν = 27g₃²/g₂³ = E₆²/E₄³
+function toF(t){ // reduce τ into the fundamental domain
+  for(let i=0;i<40;i++){t=[t[0]-Math.round(t[0]),t[1]];const m=t[0]*t[0]+t[1]*t[1];if(m>=1-1e-12)break;t=[-t[0]/m,t[1]/m];}
+  if(t[1]<0.8660254)t[1]=0.8660254;return t;
+}
+function chord(a,b){const d=cabs([a[0]-b[0],a[1]-b[1]]);return d/Math.sqrt((1+a[0]*a[0]+a[1]*a[1])*(1+b[0]*b[0]+b[1]*b[1]));}
+const NUGRID=(()=>{const g=[];for(let i=0;i<=24;i++){const x=-0.5+i/24;for(let j=0;j<=48;j++){const y=0.8660254*Math.pow(3.6,j/48);const t=[x,y];g.push([t,nuOf(t)]);}}return g;})();
+let TAU_HINT=null;
+function tauFromNu(nt){
+  let t=TAU_HINT?newton(nt,TAU_HINT):null;
+  if(!t||chord(nuOf(t),nt)>1e-6){let best=null,bd=1e9;for(const [tt,n] of NUGRID){const d=chord(n,nt);if(d<bd){bd=d;best=tt;}}t=newton(nt,best);if(chord(nuOf(t),nt)>1e-6)t=best;}
+  TAU_HINT=t;return t;
+}
+function newton(nt,best){
+  const h=1e-6, big=cabs(nt)>1;
+  // near the hexagonal point 1/ν has a triple zero, so iterate on a continuous cube root of 1/ν instead
+  let prev=null;
+  const croot=z=>{const m=Math.cbrt(cabs(z)), a=Math.atan2(z[1],z[0])/3;let bestz=null,bdd=1e9;for(let k=0;k<3;k++){const w=[m*Math.cos(a+k*TAU/3),m*Math.sin(a+k*TAU/3)];const d=prev?cabs([w[0]-prev[0],w[1]-prev[1]]):k;if(d<bdd){bdd=d;bestz=w;}}return bestz;};
+  const fn=big?(x=>croot(cdiv([1,0],nuOf(x)))):nuOf;
+  let t=best; if(big){prev=fn(t);} let target=big?croot(cdiv([1,0],nt)):nt;
+  for(let i=0;i<60;i++){
+    const F=fn(t);if(big)prev=F;const r=[F[0]-target[0],F[1]-target[1]];if(cabs(r)<1e-12*(1+cabs(target)))break;
+    const Fh=fn([t[0]+h,t[1]]);const dF=[(Fh[0]-F[0])/h,(Fh[1]-F[1])/h];if(cabs(dF)<1e-14)break;
+    let step=cdiv(r,dF);const L=cabs(step);if(L>0.25){step=[step[0]*0.25/L,step[1]*0.25/L];}
+    t=toF([t[0]-step[0],t[1]-step[1]]);
+  }
+  return t;
+}
+function circum(bx,by,cx,cy){const D=2*(bx*cy-by*cx);const b2=bx*bx+by*by,c2=cx*cx+cy*cy;return [(cy*b2-by*c2)/D,(bx*c2-cx*b2)/D];}
+// point G of the round S³ → subset of S¹ (array of angles)
+function fromS3(G){
+  const r2=Math.hypot(G[0],G[1]), r3=Math.hypot(G[2],G[3]);
+  let eta=Math.atan2(r3,r2); eta=(Math.PI/2)*unfatten(eta/(Math.PI/2));
+  const p2=Math.atan2(G[1],G[0]), p3=Math.atan2(G[3],G[2]);
+  const c=Math.cos(eta), sn=Math.sin(eta);
+  if(c<1e-9){ // hexagonal: equilateral triple. arg g3 = p3 = argE6(ρ)… use the rotation directly
+    const beta=-(p3-Math.atan2(E46([-0.5,0.8660254])[1][1],E46([-0.5,0.8660254])[1][0]))/6; // arg ω1
+    const w1=[Math.cos(beta),Math.sin(beta)], w2=cmul([0.5,0.8660254],w1);
+    const O=circum(w1[0],w1[1],w2[0],w2[1]);return [2*Math.atan2(O[1],O[0]),2*Math.atan2(O[1]-w1[1],O[0]-w1[0]),2*Math.atan2(O[1]-w2[1],O[0]-w2[0])];
+  }
+  const mod=27*sn*sn/(c*c*c), ang=2*p3-3*p2;
+  const nt=[mod*Math.cos(ang),mod*Math.sin(ang)];
+  if(Math.hypot(nt[0]-1,nt[1])<2e-7){ // on the trefoil: singleton; direction from g2 = e^{-4ia}
+    return [-p2/2];
+  }
+  const tp=tauFromNu(nt);
+  const [E4,E6]=E46(tp);
+  const a4=Math.atan2(E4[1],E4[0]), a6=Math.atan2(E6[1],E6[0]);
+  let beta=(a4-p2)/4, bestk=0, bd=1e9;
+  for(let k=0;k<4;k++){const b=beta+k*Math.PI/2;let d=(a6-6*b-p3)%TAU;d=Math.abs(((d+Math.PI)%TAU+TAU)%TAU-Math.PI);if(d<bd){bd=d;bestk=k;}}
+  beta+=bestk*Math.PI/2;
+  const y=tp[1]>1?Math.exp(TAU*(tp[1]-1)):tp[1];
+  let tau=[tp[0],y]; if(tau[0]<0) tau=[tau[0]+1,tau[1]];
+  const w1=[Math.cos(beta),Math.sin(beta)], w2=cmul(tau,w1);
+  const O=circum(w1[0],w1[1],w2[0],w2[1]);
+  return [2*Math.atan2(O[1],O[0]),2*Math.atan2(O[1]-w1[1],O[0]-w1[0]),2*Math.atan2(O[1]-w2[1],O[0]-w2[0])];
+}
+function unstereo(v){const r2=v.x*v.x+v.y*v.y+v.z*v.z, k=2/(1+r2);return [v.x*k, v.z*k, v.y*k, (1-r2)/(1+r2)];}
+// mode B: after stage 1, shrink the doubled core radially to the origin of the projection
+let MODE='dunce';
+function corePt(th,rho){const v=config3(gamma(th,1));const a=Math.atan2(v.z,v.x);return new THREE.Vector3(rho*Math.cos(a),0,rho*Math.sin(a));}
+function gammaB(th,s){ if(s<=1) return gamma(th,s); const rho=Math.max(0,1-(s-1)/2); return fromS3(unstereo(corePt(th,rho))); }
+function point3(th,s){ if(MODE==='dunce'||s<=1) return config3(gamma(th,s)); return corePt(th,Math.max(0,1-(s-1)/2)); }
+function conf(th,s){ return MODE==='dunce'?gamma(th,s):gammaB(th,s); }
 </script>
 <script>
 // ───────────────────────── precompute the swept disk on a (θ, s) grid ─────────────────────────
 const NT=240, NS=361; // θ samples (closed loop), s samples 0..3
-const GRID=new Float32Array(NT*NS*3);
-for(let j=0;j<NS;j++){const s=3*j/(NS-1);for(let i=0;i<NT;i++){const th=TAU*i/NT;const v=config3(gamma(th,s));const k=3*(j*NT+i);GRID[k]=v.x;GRID[k+1]=v.y;GRID[k+2]=v.z;}}
+function makeGrid(){const G=new Float32Array(NT*NS*3);for(let j=0;j<NS;j++){const s=3*j/(NS-1);for(let i=0;i<NT;i++){const th=TAU*i/NT;const v=point3(th,s);const k=3*(j*NT+i);G[k]=v.x;G[k+1]=v.y;G[k+2]=v.z;}}return G;}
+const GRIDS={dunce:makeGrid()};let GRID=GRIDS.dunce;
 function gridPoint(i,j){const k=3*(j*NT+i);return new THREE.Vector3(GRID[k],GRID[k+1],GRID[k+2]);}
 
 // ───────────────────────── scene ─────────────────────────
@@ -238,7 +311,7 @@ const trace=(function(){
 // the moving loop γ_s and the marker
 let loopMesh=null;
 const marker=new THREE.Mesh(new THREE.SphereGeometry(0.075,24,16),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xe06c75,emissiveIntensity:0.6,roughness:0.3}));scene.add(marker);
-function loopPoints(s){const pts=[];for(let i=0;i<NT;i++)pts.push(config3(gamma(TAU*i/NT,s)));return pts;}
+function loopPoints(s){const pts=[];for(let i=0;i<NT;i++)pts.push(point3(TAU*i/NT,s));return pts;}
 function rebuildLoop(s){
   if(loopMesh){scene.remove(loopMesh);loopMesh.geometry.dispose();}
   loopMesh=tubeFromPoints(loopPoints(s),0.045,0xe06c75,0x4a1a20,NT*2);scene.add(loopMesh);
@@ -247,7 +320,11 @@ function rebuildLoop(s){
 // ───────────────────────── 2-D panels ─────────────────────────
 const cs=document.getElementById('c-strands'),cc=document.getElementById('c-circle');
 function fit(c){const r=c.parentElement.getBoundingClientRect();const dpr=Math.min(devicePixelRatio,2);if(c.width!==Math.round(r.width*dpr)||c.height!==Math.round(r.height*dpr)){c.width=Math.round(r.width*dpr);c.height=Math.round(r.height*dpr);}return [r.width,r.height,dpr];}
-const COLS=['#e2b25a','#5cc8c0','#b48cf0'];
+const COLS=['#e2b25a','#5cc8c0','#b48cf0'];let strandCache=null;
+const PERMS=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];const cdist=(a,b)=>{let e=Math.abs(((a-b)%TAU+TAU)%TAU);return Math.min(e,TAU-e);};
+function matchTriple(c,p){let bp=PERMS[0],bd=1e9;for(const q of PERMS){const d=cdist(c[q[0]],p[0])+cdist(c[q[1]],p[1])+cdist(c[q[2]],p[2]);if(d<bd){bd=d;bp=q;}}return [c[bp[0]],c[bp[1]],c[bp[2]]];}
+// configuration at the marker, with the points ordered to match the strand colours
+function markerConf(th,s){const c=conf(th,s);if(!(MODE==='radial'&&s>1&&strandCache&&strandCache.s===s&&strandCache.mode===MODE))return c;const N=strandCache.cs.length-1;const i=Math.round(th/TAU*N);return matchTriple(c,strandCache.cs[Math.max(0,Math.min(N,i))]);}
 function drawStrands(s,thMark){
   const [W,H,dpr]=fit(cs);const g=cs.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
   const L=44,R=16,T=38,B=30,w=W-L-R,h=H-T-B;
@@ -257,9 +334,15 @@ function drawStrands(s,thMark){
   g.textAlign='right';g.fillText('0',L-6,T+h+4);g.fillText('π',L-6,T+h/2+4);g.fillText('2π',L-6,T+4);
   g.save();g.translate(12,T+h/2);g.rotate(-Math.PI/2);g.textAlign='center';g.fillText('points of γₛ(θ)',0,0);g.restore();
   // faint identification marks for p
-  const N=480;
+  const N=MODE==='dunce'?480:240;
+  if(!strandCache||strandCache.s!==s||strandCache.mode!==MODE){TAU_HINT=null;const cs=[];for(let i=0;i<=N;i++)cs.push(conf(TAU*i/N,s));
+    if(MODE==='radial'&&s>1){ // colour strands by continuity: permute each triple to follow the previous sample
+      if(strandCache&&strandCache.mode==='radial'&&strandCache.s>1) cs[0]=matchTriple(cs[0],strandCache.cs[0]); // keep colours stable across s too
+      for(let i=1;i<=N;i++) cs[i]=matchTriple(cs[i],cs[i-1]);
+    }
+    strandCache={s,mode:MODE,cs};}
   g.lineWidth=2.2;
-  for(let i=0;i<=N;i++){const th=TAU*i/N;const c=gamma(th,s);const x=L+w*th/TAU;
+  for(let i=0;i<=N;i++){const th=TAU*i/N;const c=strandCache.cs[i];const x=L+w*th/TAU;
     // sort points to keep colours stable along θ: colour by rank of ((pt−th) mod 2π)
     const pts=c.map(v=>((v%TAU)+TAU)%TAU);
     pts.forEach((pt,k)=>{g.fillStyle=COLS[k];g.beginPath();g.arc(x,T+h*(1-pt/TAU),1.5,0,TAU);g.fill();});
@@ -272,10 +355,14 @@ function drawCircle(s,thMark){
   g.strokeStyle='#5a6572';g.lineWidth=1.5;g.beginPath();g.arc(cx,cy,R,0,TAU);g.stroke();
   g.fillStyle='#6d6a63';g.font='12px IBM Plex Mono, monospace';g.textAlign='center';
   g.fillText('0',cx+R-14,cy+4);g.fillText('π',cx-R+14,cy+4);g.fillText('π/2',cx,cy-R+16);g.fillText('3π/2',cx,cy+R-10);
-  const c=gamma(thMark,s);const pts=[...new Set(c.map(v=>Math.round(((v%TAU)+TAU)%TAU*1e4)/1e4))];
+  const c=markerConf(thMark,s);const pts=[...new Set(c.map(v=>Math.round(((v%TAU)+TAU)%TAU*1e4)/1e4))];
   // tick for p when relevant
-  if(s>1){g.strokeStyle='#3a4450';g.beginPath();const a=P0;g.moveTo(cx+(R-7)*Math.cos(a),cy-(R-7)*Math.sin(a));g.lineTo(cx+(R+7)*Math.cos(a),cy-(R+7)*Math.sin(a));g.stroke();g.fillStyle='#6d6a63';g.fillText('p',cx+(R-18)*Math.cos(a),cy-(R-18)*Math.sin(a)+4);}
-  c.forEach((v,k)=>{const a=v;g.fillStyle=COLS[k];g.beginPath();g.arc(cx+R*Math.cos(a),cy-R*Math.sin(a),7,0,TAU);g.fill();g.strokeStyle='#101418';g.lineWidth=1.5;g.stroke();});
+  if(s>1&&MODE==='dunce'){g.strokeStyle='#3a4450';g.beginPath();const a=P0;g.moveTo(cx+(R-7)*Math.cos(a),cy-(R-7)*Math.sin(a));g.lineTo(cx+(R+7)*Math.cos(a),cy-(R+7)*Math.sin(a));g.stroke();g.fillStyle='#6d6a63';g.fillText('p',cx+(R-18)*Math.cos(a),cy-(R-18)*Math.sin(a)+4);}
+  // coincident points are drawn as one dot split between their colours, so a merge reads as a merge
+  const groups=[];c.forEach((v,k)=>{const gidx=groups.findIndex(G=>cdist(G.a,v)<0.03);if(gidx<0)groups.push({a:v,ks:[k]});else groups[gidx].ks.push(k);});
+  for(const G of groups){const X=cx+R*Math.cos(G.a),Y=cy-R*Math.sin(G.a),n=G.ks.length;
+    G.ks.forEach((k,j)=>{g.fillStyle=COLS[k];g.beginPath();if(n===1)g.arc(X,Y,7,0,TAU);else{g.moveTo(X,Y);g.arc(X,Y,7,-Math.PI/2+j*TAU/n,-Math.PI/2+(j+1)*TAU/n);g.closePath();}g.fill();});
+    g.strokeStyle='#101418';g.lineWidth=1.5;g.beginPath();g.arc(X,Y,7,0,TAU);g.stroke();}
   g.fillStyle='#a9a399';g.font='14px Cormorant Garamond, serif';g.textAlign='center';
   const txt=pts.length===1?'a singleton':pts.length===2?'a pair':'a triple';
   g.fillText(`γₛ(θ) = {${pts.map(v=>(v/Math.PI).toFixed(2)+'π').join(', ')}} — ${txt}`,cx,H-10);
@@ -287,10 +374,14 @@ const stages=[
   ['stage 2 · s ∈ [1,2]','sliding the doubled core to the doubled loop m(t) = {p, p + t}','Still inside the Möbius band. One point of each pair is steered towards p = −π/2; the loop m fixes p and lets the other point run once around the circle. (m is homotopic to the core, so this is just a homotopy within the band.)'],
   ['stage 3 · s ∈ [2,3]','the third point: {p, p + 2πr, p + 2πr + (1−r)t}, r = s − 2','A second point travels once around the circle, back to p, while the third point sweeps the arc between them. These are genuine triples — points of S³ off the Möbius band — and they fill a disk bounding m. The loop collapses to the singleton {p}.'],
 ];
-function setStage(s){const k=s<1?0:s<2?1:2;document.getElementById('st-k').textContent=stages[k][0];document.getElementById('st-t').textContent=stages[k][1];document.getElementById('st-d').textContent=stages[k][2];}
+const stagesB=[stages[0],
+  ['stages 2–3 · s ∈ [1,3]','shrink the doubled core radially to the origin','In the projection the core is the unit circle in the horizontal plane, and the flat disk it bounds is right there: shrink it. The price is that the configurations along the way are only implicit — each point of the disk is a lattice with g₃ purely imaginary, recovered here by inverting j — so the strands show triples appearing without a formula. The centre of the disk is a single equilateral triple; on the way in, the disk crosses three singletons of the trefoil.'],
+];
+function setStage(s){if(MODE==='radial'){const k=s<1?0:1;document.getElementById('st-k').textContent=stagesB[k][0];document.getElementById('st-t').textContent=stagesB[k][1];document.getElementById('st-d').textContent=stagesB[k][2];return;}const k=s<1?0:s<2?1:2;document.getElementById('st-k').textContent=stages[k][0];document.getElementById('st-t').textContent=stages[k][1];document.getElementById('st-d').textContent=stages[k][2];}
 
 // ───────────────────────── UI & loop ─────────────────────────
 const sRange=document.getElementById('s-range'),sVal=document.getElementById('s-val'),playBtn=document.getElementById('play'),speed=document.getElementById('speed');
+document.getElementById('mode').addEventListener('change',e=>{MODE=e.target.value;if(!GRIDS[MODE])GRIDS[MODE]=makeGrid();GRID=GRIDS[MODE];trace.geometry.setAttribute('position',new THREE.BufferAttribute(GRID,3));trace.geometry.computeVertexNormals();dirty=true;});
 const traceMode=document.getElementById('trace-mode');traceMode.addEventListener('change',()=>{dirty=true;});
 const thRange=document.getElementById('th-range'),thRun=document.getElementById('th-run');
 window.setS=v=>{S=v;dirty=true;};
@@ -309,11 +400,11 @@ function frame(now){
   if(thRun.checked){thRange.value=((parseFloat(thRange.value)+dt*0.09)%1).toFixed(4);}
   const thM=parseFloat(thRange.value)*TAU;
   if(dirty){
-    rebuildLoop(S);setStage(S);sVal.textContent='s = '+S.toFixed(3);
-    const rows=Math.max(1,Math.min(NS-1,Math.floor(S/3*(NS-1))));const from=traceMode.value==='stage'?Math.min(rows-1,Math.floor(Math.min(2,Math.floor(S))/3*(NS-1))):0;trace.geometry.setDrawRange(from*NT*6,(rows-from)*NT*6);
+    rebuildLoop(S);setStage(S);sVal.textContent='s = '+S.toFixed(4);
+    const rows=Math.max(1,Math.min(NS-1,Math.floor(S/3*(NS-1))));const from=traceMode.value==='stage'?Math.min(rows-1,Math.floor(Math.min(MODE==='radial'?1:2,Math.floor(S))/3*(NS-1))):0;trace.geometry.setDrawRange(from*NT*6,(rows-from)*NT*6);
     dirty=false;
   }
-  marker.position.copy(config3(gamma(thM,S)));
+  marker.position.copy(point3(thM,S));
   drawStrands(S,thM);drawCircle(S,thM);
   renderer.render(scene,camera);
   requestAnimationFrame(frame);

@@ -1,5 +1,5 @@
 ---
-title: "Closed geodesics in X₃"
+title: "Closed geodesics in X<sub>3</sub>"
 href: /lattices-vs-RP2/
 year: 2026
 thumb: /thumbs/lattices-vs-RP2.png

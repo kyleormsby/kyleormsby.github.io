@@ -37,10 +37,10 @@ const rendered = await Promise.all(
   <ul class="gallery" style="margin-top:var(--s8)">
     {rendered.map(({ data, Body }) => (
       <li class="card">
-        <a class="frame" href={data.href} aria-label={data.title}>
+        <a class="frame" href={data.href} aria-label={data.title.replace(/<[^>]+>/g, '')}>
           {data.thumb && <img src={data.thumb} alt="" loading="lazy" width="800" height="600" />}
         </a>
-        <h3><a href={data.href}>{data.title}</a></h3>
+        <h3><a href={data.href} set:html={data.title}></a></h3>
         <div class="dim" style="font-size:0.92rem;line-height:1.5"><Body /></div>
         <div class="tags label">
           {data.tags.map((t) => <span>{t}</span>)}
