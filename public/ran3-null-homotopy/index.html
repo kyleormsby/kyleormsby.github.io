@@ -30,8 +30,13 @@
   .tog{display:flex;align-items:center;gap:5px;cursor:pointer;color:var(--fg2);}
   .tog input{accent-color:var(--gold);}
   #main{flex:1 1 auto;display:flex;min-height:0;}
-  #pane3d{flex:1 1 62%;position:relative;min-width:0;background:radial-gradient(ellipse at 50% 40%,#232b35 0%,#131920 55%,#0b0e12 100%);}
-  #pane2d{flex:1 1 38%;position:relative;min-width:0;border-left:1px solid var(--rule);background:var(--bg2);display:flex;flex-direction:column;}
+  #pane3d{flex:1 1 42%;position:relative;min-width:0;background:radial-gradient(ellipse at 50% 40%,#232b35 0%,#131920 55%,#0b0e12 100%);}
+  #paneT{flex:1 1 31%;position:relative;min-width:0;border-left:1px solid var(--rule);background:radial-gradient(ellipse at 50% 45%,#1d2630 0%,#111820 60%,#0b0e12 100%);}
+  #hintT{position:absolute;right:14px;bottom:12px;font-size:12.5px;font-style:italic;color:var(--dim);pointer-events:none;}
+  #cT{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;}
+  #paneT .cap{position:absolute;left:16px;top:12px;pointer-events:none;color:var(--fg2);font-size:13px;line-height:1.4;max-width:92%;}
+  #paneT .cap b{font-variant:small-caps;letter-spacing:0.12em;font-weight:500;color:var(--fg2);display:block;}
+  #pane2d{flex:1 1 27%;position:relative;min-width:0;border-left:1px solid var(--rule);background:var(--bg2);display:flex;flex-direction:column;}
   canvas{display:block;}
   #c3d{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab;}
   #c3d:active{cursor:grabbing;}
@@ -51,7 +56,8 @@
   #explain .m{font-family:var(--mono);font-size:12.5px;color:var(--fg);}
   @media (max-width:900px){
     #main{flex-direction:column;}
-    #pane3d{flex:1 1 55%;}
+    #pane3d{flex:1 1 45%;}
+    #paneT{flex:0 0 32vh;border-left:none;border-top:1px solid var(--rule);}
     #pane2d{flex:1 1 45%;border-left:none;border-top:1px solid var(--rule);}
     #legend,#hint{display:none;}
     #explain{display:none;}
@@ -70,9 +76,10 @@
   <div class="grp"><label for="th-range">marker θ</label><input type="range" id="th-range" min="0" max="1" step="0.001" value="0.13" style="width:120px"><label class="tog"><input type="checkbox" id="th-run" checked>run</label></div>
   <div class="grp">
     <label class="tog"><input type="checkbox" id="show-band" checked>Möbius band Ran₂</label>
-    <label for="mode" style="font-variant:small-caps;letter-spacing:0.1em;color:var(--fg2);font-size:13.5px">contract</label><select id="mode"><option value="dunce" selected>through the dunce hat</option><option value="radial">straight to the origin</option></select>
+    <label for="mode" style="font-variant:small-caps;letter-spacing:0.1em;color:var(--fg2);font-size:13.5px">contract</label><select id="mode"><option value="dunce" selected>through the dunce hat</option><option value="radial">straight to the origin</option><option value="model">closed-form model of the latter</option></select>
     <label class="tog"><input type="checkbox" id="show-trace" checked>swept disk</label><select id="trace-mode"><option value="all">since s = 0</option><option value="stage" selected>this stage only</option></select>
     <label class="tog"><input type="checkbox" id="show-ref">axes of symmetry</label>
+    <label class="tog"><input type="checkbox" id="show-slice" checked>s-plane</label>
   </div>
 </div>
 <div id="main">
@@ -87,6 +94,7 @@
     </div>
     <div id="hint">drag to orbit · wheel to zoom</div>
   </div>
+  <div id="paneT"><canvas id="cT"></canvas><div class="cap"><b>the homotopy extruded</b>{(θ, x, s) : x ∈ γ<sub>s</sub>(θ)} ⊂ S¹<sub>θ</sub> × S¹<sub>x</sub> × [0,3]<sub>s</sub>, the torus drawn as a square with its opposite edges secretly glued: θ to the right, x up, s into the depth. The sheets are the strands, merging where points of γ<sub>s</sub>(θ) coincide. The slice at depth s is the strand diagram on the right.</div><div id="hintT">drag to orbit · wheel to zoom</div></div>
   <div id="pane2d">
     <div id="strands"><canvas id="c-strands"></canvas><div class="lab">the loop γ<sub>s</sub> as strands: θ → γ<sub>s</sub>(θ) ⊂ S¹</div></div>
     <div id="circle"><canvas id="c-circle"></canvas><div class="lab">the configuration γ<sub>s</sub>(θ) at the marker</div></div>
@@ -95,7 +103,10 @@
       <b>The homotopy</b> γ<sub>s</sub>, s ∈ [0,3], starts at the diagonal γ₀(θ) = {θ}.
       <b>Stage 1</b> (s ≤ 1): {θ, θ + sπ} — a second point grows out of the first; the loop slides across the Möbius band and lands on its core, traversed twice. In Ran₂ this is as far as one can go: the boundary of a Möbius band is twice its core, so γ₀ is not null-homotopic there.
       <b>Stage 2</b> (1 ≤ s ≤ 2): still inside the band, the doubled core is slid to the doubled loop m(t) = {p, p + t}, which keeps one point fixed at p = −π/2.
-      <b>Stage 3</b> (2 ≤ s ≤ 3): using a genuine third point, m contracts: {p, p + 2πr, p + 2πr + (1−r)t} with r = s − 2 — one point sits at p, a second runs once around the circle, and the third sweeps the arc between them. The image of this last stage, the set of subsets containing p, is a dunce hat {p} ∪ Ran₂(S¹) inside Ran₃(S¹).<br><br><b>Or straight to the origin.</b> The other setting of <i>contract</i> replaces stages 2–3 by the obvious move in the picture: the doubled core is the unit circle of the horizontal plane, so shrink it radially across the flat disk it bounds. That disk is explicit in S³ (lattices with g₃ purely imaginary) but not in configurations: each of its points is sent back to a subset of S¹ by inverting the whole construction — recover j, solve j(τ) by Newton’s method, rebuild the acute triangle — which is how the strand diagram is filled in. Its centre is one equilateral triple, and on the way in the disk passes through three singletons of the trefoil.
+      <b>Stage 3</b> (2 ≤ s ≤ 3): using a genuine third point, m contracts: {p, p + 2πr, p + 2πr + (1−r)t} with r = s − 2 — one point sits at p, a second runs once around the circle, and the third sweeps the arc between them. The image of this last stage, the set of subsets containing p, is a dunce hat {p} ∪ Ran₂(S¹) inside Ran₃(S¹).<br><br><b>Or straight to the origin.</b> The other setting of <i>contract</i> replaces stages 2–3 by the obvious move in the picture: the doubled core is the unit circle of the horizontal plane, so shrink it radially across the flat disk it bounds. That disk is explicit in S³ (lattices with g₃ purely imaginary) but not in configurations: each of its points is sent back to a subset of S¹ by inverting the whole construction — recover j, solve j(τ) by Newton’s method, rebuild the acute triangle — which is how the strand diagram is filled in. Its centre is one equilateral triple, and on the way in the disk passes through three singletons of the trefoil.<br><br>
+      <b>A closed-form model of the flat disk.</b> Numerically the flat disk has a simple combinatorial shape, and the third setting of <i>contract</i> draws an explicit formula with that shape. Let c<sub>k</sub> = π/6 + 2πk/3 be the equilateral triple at the centre. The disk meets the Möbius band in three arcs, the pairs {c<sub>k</sub> ± g/2}, g ∈ [0, π], running from the core (g = π) to the singletons c<sub>k</sub> (g = 0); these arcs cut each loop into three sectors, carried into one another by the ℤ/3 symmetry (rotate the circle by 2π/3, the disk by 4π/3). In the sector from the arc at c<sub>m+1</sub> to the arc at c<sub>m+2</sub>, with u ∈ [0, 1],
+      <span class="m">γ = { c<sub>m+1</sub> − g/2 + u(g − 4π/3),&nbsp; c<sub>m+1</sub> + g/2 + u(2π/3 − g) ± σ(g) sin πu }</span>:
+      a lone point runs backwards from c<sub>m+1</sub> − g/2 to c<sub>m+2</sub> + g/2 while a pair runs forwards from c<sub>m+1</sub> + g/2 to c<sub>m+2</sub> − g/2, opening and closing on the way. At a sector boundary the pair has closed and the lone point is about to split — the same set either way, which is the fold {a, a, b} = {a, b, b} of Ran. At g = 0 every sector runs from singleton to singleton, and from there the three strands (displacements 2π/3 − 4πu/3, 2πu/3 + σ sin πu, −2π/3 + 2πu/3 − σ sin πu from their homes c<sub>m</sub>, c<sub>m+1</sub>, c<sub>m+2</sub>) are scaled linearly to zero. With σ(g) = 0.136π·(1 − g/π) the model stays within about a tenth of the picture’s unit of the flat disk.
     </div>
   </div>
 </div>
@@ -219,8 +230,9 @@ function fromS3(G){
   }
   const mod=27*sn*sn/(c*c*c), ang=2*p3-3*p2;
   const nt=[mod*Math.cos(ang),mod*Math.sin(ang)];
-  if(Math.hypot(nt[0]-1,nt[1])<2e-7){ // on the trefoil: singleton; direction from g2 = e^{-4ia}
-    return [-p2/2];
+  if(Math.hypot(nt[0]-1,nt[1])<2e-7){ // on the trefoil: singleton {2a}; g2 = e^{-4ia} fixes a mod π/2, g3 = −e^{-6ia} picks the sheet
+    let a=-p2/4,best=a,bd=1e9;for(let k=0;k<4;k++){const ak=a+k*Math.PI/2;let d=(Math.PI-6*ak-p3)%TAU;d=Math.abs(((d+Math.PI)%TAU+TAU)%TAU-Math.PI);if(d<bd){bd=d;best=ak;}}
+    return [2*best];
   }
   const tp=tauFromNu(nt);
   const [E4,E6]=E46(tp);
@@ -238,9 +250,21 @@ function unstereo(v){const r2=v.x*v.x+v.y*v.y+v.z*v.z, k=2/(1+r2);return [v.x*k,
 // mode B: after stage 1, shrink the doubled core radially to the origin of the projection
 let MODE='dunce';
 function corePt(th,rho){const v=config3(gamma(th,1));const a=Math.atan2(v.z,v.x);return new THREE.Vector3(rho*Math.cos(a),0,rho*Math.sin(a));}
+// closed-form model of the flat disk (see the explainer): c_k = π/6 + 2πk/3; sector m of the loop runs from the
+// merge at c_{m+1} to the merge at c_{m+2}; a lone point runs backwards c_{m+1}−g/2 → c_{m+2}+g/2 while a pair
+// runs forwards c_{m+1}+g/2 → c_{m+2}−g/2, opening to half-width σ(g)·sin(πu). ρ ≥ ½: g = π(2ρ−1); ρ ≤ ½: shrink linearly to equilateral.
+const SIGHAT=0.136*Math.PI, CK=k=>Math.PI/6+TAU*(((k%3)+3)%3)/3;
+function modelConf(alpha,rho){
+  const x=((alpha-Math.PI/3)%TAU+TAU)%TAU; const m=Math.floor(x/(TAU/3)), u=(x-m*TAU/3)/(TAU/3);
+  if(rho>=0.5){const g=Math.PI*(2*rho-1), sg=SIGHAT*(1-g/Math.PI)*Math.sin(Math.PI*u);
+    const L=CK(m+1)-g/2+u*(g-4*Math.PI/3), P=CK(m+1)+g/2+u*(TAU/3-g); return [L,P-sg,P+sg];}
+  const lam=2*rho, sg=SIGHAT*Math.sin(Math.PI*u);
+  return [CK(m)+lam*(TAU/3-4*Math.PI/3*u), CK(m+1)+lam*(TAU/3*u+sg), CK(m+2)+lam*(-TAU/3+TAU/3*u-sg)];
+}
+function gammaM(th,s){ if(s<=1) return gamma(th,s); const v=config3(gamma(th,1)); return modelConf(Math.atan2(v.z,v.x),Math.max(0,1-(s-1)/2)); }
 function gammaB(th,s){ if(s<=1) return gamma(th,s); const rho=Math.max(0,1-(s-1)/2); return fromS3(unstereo(corePt(th,rho))); }
-function point3(th,s){ if(MODE==='dunce'||s<=1) return config3(gamma(th,s)); return corePt(th,Math.max(0,1-(s-1)/2)); }
-function conf(th,s){ return MODE==='dunce'?gamma(th,s):gammaB(th,s); }
+function point3(th,s){ if(MODE==='dunce'||s<=1) return config3(gamma(th,s)); if(MODE==='model') return config3(gammaM(th,s)); return corePt(th,Math.max(0,1-(s-1)/2)); }
+function conf(th,s){ return MODE==='dunce'?gamma(th,s):MODE==='model'?gammaM(th,s):gammaB(th,s); }
 </script>
 <script>
 // ───────────────────────── precompute the swept disk on a (θ, s) grid ─────────────────────────
@@ -324,7 +348,7 @@ const COLS=['#e2b25a','#5cc8c0','#b48cf0'];let strandCache=null;
 const PERMS=[[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]];const cdist=(a,b)=>{let e=Math.abs(((a-b)%TAU+TAU)%TAU);return Math.min(e,TAU-e);};
 function matchTriple(c,p){let bp=PERMS[0],bd=1e9;for(const q of PERMS){const d=cdist(c[q[0]],p[0])+cdist(c[q[1]],p[1])+cdist(c[q[2]],p[2]);if(d<bd){bd=d;bp=q;}}return [c[bp[0]],c[bp[1]],c[bp[2]]];}
 // configuration at the marker, with the points ordered to match the strand colours
-function markerConf(th,s){const c=conf(th,s);if(!(MODE==='radial'&&s>1&&strandCache&&strandCache.s===s&&strandCache.mode===MODE))return c;const N=strandCache.cs.length-1;const i=Math.round(th/TAU*N);return matchTriple(c,strandCache.cs[Math.max(0,Math.min(N,i))]);}
+function markerConf(th,s){const c=conf(th,s);if(!(MODE!=='dunce'&&s>1&&strandCache&&strandCache.s===s&&strandCache.mode===MODE))return c;const N=strandCache.cs.length-1;const i=Math.round(th/TAU*N);return matchTriple(c,strandCache.cs[Math.max(0,Math.min(N,i))]);}
 function drawStrands(s,thMark){
   const [W,H,dpr]=fit(cs);const g=cs.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
   const L=44,R=16,T=38,B=30,w=W-L-R,h=H-T-B;
@@ -336,8 +360,8 @@ function drawStrands(s,thMark){
   // faint identification marks for p
   const N=MODE==='dunce'?480:240;
   if(!strandCache||strandCache.s!==s||strandCache.mode!==MODE){TAU_HINT=null;const cs=[];for(let i=0;i<=N;i++)cs.push(conf(TAU*i/N,s));
-    if(MODE==='radial'&&s>1){ // colour strands by continuity: permute each triple to follow the previous sample
-      if(strandCache&&strandCache.mode==='radial'&&strandCache.s>1) cs[0]=matchTriple(cs[0],strandCache.cs[0]); // keep colours stable across s too
+    if(MODE!=='dunce'&&s>1){ // colour strands by continuity: permute each triple to follow the previous sample
+      if(strandCache&&strandCache.mode!=='dunce'&&strandCache.s>1) cs[0]=matchTriple(cs[0],strandCache.cs[0]); // keep colours stable across s too
       for(let i=1;i<=N;i++) cs[i]=matchTriple(cs[i],cs[i-1]);
     }
     strandCache={s,mode:MODE,cs};}
@@ -374,14 +398,17 @@ const stages=[
   ['stage 2 · s ∈ [1,2]','sliding the doubled core to the doubled loop m(t) = {p, p + t}','Still inside the Möbius band. One point of each pair is steered towards p = −π/2; the loop m fixes p and lets the other point run once around the circle. (m is homotopic to the core, so this is just a homotopy within the band.)'],
   ['stage 3 · s ∈ [2,3]','the third point: {p, p + 2πr, p + 2πr + (1−r)t}, r = s − 2','A second point travels once around the circle, back to p, while the third point sweeps the arc between them. These are genuine triples — points of S³ off the Möbius band — and they fill a disk bounding m. The loop collapses to the singleton {p}.'],
 ];
+const stagesM=[stages[0],
+  ['stages 2–3 · s ∈ [1,3]','closed-form model: lone point backwards, pair forwards, sector by sector','An explicit formula with the same combinatorics as the flat disk. Write c_k = π/6 + 2πk/3 for the equilateral triple at the centre. The loop is cut into three sectors by its crossings of the Möbius band, which happen at the pairs {c_k ± g/2}. In the sector from c_{m+1} to c_{m+2} a lone point runs backwards from c_{m+1} − g/2 to c_{m+2} + g/2 while a pair runs forwards from c_{m+1} + g/2 to c_{m+2} − g/2, opening to half-width σ·sin(πu); at each crossing the pair closes and the lone point splits — the fold of Ran. g runs from π (the core) to 0 (the three singletons), and then the three strands shrink linearly onto the equilateral triple. Its image in S³ is not flat, but it is close.'],
+];
 const stagesB=[stages[0],
   ['stages 2–3 · s ∈ [1,3]','shrink the doubled core radially to the origin','In the projection the core is the unit circle in the horizontal plane, and the flat disk it bounds is right there: shrink it. The price is that the configurations along the way are only implicit — each point of the disk is a lattice with g₃ purely imaginary, recovered here by inverting j — so the strands show triples appearing without a formula. The centre of the disk is a single equilateral triple; on the way in, the disk crosses three singletons of the trefoil.'],
 ];
-function setStage(s){if(MODE==='radial'){const k=s<1?0:1;document.getElementById('st-k').textContent=stagesB[k][0];document.getElementById('st-t').textContent=stagesB[k][1];document.getElementById('st-d').textContent=stagesB[k][2];return;}const k=s<1?0:s<2?1:2;document.getElementById('st-k').textContent=stages[k][0];document.getElementById('st-t').textContent=stages[k][1];document.getElementById('st-d').textContent=stages[k][2];}
+function setStage(s){if(MODE==='model'){const k=s<1?0:1;document.getElementById('st-k').textContent=stagesM[k][0];document.getElementById('st-t').textContent=stagesM[k][1];document.getElementById('st-d').textContent=stagesM[k][2];return;}if(MODE==='radial'){const k=s<1?0:1;document.getElementById('st-k').textContent=stagesB[k][0];document.getElementById('st-t').textContent=stagesB[k][1];document.getElementById('st-d').textContent=stagesB[k][2];return;}const k=s<1?0:s<2?1:2;document.getElementById('st-k').textContent=stages[k][0];document.getElementById('st-t').textContent=stages[k][1];document.getElementById('st-d').textContent=stages[k][2];}
 
 // ───────────────────────── UI & loop ─────────────────────────
 const sRange=document.getElementById('s-range'),sVal=document.getElementById('s-val'),playBtn=document.getElementById('play'),speed=document.getElementById('speed');
-document.getElementById('mode').addEventListener('change',e=>{MODE=e.target.value;if(!GRIDS[MODE])GRIDS[MODE]=makeGrid();GRID=GRIDS[MODE];trace.geometry.setAttribute('position',new THREE.BufferAttribute(GRID,3));trace.geometry.computeVertexNormals();dirty=true;});
+document.getElementById('mode').addEventListener('change',e=>{MODE=e.target.value;buildSheets();if(!GRIDS[MODE])GRIDS[MODE]=makeGrid();GRID=GRIDS[MODE];trace.geometry.setAttribute('position',new THREE.BufferAttribute(GRID,3));trace.geometry.computeVertexNormals();dirty=true;});
 const traceMode=document.getElementById('trace-mode');traceMode.addEventListener('change',()=>{dirty=true;});
 const thRange=document.getElementById('th-range'),thRun=document.getElementById('th-run');
 window.setS=v=>{S=v;dirty=true;};
@@ -391,22 +418,95 @@ playBtn.addEventListener('click',()=>{playing=!playing;playBtn.textContent=playi
 document.getElementById('show-band').addEventListener('change',e=>scene.getObjectByName('band').visible=e.target.checked);
 document.getElementById('show-trace').addEventListener('change',e=>trace.visible=e.target.checked);
 document.getElementById('show-ref').addEventListener('change',e=>refGroup.visible=e.target.checked);
+document.getElementById('show-slice').addEventListener('change',e=>slice.visible=e.target.checked);
+
+// ───────────────────────── the extruded homotopy in S¹×S¹×[0,3], drawn as a cube ─────────────────────────
+// θ to the right, x (the position on the circle) up — exactly the axes of the strand diagram — and s into the depth,
+// so the plane z = s carries the strand diagram of γ_s. The faces x = 0 and x = 2π (and θ = 0, θ = 2π) are secretly glued.
+const cT=document.getElementById('cT');
+const rendT=new THREE.WebGLRenderer({canvas:cT,antialias:true,alpha:true});rendT.setPixelRatio(Math.min(devicePixelRatio,2));rendT.localClippingEnabled=true;
+const sceneT=new THREE.Scene();const camT=new THREE.PerspectiveCamera(34,1,0.05,100);
+sceneT.add(new THREE.HemisphereLight(0xdfe6f0,0x1a1f28,0.85));const keyT=new THREE.DirectionalLight(0xfff2dc,0.65);keyT.position.set(3,5,4);sceneT.add(keyT);
+const SZ=TAU/3; // s is scaled so the box is a cube of side 2π
+const camTo={theta:1.12,phi:1.2,dist:14,target:new THREE.Vector3(Math.PI,Math.PI,-Math.PI)};
+function placeCamT(){const sp=Math.sin(camTo.phi);camT.position.set(camTo.dist*sp*Math.cos(camTo.theta),camTo.dist*Math.cos(camTo.phi),camTo.dist*sp*Math.sin(camTo.theta)).add(camTo.target);camT.lookAt(camTo.target);}
+let dragT=null;
+cT.addEventListener('pointerdown',e=>{dragT={x:e.clientX,y:e.clientY};cT.setPointerCapture(e.pointerId);});
+cT.addEventListener('pointermove',e=>{if(!dragT)return;camTo.theta-=(e.clientX-dragT.x)*0.008;camTo.phi=Math.max(0.05,Math.min(Math.PI-0.05,camTo.phi-(e.clientY-dragT.y)*0.008));dragT={x:e.clientX,y:e.clientY};placeCamT();});
+cT.addEventListener('pointerup',()=>dragT=null);cT.addEventListener('pointercancel',()=>dragT=null);
+cT.addEventListener('wheel',e=>{e.preventDefault();camTo.dist=Math.max(3,Math.min(60,camTo.dist*Math.exp(e.deltaY*0.0012)));placeCamT();},{passive:false});
+function cubePt(th,x,s){return new THREE.Vector3(th,x,-s*SZ);}
+const clipLo=new THREE.Plane(new THREE.Vector3(0,1,0),0), clipHi=new THREE.Plane(new THREE.Vector3(0,-1,0),TAU); // keep 0 ≤ x ≤ 2π
+// the box, its glued faces, and axis labels
+(function(){
+  const e=new THREE.EdgesGeometry(new THREE.BoxGeometry(TAU,TAU,TAU));const box=new THREE.LineSegments(e,new THREE.LineBasicMaterial({color:0x8e9aa8,transparent:true,opacity:0.7}));box.position.set(Math.PI,Math.PI,-Math.PI);sceneT.add(box);
+  const faceMat=new THREE.MeshBasicMaterial({color:0x9fb3c8,transparent:true,opacity:0.05,side:THREE.DoubleSide,depthWrite:false});
+  for(const y of [0,TAU]){const m=new THREE.Mesh(new THREE.PlaneGeometry(TAU,TAU),faceMat);m.rotation.x=Math.PI/2;m.position.set(Math.PI,y,-Math.PI);sceneT.add(m);}
+  const label=(txt,p)=>{const c=document.createElement('canvas');c.width=128;c.height=64;const g=c.getContext('2d');g.font='italic 44px Cormorant Garamond, serif';g.fillStyle='#e8e2d6';g.textAlign='center';g.fillText(txt,64,46);
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));sp.scale.set(1.3,0.65,1);sp.position.copy(p);sceneT.add(sp);};
+  label('θ',new THREE.Vector3(Math.PI,-0.55,0.4));label('x',new THREE.Vector3(-0.55,Math.PI,0.4));label('s',new THREE.Vector3(-0.55,-0.4,-Math.PI));
+  label('0',new THREE.Vector3(-0.45,-0.35,0.35));label('2π',new THREE.Vector3(TAU+0.5,-0.4,0.4));label('2π',new THREE.Vector3(-0.55,TAU+0.4,0.4));label('3',new THREE.Vector3(-0.5,-0.4,-TAU-0.4));
+})();
+const stageCol=[new THREE.Color(0xe06c75),new THREE.Color(0xe2b25a),new THREE.Color(0xb48cf0),new THREE.Color(0x5cc8c0)];
+function colS(s){const t=s/3;const a=Math.min(3,Math.floor(t*3)),f=t*3-a;return stageCol[a].clone().lerp(stageCol[Math.min(3,a+1)],f);}
+const liftTo=(v,ref)=>ref+((v-ref+Math.PI)%TAU+TAU)%TAU-Math.PI; // representative of v nearest to ref
+let sheets=null,sheetLines=null;
+function buildSheets(){
+  if(sheets){sceneT.remove(sheets);sheets.geometry.dispose();sceneT.remove(sheetLines);sheetLines.geometry.dispose();}
+  const NI=168,NJ=126,THR=0.4;
+  const cfg=[];for(let j=0;j<=NJ;j++){const s=3*j/NJ;TAU_HINT=null;const row=[];for(let i=0;i<=NI;i++){let c=conf(TAU*i/NI,s);while(c.length<3)c.push(c[0]);row.push(c);}cfg.push(row);}
+  const pos=[],col=[],lpos=[];
+  const push=(p,c)=>{pos.push(p.x,p.y,p.z);col.push(c.r,c.g,c.b);};
+  for(let j=0;j<NJ;j++){const s0=3*j/NJ,s1=3*(j+1)/NJ,c0=colS(s0),c1=colS(s1);
+    for(let i=0;i<NI;i++){const th0=TAU*i/NI,th1=TAU*(i+1)/NI;
+      const A=cfg[j][i],B=matchTriple(cfg[j][i+1],A),C=matchTriple(cfg[j+1][i],A),D=matchTriple(cfg[j+1][i+1],B);
+      for(let k=0;k<3;k++){const a=((A[k]%TAU)+TAU)%TAU,b=liftTo(B[k],a),c=liftTo(C[k],a),d=liftTo(D[k],b);
+        if(Math.abs(b-a)<THR&&Math.abs(c-a)<THR&&Math.abs(d-b)<THR&&Math.abs(d-c)<THR){
+          // a patch that pokes out of the box is drawn again shifted by ∓2π; the clipping planes trim both copies
+          const shifts=[0];if(Math.min(a,b,c,d)<0)shifts.push(TAU);if(Math.max(a,b,c,d)>TAU)shifts.push(-TAU);
+          for(const sh of shifts){const pa=cubePt(th0,a+sh,s0),pb=cubePt(th1,b+sh,s0),pc=cubePt(th0,c+sh,s1),pd=cubePt(th1,d+sh,s1);
+            push(pa,c0);push(pb,c0);push(pc,c1); push(pb,c0);push(pd,c1);push(pc,c1);
+            if(j%14===0)lpos.push(pa.x,pa.y,pa.z,pb.x,pb.y,pb.z);
+            if(i%14===0)lpos.push(pa.x,pa.y,pa.z,pc.x,pc.y,pc.z);}
+        }}}}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));g.computeVertexNormals();
+  sheets=new THREE.Mesh(g,new THREE.MeshPhysicalMaterial({vertexColors:true,transparent:true,opacity:0.5,side:THREE.DoubleSide,roughness:0.55,metalness:0.05,depthWrite:false,clippingPlanes:[clipLo,clipHi]}));sceneT.add(sheets);
+  const lg=new THREE.BufferGeometry();lg.setAttribute('position',new THREE.Float32BufferAttribute(lpos,3));
+  sheetLines=new THREE.LineSegments(lg,new THREE.LineBasicMaterial({color:0x0b0e12,transparent:true,opacity:0.35,clippingPlanes:[clipLo,clipHi]}));sceneT.add(sheetLines);
+}
+// the s-plane: a translucent slice at depth s carrying the strand diagram of γ_s (the right-hand panel), plus the marker
+const slice=new THREE.Group();sceneT.add(slice);
+(function(){const m=new THREE.Mesh(new THREE.PlaneGeometry(TAU,TAU),new THREE.MeshBasicMaterial({color:0xe8e2d6,transparent:true,opacity:0.16,side:THREE.DoubleSide,depthWrite:false}));m.position.set(Math.PI,Math.PI,0);slice.add(m);
+  const e=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(TAU,TAU)),new THREE.LineBasicMaterial({color:0xe8e2d6,transparent:true,opacity:0.8}));e.position.set(Math.PI,Math.PI,0);slice.add(e);})();
+let levelMesh=null;const markerT=new THREE.Mesh(new THREE.SphereGeometry(0.09,16,12),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0xe06c75,emissiveIntensity:0.7}));slice.add(markerT);
+function rebuildLevel(s){
+  if(levelMesh){slice.remove(levelMesh);levelMesh.geometry.dispose();}
+  const pos=[],col=[];const N=240;TAU_HINT=null;let prev=null;
+  for(let i=0;i<=N;i++){const th=TAU*i/N;let cf=conf(th,s);while(cf.length<3)cf.push(cf[0]);if(prev)cf=matchTriple(cf,prev);
+    if(prev)for(let k=0;k<3;k++){const a=((prev[k]%TAU)+TAU)%TAU,b=liftTo(cf[k],a);if(Math.abs(b-a)<0.35){const c=stageCol[k];
+      for(const sh of (b<0?[0,TAU]:b>TAU?[0,-TAU]:[0])){pos.push(TAU*(i-1)/N,a+sh,0.01,th,b+sh,0.01);col.push(c.r,c.g,c.b,c.r,c.g,c.b);}}}
+    prev=cf;}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  levelMesh=new THREE.LineSegments(g,new THREE.LineBasicMaterial({vertexColors:true,clippingPlanes:[clipLo,clipHi]}));slice.add(levelMesh);
+  slice.position.z=-s*SZ;
+}
+function resizeT(){const r=cT.parentElement.getBoundingClientRect();rendT.setSize(r.width,r.height,false);camT.aspect=r.width/r.height;camT.updateProjectionMatrix();camTo.dist=Math.max(11,5.4/(Math.tan(camT.fov*Math.PI/360)*Math.min(1,camT.aspect)));placeCamT();}
 function resize(){const r=canvas.parentElement.getBoundingClientRect();renderer.setSize(r.width,r.height,false);camera.aspect=r.width/r.height;camera.updateProjectionMatrix();}
-window.addEventListener('resize',()=>{resize();dirty=true;});
-resize();placeCamera();
+window.addEventListener('resize',()=>{resize();resizeT();dirty=true;});
+resize();placeCamera();resizeT();placeCamT();buildSheets();
 function frame(now){
   const dt=Math.min(0.1,(now-lastT)/1000);lastT=now;
   if(playing){S+=dt*parseFloat(speed.value);if(S>=3){S=3;playing=false;playBtn.textContent='▶ play';playBtn.classList.remove('on');}sRange.value=S;dirty=true;}
   if(thRun.checked){thRange.value=((parseFloat(thRange.value)+dt*0.09)%1).toFixed(4);}
   const thM=parseFloat(thRange.value)*TAU;
   if(dirty){
-    rebuildLoop(S);setStage(S);sVal.textContent='s = '+S.toFixed(4);
-    const rows=Math.max(1,Math.min(NS-1,Math.floor(S/3*(NS-1))));const from=traceMode.value==='stage'?Math.min(rows-1,Math.floor(Math.min(MODE==='radial'?1:2,Math.floor(S))/3*(NS-1))):0;trace.geometry.setDrawRange(from*NT*6,(rows-from)*NT*6);
+    rebuildLoop(S);rebuildLevel(S);setStage(S);sVal.textContent='s = '+S.toFixed(4);
+    const rows=Math.max(1,Math.min(NS-1,Math.floor(S/3*(NS-1))));const from=traceMode.value==='stage'?Math.min(rows-1,Math.floor(Math.min(MODE!=='dunce'?1:2,Math.floor(S))/3*(NS-1))):0;trace.geometry.setDrawRange(from*NT*6,(rows-from)*NT*6);
     dirty=false;
   }
-  marker.position.copy(point3(thM,S));
+  marker.position.copy(point3(thM,S));{const cm=markerConf(thM,S);markerT.position.set(thM,((cm[0]%TAU)+TAU)%TAU,0.02);}
   drawStrands(S,thM);drawCircle(S,thM);
-  renderer.render(scene,camera);
+  renderer.render(scene,camera);rendT.render(sceneT,camT);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
