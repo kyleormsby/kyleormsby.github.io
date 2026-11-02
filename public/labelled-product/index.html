@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The labelled product</title>
+<meta name="description" content="What the labelled product A ⋆ B does: pick two labelled objects and see every way of redistributing the labels, one for each k-subset of [n]. Built for Math 372.">
+<style>
+  :root { --bg:#F3F4F6; --panel:#fff; --ink:#1B1F2A; --muted:#646B7A; --line:#DADDE4; --a:#A70E16; --b:#1F6FA3; --hot:#C8501E; --hot-soft:#F3D9CC; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#14161C; --panel:#1C1F27; --ink:#E8E9EE; --muted:#9AA0AC; --line:#2C3039; --a:#F07078; --b:#8AB4E3; --hot:#F08A4B; --hot-soft:#4A2A18; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font: 15px/1.45 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; }
+  h1 { font-family: Fraunces, Georgia, serif; font-weight:600; font-size: 1.6rem; margin:0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 14px; }
+  .row { display:flex; flex-wrap:wrap; gap: 16px 28px; align-items:flex-start; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding: 12px 14px; }
+  .ctl { display:flex; flex-wrap:wrap; gap: 8px 18px; align-items:center; margin-bottom: 8px; }
+  .ctl label { display:inline-flex; gap:6px; align-items:center; }
+  .lab { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  .seg button { font:inherit; font-size:13px; background:var(--panel); color:var(--ink); border:0; padding:4px 10px; cursor:pointer; }
+  .seg button + button { border-left:1px solid var(--line); }
+  .seg button[aria-pressed=true] { background:var(--ink); color:var(--bg); }
+  .seg.a button[aria-pressed=true] { background:var(--a); color:#fff; }
+  .seg.b button[aria-pressed=true] { background:var(--b); color:#fff; }
+  .formula { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 14px; }
+  .big { font-size: 1.05rem; margin: 10px 0 2px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-top: 10px; }
+  .pair { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:6px 8px 4px; }
+  .pair.hl { outline: 2px solid var(--hot); background: var(--hot-soft); }
+  .pair .cap { font-size: 12px; color: var(--muted); font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  svg { display:block; }
+  .mut { color: var(--muted); }
+  .note { font-size: 13.5px; color: var(--muted); max-width: 70ch; }
+  table { border-collapse: collapse; font-size: 13.5px; }
+  th, td { padding: 3px 10px 3px 0; text-align: left; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+  th { color: var(--muted); font-weight: 500; }
+  footer { margin-top: 26px; color: var(--muted); font-size: 13px; }
+  a { color: var(--b); }
+</style>
+</head>
+<body>
+<main>
+  <h1>The labelled product</h1>
+  <p class="sub">An object of <b style="color:var(--a)">𝒜</b> of size <i>k</i>, an object of <b style="color:var(--b)">ℬ</b> of size <i>m</i>, and the <b>C(<i>n</i>,<i>k</i>)</b> objects of 𝒜 ⋆ ℬ they produce, <i>n</i> = <i>k</i>+<i>m</i>.</p>
+
+  <div class="row">
+    <div class="card">
+      <div class="lab">object α ∈ 𝒜</div>
+      <div class="ctl">
+        <span class="seg a" id="typeA"><button data-v="seq" aria-pressed="true">sequence</button><button data-v="cyc" aria-pressed="false">cycle</button><button data-v="set" aria-pressed="false">set</button><button data-v="tree" aria-pressed="false">rooted tree</button></span>
+        <label>size <i>k</i> <span class="seg" id="sizeA"></span></label>
+      </div>
+      <div id="drawA"></div>
+    </div>
+    <div class="card">
+      <div class="lab">object β ∈ ℬ</div>
+      <div class="ctl">
+        <span class="seg b" id="typeB"><button data-v="seq" aria-pressed="false">sequence</button><button data-v="cyc" aria-pressed="true">cycle</button><button data-v="set" aria-pressed="false">set</button><button data-v="tree" aria-pressed="false">rooted tree</button></span>
+        <label>size <i>m</i> <span class="seg" id="sizeB"></span></label>
+      </div>
+      <div id="drawB"></div>
+    </div>
+    <div class="card" style="flex:1; min-width: 280px">
+      <div class="lab">the rule</div>
+      <p class="note" style="margin:6px 0">The pair (α, β) does not have labels 1,…,<i>n</i>; it has 1,…,<i>k</i> twice. The labelled product fixes this by <b>choosing which <i>k</i> of the labels 1,…,<i>n</i> go to α</b> and relabelling each object in increasing order, so that the relative order inside α and inside β is kept. One choice of subset, one object of 𝒜 ⋆ ℬ.</p>
+      <p class="formula big" id="eq"></p>
+      <p class="note" id="egf" style="margin:4px 0 0"></p>
+    </div>
+  </div>
+
+  <p class="big" id="count" style="margin-top:18px"></p>
+  <div class="grid" id="grid"></div>
+
+  <div class="card" style="margin-top:22px">
+    <div class="lab">summing over <i>k</i>: the binomial convolution</div>
+    <p class="note" style="margin:6px 0 8px">Now let 𝒜 and ℬ be whole classes. Every object of 𝒜 ⋆ ℬ of size <i>n</i> comes from exactly one triple (<i>k</i>-subset, α of size <i>k</i>, β of size <i>n</i>−<i>k</i>), so
+      <span class="formula">c<sub>n</sub> = Σ<sub>k</sub> C(n,k) a<sub>k</sub> b<sub>n−k</sub></span>, which is <span class="formula">c<sub>n</sub>/n! = Σ<sub>k</sub> (a<sub>k</sub>/k!)(b<sub>n−k</sub>/(n−k)!)</span>: the Cauchy product of the <em>exponential</em> generating functions. The table uses the classes chosen above (sequences: <i>k</i>!, cycles: (<i>k</i>−1)!, sets: 1, rooted trees: <i>k</i><sup>k−1</sup>).</p>
+    <div class="ctl"><label><span class="lab">n</span> <span class="seg" id="sizeN"></span></label></div>
+    <div id="conv"></div>
+  </div>
+
+  <footer>Made for <a href="/372fall26/">Math 372: Combinatorics</a>, Reed College, fall 2026 (Flajolet–Sedgewick §II.1–II.2). The unlabelled product 𝒜 × ℬ would give <em>one</em> object from the pair (α, β); the labelled product gives C(<i>n</i>,<i>k</i>), and that factor is why labelled classes use <i>z<sup>n</sup>/n!</i>.</footer>
+</main>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const state = { tA: "seq", tB: "cyc", k: 2, m: 3, n: 4, hl: null };
+const names = { seq: "sequence", cyc: "cycle", set: "set", tree: "rooted tree" };
+const countOf = (t, k) => t === "seq" ? fact(k) : t === "cyc" ? (k ? fact(k - 1) : 0) : t === "set" ? 1 : (k ? Math.pow(k, k - 1) : 0);
+function fact(k) { let r = 1; for (let i = 2; i <= k; i++) r *= i; return r; }
+function binom(n, k) { if (k < 0 || k > n) return 0; let r = 1; for (let i = 1; i <= k; i++) r = r * (n - k + i) / i; return Math.round(r); }
+function subsets(n, k) { const out = []; (function rec(start, cur) { if (cur.length === k) { out.push(cur.slice()); return; } for (let i = start; i <= n; i++) { cur.push(i); rec(i + 1, cur); cur.pop(); } })(1, []); return out; }
+
+/* ---- drawing one labelled object: labels is the list of labels in canonical slot order ---- */
+function draw(type, labels, color, scale = 1) {
+  const k = labels.length, r = 11 * scale, pad = 6 * scale;
+  let W, H, pos = [], edges = [];
+  if (type === "seq") { W = (k * 2 * r + (k - 1) * 14 * scale) + 2 * pad; H = 2 * r + 2 * pad;
+    for (let i = 0; i < k; i++) pos.push([pad + r + i * (2 * r + 14 * scale), pad + r]);
+    for (let i = 0; i + 1 < k; i++) edges.push([i, i + 1, true]);
+  } else if (type === "cyc") { const R = k === 1 ? 0 : k === 2 ? 16 * scale : (14 + 6 * k) * scale; W = H = 2 * (R + r + pad);
+    for (let i = 0; i < k; i++) { const a = -Math.PI / 2 + 2 * Math.PI * i / k; pos.push([W / 2 + R * Math.cos(a), H / 2 + R * Math.sin(a)]); }
+    for (let i = 0; i < k && k > 1; i++) edges.push([i, (i + 1) % k, true]);
+  } else if (type === "set") { W = (k * 2 * r + (k - 1) * 8 * scale) + 2 * pad; H = 2 * r + 2 * pad;
+    for (let i = 0; i < k; i++) pos.push([pad + r + i * (2 * r + 8 * scale), pad + r]);
+  } else { // rooted tree: root = first slot, others hang off root (a star), a fixed shape per size
+    const parent = { 1: [], 2: [0], 3: [0, 0], 4: [0, 0, 1], 5: [0, 0, 1, 1], 6: [0, 0, 1, 1, 2] }[k] || [];
+    const depth = [0]; for (let i = 1; i < k; i++) depth.push(depth[parent[i - 1]] + 1);
+    const byd = {}; depth.forEach((d, i) => (byd[d] = byd[d] || []).push(i));
+    const maxd = Math.max(...depth), wid = Math.max(...Object.values(byd).map(a => a.length));
+    W = wid * (2 * r + 10 * scale) + 2 * pad; H = (maxd + 1) * (2 * r + 10 * scale) + 2 * pad;
+    Object.entries(byd).forEach(([d, arr]) => arr.forEach((i, j) => pos[i] = [pad + r + (j + (wid - arr.length) / 2) * (2 * r + 10 * scale), pad + r + d * (2 * r + 10 * scale)]));
+    for (let i = 1; i < k; i++) edges.push([parent[i - 1], i, false]);
+  }
+  let s = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+  if (type !== "set") {
+    const id = "ah" + Math.random().toString(36).slice(2, 7);
+    s += `<defs><marker id="${id}" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="${color}"/></marker></defs>`;
+    edges.forEach(([a, b, arrow]) => {
+      const [x1, y1] = pos[a], [x2, y2] = pos[b], dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1;
+      const sx = x1 + dx / L * r, sy = y1 + dy / L * r, ex = x2 - dx / L * (r + (arrow ? 2 : 0)), ey = y2 - dy / L * (r + (arrow ? 2 : 0));
+      s += `<line x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke="${color}" stroke-width="${1.6 * scale}" ${arrow ? `marker-end="url(#${id})"` : ""}/>`;
+    });
+  }
+  pos.forEach(([x, y], i) => {
+    const root = type === "tree" && i === 0;
+    s += `<circle cx="${x}" cy="${y}" r="${r}" fill="${root ? color : "var(--panel)"}" stroke="${color}" stroke-width="${1.6 * scale}"/>` +
+         `<text x="${x}" y="${y + 4 * scale}" text-anchor="middle" font-size="${12 * scale}" font-family="IBM Plex Mono, ui-monospace, monospace" fill="${root ? "#fff" : "var(--ink)"}">${labels[i]}</text>`;
+  });
+  return s + "</svg>";
+}
+
+function render() {
+  const { tA, tB, k, m } = state, n = k + m, N = binom(n, k);
+  $("drawA").innerHTML = draw(tA, [...Array(k)].map((_, i) => i + 1), "var(--a)", 1.3);
+  $("drawB").innerHTML = draw(tB, [...Array(m)].map((_, i) => i + 1), "var(--b)", 1.3);
+  $("eq").innerHTML = `|α| = ${k}, |β| = ${m}, n = ${n}:  C(${n},${k}) = ${N} object${N === 1 ? "" : "s"} of 𝒜 ⋆ ℬ`;
+  $("egf").innerHTML = `In exponential generating functions: <span class="formula">z<sup>${k}</sup>/${k}! · z<sup>${m}</sup>/${m}! = C(${n},${k}) · z<sup>${n}</sup>/${n}!</span>, since ${n}!/(${k}!·${m}!) = ${N}.`;
+  $("count").innerHTML = `All ${N} relabellings. Each is a ${k}-subset S ⊆ {1,…,${n}}: α gets S in increasing order, β gets the rest.`;
+  const subs = subsets(n, k);
+  $("grid").innerHTML = subs.map((S, i) => {
+    const T = [...Array(n)].map((_, j) => j + 1).filter(x => !S.includes(x));
+    return `<div class="pair${state.hl === i ? " hl" : ""}" data-i="${i}"><div class="cap">S = {${S.join(",")}}</div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">${draw(tA, S, "var(--a)")}<span class="mut">⋆</span>${draw(tB, T, "var(--b)")}</div></div>`;
+  }).join("");
+  // convolution table
+  const nn = state.n, rows = []; let tot = 0;
+  for (let j = 0; j <= nn; j++) { const a = countOf(tA, j), b = countOf(tB, nn - j), c = binom(nn, j) * a * b; tot += c;
+    rows.push(`<tr><td>${j}</td><td>${binom(nn, j)}</td><td>${a}</td><td>${b}</td><td>${c}</td></tr>`); }
+  $("conv").innerHTML = `<table><tr><th>k</th><th>C(${nn},k)</th><th>a<sub>k</sub> (${names[tA]}s)</th><th>b<sub>${nn}−k</sub> (${names[tB]}s)</th><th>C(${nn},k)·a<sub>k</sub>·b<sub>${nn}−k</sub></th></tr>${rows.join("")}
+    <tr><th colspan="4">c<sub>${nn}</sub> = objects of ${names[tA]} ⋆ ${names[tB]} of size ${nn}</th><th>${tot}</th></tr></table>`;
+}
+function segButtons(id, lo, hi, cur, onpick) {
+  const el = $(id); el.innerHTML = "";
+  for (let v = lo; v <= hi; v++) { const b = document.createElement("button"); b.textContent = v; b.setAttribute("aria-pressed", v === cur);
+    b.addEventListener("click", () => { onpick(v); refreshSizes(); render(); }); el.appendChild(b); }
+}
+function refreshSizes() {
+  segButtons("sizeA", 1, 4, state.k, v => state.k = v);
+  segButtons("sizeB", 1, 4, state.m, v => state.m = v);
+  segButtons("sizeN", 1, 7, state.n, v => state.n = v);
+}
+[["typeA", "tA"], ["typeB", "tB"]].forEach(([id, key]) => $(id).querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+  state[key] = b.dataset.v; $(id).querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); render(); })));
+$("grid").addEventListener("mouseover", e => { const p = e.target.closest(".pair"); if (p) { state.hl = +p.dataset.i; document.querySelectorAll(".pair").forEach(x => x.classList.toggle("hl", +x.dataset.i === state.hl)); } });
+$("grid").addEventListener("mouseleave", () => { state.hl = null; document.querySelectorAll(".pair").forEach(x => x.classList.remove("hl")); });
+refreshSizes(); render();
+})();
+</script>
+</body>
+</html>
