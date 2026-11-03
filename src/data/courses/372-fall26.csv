@@ -25,14 +25,14 @@ fall break,,October 17-25,break,Fall break 🍂,,,,,,,,,,,
 8,2026-10-28,,class,"$q$-binomials II: unimodality, and the Sperner callback",Stanley §6,[Young diagrams in a box](/young-lattice/),,,,,,,,,
 8,2026-10-30,,class,Tree structures and the Catalan numbers,FS I.5,[Sage notebook: four classes](/files/372fall26/372-oct30-four-classes.ipynb),,,,,,,,,
 9,2026-11-02,,class,"Labelled classes, exponential generating functions, the labelled product",FS II.1–II.2,[labelled product demo](/labelled-product/),,,372hw04,10pm,,,,,
-9,2026-11-04,,class,"Surjections, set partitions, permutations; the exp–log pattern",FS II.3–II.4,,,,,,,,,,computational lab 2 assigned
+9,2026-11-04,,class,"Surjections, set partitions, permutations; the exp–log pattern",FS II.3–II.4,,,,,,372lab02.ipynb,2026-11-20,,,
 9,2026-11-06,,class,Pólya theory as the multiset construction: the cycle index,Stanley §7 ❦ FS I.6,,,,,,,,,,annotated bibliography and computation prospectus due
 10,2026-11-09,,class,"Words, automata, and transfer matrices: Act I and Act II are the same theorem",FS I.4 ❦ FS V.5–V.6,,,,,,,,,,board presentation
 10,2026-11-11,,class,Partial fractions and exact asymptotics: poles are reciprocal eigenvalues,FS IV.5,,,,,,,,,,
 10,2026-11-13,,class,"Perron–Frobenius, growth constants, and supercritical sequences",FS V.2,,,,,,,,,,problem set 5 due by 10pm
 11,2026-11-16,,class,Complex differentiability; generating functions as analytic objects,FS IV.1–IV.2,,,,,,,,,,individual project meetings this week
 11,2026-11-18,,class,Contour integration and Cauchy's integral formula,FS IV.2,,,,,,,,,,problem set 6 due by 10pm
-11,2026-11-20,,class,Residues and the exponential growth formula,FS IV.3,,,,,,,,,,computational lab 2 due
+11,2026-11-20,,class,Residues and the exponential growth formula,FS IV.3,,,,,,,,372lab02.ipynb,10pm,
 12,2026-11-23,,class,Catch-up and worked examples,,,,,,,,,,,
 12,2026-11-25,,class,The standard scale $(1-z)^{-\alpha}$: singularity analysis and transfer,FS VI.1–VI.4,,,,,,,,,,
 12,2026-11-27,,break,Thanksgiving — no class,,,,,,,,,,,
