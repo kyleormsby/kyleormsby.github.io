@@ -1,0 +1,155 @@
+\documentclass[11pt,twoside]{amsart}
+\usepackage{amssymb, amsmath, enumerate, palatino, hyperref}
+\usepackage{caption}
+\usepackage{fullpage}
+
+\usepackage[T1]{fontenc}
+\renewcommand{\labelitemi}{\guillemotright}
+\usepackage{mathrsfs}
+\hypersetup{hidelinks}
+
+\theoremstyle{plain}
+\newtheorem{prop}{Proposition}
+\newtheorem{lemma}[prop]{Lemma}
+\newtheorem{thm}[prop]{Theorem}
+\newtheorem{cor}[prop]{Corollary}
+\theoremstyle{remark}
+\newtheorem{rmk}[prop]{Remark}
+\newtheorem*{rmk*}{Remark}
+\newtheorem{prob}{Problem}
+\newtheorem*{bonus*}{Bonus Problem}
+\theoremstyle{definition}
+\newtheorem{ex}[prop]{Example}
+\newtheorem{defn}[prop]{Definition}
+
+\newcommand{\cA}{\mathcal A}
+\newcommand{\cZ}{\mathcal Z}
+\newcommand{\SEQ}{\operatorname{SEQ}}
+\newcommand{\MSET}{\operatorname{MSET}}
+\newcommand{\PSET}{\operatorname{PSET}}
+\newcommand{\FF}{\mathbb F}
+\newcommand{\qbinom}[2]{\genfrac{[}{]}{0pt}{}{#1}{#2}_{\!q}}
+\newcommand{\SET}{\operatorname{SET}}
+\newcommand{\CYC}{\operatorname{CYC}}
+\newcommand{\cT}{\mathcal T}
+\newcommand{\tr}{\operatorname{tr}}
+
+\title{Math 372: Combinatorics\\ Homework 05}
+\author{Due Friday, 13 November, 10\textsc{p.m.}, via Gradescope}
+
+\begin{document}
+\maketitle
+
+\begin{rmk*}
+\textbf{When you can start.} Problems 1--3 use the labelled constructions (November 2 and 4) and
+Pólya's theorem (November 6). Problem~4 uses transfer matrices and partial fractions (November 9
+and 11); it is short, and it is the only problem on that material this term, since there is no
+problem set~6.
+\end{rmk*}
+
+\begin{rmk*}
+\textbf{Conventions.} A \emph{labelled} class has exponential generating function
+$A(z)=\sum_\alpha z^{|\alpha|}/|\alpha|!$, so that $a_n=n!\,[z^n]A(z)$. For a labelled class
+$\mathcal B$ with no object of size $0$, the constructions and their translations are
+\[
+\SEQ(\mathcal B)\mapsto\frac1{1-B(z)},\qquad
+\SET(\mathcal B)\mapsto e^{B(z)},\qquad
+\CYC(\mathcal B)\mapsto\log\frac1{1-B(z)},
+\]
+and $\SET_{\ge1}$, $\CYC_{\text{odd}}$, and so on, restrict the number or the sizes of the
+components in the obvious way. The \emph{cycle index} of a group $G$ acting on $[n]$ is
+$Z_G(p_1,p_2,\dots)=\frac1{|G|}\sum_{g\in G}\prod_i p_i^{c_i(g)}$, where $c_i(g)$ is the number
+of $i$-cycles of $g$, and Pólya's theorem says that colorings of $[n]$ up to $G$, counted by the
+number of each color, have generating function $Z_G(p_i\mapsto x_1^i+\cdots+x_r^i)$. You may use
+Newton's binomial theorem, $(1+x)^\alpha=\sum_k\binom\alpha kx^k$.
+\end{rmk*}
+
+\begin{rmk*}
+\textbf{On write-ups.} Each problem is worth up to five points for mathematical content and up to
+two for writing. Write for another student in this course: say what you are going to show before
+you show it, justify each step, and use complete sentences. Whenever you give a specification,
+say in words what the objects are before writing the generating function. End your submission
+with a short \emph{Methods and tools} note: what software you used and for what, and how you
+checked anything a machine produced for you.
+\end{rmk*}
+
+%%% Problem 1 %%%
+\begin{prob}[parity]
+\begin{enumerate}[(a)]
+\item Let $\mathcal V$ be the class of set partitions of $[n]$ all of whose blocks have
+\emph{even} size. Write a specification for $\mathcal V$, find its exponential generating
+function in closed form, and compute $v_n$ for $n\le6$. Check $v_4$ by listing.
+\item Let $a_n$ be the number of permutations of $[n]$ all of whose cycles have even length, and
+$b_n$ the number all of whose cycles have odd length. Find both exponential generating functions
+in closed form, and show that $a_n=b_n$ whenever $n$ is even. (You will find that the two
+generating functions differ by a factor of $1+z$; say why that proves the claim.)
+\item Compute $a_n$ and $b_n$ for $n\le4$ by listing cycle types, and check (b).
+\end{enumerate}
+\end{prob}
+
+%%% Problem 2 %%%
+\begin{prob}[Stirling numbers of the second kind]
+Let $S(n,k)$ be the number of set partitions of $[n]$ into exactly $k$ blocks, so that, as in
+class, $\sum_n S(n,k)\frac{z^n}{n!}=\frac{(e^z-1)^k}{k!}$.
+\begin{enumerate}[(a)]
+\item Expand $(e^z-1)^k$ by the binomial theorem and extract the coefficient of $z^n/n!$ to prove
+\[
+S(n,k)=\frac1{k!}\sum_{j=0}^{k}(-1)^{j}\binom kj(k-j)^n .
+\]
+\item Use (a) to compute $S(5,2)$ and $S(5,3)$, and check them against a direct count.
+\item Let $B(z)=e^{e^z-1}$ be the exponential generating function of the Bell numbers $B_n$
+(all set partitions of $[n]$). Differentiate to show $B'(z)=e^zB(z)$, and deduce the recurrence
+\[
+B_{n+1}=\sum_{k=0}^{n}\binom nkB_k .
+\]
+Then explain the recurrence directly, without generating functions, by looking at the block
+containing the element $n+1$.
+\end{enumerate}
+\end{prob}
+
+%%% Problem 3 %%%
+\begin{prob}[necklaces and bracelets]
+A \emph{necklace} is a coloring of the $n$ vertices of a regular $n$-gon up to rotation; a
+\emph{bracelet} is a coloring up to rotation and reflection. Take $n=8$ and two colors, black
+and white.
+\begin{enumerate}[(a)]
+\item Write the cycle index of the rotation group $C_8$ acting on the $8$ vertices. (Sort the
+eight rotations by their order.) How many necklaces are there?
+\item Write the cycle index of the dihedral group $D_8$ of order $16$. (There are two kinds of
+reflection; say what each does to the vertices.) How many bracelets are there?
+\item Count necklaces by the number of black beads: substitute $p_i\mapsto 1+q^i$ into (a) and
+expand. Check two coefficients by listing the necklaces with that many black beads.
+\item The polynomial in (c) is palindromic. Say why, in one sentence, for every $n$.
+\end{enumerate}
+\end{prob}
+
+%%% Problem 4 %%%
+\begin{prob}[a transfer matrix, and a callback]
+Let $w_n$ be the number of words of length $n$ over the alphabet $\{a,b,c\}$ in which no two
+consecutive letters are equal.
+\begin{enumerate}[(a)]
+\item Write the transfer matrix $A$ (rows and columns indexed by the three letters; the
+$(x,y)$ entry is $1$ if $y$ may follow $x$) and express $w_n$ in terms of powers of $A$. Find
+$w_n$ in closed form.
+\item Now count \emph{circular} words: colorings of the vertices of the $n$-cycle $C_n$ with
+three colors so that adjacent vertices differ, with the vertices labelled (so no symmetry is
+divided out). Explain why the number is $\tr A^n$, compute the eigenvalues of $A$, and conclude
+that the count is $2^n+2(-1)^n$.
+\item Write the generating function $\sum_{n\ge1}(\tr A^n)z^n$ as a rational function, and
+read off its partial-fraction decomposition. Which pole controls the growth rate, and what is the
+growth rate?
+\item You have met the matrix $A$ before: say what graph it is the adjacency matrix of, and
+what Act~I theorem (b) is a special case of.
+\end{enumerate}
+\end{prob}
+
+%%% Bonus %%%
+\begin{bonus*}[unordered binary trees]
+Let $\cT$ be the class of rooted labelled trees in which every node has at most two children,
+with \emph{no} order on the children: $\cT=\mathcal Z\star\SET_{\le2}(\cT)$, so
+$T(z)=z\,\bigl(1+T(z)+\tfrac12T(z)^2\bigr)$. Use Lagrange inversion,
+$[z^n]T=\frac1n[u^{n-1}]\phi(u)^n$ with $\phi(u)=1+u+\tfrac12u^2$, to compute $n!\,[z^n]T$ for
+$n\le5$, and check $n=3$ by drawing the trees.
+\end{bonus*}
+
+\end{document}
