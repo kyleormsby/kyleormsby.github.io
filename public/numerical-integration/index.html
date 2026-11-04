@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Numerical integration</title>
+<meta name="description" content="Left, right, midpoint, trapezoid and Simpson's rules for any function, with a live error-versus-n plot.">
+<style>
+  :root{
+    --paper:#f4efe5; --ink:#17140f; --muted:#6d6457; --panel:rgba(244,239,229,.9); --line:rgba(23,20,15,.15);
+    --accent:#a2462a; --blue:#2f5f9c; --faint:rgba(23,20,15,.07); --gold:#b0841f; --green:#3e7a4a; --violet:#76478f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#14120f; --ink:#ebe4d6; --muted:#9a9184; --panel:rgba(20,18,15,.9); --line:rgba(235,228,214,.17);
+      --accent:#e08a62; --blue:#7fa8de; --faint:rgba(235,228,214,.07); --gold:#e0b858; --green:#86c290; --violet:#c49ad8; }
+  }
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:14px/1.45 ui-serif,Georgia,"Iowan Old Style",serif;overflow:hidden}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #panel{position:fixed;left:14px;top:14px;width:min(360px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:var(--panel);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;box-shadow:0 8px 30px rgba(0,0,0,.12);box-sizing:border-box}
+  #panel h1{font-size:17px;margin:0 0 2px;font-weight:600;letter-spacing:.01em}
+  .sub{color:var(--muted);font-size:12.5px;margin:0 0 8px}
+  .seg{display:flex;margin:6px 0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{flex:1;border:0;border-radius:0;padding:4px 0;font-size:12.5px}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}
+  .row label{width:44px;color:var(--muted);flex:none}
+  .row input[type=range]{flex:1;min-width:80px;accent-color:var(--accent)}
+  .row output{width:40px;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;flex:none}
+  input.txt{flex:1;min-width:0;font:inherit;font-size:13.5px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 7px}
+  input.txt:focus{outline:none;border-color:var(--ink)}
+  input.txt.bad{border-color:var(--accent)}
+  input.short{flex:0 0 74px}
+  button{font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer}
+  button:hover{border-color:var(--ink)}
+  .presets{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0 2px;align-items:center}
+  .presets span{font-size:12.5px;color:var(--muted);margin-right:2px}
+  .presets button{padding:1px 7px;font-size:12.5px}
+  #msg{font-size:12px;color:var(--accent);min-height:1.2em;margin:2px 0}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12.5px;margin:4px 0 2px}
+  th{font-weight:400;color:var(--muted);text-align:right;padding:2px 4px;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  td{text-align:right;padding:2px 4px;cursor:pointer}
+  tr.on td{background:var(--faint);font-weight:600}
+  tr:hover td{background:var(--faint)}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  .formula{font-size:13px;margin:6px 0;line-height:1.55}
+  .m{font-style:italic}
+  .mut{color:var(--muted)}
+  #ev{width:100%;height:150px;display:block;margin:4px 0 0}
+  details{margin-top:8px}
+  details summary{cursor:pointer;color:var(--muted);font-size:12.5px;user-select:none}
+  details p{margin:6px 0;font-size:13px}
+  h2{font-size:13px;font-weight:600;margin:10px 0 0;color:var(--muted);letter-spacing:.02em}
+  #tip{position:fixed;pointer-events:none;display:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12.5px;
+    font-variant-numeric:tabular-nums;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:280px;z-index:5}
+  #panel.min .hideable{display:none}
+  #minbtn{float:right;border:0;padding:0 2px;color:var(--muted);font-size:13px}
+  @media (max-width:760px){ #panel{left:8px;top:8px;width:calc(100vw - 16px);padding:9px 11px 8px;max-height:52vh} }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="tip"></div>
+<div id="panel">
+  <button id="minbtn" title="collapse panel">–</button>
+  <h1>Numerical integration</h1>
+  <div class="sub">Estimating <span class="m">∫<sub>a</sub><sup>b</sup> f(x) dx</span> with <span class="m">n</span> subintervals</div>
+  <div class="hideable">
+  <div class="row"><label for="fx"><span class="m">f</span>(<span class="m">x</span>) =</label><input id="fx" class="txt" spellcheck="false" autocomplete="off" value="x^2"></div>
+  <div class="presets"><span>try</span>
+    <button data-f="x^2" data-a="0" data-b="2">x²</button>
+    <button data-f="sqrt(x)" data-a="0" data-b="4">√x</button>
+    <button data-f="sin(x)" data-a="0" data-b="pi">sin x</button>
+    <button data-f="e^(-x^2)" data-a="-2" data-b="2">e<sup>−x²</sup></button>
+    <button data-f="1/x" data-a="1" data-b="4">1/x</button>
+    <button data-f="x^3-3x" data-a="-2" data-b="2.5">x³−3x</button>
+    <button data-f="x(4-x)" data-a="0" data-b="4">x(4−x)</button>
+    <button data-f="cos(3x)+x/2" data-a="0" data-b="5">wiggly</button>
+  </div>
+  <div class="row"><label for="ain"><span class="m">a</span> =</label><input id="ain" class="txt short" spellcheck="false" value="0">
+    <label for="bin" style="width:auto"><span class="m">b</span> =</label><input id="bin" class="txt short" spellcheck="false" value="2"></div>
+  <div id="msg"></div>
+  <div class="seg" id="rules">
+    <button data-r="L">left</button><button data-r="R">right</button><button data-r="M">midpoint</button><button data-r="T" class="on">trapezoid</button><button data-r="S">Simpson</button>
+  </div>
+  <div class="row" style="justify-content:space-between;margin:2px 0 4px"><span class="mut" style="font-size:12px">scroll or pinch to zoom · drag to pan</span><button id="resetv" style="padding:1px 8px;font-size:12px">reset view</button></div>
+  <div class="row"><label for="n"><span class="m">n</span> =</label><input id="n" type="range" min="1" max="64" step="1" value="4"><output id="nOut">4</output></div>
+  <div class="formula" id="formula"></div>
+  <table id="tab"><thead><tr><th>rule</th><th>estimate</th><th>error</th><th></th></tr></thead><tbody></tbody></table>
+  <div class="mut" style="font-size:12px" id="ref"></div>
+  <h2>error versus <span class="m">n</span> (log–log)</h2>
+  <canvas id="ev"></canvas>
+  <div class="mut" style="font-size:12px" id="evnote"></div>
+  <details><summary>what is this?</summary>
+    <p>Each rule cuts [<span class="m">a</span>, <span class="m">b</span>] into <span class="m">n</span> subintervals of width Δ<span class="m">x</span> = (<span class="m">b</span> − <span class="m">a</span>)/<span class="m">n</span>, replaces <span class="m">f</span> on each by something whose area is easy, and adds up. <b>Left</b>, <b>right</b> and <b>midpoint</b> use rectangles whose height is <span class="m">f</span> at the left end, right end or middle. The <b>trapezoid</b> rule joins the two endpoint values by a straight line, so <span class="m">T<sub>n</sub></span> = (<span class="m">L<sub>n</sub></span> + <span class="m">R<sub>n</sub></span>)/2. <b>Simpson’s rule</b> takes the subintervals two at a time and fits a parabola through the three points, so it needs <span class="m">n</span> even; it is also the weighted average <span class="m">S<sub>n</sub></span> = (2<span class="m">M</span><sub><span class="m">n</span>/2</sub> + <span class="m">T</span><sub><span class="m">n</span>/2</sub>)/3, which is how Active Calculus §5.6 writes it.</p>
+    <p>Shaded regions are what each rule counts, positive above the axis and negative below. The table compares all five rules at the current <span class="m">n</span>; click a row to switch rules. The “error” is estimate minus a reference value computed by adaptive quadrature to about twelve digits, so positive means over-estimate. For a concave-up function the trapezoid rule over-estimates and the midpoint rule under-estimates, and the midpoint error is about half the trapezoid error with the opposite sign.</p>
+    <p>The lower plot shows |error| against <span class="m">n</span> on log–log axes for <span class="m">n</span> = 2, 4, 8, …, 256. A rule whose error shrinks like 1/<span class="m">n<sup>k</sup></span> makes a line of slope −<span class="m">k</span>: about −1 for left and right, −2 for midpoint and trapezoid, −4 for Simpson, for smooth <span class="m">f</span>. Errors below 10<sup>−14</sup> are at the limit of the arithmetic and drawn on the floor; Simpson is exact for every cubic, so try <span class="m">x</span>³ − 3<span class="m">x</span>.</p>
+    <p><b>Functions:</b> type <span class="m">x</span>, numbers, + − * / ^, parentheses, implicit multiplication (2x, 3sin(x)), pi and e, and sqrt, cbrt, exp, ln (or log), log10, sin, cos, tan, sec, csc, cot, asin, acos, atan, sinh, cosh, tanh, abs. The endpoints accept expressions too (pi/2). Hover over the picture to see one subinterval’s contribution. Scroll (or pinch) to zoom about the cursor, with Shift to zoom only horizontally and Alt only vertically; drag to pan; double-click, press 0, or use reset view to fit [<span class="m">a</span>, <span class="m">b</span>] again. Changing <span class="m">f</span>, <span class="m">a</span> or <span class="m">b</span> also resets the view. The address bar keeps the current settings, so a link reopens the same picture.</p>
+  </details>
+  </div>
+</div>
+<script>
+'use strict';
+// ---------- expression parser (no eval) ----------
+const Expr = (() => {
+  const FN = { sqrt: Math.sqrt, cbrt: Math.cbrt, exp: Math.exp, ln: Math.log, log: Math.log, log10: Math.log10, log2: Math.log2,
+    sin: Math.sin, cos: Math.cos, tan: Math.tan, sec: (t) => 1 / Math.cos(t), csc: (t) => 1 / Math.sin(t), cot: (t) => 1 / Math.tan(t),
+    asin: Math.asin, acos: Math.acos, atan: Math.atan, arcsin: Math.asin, arccos: Math.acos, arctan: Math.atan,
+    sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh, abs: Math.abs, floor: Math.floor, ceil: Math.ceil };
+  const CONST = { pi: Math.PI, e: Math.E, tau: 2 * Math.PI };
+  function tokenize(s) {
+    s = s.replace(/π/g, 'pi').replace(/√/g, 'sqrt').replace(/−/g, '-').replace(/[×·]/g, '*').replace(/÷/g, '/').replace(/²/g, '^2').replace(/³/g, '^3');
+    const out = []; let i = 0;
+    while (i < s.length) {
+      const c = s[i];
+      if (/\s/.test(c)) { i++; continue; }
+      const num = /^(\d+\.?\d*|\.\d+)(e[+-]?\d+)?/i.exec(s.slice(i));
+      if (num) { out.push({ t: 'n', v: parseFloat(num[0]) }); i += num[0].length; continue; }
+      const id = /^[a-z][a-z0-9]*/i.exec(s.slice(i));
+      if (id) {
+        let w = id[0].toLowerCase();
+        // split things like "xsin" or "pix" greedily into known names
+        while (w.length) {
+          let k = Object.keys(FN).concat(Object.keys(CONST), ['x']).filter((n) => w.startsWith(n)).sort((p, q) => q.length - p.length)[0];
+          if (!k) throw new Error('unknown name “' + w + '”');
+          out.push({ t: 'id', v: k }); w = w.slice(k.length);
+        }
+        i += id[0].length; continue;
+      }
+      if ('+-*/^(),'.includes(c)) { out.push({ t: c }); i++; continue; }
+      throw new Error('unexpected “' + c + '”');
+    }
+    return out;
+  }
+  function parse(src) {
+    const T = tokenize(src); let p = 0;
+    const peek = () => T[p], next = () => T[p++];
+    const expect = (t) => { if (!T[p] || T[p].t !== t) throw new Error('expected “' + t + '”'); p++; };
+    const startsPrimary = (tk) => tk && (tk.t === 'n' || tk.t === 'id' || tk.t === '(');
+    function expr() { let f = term(); while (peek() && (peek().t === '+' || peek().t === '-')) { const op = next().t, a = f, b = term(); f = op === '+' ? (x) => a(x) + b(x) : (x) => a(x) - b(x); } return f; }
+    function term() {
+      let f = unary();
+      for (;;) {
+        const tk = peek();
+        if (tk && (tk.t === '*' || tk.t === '/')) { next(); const a = f, b = unary(); f = tk.t === '*' ? (x) => a(x) * b(x) : (x) => a(x) / b(x); }
+        else if (startsPrimary(tk)) { const a = f, b = power(); f = (x) => a(x) * b(x); }
+        else return f;
+      }
+    }
+    function unary() { if (peek() && peek().t === '-') { next(); const a = unary(); return (x) => -a(x); } if (peek() && peek().t === '+') { next(); return unary(); } return power(); }
+    function power() { const base = primary(); if (peek() && peek().t === '^') { next(); const ex = unary(); return (x) => pow(base(x), ex(x)); } return base; }
+    function primary() {
+      const tk = next();
+      if (!tk) throw new Error('unexpected end');
+      if (tk.t === 'n') { const v = tk.v; return () => v; }
+      if (tk.t === '(') { const f = expr(); expect(')'); return f; }
+      if (tk.t === 'id') {
+        if (tk.v === 'x') return (x) => x;
+        if (tk.v in CONST) { const v = CONST[tk.v]; return () => v; }
+        const fn = FN[tk.v];
+        if (peek() && peek().t === '(') { next(); const a = expr(); expect(')'); return (x) => fn(a(x)); }
+        if (peek() && peek().t === '^') { // sin^2(x)
+          next(); const ex = unary(); const a = power(); return (x) => pow(fn(a(x)), ex(x)); }
+        const a = power(); return (x) => fn(a(x)); // sin x
+      }
+      throw new Error('unexpected “' + tk.t + '”');
+    }
+    // real odd roots of negatives, e.g. x^(1/3)
+    function pow(b, e) { if (b < 0 && !Number.isInteger(e)) { const r = 1 / e; if (Number.isInteger(r) && Math.abs(r) % 2 === 1) return -Math.pow(-b, e); } return Math.pow(b, e); }
+    const f = expr();
+    if (p < T.length) throw new Error('unexpected “' + (T[p].v ?? T[p].t) + '”');
+    return f;
+  }
+  return { parse };
+})();
+
+// ---------- rules ----------
+const RULES = {
+  L: { name: 'left', sym: 'L', css: '--blue' },
+  R: { name: 'right', sym: 'R', css: '--gold' },
+  M: { name: 'midpoint', sym: 'M', css: '--green' },
+  T: { name: 'trapezoid', sym: 'T', css: '--accent' },
+  S: { name: 'Simpson', sym: 'S', css: '--violet' },
+};
+function estimate(f, a, b, n, r) {
+  if (r === 'S' && n % 2) return NaN;
+  const h = (b - a) / n; let s = 0;
+  if (r === 'L') for (let i = 0; i < n; i++) s += f(a + i * h);
+  else if (r === 'R') for (let i = 1; i <= n; i++) s += f(a + i * h);
+  else if (r === 'M') for (let i = 0; i < n; i++) s += f(a + (i + 0.5) * h);
+  else if (r === 'T') { s = (f(a) + f(b)) / 2; for (let i = 1; i < n; i++) s += f(a + i * h); }
+  else if (r === 'S') { s = f(a) + f(b); for (let i = 1; i < n; i++) s += (i % 2 ? 4 : 2) * f(a + i * h); return s * h / 3; }
+  return s * h;
+}
+// reference value: adaptive Simpson with Richardson correction
+function reference(f, a, b) {
+  const tol = 1e-12 * Math.max(1, Math.abs(b - a));
+  let evals = 0, stuck = 0;
+  function simp(a, b, fa, fm, fb) { return (b - a) / 6 * (fa + 4 * fm + fb); }
+  function rec(a, b, fa, fm, fb, whole, eps, depth) {
+    const m = (a + b) / 2, lm = (a + m) / 2, rm = (m + b) / 2;
+    const flm = f(lm), frm = f(rm); evals += 2;
+    if (evals > 2e6) throw new Error('reference integral did not converge');
+    const left = simp(a, m, fa, flm, fm), right = simp(m, b, fm, frm, fb), d = left + right - whole;
+    if (Math.abs(d) <= 15 * eps) return left + right + d / 15;
+    if (depth <= 0) { stuck++; return left + right + d / 15; }
+    const e2 = Math.max(eps / 2, 1e-15);
+    return rec(a, m, fa, flm, fm, left, e2, depth - 1) + rec(m, b, fm, frm, fb, right, e2, depth - 1);
+  }
+  // start from a fine uniform split so oscillating integrands are resolved
+  const K = 64, h = (b - a) / K; let tot = 0;
+  for (let k = 0; k < K; k++) {
+    const x0 = a + k * h, x1 = x0 + h, xm = (x0 + x1) / 2;
+    const f0 = f(x0), fm = f(xm), f1 = f(x1);
+    tot += rec(x0, x1, f0, fm, f1, simp(x0, x1, f0, fm, f1), tol / K, 48);
+  }
+  if (stuck || !Number.isFinite(tot)) throw new Error('f seems to blow up on [a, b], so there is no reliable reference value; errors are not shown');
+  return tot;
+}
+
+// ---------- state ----------
+const S = { src: 'x^2', asrc: '0', bsrc: '2', a: 0, b: 2, n: 4, rule: 'T', f: (x) => x * x, ref: 8 / 3, ok: true };
+const $ = (id) => document.getElementById(id);
+const fx = $('fx'), ain = $('ain'), bin = $('bin'), nIn = $('n'), nOut = $('nOut'), msg = $('msg');
+const cv = $('c'), ctx = cv.getContext('2d'), ev = $('ev'), ectx = ev.getContext('2d');
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+function readHash() {
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.has('f')) S.src = q.get('f'); if (q.has('a')) S.asrc = q.get('a'); if (q.has('b')) S.bsrc = q.get('b');
+  if (q.has('n')) S.n = Math.max(1, Math.min(64, parseInt(q.get('n')) || 4));
+  if (q.has('r') && RULES[q.get('r')]) S.rule = q.get('r');
+  fx.value = S.src; ain.value = S.asrc; bin.value = S.bsrc; nIn.value = S.n;
+}
+function writeHash() {
+  const q = new URLSearchParams({ f: S.src, a: S.asrc, b: S.bsrc, n: S.n, r: S.rule });
+  history.replaceState(null, '', '#' + q.toString());
+}
+function constVal(src) { const g = Expr.parse(src); const v = g(NaN); if (!Number.isFinite(v)) throw new Error('endpoint must be a number'); return v; }
+
+function update() {
+  let err = '';
+  fx.classList.remove('bad'); ain.classList.remove('bad'); bin.classList.remove('bad');
+  try { S.f = Expr.parse(fx.value); S.src = fx.value; } catch (e) { fx.classList.add('bad'); err = 'f: ' + e.message; }
+  try { S.a = constVal(ain.value); S.asrc = ain.value; } catch (e) { ain.classList.add('bad'); err = err || 'a: ' + e.message; }
+  try { S.b = constVal(bin.value); S.bsrc = bin.value; } catch (e) { bin.classList.add('bad'); err = err || 'b: ' + e.message; }
+  if (!err && !(S.b > S.a)) { err = 'need a < b'; ain.classList.add('bad'); bin.classList.add('bad'); }
+  S.ok = !err;
+  const key = S.src + '|' + S.asrc + '|' + S.bsrc;
+  if (key !== S.key) { S.key = key; S.userView = null; }
+  if (S.ok) {
+    // check f is defined on [a, b]
+    let bad = 0;
+    for (let i = 0; i <= 400; i++) { const v = S.f(S.a + (S.b - S.a) * i / 400); if (!Number.isFinite(v)) bad++; }
+    if (bad) { err = 'f is undefined or infinite somewhere on [a, b]; estimates may be meaningless'; }
+    try { S.ref = reference(S.f, S.a, S.b); if (!Number.isFinite(S.ref)) S.ref = NaN; } catch (e) { S.ref = NaN; err = err || e.message; }
+  }
+  msg.textContent = err;
+  nOut.textContent = S.n;
+  writeHash(); panel(); draw(); drawEV();
+}
+
+// ---------- panel ----------
+const fmt = (v, d = 7) => { if (!Number.isFinite(v)) return '—'; if (v === 0) return '0'; const a = Math.abs(v); if (a >= 1e6 || a < 1e-4) return v.toExponential(2).replace('e', '×10^').replace(/\^\+?(-?)(\d+)/, (m, s, d) => '<sup>' + (s ? '−' : '') + d + '</sup>'); return (+v.toPrecision(d)).toString().replace('-', '−'); };
+function panel() {
+  for (const b of document.querySelectorAll('#rules button')) b.classList.toggle('on', b.dataset.r === S.rule);
+  const n = S.n, h = (S.b - S.a) / n;
+  const dx = 'Δ<span class="m">x</span> = (<span class="m">b</span> − <span class="m">a</span>)/<span class="m">n</span> = ' + fmt(h, 5);
+  const F = {
+    L: '<span class="m">L<sub>n</sub></span> = Δ<span class="m">x</span> [<span class="m">f</span>(<span class="m">x</span><sub>0</sub>) + <span class="m">f</span>(<span class="m">x</span><sub>1</sub>) + ⋯ + <span class="m">f</span>(<span class="m">x</span><sub><span class="m">n</span>−1</sub>)]',
+    R: '<span class="m">R<sub>n</sub></span> = Δ<span class="m">x</span> [<span class="m">f</span>(<span class="m">x</span><sub>1</sub>) + <span class="m">f</span>(<span class="m">x</span><sub>2</sub>) + ⋯ + <span class="m">f</span>(<span class="m">x<sub>n</sub></span>)]',
+    M: '<span class="m">M<sub>n</sub></span> = Δ<span class="m">x</span> [<span class="m">f</span>(<span class="m">m</span><sub>1</sub>) + ⋯ + <span class="m">f</span>(<span class="m">m<sub>n</sub></span>)], with <span class="m">m<sub>i</sub></span> the midpoint of each subinterval',
+    T: '<span class="m">T<sub>n</sub></span> = Δ<span class="m">x</span> [½<span class="m">f</span>(<span class="m">x</span><sub>0</sub>) + <span class="m">f</span>(<span class="m">x</span><sub>1</sub>) + ⋯ + <span class="m">f</span>(<span class="m">x</span><sub><span class="m">n</span>−1</sub>) + ½<span class="m">f</span>(<span class="m">x<sub>n</sub></span>)] = (<span class="m">L<sub>n</sub></span> + <span class="m">R<sub>n</sub></span>)/2',
+    S: '<span class="m">S<sub>n</sub></span> = (Δ<span class="m">x</span>/3) [<span class="m">f</span>(<span class="m">x</span><sub>0</sub>) + 4<span class="m">f</span>(<span class="m">x</span><sub>1</sub>) + 2<span class="m">f</span>(<span class="m">x</span><sub>2</sub>) + ⋯ + 4<span class="m">f</span>(<span class="m">x</span><sub><span class="m">n</span>−1</sub>) + <span class="m">f</span>(<span class="m">x<sub>n</sub></span>)] = (2<span class="m">M</span><sub><span class="m">n</span>/2</sub> + <span class="m">T</span><sub><span class="m">n</span>/2</sub>)/3',
+  };
+  let extra = '';
+  if (S.rule === 'S' && n % 2) extra = '<br><span style="color:var(--accent)">Simpson’s rule needs an even <span class="m">n</span>; showing <span class="m">n</span> = ' + (n + 1) + '.</span>';
+  $('formula').innerHTML = F[S.rule] + '<br><span class="mut">' + dx + '</span>' + extra;
+  const tb = $('tab').tBodies[0]; tb.innerHTML = '';
+  for (const r of 'LRMTS') {
+    const nn = r === 'S' && n % 2 ? n + 1 : n;
+    const v = S.ok ? estimate(S.f, S.a, S.b, nn, r) : NaN, e = v - S.ref;
+    const tr = document.createElement('tr'); if (r === S.rule) tr.className = 'on';
+    const sense = !Number.isFinite(e) ? '' : Math.abs(e) < 1e-12 * Math.max(1, Math.abs(S.ref)) ? 'exact' : e > 0 ? 'over' : 'under';
+    tr.innerHTML = `<td><span class="sw" style="background:var(${RULES[r].css})"></span><span class="m">${RULES[r].sym}</span><sub>${nn}</sub></td><td>${fmt(v)}</td><td>${sense === 'exact' ? '≈ 0' : fmt(e, 3)}</td><td class="mut">${sense}</td>`;
+    tr.onclick = () => { S.rule = r; update(); };
+    tb.appendChild(tr);
+  }
+  $('ref').innerHTML = Number.isFinite(S.ref) ? 'reference value ∫ ≈ ' + fmt(S.ref, 12) + ' (adaptive quadrature)' : '';
+}
+
+// ---------- drawing ----------
+let W = 0, H = 0, DPR = 1, box = null, view = null;
+function resize() {
+  DPR = window.devicePixelRatio || 1; W = innerWidth; H = innerHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  const r = ev.getBoundingClientRect(); ev.width = Math.max(1, r.width * DPR); ev.height = Math.max(1, r.height * DPR);
+  draw(); drawEV();
+}
+function plotBox() {
+  const p = $('panel').getBoundingClientRect();
+  if (W > 760 && !$('panel').classList.contains('min')) return { x0: p.right + 40, y0: 44, x1: W - 30, y1: H - 40 };
+  return { x0: 40, y0: p.bottom + 36, x1: W - 20, y1: H - 36 };
+}
+function niceStep(span, target) { const raw = span / target, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+function simpsonArc(f, x0, x2) { // parabola through (x0, x1, x2)
+  const x1 = (x0 + x2) / 2, y0 = f(x0), y1 = f(x1), y2 = f(x2);
+  return (x) => { const l0 = (x - x1) * (x - x2) / ((x0 - x1) * (x0 - x2)), l1 = (x - x0) * (x - x2) / ((x1 - x0) * (x1 - x2)), l2 = (x - x0) * (x - x1) / ((x2 - x0) * (x2 - x1)); return y0 * l0 + y1 * l1 + y2 * l2; };
+}
+function shapes() { // list of {xs:[...], ys:[...]} upper boundaries per piece, plus sample points
+  const { f, a, b } = S; let n = S.n; const r = S.rule;
+  if (r === 'S' && n % 2) n++;
+  const h = (b - a) / n, out = [], pts = [];
+  if (r === 'S') {
+    for (let i = 0; i < n; i += 2) {
+      const x0 = a + i * h, x2 = x0 + 2 * h, q = simpsonArc(f, x0, x2), xs = [], ys = [];
+      for (let k = 0; k <= 40; k++) { const x = x0 + (x2 - x0) * k / 40; xs.push(x); ys.push(q(x)); }
+      out.push({ xs, ys, lo: x0, hi: x2, val: (2 * h) / 6 * (f(x0) + 4 * f(x0 + h) + f(x2)) });
+      pts.push([x0, f(x0)], [x0 + h, f(x0 + h)], [x2, f(x2)]);
+    }
+  } else {
+    for (let i = 0; i < n; i++) {
+      const x0 = a + i * h, x1 = x0 + h;
+      if (r === 'T') { out.push({ xs: [x0, x1], ys: [f(x0), f(x1)], lo: x0, hi: x1, val: h * (f(x0) + f(x1)) / 2 }); pts.push([x0, f(x0)], [x1, f(x1)]); }
+      else { const xs = r === 'L' ? x0 : r === 'R' ? x1 : (x0 + x1) / 2, y = f(xs); out.push({ xs: [x0, x1], ys: [y, y], lo: x0, hi: x1, val: h * y, sx: xs }); pts.push([xs, y]); }
+    }
+  }
+  return { pieces: out, pts, h, n };
+}
+function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
+  if (!S.ok) return;
+  box = plotBox(); if (box.x1 - box.x0 < 80 || box.y1 - box.y0 < 80) return;
+  const { f, a, b } = S, sh = shapes();
+  // y-range from the curve and the shapes
+  let lo = 0, hi = 0; const samples = [];
+  for (let i = 0; i <= 600; i++) { const x = a + (b - a) * i / 600, y = f(x); samples.push([x, y]); if (Number.isFinite(y)) { lo = Math.min(lo, y); hi = Math.max(hi, y); } }
+  for (const p of sh.pieces) for (const y of p.ys) if (Number.isFinite(y)) { lo = Math.min(lo, y); hi = Math.max(hi, y); }
+  if (hi - lo < 1e-9) { hi += 1; lo -= 1; }
+  // clip runaway values (e.g. 1/x near 0) to a sensible window
+  const fin = samples.map((s) => s[1]).filter(Number.isFinite).sort((p, q) => p - q);
+  if (fin.length > 20) { const q1 = fin[Math.floor(fin.length * 0.02)], q9 = fin[Math.floor(fin.length * 0.98)], sp = (q9 - q1) || 1; lo = Math.max(lo, Math.min(0, q1 - 3 * sp)); hi = Math.min(hi, Math.max(0, q9 + 3 * sp)); }
+  const pad = (hi - lo) * 0.08, xpad = (b - a) * 0.05;
+  S.autoView = { xa: a - xpad, xb: b + xpad, ya: lo - pad, yb: hi + pad };
+  view = S.userView || S.autoView;
+  const X = (x) => box.x0 + (x - view.xa) / (view.xb - view.xa) * (box.x1 - box.x0);
+  const Y = (y) => box.y1 - (y - view.ya) / (view.yb - view.ya) * (box.y1 - box.y0);
+  const clampY = (y) => Math.max(box.y0 - 4000, Math.min(box.y1 + 4000, Y(y)));
+  const clampX = (x) => Math.max(box.x0 - 4000, Math.min(box.x1 + 4000, X(x)));
+  const ink = css('--ink'), muted = css('--muted'), line = css('--line'), col = css(RULES[S.rule].css);
+  // grid and ticks
+  ctx.font = '12px ui-serif, Georgia, serif'; ctx.fillStyle = muted; ctx.strokeStyle = line; ctx.lineWidth = 1;
+  const sx = niceStep(view.xb - view.xa, 8), sy = niceStep(view.yb - view.ya, 6);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const y0px = Math.max(box.y0, Math.min(box.y1, Y(0)));
+  for (let t = Math.ceil(view.xa / sx) * sx; t <= view.xb + 1e-12; t += sx) { const px = X(t); ctx.beginPath(); ctx.moveTo(px, box.y0); ctx.lineTo(px, box.y1); ctx.globalAlpha = .5; ctx.stroke(); ctx.globalAlpha = 1; ctx.fillText(fmtTick(t, sx), px, y0px + 4); }
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  const x0px = Math.max(box.x0, Math.min(box.x1, X(0)));
+  for (let t = Math.ceil(view.ya / sy) * sy; t <= view.yb + 1e-12; t += sy) { const py = Y(t); ctx.beginPath(); ctx.moveTo(box.x0, py); ctx.lineTo(box.x1, py); ctx.globalAlpha = .5; ctx.stroke(); ctx.globalAlpha = 1; if (Math.abs(t) > sy / 1e6) ctx.fillText(fmtTick(t, sy), x0px - 5, py); }
+  // shapes
+  ctx.save(); ctx.beginPath(); ctx.rect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0); ctx.clip();
+  for (const p of sh.pieces) {
+    ctx.beginPath(); ctx.moveTo(clampX(p.xs[0]), clampY(0));
+    for (let k = 0; k < p.xs.length; k++) ctx.lineTo(clampX(p.xs[k]), clampY(p.ys[k]));
+    ctx.lineTo(clampX(p.xs[p.xs.length - 1]), clampY(0)); ctx.closePath();
+    ctx.fillStyle = col; ctx.globalAlpha = p.hover ? .42 : .22; ctx.fill(); ctx.globalAlpha = .9; ctx.strokeStyle = col; ctx.lineWidth = 1.3; ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  // axes
+  ctx.strokeStyle = ink; ctx.lineWidth = 1.2; ctx.globalAlpha = .7;
+  if (0 >= view.ya && 0 <= view.yb) { ctx.beginPath(); ctx.moveTo(box.x0, Y(0)); ctx.lineTo(box.x1, Y(0)); ctx.stroke(); }
+  if (0 >= view.xa && 0 <= view.xb) { ctx.beginPath(); ctx.moveTo(X(0), box.y0); ctx.lineTo(X(0), box.y1); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+  // a and b markers
+  ctx.setLineDash([4, 4]); ctx.strokeStyle = muted; ctx.lineWidth = 1;
+  for (const t of [a, b]) { ctx.beginPath(); ctx.moveTo(clampX(t), box.y0); ctx.lineTo(clampX(t), box.y1); ctx.stroke(); }
+  ctx.setLineDash([]);
+  // curve
+  ctx.strokeStyle = ink; ctx.lineWidth = 2.2; ctx.beginPath(); let pen = false;
+  for (let i = 0; i <= 900; i++) { const x = view.xa + (view.xb - view.xa) * i / 900, y = f(x); if (!Number.isFinite(y) || y > view.yb + 10 * (view.yb - view.ya) || y < view.ya - 10 * (view.yb - view.ya)) { pen = false; continue; } if (pen) ctx.lineTo(X(x), Y(y)); else { ctx.moveTo(X(x), Y(y)); pen = true; } }
+  ctx.stroke();
+  // sample points
+  ctx.fillStyle = col;
+  for (const [x, y] of sh.pts) if (Number.isFinite(y)) { ctx.beginPath(); ctx.arc(X(x), Y(y), 3.4, 0, 2 * Math.PI); ctx.fill(); }
+  ctx.restore();
+  ctx.fillStyle = muted; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.font = 'italic 13px ui-serif, Georgia, serif';
+  for (const [t, nm] of [[a, 'a'], [b, 'b']]) { const px = X(t); if (px >= box.x0 - 1 && px <= box.x1 + 1) ctx.fillText(nm, px, box.y1 + 4); }
+  // label
+  ctx.font = '15px ui-serif, Georgia, serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.fillStyle = ink;
+  ctx.fillText(`${RULES[S.rule].sym}${sub(sh.n)} = ${plain(estimate(f, a, b, sh.n, S.rule))}` + (Number.isFinite(S.ref) ? `    ∫ ≈ ${plain(S.ref)}` : ''), box.x1, box.y0 - 10);
+  S.sh = sh; S.X = X; S.Y = Y;
+}
+const SUBS = '₀₁₂₃₄₅₆₇₈₉'; const sub = (n) => String(n).split('').map((d) => SUBS[+d]).join('');
+const plain = (v) => Number.isFinite(v) ? (+v.toPrecision(8)).toString().replace('-', '−') : '—';
+function fmtTick(t, step) { const d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); let s = t.toFixed(d); if (/^-?0\.?0*$/.test(s)) s = '0'; return s.replace('-', '−'); }
+
+// ---------- error versus n ----------
+function drawEV() {
+  const w = ev.width / DPR, h = ev.height / DPR; ectx.setTransform(DPR, 0, 0, DPR, 0, 0); ectx.clearRect(0, 0, w, h);
+  $('evnote').textContent = '';
+  if (!S.ok || !Number.isFinite(S.ref) || w < 50) return;
+  const ns = [2, 4, 8, 16, 32, 64, 128, 256], FLOOR = 1e-14 * Math.max(1, Math.abs(S.ref));
+  const data = {};
+  let emax = -Infinity, emin = Infinity;
+  for (const r of 'LRMTS') { data[r] = ns.map((n) => { const e = Math.abs(estimate(S.f, S.a, S.b, n, r) - S.ref); return Math.max(FLOOR, Number.isFinite(e) ? e : NaN); });
+    for (const e of data[r]) if (Number.isFinite(e)) { emax = Math.max(emax, e); emin = Math.min(emin, e); } }
+  if (!Number.isFinite(emax)) return;
+  const L0 = Math.floor(Math.log10(emin)), L1 = Math.ceil(Math.log10(emax)) + (Math.log10(emax) % 1 === 0 ? 0 : 0);
+  const top = Math.max(L1, L0 + 1);
+  const m = { l: 34, r: 8, t: 6, b: 18 };
+  const X = (n) => m.l + (Math.log2(n) - 1) / 7 * (w - m.l - m.r);
+  const Y = (e) => m.t + (top - Math.log10(e)) / (top - L0) * (h - m.t - m.b);
+  const muted = css('--muted'), line = css('--line'), ink = css('--ink');
+  ectx.font = '10.5px ui-serif, Georgia, serif'; ectx.fillStyle = muted; ectx.strokeStyle = line; ectx.lineWidth = 1;
+  const stepL = Math.max(1, Math.ceil((top - L0) / 5));
+  ectx.textAlign = 'right'; ectx.textBaseline = 'middle';
+  for (let k = L0; k <= top; k += stepL) { const y = Y(10 ** k); ectx.beginPath(); ectx.moveTo(m.l, y); ectx.lineTo(w - m.r, y); ectx.stroke(); ectx.fillText('10' + supStr(k), m.l - 3, y); }
+  ectx.textAlign = 'center'; ectx.textBaseline = 'top';
+  for (const n of ns) { ectx.fillText(n, X(n), h - m.b + 3); }
+  // current n marker
+  const nc = S.n;
+  if (nc >= 2) { ectx.setLineDash([3, 3]); ectx.strokeStyle = muted; ectx.beginPath(); ectx.moveTo(X(Math.min(256, nc)), m.t); ectx.lineTo(X(Math.min(256, nc)), h - m.b); ectx.stroke(); ectx.setLineDash([]); }
+  for (const r of 'LRMTS') {
+    const c = css(RULES[r].css), on = r === S.rule;
+    ectx.strokeStyle = c; ectx.fillStyle = c; ectx.lineWidth = on ? 2.4 : 1.2; ectx.globalAlpha = on ? 1 : .55;
+    ectx.beginPath(); data[r].forEach((e, i) => { if (!Number.isFinite(e)) return; const px = X(ns[i]), py = Y(e); i ? ectx.lineTo(px, py) : ectx.moveTo(px, py); }); ectx.stroke();
+    data[r].forEach((e, i) => { if (!Number.isFinite(e)) return; ectx.beginPath(); ectx.arc(X(ns[i]), Y(e), on ? 2.6 : 1.8, 0, 2 * Math.PI); ectx.fill(); });
+    ectx.globalAlpha = 1;
+  }
+  // fitted slope for the current rule over n = 16..64
+  const d = data[S.rule], i1 = 3, i2 = 5;
+  if (d[i1] > FLOOR * 10 && d[i2] > FLOOR * 10) {
+    const slope = (Math.log10(d[i2]) - Math.log10(d[i1])) / (Math.log10(ns[i2]) - Math.log10(ns[i1]));
+    $('evnote').innerHTML = `${RULES[S.rule].name}: slope ≈ ${slope.toFixed(2).replace('-', '−')}, so doubling <span class="m">n</span> divides the error by about ${(2 ** -slope).toFixed(1)}`;
+  } else $('evnote').innerHTML = `${RULES[S.rule].name}: error is at the floor of the arithmetic (≈ exact)`;
+}
+const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
+const supStr = (k) => String(k).split('').map((c) => SUP[c]).join('');
+
+// ---------- hover ----------
+const tip = $('tip');
+// ---------- zoom and pan ----------
+const ptrs = new Map(); let gesture = null;
+const inBox = (x, y) => box && x >= box.x0 && x <= box.x1 && y >= box.y0 && y <= box.y1;
+const toData = (v, x, y) => ({ ux: v.xa + (x - box.x0) / (box.x1 - box.x0) * (v.xb - v.xa), uy: v.ya + (box.y1 - y) / (box.y1 - box.y0) * (v.yb - v.ya) });
+function setView(v) { if (!(v.xb - v.xa > 1e-12 && v.yb - v.ya > 1e-12) || !(v.xb - v.xa < 1e12 && v.yb - v.ya < 1e12)) return; S.userView = v; draw(); }
+function zoomAt(x, y, sx, sy, v = view) {
+  const { ux, uy } = toData(v, x, y);
+  setView({ xa: ux - (ux - v.xa) * sx, xb: ux + (v.xb - ux) * sx, ya: uy - (uy - v.ya) * sy, yb: uy + (v.yb - uy) * sy });
+}
+function resetView() { S.userView = null; draw(); }
+cv.addEventListener('wheel', (e) => {
+  if (!S.ok || !view || !inBox(e.clientX, e.clientY)) return;
+  e.preventDefault();
+  const k = Math.exp((e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY) * 0.0015);
+  zoomAt(e.clientX, e.clientY, e.altKey ? 1 : k, e.shiftKey ? 1 : k);
+  tip.style.display = 'none';
+}, { passive: false });
+cv.addEventListener('pointerdown', (e) => {
+  if (!S.ok || !view || !inBox(e.clientX, e.clientY)) return;
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  tip.style.display = 'none'; startGesture();
+});
+function startGesture() {
+  const P = [...ptrs.values()], v = { ...view };
+  if (P.length === 1) gesture = { kind: 'pan', x: P[0].x, y: P[0].y, v };
+  else if (P.length >= 2) { const mx = (P[0].x + P[1].x) / 2, my = (P[0].y + P[1].y) / 2; gesture = { kind: 'pinch', d: Math.hypot(P[0].x - P[1].x, P[0].y - P[1].y) || 1, ...toData(v, mx, my), v }; }
+  cv.style.cursor = 'grabbing';
+}
+function endPointer(e) { if (!ptrs.has(e.pointerId)) return; ptrs.delete(e.pointerId); if (ptrs.size) startGesture(); else { gesture = null; cv.style.cursor = ''; } }
+cv.addEventListener('pointerup', endPointer); cv.addEventListener('pointercancel', endPointer);
+cv.addEventListener('dblclick', (e) => { if (inBox(e.clientX, e.clientY)) resetView(); });
+cv.addEventListener('pointermove', (e) => {
+  if (gesture && ptrs.has(e.pointerId)) {
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const g = gesture, v = g.v, bw = box.x1 - box.x0, bh = box.y1 - box.y0;
+    if (g.kind === 'pan') {
+      const dx = (e.clientX - g.x) / bw * (v.xb - v.xa), dy = (e.clientY - g.y) / bh * (v.yb - v.ya);
+      setView({ xa: v.xa - dx, xb: v.xb - dx, ya: v.ya + dy, yb: v.yb + dy });
+    } else {
+      const P = [...ptrs.values()]; if (P.length < 2) return;
+      const mx = (P[0].x + P[1].x) / 2, my = (P[0].y + P[1].y) / 2, sc = g.d / (Math.hypot(P[0].x - P[1].x, P[0].y - P[1].y) || 1);
+      const w = (v.xb - v.xa) * sc, h = (v.yb - v.ya) * sc, xa = g.ux - (mx - box.x0) / bw * w, ya = g.uy - (box.y1 - my) / bh * h;
+      setView({ xa, xb: xa + w, ya, yb: ya + h });
+    }
+    return;
+  }
+  if (e.pointerType === 'mouse') hover(e);
+});
+function hover(e) {
+  if (!S.ok || !S.sh || !box) return;
+  const x = e.clientX, y = e.clientY;
+  cv.style.cursor = inBox(x, y) ? 'grab' : '';
+  let hit = null;
+  if (x >= box.x0 && x <= box.x1 && y >= box.y0 && y <= box.y1) for (const p of S.sh.pieces) { p.hover = S.X(p.lo) <= x && x <= S.X(p.hi); if (p.hover) hit = p; }
+  else for (const p of S.sh.pieces) p.hover = false;
+  draw();
+  if (!hit) { tip.style.display = 'none'; return; }
+  const what = S.rule === 'S' ? 'parabola through 3 points' : S.rule === 'T' ? 'trapezoid' : 'rectangle, height f(' + plain(hit.sx) + ') = ' + plain(S.f(hit.sx));
+  const exact = (() => { try { return reference(S.f, hit.lo, hit.hi); } catch { return NaN; } })();
+  tip.innerHTML = `[${plain(hit.lo)}, ${plain(hit.hi)}]<br>${what}<br>contributes <b>${plain(hit.val)}</b><br><span class="mut">true area here ≈ ${plain(exact)}</span>`;
+  tip.style.display = 'block';
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  tip.style.left = Math.min(W - tw - 8, x + 14) + 'px'; tip.style.top = Math.min(H - th - 8, y + 14) + 'px';
+}
+cv.addEventListener('mouseleave', () => { tip.style.display = 'none'; if (S.sh) { for (const p of S.sh.pieces) p.hover = false; draw(); } });
+
+// ---------- wiring ----------
+let deb = 0; const soon = () => { clearTimeout(deb); deb = setTimeout(update, 180); };
+fx.addEventListener('input', soon); ain.addEventListener('input', soon); bin.addEventListener('input', soon);
+nIn.addEventListener('input', () => { S.n = +nIn.value; update(); });
+for (const b of document.querySelectorAll('#rules button')) b.onclick = () => { S.rule = b.dataset.r; update(); };
+for (const b of document.querySelectorAll('.presets button')) b.onclick = () => { fx.value = b.dataset.f; ain.value = b.dataset.a; bin.value = b.dataset.b; update(); };
+$('resetv').onclick = resetView;
+$('minbtn').onclick = () => { const p = $('panel'); p.classList.toggle('min'); $('minbtn').textContent = p.classList.contains('min') ? '+' : '–'; resize(); };
+addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+  const k = e.key;
+  if (k === 'ArrowRight' || k === '+' || k === '=') { S.n = Math.min(64, S.n + 1); nIn.value = S.n; update(); }
+  else if (k === 'ArrowLeft' || k === '-') { S.n = Math.max(1, S.n - 1); nIn.value = S.n; update(); }
+  else if ('lrmts'.includes(k.toLowerCase()) && k.length === 1) { S.rule = k.toUpperCase(); update(); }
+  else if (k === '0') resetView();
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => { draw(); drawEV(); });
+addEventListener('resize', resize);
+readHash(); resize(); update();
+</script>
+</body>
+</html>

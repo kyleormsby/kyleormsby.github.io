@@ -184,5 +184,12 @@
     },
     "scale": 1,
     "wait": 3000
+  },
+  "numerical-integration": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1
   }
 }
