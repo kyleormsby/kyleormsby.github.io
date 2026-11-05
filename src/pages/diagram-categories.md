@@ -56,9 +56,12 @@ Topics will include:
 - Bert Guillou, University of Kentucky
 - Rune Haugseng, Norwegian University of Science and Technology
 - Christy Hazel, Grinnell College
+- Mike Hill, University of Minnesota\*
 - Clover May, University of Bristol
 - Mona Merling, University of Pennsylvania
 - Nat Stapleton, University of Kentucky
+
+<p class="dim">* To be confirmed.</p>
 
 Further speakers to be announced.
 
