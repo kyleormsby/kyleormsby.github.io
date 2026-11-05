@@ -4,8 +4,8 @@ week,week_dates,date,display,type,topic,notes,handout,solutions,note
 3,,2026-10-08,thu oct 8 / fri oct 9,class,"Polynomials: roots, Vieta, $a-b\mid p(a)-p(b)$, interpolation, growth",week03-notes,week03-handout,week03-solutions,
 4,,2026-10-15,thu oct 15 / fri oct 16,class,"Number theory: congruences, orders, Fermat–Euler–Wilson, valuations",week04-notes,week04-handout,week04-solutions,
 4,,2026-10-22,thu oct 22 / fri oct 23,break,Fall break — no sessions,,,,
-5,,2026-10-29,thu oct 29 / fri oct 30,class,"Combinatorics: bijections, double counting, recursions, generating functions",week05-notes,week05-handout,,
-6,,2026-11-05,thu nov 5 / fri nov 6,class,"Inequalities and analysis: AM–GM, Cauchy–Schwarz, Jensen, integrals, sequences, MVT",week06-notes,week06-handout,,
+5,,2026-10-29,thu oct 29 / fri oct 30,class,"Combinatorics: bijections, double counting, recursions, generating functions",week05-notes,week05-handout,week05-solutions,
+6,,2026-11-05,thu nov 5 / fri nov 6,class,"Inequalities and analysis: AM–GM, Cauchy–Schwarz, Jensen, integrals, sequences, MVT",week06-notes,week06-handout,week06-solutions,
 7,,2026-11-12,thu nov 12 / fri nov 13,class,"Linear algebra: determinants, eigenvalues, trace, rank, structured matrices",week07-notes,week07-handout,,"**Friday Nov 13 meets in Library 41**, not Library 389 (Thursday is in 389 as usual)"
 8,,2026-11-19,thu nov 19 / fri nov 20,class,"Probability, expectation, and games: indicators, symmetry, conditioning, strategies",week08-notes,week08-handout,,
 8,,2026-11-26,thu nov 26 / fri nov 27,break,Thanksgiving — no sessions,,,,
