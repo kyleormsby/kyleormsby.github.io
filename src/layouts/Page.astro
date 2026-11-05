@@ -11,7 +11,7 @@ import Base from './Base.astro';
  * through the configured remark-math + KaTeX pipeline, and so headings keep
  * getting slugged ids — /583/#week-6 and /ufp/#resources are old anchors.
  *
- * Frontmatter: title (required), label, lede, wide.
+ * Frontmatter: title (required), label, lede, wide, hideSiteNav.
  */
 interface Props {
   frontmatter: {
@@ -20,13 +20,14 @@ interface Props {
     lede?: string;
     description?: string;
     wide?: boolean;
+    hideSiteNav?: boolean;
   };
 }
 
-const { title, label, lede, description, wide = false } = Astro.props.frontmatter;
+const { title, label, lede, description, wide = false, hideSiteNav = false } = Astro.props.frontmatter;
 ---
 
-<Base title={`${title} · Kyle Ormsby`} description={description ?? lede} wide={wide}>
+<Base title={`${title} · Kyle Ormsby`} description={description ?? lede} wide={wide} hideSiteNav={hideSiteNav}>
   <div style={wide ? 'max-width:var(--measure)' : undefined}>
     {label && <p class="label">{label}</p>}
     <h1 style={label ? 'margin-top:var(--s3)' : undefined}>{title}</h1>

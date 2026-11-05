@@ -9,9 +9,12 @@ interface Props {
   title: string;
   description?: string;
   wide?: boolean;
+  /** Drop the name and site nav from the header, leaving only the theme switch.
+      For pages that stand on their own, like a conference site. */
+  hideSiteNav?: boolean;
 }
 
-const { title, description = 'Kyle Ormsby — homotopy theory, combinatorics, and mathematical visualization.', wide = false } = Astro.props;
+const { title, description = 'Kyle Ormsby — homotopy theory, combinatorics, and mathematical visualization.', wide = false, hideSiteNav = false } = Astro.props;
 const here = Astro.url.pathname;
 
 const nav = [
@@ -69,9 +72,9 @@ const isCurrent = (href: string) => here === href || (href !== '/' && here.start
     <a class="skip" href="#main">skip to content</a>
     <div class="wrap">
       <header class="site-head">
-        <a class="home" href="/">kyle ormsby</a>
+        {!hideSiteNav && <a class="home" href="/">kyle ormsby</a>}
         <nav>
-          {nav.map((n) => (
+          {!hideSiteNav && nav.map((n) => (
             <a class="label" href={n.href} aria-current={isCurrent(n.href) ? 'page' : undefined}>
               {n.label}
             </a>
