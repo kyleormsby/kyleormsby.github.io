@@ -47,7 +47,6 @@ Topics will include:
 - $RO(G)$-graded equivariant cohomology
 - parametrized homotopy theory and algebraic patterns in higher category theory
 - equivariant functor calculus
-- group actions on polyhedral products
 
 ## speakers
 
