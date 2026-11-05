@@ -82,7 +82,7 @@ Contributed talks give early career researchers a venue to present their work. T
 
 ## funding
 
-We hope to support travel and lodging for early career participants without other sources of funding. Funds from the PIMS Collaborative Research Group will support international (primarily Canadian) participants. Support for participants based at US institutions depends on a pending application to the National Science Foundation.
+We hope to support travel and lodging for early career participants without other sources of funding. More details and the funding application will be posted soon.
 
 Applications will be considered in the following order of priority:
 
@@ -91,23 +91,11 @@ Applications will be considered in the following order of priority:
 3. pre-tenure faculty without other sources of funding
 4. postdocs with other sources of funding
 
-The funding application will open soon.
-
 ## practical information
 
 - **Lodging:** affordable rooms will be available in Reed's residence halls. Booking details to be announced.
-- **Meals:** we will provide breakfast (bagels, pastries, and fruit) and coffee breaks.
+- **Meals:** we plan to provide breakfast (bagels, pastries, and fruit) and coffee breaks.
 - **Child care:** a link to Reed's child care resources, including a list of local facilities, will be posted here soon.
-
-## related events
-
-This workshop continues a tradition of homotopy theory conferences at Reed, including [Equivariant and motivic homotopy theory](http://people.reed.edu/~ormsbyk/eqmotconf2015) (2015) and [Homotopy theory in the ecliptic](https://sites.google.com/site/eclipseconference/home) (2017).
-
-Other activities of the Collaborative Research Group:
-
-- Summer School on Homotopy Colimits, University of Regina, June 22–26, 2026
-- Calculi of Functors, Banff International Research Station, March 22–26, 2027
-- events on polyhedral products and general homotopy theory, University of British Columbia, Vancouver, summer 2028
 
 ## contact
 
