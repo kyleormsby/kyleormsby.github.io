@@ -619,6 +619,21 @@
       "note": "",
       "items": [
         {
+          "title": "Pontryagin–Thom, π₀ of the motivic sphere spectrum, and principal quadratic divisors",
+          "date": "7 November 2026",
+          "venue": "AMS Fall Western Sectional Meeting, Arizona State University, Special Session on Computational Homotopy Theory",
+          "links": [
+            {
+              "text": "Slides",
+              "url": "/files/ams-pontryagin-thom.html"
+            },
+            {
+              "text": "PDF",
+              "url": "/files/ams-pontryagin-thom.pdf"
+            }
+          ]
+        },
+        {
           "title": "Building Partnerships with Local Scientists",
           "date": "9 October 2026",
           "venue": "Panel at the Simons Foundation Science, Society, and Culture Summit"
