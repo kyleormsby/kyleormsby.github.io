@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Telescoping to the FTC</title>
+<meta name="description" content="The telescoping-sum proof of the Fundamental Theorem of Calculus, step by step: total change, the Mean Value Theorem on each piece, a Riemann sum, and the limit.">
+<style>
+
+  :root{
+    --paper:#f4efe5; --ink:#17140f; --muted:#6d6457; --panel:rgba(244,239,229,.9); --line:rgba(23,20,15,.15);
+    --accent:#a2462a; --blue:#2f5f9c; --faint:rgba(23,20,15,.07); --gold:#b0841f; --green:#3e7a4a; --violet:#76478f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#14120f; --ink:#ebe4d6; --muted:#9a9184; --panel:rgba(20,18,15,.9); --line:rgba(235,228,214,.17);
+      --accent:#e08a62; --blue:#7fa8de; --faint:rgba(235,228,214,.07); --gold:#e0b858; --green:#86c290; --violet:#c49ad8; }
+  }
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:14px/1.45 ui-serif,Georgia,"Iowan Old Style",serif;overflow:hidden}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #panel{position:fixed;left:14px;top:14px;width:min(360px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:var(--panel);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;box-shadow:0 8px 30px rgba(0,0,0,.12);box-sizing:border-box}
+  #panel h1{font-size:17px;margin:0 0 2px;font-weight:600;letter-spacing:.01em}
+  .sub{color:var(--muted);font-size:12.5px;margin:0 0 8px}
+  .seg{display:flex;margin:6px 0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{flex:1;border:0;border-radius:0;padding:4px 0;font-size:12.5px}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}
+  .row label{width:44px;color:var(--muted);flex:none}
+  .row input[type=range]{flex:1;min-width:80px;accent-color:var(--accent)}
+  .row output{width:40px;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;flex:none}
+  input.txt{flex:1;min-width:0;font:inherit;font-size:13.5px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 7px}
+  input.txt:focus{outline:none;border-color:var(--ink)}
+  input.txt.bad{border-color:var(--accent)}
+  input.short{flex:0 0 74px}
+  button{font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer}
+  button:hover{border-color:var(--ink)}
+  .presets{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0 2px;align-items:center}
+  .presets span{font-size:12.5px;color:var(--muted);margin-right:2px}
+  .presets button{padding:1px 7px;font-size:12.5px}
+  #msg{font-size:12px;color:var(--accent);min-height:1.2em;margin:2px 0}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12.5px;margin:4px 0 2px}
+  th{font-weight:400;color:var(--muted);text-align:right;padding:2px 4px;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  td{text-align:right;padding:2px 4px;cursor:pointer}
+  tr.on td{background:var(--faint);font-weight:600}
+  tr:hover td{background:var(--faint)}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  .formula{font-size:13px;margin:6px 0;line-height:1.55}
+  .m{font-style:italic}
+  .mut{color:var(--muted)}
+  #ev{width:100%;height:150px;display:block;margin:4px 0 0}
+  details{margin-top:8px}
+  details summary{cursor:pointer;color:var(--muted);font-size:12.5px;user-select:none}
+  details p{margin:6px 0;font-size:13px}
+  h2{font-size:13px;font-weight:600;margin:10px 0 0;color:var(--muted);letter-spacing:.02em}
+  #tip{position:fixed;pointer-events:none;display:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12.5px;
+    font-variant-numeric:tabular-nums;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:280px;z-index:5}
+  #panel.min .hideable{display:none}
+  #minbtn{float:right;border:0;padding:0 2px;color:var(--muted);font-size:13px}
+  @media (max-width:760px){ #panel{left:8px;top:8px;width:calc(100vw - 16px);padding:9px 11px 8px;max-height:52vh} }
+
+  .steps{display:flex;margin:6px 0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .steps button{flex:1;border:0;border-radius:0;padding:4px 0;font-size:12.5px}
+  .steps button+button{border-left:1px solid var(--line)}
+  .steps button.on{background:var(--ink);color:var(--paper)}
+  .steptext{font-size:13px;line-height:1.5;margin:6px 0;min-height:5.5em}
+  .eq{font-size:13.5px;margin:4px 0;text-align:center}
+  td.bad{color:var(--accent)}
+  .row label.wide{width:auto}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="tip"></div>
+<div id="panel">
+  <button id="minbtn" title="collapse panel">–</button>
+  <h1>Telescoping to the FTC</h1>
+  <div class="sub">Why <span class="m">∫<sub>a</sub><sup>b</sup> f(x) dx = F(b) − F(a)</span> when <span class="m">F′ = f</span></div>
+  <div class="hideable">
+  <div class="row"><label for="Fx" style="width:52px"><span class="m">F</span>(<span class="m">x</span>) =</label><input id="Fx" class="txt" spellcheck="false" autocomplete="off" value="x^3/3"></div>
+  <div class="presets"><span>try</span>
+    <button data-f="x^3/3" data-a="0" data-b="2">x³/3</button>
+    <button data-f="sin(x)" data-a="0" data-b="pi">sin x</button>
+    <button data-f="e^x" data-a="0" data-b="2">eˣ</button>
+    <button data-f="ln(x)" data-a="1" data-b="5">ln x</button>
+    <button data-f="x^3-3x" data-a="-2" data-b="2.5">x³−3x</button>
+    <button data-f="sin(3x)/3+x^2/4" data-a="0" data-b="5">wiggly</button>
+    <button data-f="-1/x" data-a="-1" data-b="1" title="F is not defined at 0">−1/x ⚠</button>
+    <button data-f="abs(x)" data-a="-1" data-b="2" title="F has a corner at 0">|x| ⚠</button>
+  </div>
+  <div class="row"><label for="ain" style="width:52px"><span class="m">a</span> =</label><input id="ain" class="txt short" spellcheck="false" value="0">
+    <label for="bin" style="width:auto"><span class="m">b</span> =</label><input id="bin" class="txt short" spellcheck="false" value="2"></div>
+  <div id="msg"></div>
+  <div class="row"><label for="n" style="width:52px"><span class="m">n</span> =</label><input id="n" type="range" min="1" max="40" step="1" value="4"><output id="nOut">4</output></div>
+  <div class="steps" id="steps"><button data-s="1">1 telescope</button><button data-s="2">2 MVT</button><button data-s="3">3 Riemann sum</button><button data-s="4">4 limit</button></div>
+  <div class="steptext" id="steptext"></div>
+  <table id="tab"></table>
+  <div class="mut" style="font-size:12px" id="sums"></div>
+  <details><summary>what is this?</summary>
+    <p>This is the standard proof of the Fundamental Theorem of Calculus. Type any differentiable <span class="m">F</span>; the page computes <span class="m">f</span> = <span class="m">F′</span> numerically. The top graph is <span class="m">F</span>, the bottom graph is <span class="m">f</span>, and [<span class="m">a</span>, <span class="m">b</span>] is cut into <span class="m">n</span> equal pieces.</p>
+    <p><b>1. Telescope.</b> <span class="m">F</span>(<span class="m">b</span>) − <span class="m">F</span>(<span class="m">a</span>) is the sum of the changes of <span class="m">F</span> over the pieces: the colored rises in the staircase, restacked at the right. This is exact for every <span class="m">n</span>.</p>
+    <p><b>2. Mean Value Theorem.</b> On each piece the secant line has some parallel tangent line, touching at a point <span class="m">c<sub>i</sub></span>. So the change over that piece is exactly <span class="m">f</span>(<span class="m">c<sub>i</sub></span>) Δ<span class="m">x</span>. (If you averaged 70 mph between two speed cameras, your speedometer read exactly 70 at some instant.)</p>
+    <p><b>3. Riemann sum.</b> In the bottom graph, the rectangle over each piece has height <span class="m">f</span>(<span class="m">c<sub>i</sub></span>), so its area equals that piece’s rise. The rectangles form a Riemann sum for ∫<span class="m">f</span> with sample points <span class="m">c<sub>i</sub></span>, and it equals <span class="m">F</span>(<span class="m">b</span>) − <span class="m">F</span>(<span class="m">a</span>) exactly.</p>
+    <p><b>4. Limit.</b> As <span class="m">n</span> grows, every Riemann sum of a continuous <span class="m">f</span> approaches ∫<span class="m">f</span>, but this one never moves: it is <span class="m">F</span>(<span class="m">b</span>) − <span class="m">F</span>(<span class="m">a</span>) for every <span class="m">n</span>. So the integral is <span class="m">F</span>(<span class="m">b</span>) − <span class="m">F</span>(<span class="m">a</span>). For comparison the panel shows the left and midpoint sums, which do move.</p>
+    <p><b>When it fails.</b> The ⚠ presets break a hypothesis. For −1/<span class="m">x</span> on [−1, 1], <span class="m">F</span> is undefined at 0 and the piece containing 0 has a negative rise while <span class="m">f</span> = 1/<span class="m">x</span>² is positive, so no MVT point exists; ∫<sub>−1</sub><sup>1</sup> 1/<span class="m">x</span>² <span class="m">dx</span> is not −2. For |<span class="m">x</span>| on [−1, 2], the corner at 0 leaves the piece straddling it with no MVT point (try <span class="m">n</span> = 2 or 4); when 0 is an endpoint of a piece, as for <span class="m">n</span> = 3, every piece is fine. Such pieces are marked in red.</p>
+    <p>Hover over a piece for its numbers. Keys: ← → change <span class="m">n</span>, 1–4 choose the step. The address bar keeps the settings.</p>
+  </details>
+  </div>
+</div>
+<script>
+'use strict';
+// ---------- expression parser (no eval) ----------
+const Expr = (() => {
+  const FN = { sqrt: Math.sqrt, cbrt: Math.cbrt, exp: Math.exp, ln: Math.log, log: Math.log, log10: Math.log10, log2: Math.log2,
+    sin: Math.sin, cos: Math.cos, tan: Math.tan, sec: (t) => 1 / Math.cos(t), csc: (t) => 1 / Math.sin(t), cot: (t) => 1 / Math.tan(t),
+    asin: Math.asin, acos: Math.acos, atan: Math.atan, arcsin: Math.asin, arccos: Math.acos, arctan: Math.atan,
+    sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh, abs: Math.abs, floor: Math.floor, ceil: Math.ceil };
+  const CONST = { pi: Math.PI, e: Math.E, tau: 2 * Math.PI };
+  function tokenize(s) {
+    s = s.replace(/π/g, 'pi').replace(/√/g, 'sqrt').replace(/−/g, '-').replace(/[×·]/g, '*').replace(/÷/g, '/').replace(/²/g, '^2').replace(/³/g, '^3');
+    const out = []; let i = 0;
+    while (i < s.length) {
+      const c = s[i];
+      if (/\s/.test(c)) { i++; continue; }
+      const num = /^(\d+\.?\d*|\.\d+)(e[+-]?\d+)?/i.exec(s.slice(i));
+      if (num) { out.push({ t: 'n', v: parseFloat(num[0]) }); i += num[0].length; continue; }
+      const id = /^[a-z][a-z0-9]*/i.exec(s.slice(i));
+      if (id) {
+        let w = id[0].toLowerCase();
+        // split things like "xsin" or "pix" greedily into known names
+        while (w.length) {
+          let k = Object.keys(FN).concat(Object.keys(CONST), ['x']).filter((n) => w.startsWith(n)).sort((p, q) => q.length - p.length)[0];
+          if (!k) throw new Error('unknown name “' + w + '”');
+          out.push({ t: 'id', v: k }); w = w.slice(k.length);
+        }
+        i += id[0].length; continue;
+      }
+      if ('+-*/^(),'.includes(c)) { out.push({ t: c }); i++; continue; }
+      throw new Error('unexpected “' + c + '”');
+    }
+    return out;
+  }
+  function parse(src) {
+    const T = tokenize(src); let p = 0;
+    const peek = () => T[p], next = () => T[p++];
+    const expect = (t) => { if (!T[p] || T[p].t !== t) throw new Error('expected “' + t + '”'); p++; };
+    const startsPrimary = (tk) => tk && (tk.t === 'n' || tk.t === 'id' || tk.t === '(');
+    function expr() { let f = term(); while (peek() && (peek().t === '+' || peek().t === '-')) { const op = next().t, a = f, b = term(); f = op === '+' ? (x) => a(x) + b(x) : (x) => a(x) - b(x); } return f; }
+    function term() {
+      let f = unary();
+      for (;;) {
+        const tk = peek();
+        if (tk && (tk.t === '*' || tk.t === '/')) { next(); const a = f, b = unary(); f = tk.t === '*' ? (x) => a(x) * b(x) : (x) => a(x) / b(x); }
+        else if (startsPrimary(tk)) { const a = f, b = power(); f = (x) => a(x) * b(x); }
+        else return f;
+      }
+    }
+    function unary() { if (peek() && peek().t === '-') { next(); const a = unary(); return (x) => -a(x); } if (peek() && peek().t === '+') { next(); return unary(); } return power(); }
+    function power() { const base = primary(); if (peek() && peek().t === '^') { next(); const ex = unary(); return (x) => pow(base(x), ex(x)); } return base; }
+    function primary() {
+      const tk = next();
+      if (!tk) throw new Error('unexpected end');
+      if (tk.t === 'n') { const v = tk.v; return () => v; }
+      if (tk.t === '(') { const f = expr(); expect(')'); return f; }
+      if (tk.t === 'id') {
+        if (tk.v === 'x') return (x) => x;
+        if (tk.v in CONST) { const v = CONST[tk.v]; return () => v; }
+        const fn = FN[tk.v];
+        if (peek() && peek().t === '(') { next(); const a = expr(); expect(')'); return (x) => fn(a(x)); }
+        if (peek() && peek().t === '^') { // sin^2(x)
+          next(); const ex = unary(); const a = power(); return (x) => pow(fn(a(x)), ex(x)); }
+        const a = power(); return (x) => fn(a(x)); // sin x
+      }
+      throw new Error('unexpected “' + tk.t + '”');
+    }
+    // real odd roots of negatives, e.g. x^(1/3)
+    function pow(b, e) { if (b < 0 && !Number.isInteger(e)) { const r = 1 / e; if (Number.isInteger(r) && Math.abs(r) % 2 === 1) return -Math.pow(-b, e); } return Math.pow(b, e); }
+    const f = expr();
+    if (p < T.length) throw new Error('unexpected “' + (T[p].v ?? T[p].t) + '”');
+    return f;
+  }
+  return { parse };
+})();
+
+
+// ---------- math ----------
+const S = { src: 'x^3/3', asrc: '0', bsrc: '2', a: 0, b: 2, n: 4, step: 1, F: (x) => x ** 3 / 3, ok: true };
+const fprime = (x, k = 1) => { const h = 1e-5 * k * (1 + Math.abs(x)); return (S.F(x + h) - S.F(x - h)) / (2 * h); };
+// a numerical derivative that changes with the step size means F has a corner or jump there
+const smoothAt = (x) => Math.abs(fprime(x) - fprime(x, 30)) <= 1e-3 * (1 + Math.abs(fprime(x)));
+function mvtPoint(x0, x1) {
+  const F0 = S.F(x0), F1 = S.F(x1);
+  if (!Number.isFinite(F0) || !Number.isFinite(F1)) return { ok: false, why: 'F is undefined at an endpoint' };
+  const s = (F1 - F0) / (x1 - x0), N = 400, roots = [];
+  const g = (x) => fprime(x) - s;
+  let px = x0 + (x1 - x0) * 0.5 / N, pg = g(px);
+  for (let k = 1; k < N; k++) {
+    const x = x0 + (x1 - x0) * (k + 0.5) / N, v = g(x);
+    if (!Number.isFinite(v) || !Number.isFinite(pg)) { px = x; pg = v; continue; }
+    if (v === 0 || pg === 0 || (v < 0) !== (pg < 0)) {
+      let lo = px, hi = x, glo = pg;
+      for (let it = 0; it < 60; it++) { const m = (lo + hi) / 2, gm = g(m); if (!Number.isFinite(gm)) break; if ((gm < 0) === (glo < 0) && gm !== 0) { lo = m; glo = gm; } else hi = m; }
+      const c = (lo + hi) / 2, r = Math.abs(g(c));
+      if (r <= 1e-4 * (1 + Math.abs(s)) && smoothAt(c)) roots.push(c);   // reject jumps in f (corners of F)
+    }
+    px = x; pg = v;
+  }
+  // also catch tangential roots (f − s touches 0 without crossing), e.g. linear pieces
+  if (!roots.length) { let best = null; for (let k = 0; k <= N; k++) { const x = x0 + (x1 - x0) * k / N, v = Math.abs(g(x)); if (Number.isFinite(v) && (best === null || v < best.v)) best = { x, v }; } if (best && best.v <= 1e-6 * (1 + Math.abs(s))) roots.push(best.x); }
+  if (!roots.length) return { ok: false, s, why: 'no point where the tangent slope equals the secant slope' };
+  const mid = (x0 + x1) / 2; roots.sort((p, q) => Math.abs(p - mid) - Math.abs(q - mid));
+  return { ok: true, s, c: roots[0], count: roots.length };
+}
+function pieces() {
+  const { a, b, n } = S, h = (b - a) / n, out = [];
+  for (let i = 0; i < n; i++) {
+    const x0 = a + i * h, x1 = i === n - 1 ? b : x0 + h, F0 = S.F(x0), F1 = S.F(x1), m = mvtPoint(x0, x1);
+    out.push({ i, x0, x1, F0, F1, dF: F1 - F0, ...m, fc: m.ok ? fprime(m.c) : NaN, area: m.ok ? fprime(m.c) * h : NaN, left: fprime(x0) * h, midv: fprime((x0 + x1) / 2) * h });
+  }
+  return { list: out, h };
+}
+
+// ---------- state / ui ----------
+const $ = (id) => document.getElementById(id);
+const Fx = $('Fx'), ain = $('ain'), bin = $('bin'), nIn = $('n'), nOut = $('nOut'), msg = $('msg');
+const cv = $('c'), ctx = cv.getContext('2d');
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function readHash() {
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.has('F')) S.src = q.get('F'); if (q.has('a')) S.asrc = q.get('a'); if (q.has('b')) S.bsrc = q.get('b');
+  if (q.has('n')) S.n = Math.max(1, Math.min(40, parseInt(q.get('n')) || 4));
+  if (q.has('s')) S.step = Math.max(1, Math.min(4, parseInt(q.get('s')) || 1));
+  Fx.value = S.src; ain.value = S.asrc; bin.value = S.bsrc; nIn.value = S.n;
+}
+function writeHash() { history.replaceState(null, '', '#' + new URLSearchParams({ F: S.src, a: S.asrc, b: S.bsrc, n: S.n, s: S.step }).toString()); }
+function constVal(src) { const v = Expr.parse(src)(NaN); if (!Number.isFinite(v)) throw new Error('endpoint must be a number'); return v; }
+let P = null;
+function update() {
+  let err = '';
+  for (const el of [Fx, ain, bin]) el.classList.remove('bad');
+  try { S.F = Expr.parse(Fx.value); S.src = Fx.value; } catch (e) { Fx.classList.add('bad'); err = 'F: ' + e.message; }
+  try { S.a = constVal(ain.value); S.asrc = ain.value; } catch (e) { ain.classList.add('bad'); err = err || 'a: ' + e.message; }
+  try { S.b = constVal(bin.value); S.bsrc = bin.value; } catch (e) { bin.classList.add('bad'); err = err || 'b: ' + e.message; }
+  if (!err && !(S.b > S.a)) { err = 'need a < b'; ain.classList.add('bad'); bin.classList.add('bad'); }
+  S.ok = !err; P = S.ok ? pieces() : null;
+  if (S.ok && P.list.some((p) => !p.ok)) err = 'Some pieces have no MVT point (red): a hypothesis of the theorem fails there.';
+  msg.textContent = err; nOut.textContent = S.n;
+  writeHash(); panel(); draw();
+}
+const num = (v, d = 6) => Number.isFinite(v) ? (+v.toPrecision(d)).toString().replace('-', '−') : '—';
+const TEXT = {
+  1: '<b>Telescope.</b> The total change <span class="m">F</span>(<span class="m">b</span>) − <span class="m">F</span>(<span class="m">a</span>) is the sum of the changes over the pieces: the colored rises, restacked on the right. Every middle value of <span class="m">F</span> cancels.<div class="eq"><span class="m">F</span>(<span class="m">b</span>) − <span class="m">F</span>(<span class="m">a</span>) = Σ [<span class="m">F</span>(<span class="m">x<sub>i</sub></span>) − <span class="m">F</span>(<span class="m">x</span><sub><span class="m">i</span>−1</sub>)]</div>',
+  2: '<b>Mean Value Theorem.</b> On each piece, some tangent line (dashed) is parallel to the secant (solid). It touches at <span class="m">c<sub>i</sub></span>, so the rise is exactly slope × run:<div class="eq"><span class="m">F</span>(<span class="m">x<sub>i</sub></span>) − <span class="m">F</span>(<span class="m">x</span><sub><span class="m">i</span>−1</sub>) = <span class="m">f</span>(<span class="m">c<sub>i</sub></span>) Δ<span class="m">x</span></div>',
+  3: '<b>Riemann sum.</b> Below, each rectangle has height <span class="m">f</span>(<span class="m">c<sub>i</sub></span>), so its area is that piece’s rise. Together they are a Riemann sum for ∫<span class="m">f</span>, and it equals the total change exactly:<div class="eq"><span class="m">F</span>(<span class="m">b</span>) − <span class="m">F</span>(<span class="m">a</span>) = Σ <span class="m">f</span>(<span class="m">c<sub>i</sub></span>) Δ<span class="m">x</span></div>',
+  4: '<b>Limit.</b> Drag <span class="m">n</span>. Every Riemann sum of a continuous <span class="m">f</span> tends to ∫<span class="m">f</span>; this one is pinned at <span class="m">F</span>(<span class="m">b</span>) − <span class="m">F</span>(<span class="m">a</span>) for every <span class="m">n</span>. So<div class="eq">∫<sub><span class="m">a</span></sub><sup><span class="m">b</span></sup> <span class="m">f</span>(<span class="m">x</span>) <span class="m">dx</span> = <span class="m">F</span>(<span class="m">b</span>) − <span class="m">F</span>(<span class="m">a</span>)</div>',
+};
+function panel() {
+  for (const b of document.querySelectorAll('#steps button')) b.classList.toggle('on', +b.dataset.s === S.step);
+  $('steptext').innerHTML = TEXT[S.step];
+  const tab = $('tab'); tab.innerHTML = ''; $('sums').innerHTML = '';
+  if (!S.ok) return;
+  const L = P.list, tot = S.F(S.b) - S.F(S.a);
+  if (L.length <= 8) {
+    const head = ['piece', 'rise'].concat(S.step >= 2 ? ['<span class="m">c<sub>i</sub></span>'] : []).concat(S.step >= 3 ? ['<span class="m">f</span>(<span class="m">c<sub>i</sub></span>)Δ<span class="m">x</span>'] : []);
+    tab.innerHTML = '<thead><tr>' + head.map((h) => `<th>${h}</th>`).join('') + '</tr></thead>';
+    const tb = document.createElement('tbody');
+    for (const p of L) {
+      const cells = [`[${num(p.x0, 3)}, ${num(p.x1, 3)}]`, num(p.dF)];
+      if (S.step >= 2) cells.push(p.ok ? num(p.c, 4) : 'none');
+      if (S.step >= 3) cells.push(p.ok ? num(p.area) : '—');
+      tb.insertAdjacentHTML('beforeend', '<tr>' + cells.map((c, k) => `<td class="${!p.ok && k >= 2 ? 'bad' : ''}">${c}</td>`).join('') + '</tr>');
+    }
+    tab.appendChild(tb);
+  }
+  const sumRise = L.reduce((s, p) => s + p.dF, 0), sumArea = L.every((p) => p.ok) ? L.reduce((s, p) => s + p.area, 0) : NaN;
+  const Ln = L.reduce((s, p) => s + p.left, 0), Mn = L.reduce((s, p) => s + p.midv, 0);
+  let h = `<span class="m">F</span>(<span class="m">b</span>) − <span class="m">F</span>(<span class="m">a</span>) = <b>${num(tot, 8)}</b> · sum of rises = ${num(sumRise, 8)}`;
+  if (S.step >= 3) h += `<br>MVT Riemann sum Σ<span class="m">f</span>(<span class="m">c<sub>i</sub></span>)Δ<span class="m">x</span> = <b>${num(sumArea, 8)}</b>`;
+  if (S.step >= 4) h += `<br>for comparison: <span class="m">L</span><sub>${S.n}</sub> = ${num(Ln, 8)}, <span class="m">M</span><sub>${S.n}</sub> = ${num(Mn, 8)} (these move with <span class="m">n</span>)`;
+  $('sums').innerHTML = h;
+}
+
+// ---------- drawing ----------
+let W = 0, H = 0, DPR = 1, geo = null;
+function resize() { DPR = devicePixelRatio || 1; W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; draw(); }
+function area() {
+  const p = $('panel').getBoundingClientRect();
+  if (W > 760 && !$('panel').classList.contains('min')) return { x0: p.right + 44, y0: 34, x1: W - 30, y1: H - 30 };
+  return { x0: 40, y0: p.bottom + 26, x1: W - 20, y1: H - 26 };
+}
+function niceStep(span, target) { const raw = span / target, p = 10 ** Math.floor(Math.log10(raw)), m = raw / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+function fmtTick(t, step) { const d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); let s = t.toFixed(d); if (/^-?0\.?0*$/.test(s)) s = '0'; return s.replace('-', '−'); }
+function range(vals) {
+  const fin = vals.filter(Number.isFinite).sort((p, q) => p - q); if (!fin.length) return [-1, 1];
+  let lo = Math.min(0, fin[0]), hi = Math.max(0, fin[fin.length - 1]);
+  if (fin.length > 20) { const q1 = fin[Math.floor(fin.length * .03)], q9 = fin[Math.floor(fin.length * .97)], sp = (q9 - q1) || 1; lo = Math.max(lo, Math.min(0, q1 - 2 * sp)); hi = Math.min(hi, Math.max(0, q9 + 2 * sp)); }
+  if (hi - lo < 1e-9) { hi += 1; lo -= 1; }
+  const pad = (hi - lo) * .1; return [lo - pad, hi + pad];
+}
+function axes(box, xa, xb, ya, yb, X, Y, label) {
+  const muted = css('--muted'), line = css('--line'), ink = css('--ink');
+  ctx.font = '12px ui-serif, Georgia, serif'; ctx.strokeStyle = line; ctx.fillStyle = muted; ctx.lineWidth = 1;
+  const sx = niceStep(xb - xa, 8), sy = niceStep(yb - ya, 4);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  const y0 = Math.max(box.y0, Math.min(box.y1, Y(0)));
+  for (let t = Math.ceil(xa / sx) * sx; t <= xb + 1e-12; t += sx) { const px = X(t); ctx.globalAlpha = .5; ctx.beginPath(); ctx.moveTo(px, box.y0); ctx.lineTo(px, box.y1); ctx.stroke(); ctx.globalAlpha = 1; ctx.fillText(fmtTick(t, sx), px, y0 + 3); }
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  const x0 = Math.max(box.x0, Math.min(box.x1, X(0)));
+  for (let t = Math.ceil(ya / sy) * sy; t <= yb + 1e-12; t += sy) { const py = Y(t); ctx.globalAlpha = .5; ctx.beginPath(); ctx.moveTo(box.x0, py); ctx.lineTo(box.x1, py); ctx.stroke(); ctx.globalAlpha = 1; if (Math.abs(t) > sy / 1e6) ctx.fillText(fmtTick(t, sy), x0 - 4, py); }
+  ctx.strokeStyle = ink; ctx.globalAlpha = .7; ctx.lineWidth = 1.2;
+  if (ya <= 0 && 0 <= yb) { ctx.beginPath(); ctx.moveTo(box.x0, Y(0)); ctx.lineTo(box.x1, Y(0)); ctx.stroke(); }
+  if (xa <= 0 && 0 <= xb) { ctx.beginPath(); ctx.moveTo(X(0), box.y0); ctx.lineTo(X(0), box.y1); ctx.stroke(); }
+  ctx.globalAlpha = 1; ctx.fillStyle = ink; ctx.font = 'italic 15px ui-serif, Georgia, serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(label, box.x0 + 6, box.y0 + 4);
+}
+function curve(f, xa, xb, X, Y, ya, yb, color, width) {
+  ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath(); let pen = false; const span = yb - ya;
+  for (let k = 0; k <= 800; k++) { const x = xa + (xb - xa) * k / 800, y = f(x); if (!Number.isFinite(y) || y > yb + 5 * span || y < ya - 5 * span) { pen = false; continue; } if (pen) ctx.lineTo(X(x), Y(y)); else { ctx.moveTo(X(x), Y(y)); pen = true; } }
+  ctx.stroke();
+}
+function draw() {
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
+  if (!S.ok || !P) return;
+  const A = area(); if (A.x1 - A.x0 < 120 || A.y1 - A.y0 < 160) return;
+  const gap = 36, colW = Math.min(90, (A.x1 - A.x0) * .14);
+  const top = { x0: A.x0, x1: A.x1 - colW - 16, y0: A.y0, y1: A.y0 + (A.y1 - A.y0 - gap) * .55 };
+  const bot = { x0: A.x0, x1: top.x1, y0: top.y1 + gap, y1: A.y1 };
+  const col = { x0: top.x1 + 16, x1: A.x1, y0: top.y0, y1: top.y1 };
+  const { a, b } = S, xpad = (b - a) * .05, xa = a - xpad, xb = b + xpad;
+  const Fs = [], fs = [];
+  for (let k = 0; k <= 500; k++) { const x = xa + (xb - xa) * k / 500; Fs.push(S.F(x)); fs.push(fprime(x)); }
+  for (const p of P.list) { Fs.push(p.F0, p.F1); if (S.step >= 3) fs.push(p.fc); }
+  const [Fa, Fb] = range(Fs), [fa, fb] = range(fs);
+  const X = (x) => top.x0 + (x - xa) / (xb - xa) * (top.x1 - top.x0);
+  const Yt = (y) => top.y1 - (y - Fa) / (Fb - Fa) * (top.y1 - top.y0);
+  const Yb = (y) => bot.y1 - (y - fa) / (fb - fa) * (bot.y1 - bot.y0);
+  const cl = (y, bx) => Math.max(bx.y0 - 3000, Math.min(bx.y1 + 3000, y));
+  const ink = css('--ink'), muted = css('--muted'), bad = css('--accent');
+  const hue = (i) => css(i % 2 ? '--blue' : '--violet');
+  geo = { top, bot, X, P };
+  // ---- top: F ----
+  axes(top, xa, xb, Fa, Fb, X, Yt, 'y = F(x)');
+  ctx.save(); ctx.beginPath(); ctx.rect(top.x0, top.y0, top.x1 - top.x0, top.y1 - top.y0); ctx.clip();
+  // partition lines
+  ctx.strokeStyle = muted; ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+  for (const p of P.list) for (const x of [p.x0, p.x1]) { ctx.beginPath(); ctx.moveTo(X(x), top.y0); ctx.lineTo(X(x), top.y1); ctx.stroke(); }
+  ctx.setLineDash([]);
+  curve(S.F, xa, xb, X, Yt, Fa, Fb, ink, 2.2);
+  // staircase of rises
+  for (const p of P.list) {
+    if (!Number.isFinite(p.F0) || !Number.isFinite(p.F1)) continue;
+    const c = p.ok ? hue(p.i) : bad;
+    ctx.strokeStyle = muted; ctx.lineWidth = 1; ctx.globalAlpha = .6; ctx.beginPath(); ctx.moveTo(X(p.x0), cl(Yt(p.F0), top)); ctx.lineTo(X(p.x1), cl(Yt(p.F0), top)); ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = c; ctx.lineWidth = p.hover ? 5 : 3.5; ctx.beginPath(); ctx.moveTo(X(p.x1), cl(Yt(p.F0), top)); ctx.lineTo(X(p.x1), cl(Yt(p.F1), top)); ctx.stroke();
+  }
+  if (S.step >= 2) for (const p of P.list) {
+    if (!Number.isFinite(p.F0) || !Number.isFinite(p.F1)) continue;
+    const c = p.ok ? hue(p.i) : bad;
+    ctx.strokeStyle = c; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(X(p.x0), Yt(p.F0)); ctx.lineTo(X(p.x1), Yt(p.F1)); ctx.stroke();
+    if (p.ok) {
+      const half = (p.x1 - p.x0) * .55, yc = S.F(p.c);
+      ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(X(p.c - half), Yt(yc - p.s * half)); ctx.lineTo(X(p.c + half), Yt(yc + p.s * half)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = c; ctx.beginPath(); ctx.arc(X(p.c), Yt(yc), 4, 0, 2 * Math.PI); ctx.fill();
+    } else if (P.list.length <= 12) {
+      ctx.fillStyle = bad; ctx.font = '12px ui-serif, Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText('no c here', X((p.x0 + p.x1) / 2), top.y0 + 30);
+    }
+  }
+  ctx.restore();
+  // stacked column: the telescoped total
+  const tot = S.F(b) - S.F(a);
+  ctx.save(); ctx.beginPath(); ctx.rect(col.x0, col.y0, col.x1 - col.x0, col.y1 - col.y0); ctx.clip();
+  const cx = (col.x0 + col.x1) / 2, bw = Math.min(26, (col.x1 - col.x0) * .35);
+  let acc = S.F(a);
+  if (Number.isFinite(acc)) for (const p of P.list) {
+    if (!Number.isFinite(p.dF)) { acc = NaN; break; }
+    ctx.fillStyle = p.ok ? hue(p.i) : bad; ctx.globalAlpha = p.hover ? .9 : .65;
+    const y1 = cl(Yt(acc), col), y2 = cl(Yt(acc + p.dF), col); ctx.fillRect(cx - bw / 2, Math.min(y1, y2), bw, Math.max(1, Math.abs(y2 - y1)));
+    acc += p.dF;
+  }
+  ctx.globalAlpha = 1; ctx.restore();
+  if (Number.isFinite(tot)) {
+    ctx.strokeStyle = ink; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+    for (const v of [S.F(a), S.F(b)]) { ctx.beginPath(); ctx.moveTo(X(v === S.F(a) ? a : b), Yt(v)); ctx.lineTo(cx + bw / 2 + 4, Yt(v)); ctx.stroke(); }
+    ctx.setLineDash([]); ctx.fillStyle = ink; ctx.font = '13px ui-serif, Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText('F(b) − F(a)', cx, col.y0 + 14); ctx.textBaseline = 'top'; ctx.fillText('= ' + num(tot, 6), cx, col.y0 + 16);
+  }
+  // ---- bottom: f ----
+  axes(bot, xa, xb, fa, fb, X, Yb, "y = f(x) = F′(x)");
+  ctx.save(); ctx.beginPath(); ctx.rect(bot.x0, bot.y0, bot.x1 - bot.x0, bot.y1 - bot.y0); ctx.clip();
+  if (S.step >= 3) for (const p of P.list) {
+    if (!p.ok) { ctx.fillStyle = bad; ctx.globalAlpha = .12; ctx.fillRect(X(p.x0), bot.y0, X(p.x1) - X(p.x0), bot.y1 - bot.y0); ctx.globalAlpha = 1; continue; }
+    const c = hue(p.i), y0 = Yb(0), y1 = cl(Yb(p.fc), bot);
+    ctx.fillStyle = c; ctx.globalAlpha = p.hover ? .5 : .28; ctx.fillRect(X(p.x0), Math.min(y0, y1), X(p.x1) - X(p.x0), Math.abs(y1 - y0)); ctx.globalAlpha = 1;
+    ctx.strokeStyle = c; ctx.lineWidth = 1.2; ctx.strokeRect(X(p.x0), Math.min(y0, y1), X(p.x1) - X(p.x0), Math.abs(y1 - y0));
+  }
+  curve(fprime, xa, xb, X, Yb, fa, fb, ink, 2);
+  if (S.step >= 2) for (const p of P.list) if (p.ok) { ctx.fillStyle = hue(p.i); ctx.beginPath(); ctx.arc(X(p.c), Yb(p.fc), 3.6, 0, 2 * Math.PI); ctx.fill(); }
+  ctx.restore();
+  // connectors from c_i in F to c_i in f
+  if (S.step >= 2 && P.list.length <= 24) {
+    ctx.setLineDash([2, 4]); ctx.lineWidth = 1;
+    for (const p of P.list) if (p.ok) { ctx.strokeStyle = hue(p.i); ctx.globalAlpha = .7; ctx.beginPath(); ctx.moveTo(X(p.c), Math.max(top.y0, Math.min(top.y1, Yt(S.F(p.c))))); ctx.lineTo(X(p.c), Math.max(bot.y0, Math.min(bot.y1, Yb(p.fc)))); ctx.stroke(); }
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+  }
+  // a, b labels
+  ctx.fillStyle = muted; ctx.font = 'italic 13px ui-serif, Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillText('a', X(a), bot.y1 + 3); ctx.fillText('b', X(b), bot.y1 + 3);
+}
+
+// ---------- hover ----------
+const tip = $('tip');
+cv.addEventListener('mousemove', (e) => {
+  if (!geo) return; const x = e.clientX, y = e.clientY; let hit = null;
+  const inside = x >= geo.top.x0 && x <= geo.top.x1 && y >= geo.top.y0 && y <= geo.bot.y1;
+  for (const p of P.list) { p.hover = inside && geo.X(p.x0) <= x && x <= geo.X(p.x1); if (p.hover) hit = p; }
+  draw();
+  if (!hit) { tip.style.display = 'none'; return; }
+  tip.innerHTML = `piece [${num(hit.x0, 4)}, ${num(hit.x1, 4)}]<br>rise <span class="m">F</span>(${num(hit.x1, 4)}) − <span class="m">F</span>(${num(hit.x0, 4)}) = <b>${num(hit.dF)}</b>` +
+    (hit.ok ? `<br>secant slope ${num(hit.s)}<br><span class="m">c</span> = ${num(hit.c, 5)}, <span class="m">f</span>(<span class="m">c</span>) = ${num(hit.fc)}${hit.count > 1 ? ` <span class="mut">(${hit.count} such points; showing the one nearest the middle)</span>` : ''}<br><span class="m">f</span>(<span class="m">c</span>)Δ<span class="m">x</span> = <b>${num(hit.area)}</b>` : `<br><span style="color:var(--accent)">${hit.why}</span>`);
+  tip.style.display = 'block'; const tw = tip.offsetWidth, th = tip.offsetHeight;
+  tip.style.left = Math.min(W - tw - 8, x + 14) + 'px'; tip.style.top = Math.min(H - th - 8, y + 14) + 'px';
+});
+cv.addEventListener('mouseleave', () => { tip.style.display = 'none'; if (P) { for (const p of P.list) p.hover = false; draw(); } });
+
+// ---------- wiring ----------
+let deb = 0; const soon = () => { clearTimeout(deb); deb = setTimeout(update, 200); };
+Fx.addEventListener('input', soon); ain.addEventListener('input', soon); bin.addEventListener('input', soon);
+nIn.addEventListener('input', () => { S.n = +nIn.value; update(); });
+for (const b of document.querySelectorAll('#steps button')) b.onclick = () => { S.step = +b.dataset.s; update(); };
+for (const b of document.querySelectorAll('.presets button')) b.onclick = () => { Fx.value = b.dataset.f; ain.value = b.dataset.a; bin.value = b.dataset.b; update(); };
+$('minbtn').onclick = () => { const p = $('panel'); p.classList.toggle('min'); $('minbtn').textContent = p.classList.contains('min') ? '+' : '–'; resize(); };
+addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+  if (e.key === 'ArrowRight') { S.n = Math.min(40, S.n + 1); nIn.value = S.n; update(); }
+  else if (e.key === 'ArrowLeft') { S.n = Math.max(1, S.n - 1); nIn.value = S.n; update(); }
+  else if ('1234'.includes(e.key) && e.key.length === 1) { S.step = +e.key; update(); }
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', draw);
+addEventListener('resize', resize);
+readHash(); resize(); update();
+</script>
+</body>
+</html>

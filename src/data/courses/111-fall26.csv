@@ -27,7 +27,7 @@ fall break,,October 17-25,break,Fall break 🍂,,,,,,
 9,2026-11-02,,class,[Riemann sums](https://activecalculus.org/single2e/sec-4-2-Riemann.html),,hw4,2026-11-13,,,
 9,2026-11-04,,class,[The definite integral](https://activecalculus.org/single2e/sec-4-3-definite-integral.html),,,,,,
 9,2026-11-06,,class,[Numerical integration](https://activecalculus.org/single2e/sec-5-6-num-int.html),,,,,,[numerical integration demo](/numerical-integration/)
-10,2026-11-09,,class,[The Fundamental Theorem of Calculus](https://activecalculus.org/single2e/sec-4-4-FTC.html),,,,,,
+10,2026-11-09,,class,[The Fundamental Theorem of Calculus](https://activecalculus.org/single2e/sec-4-4-FTC.html),,,,,,[telescoping-sum proof demo](/ftc-telescoping/)
 10,2026-11-11,,class,[Constructing accurate graphs of antiderivatives](https://activecalculus.org/single2e/sec-5-1-antid-graphs.html),,,,,,
 10,2026-11-13,,class,[The Second Fundamental Theorem of Calculus](https://activecalculus.org/single2e/sec-5-2-FTC2.html),,,,hw4,10pm,
 11,2026-11-16,,class,[Integration by substitution](https://activecalculus.org/single2e/sec-5-3-substitution.html),,,,,,

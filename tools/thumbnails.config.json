@@ -191,5 +191,12 @@
       "height": 900
     },
     "scale": 1
+  },
+  "ftc-telescoping": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1
   }
 }
