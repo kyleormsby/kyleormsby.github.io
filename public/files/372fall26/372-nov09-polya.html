@@ -196,9 +196,12 @@ table.fix th{font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-tr
 table.fix td{padding:2px 8px;border-bottom:1.5px solid var(--orange-soft);vertical-align:middle;white-space:nowrap;}
 table.fix td.m{font-family:var(--mono);}
 table.fix.compact{font-size:15px;}
+table.fix.xcompact{font-size:13px;line-height:1.05;}
+table.fix.xcompact td{padding:0 8px;}
+.orbits .more,.reps .more{font-family:var(--mono);font-size:14px;color:var(--orange-ink);align-self:center;}
 table.fix.compact td{padding:0 8px;}
 table.fix tr.tot td{border-top:3px solid var(--blue);border-bottom:none;font-weight:700;color:var(--blue);}
-.orbits{display:flex;flex-wrap:wrap;gap:6px 12px;align-content:flex-start;}
+.orbits{display:flex;flex-wrap:wrap;gap:6px 12px;align-content:flex-start;position:relative;max-height:548px;overflow:hidden;}
 .orbit{display:flex;gap:2px;padding:4px 6px;border:2px solid var(--blue);box-shadow:3px 3px 0 var(--orange);background:var(--paper);align-items:center;}
 .orbit.hl{background:var(--mark);}
 .poly{font-family:var(--mono);font-size:19px;color:var(--blue-deep);line-height:1.5;}
@@ -321,8 +324,8 @@ table.fix tr.tot td{border-top:3px solid var(--blue);border-bottom:none;font-wei
 <section class="slide" data-n="6">
   <div class="eyebrow">Demo 1 · the Burnside sum</div>
   <div class="ctl">
-    <label>beads <select id="d1n"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option></select></label>
-    <label>colors <select id="d1k"><option selected>2</option><option>3</option></select></label>
+    <label>beads <select id="d1n"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+    <label>colors <select id="d1k"><option selected>2</option><option>3</option><option>4</option></select></label>
     <label>group <button id="d1C" class="on">rotations $C_n$</button><button id="d1D">rotations + flips $D_n$</button></label>
     <span id="d1msg" style="margin-left:auto;color:var(--blue-deep);"></span>
   </div>
@@ -440,6 +443,7 @@ table.fix tr.tot td{border-top:3px solid var(--blue);border-bottom:none;font-wei
   <div class="eyebrow">Demo 2 · the cycle index at work</div>
   <div class="ctl">
     <label>beads <select id="d2n"><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+    <label>colors <select id="d2k"><option selected>2</option><option>3</option><option>4</option></select></label>
     <label>group <button id="d2C" class="on">$C_n$</button><button id="d2D">$D_n$</button></label>
   </div>
   <div class="lvl">
@@ -717,7 +721,7 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$
   const ORANGE='#3F6574',INK='#3F6574',BLUE='#A70E16',DEEP='#1b1b1b',PAPER='#ECEAE4',FAINT='#8c8a84',YELLOW='#B9BDC2';
 
     // ===================== Pólya deck: drawing helpers =====================
-  const FILLS=[PAPER,DEEP,INK];            // color 0 = white (paper), 1 = black ink, 2 = blue-bridge
+  const FILLS=[PAPER,DEEP,INK,BLUE];            // color 0 = white (paper), 1 = black ink, 2 = blue-bridge
   function necklace(parent,col,cx,cy,R,r,opts){
     opts=opts||{};
     const g=el('g',{});
@@ -914,17 +918,31 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$
       s.appendChild(el('text',{x:cx,y:108,'font-size':14,fill:INK,'text-anchor':'middle'},countBlack(o[0])+' black'));});
   })();
 
+  // ===================== orbit enumeration for the demos (colorings encoded as base-k integers) =====================
+  function orbitsInt(n,k,G){
+    const N=Math.pow(k,n),seen=new Uint8Array(N),pw=[];for(let i=0;i<n;i++)pw.push(Math.pow(k,i));
+    const dig=new Array(n),orbs=[];
+    for(let x=0;x<N;x++){if(seen[x])continue;let t=x;for(let i=0;i<n;i++){dig[i]=t%k;t=(t-dig[i])/k;}
+      const orb=[];for(const g of G){let y=0;for(let i=0;i<n;i++)y+=dig[i]*pw[g.p[i]];if(!seen[y]){seen[y]=1;orb.push(y);}}
+      orbs.push(orb);}
+    return orbs;
+  }
+  function decode(x,n,k){const c=[];for(let i=0;i<n;i++){c.push(x%k);x=(x-x%k)/k;}return c;}
+  const DEMO_RING={ring:FAINT,ringW:1};
+
   // ===================== Demo 1 =====================
   (function(){const tab=$('d1tab');if(!tab)return;
     let n=4,k=2,dih=false;
+    const MAXSHOW=96;
     function render(){
-      const G=groupPerms(n,dih);const orbs=orbitsOf(n,k,G);
+      const G=groupPerms(n,dih);const orbs=orbitsInt(n,k,G);
       const total=Math.pow(k,n);
       let rows='<tr><th>g</th><th>cycles</th><th>type</th><th>|Fix(g)| = '+k+'<sup>z(g)</sup></th></tr>';let sum=0;
+      const big=G.length>8,gs=big?(G.length>12?24:32):44;
       G.forEach((g,gi)=>{const t=cycleType(g.p);const c=cyclesOf(g.p).length;const f=Math.pow(k,c);sum+=f;
-        rows+='<tr data-g="'+gi+'"><td>'+g.name+'</td><td class="m"><svg viewBox="-4 -4 68 68" width="'+(G.length>8?36:44)+'" height="'+(G.length>8?36:44)+'" data-cyc="'+gi+'"></svg></td><td class="m">'+monoHTML(t)+'</td><td class="m">'+f+'</td></tr>';});
+        rows+='<tr data-g="'+gi+'"><td>'+g.name+'</td><td class="m"><svg viewBox="-4 -4 68 68" width="'+gs+'" height="'+gs+'" data-cyc="'+gi+'"></svg></td><td class="m">'+monoHTML(t)+'</td><td class="m">'+f+'</td></tr>';});
       rows+='<tr class="tot"><td colspan="3">sum '+sum+' ÷ |G| = '+G.length+'</td><td class="m">'+(sum/G.length)+'</td></tr>';
-      tab.innerHTML=rows;tab.classList.toggle('compact',G.length>8);
+      tab.innerHTML=rows;tab.classList.toggle('compact',big);tab.classList.toggle('xcompact',G.length>12);
       tab.querySelectorAll('svg[data-cyc]').forEach(sv=>{const g=G[+sv.dataset.cyc];const cs=cyclesOf(g.p);
         const C=30,RB=22;                                    // bead circle
         for(let i=0;i<n;i++){const a=-Math.PI/2+2*Math.PI*i/n;sv.appendChild(el('circle',{cx:C+RB*Math.cos(a),cy:C+RB*Math.sin(a),r:3.2,fill:DEEP}));}
@@ -942,18 +960,32 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$
             let rc=half?chordMid+14:(inner?chordMid-14:(Math.abs(d)<=2*Math.PI/5+1e-9?RB/Math.cos(dd/2)+3:chordMid+5));
             const qx=C+rc*Math.cos(m),qy=C+rc*Math.sin(m);
             sv.appendChild(el('path',{d:`M${x1} ${y1} Q${qx} ${qy} ${x2} ${y2}`,fill:'none',stroke:col,'stroke-width':2,'marker-end':markerFor(sv,col,7)}));}});});
-      const host=$('d1orb');host.innerHTML='';
-      const show=total<=128;
-      $('d1msg').textContent=total+' colorings → '+orbs.length+(dih?' bracelets':' necklaces')+(show?'':' (one per orbit shown)');
-      const size=total<=16?38:(total<=32?30:(total<=81?22:18)),r=total<=16?7:(total<=32?5.5:(total<=81?4.2:3.6));
-      orbs.forEach(orb=>{const d=document.createElement('div');d.className='orbit';
-        (show?orb:[orb[0]]).forEach(c=>{const sv=el('svg',{viewBox:'0 0 '+(2*size)+' '+(2*size),width:2*size,height:2*size});necklace(sv,c,size,size,size-r-2,r,{ring:'none'});sv.dataset.col=c.join('');d.appendChild(sv);});
-        host.appendChild(d);});
-      tab.querySelectorAll('tr[data-g]').forEach(tr=>{tr.addEventListener('mouseenter',()=>{const g=G[+tr.dataset.g];host.querySelectorAll('svg').forEach(sv=>{const c=sv.dataset.col.split('').map(Number);sv.style.outline=isFixed(g.p,c)?'3px solid '+BLUE:'none';});});
+      const host=$('d1orb');
+      // draw, then shrink (or fall back to one representative per orbit) until the picture fits the slide
+      const SIZES=[[38,7],[30,5.5],[24,4.4],[20,3.6],[17,3.1],[15,2.8]];
+      function draw(showAll,size,r){
+        host.innerHTML='';
+        const list=showAll?orbs:orbs.slice(0,MAXSHOW);
+        list.forEach(orb=>{const d=document.createElement('div');d.className='orbit';
+          (showAll?orb:[orb[0]]).forEach(x=>{const c=decode(x,n,k);const sv=el('svg',{viewBox:'0 0 '+(2*size)+' '+(2*size),width:2*size,height:2*size});necklace(sv,c,size,size,size-r-2,r,DEMO_RING);sv.dataset.col=c.join(',');d.appendChild(sv);});
+          host.appendChild(d);});
+      }
+      const fits=()=>host.scrollHeight<=host.clientHeight+1;
+      const visible=host.offsetParent!==null;
+      let showAll=total<=128,done=false;
+      if(showAll){for(const [sz,r] of SIZES){draw(true,sz,r);if(!visible||fits()){done=true;break;}}if(!done)showAll=false;}
+      if(!showAll){const [sz,r]=orbs.length<=40?SIZES[1]:(orbs.length<=80?SIZES[3]:SIZES[4]);draw(false,sz,r);}
+      // hide whatever still overflows, and say how many are shown
+      let shown=host.children.length;
+      if(visible){const H=host.clientHeight;[...host.children].forEach(ch=>{if(ch.offsetTop+ch.offsetHeight>H){ch.remove();}});shown=host.children.length;}
+      $('d1msg').textContent=total.toLocaleString()+' colorings → '+orbs.length.toLocaleString()+(dih?' bracelets':' necklaces')+
+        (showAll?'':(shown<orbs.length?' (one per orbit; '+shown+' shown)':' (one per orbit shown)'));
+      tab.querySelectorAll('tr[data-g]').forEach(tr=>{tr.addEventListener('mouseenter',()=>{const g=G[+tr.dataset.g];host.querySelectorAll('svg').forEach(sv=>{const c=sv.dataset.col.split(',').map(Number);sv.style.outline=isFixed(g.p,c)?'3px solid '+BLUE:'none';});});
         tr.addEventListener('mouseleave',()=>host.querySelectorAll('svg').forEach(sv=>sv.style.outline='none'));});
     }
-    $('d1n').addEventListener('change',e=>{n=+e.target.value;if(k===3&&n>4){k=2;$('d1k').value='2';}render();});
-    $('d1k').addEventListener('change',e=>{k=+e.target.value;if(k===3&&n>4){n=4;$('d1n').value='4';}render();});
+    document.addEventListener('slideshow',()=>{if(tab.offsetParent!==null)render();});
+    $('d1n').addEventListener('change',e=>{n=+e.target.value;render();});
+    $('d1k').addEventListener('change',e=>{k=+e.target.value;render();});
     $('d1C').addEventListener('click',()=>{dih=false;$('d1C').classList.add('on');$('d1D').classList.remove('on');render();});
     $('d1D').addEventListener('click',()=>{dih=true;$('d1D').classList.add('on');$('d1C').classList.remove('on');render();});
     render();
@@ -961,28 +993,37 @@ window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$
 
   // ===================== Demo 2 =====================
   (function(){const z=$('d2z');if(!z)return;
-    let n=4,dih=false;
+    let n=4,k=2,dih=false;
+    const MAXREP=9;
     function render(){
       const G=groupPerms(n,dih);
       z.innerHTML=cycleIndexHTML(G);
+      // substitute p_i -> q^i + (k-1): an i-cycle is all black (q^i) or one of the other k-1 colors
       let P=[0];
-      G.forEach(g=>{let f=[1];cyclesOf(g.p).forEach(c=>{const t=Array(c.length+1).fill(0);t[0]=1;t[c.length]=1;f=polyMul(f,t);});P=polyAdd(P,f);});
+      G.forEach(g=>{let f=[1];cyclesOf(g.p).forEach(c=>{const t=Array(c.length+1).fill(0);t[0]=k-1;t[c.length]+=1;f=polyMul(f,t);});P=polyAdd(P,f);});
       const Q=P.map(v=>v/G.length);
-      $('d2sub').innerHTML='substitute <i>p</i><sub>i</sub> ↦ 1 + <i>q</i><sup>i</sup> &nbsp;(an <i>i</i>-cycle is all white, or all black and counts <i>q</i><sup>i</sup>):';
-      $('d2poly').innerHTML='<b>Z</b>(1+<i>q</i>, 1+<i>q</i>², …) = '+polyHTML(Q);
+      const sub=k===2?'1 + <i>q</i><sup>i</sup>':'<i>q</i><sup>i</sup> + '+(k-1);
+      $('d2sub').innerHTML='substitute <i>p</i><sub>i</sub> ↦ '+sub+' &nbsp;(an <i>i</i>-cycle is all black, counted by <i>q</i><sup>i</sup>, or '+(k===2?'all white':'one of the other '+(k-1)+' colors')+'):';
+      const arg=k===2?'1+<i>q</i>, 1+<i>q</i>², …':'<i>q</i>+'+(k-1)+', <i>q</i>²+'+(k-1)+', …';
+      $('d2poly').innerHTML='<b>Z</b>('+arg+') = '+polyHTML(Q);
       const tot=Q.reduce((a,b)=>a+b,0);
-      $('d2tot').innerHTML='<strong>'+tot+'</strong> '+(dih?'bracelets':'necklaces')+' in all, which is <b>Z</b>(2, 2, …). Each coefficient is checked against the orbits, drawn below it.';
-      const orbs=orbitsOf(n,2,G);const byDeg=Array(n+1).fill(null).map(()=>[]);orbs.forEach(o=>byDeg[countBlack(o[0])].push(o[0]));
+      $('d2tot').innerHTML='<strong>'+tot.toLocaleString()+'</strong> '+(dih?'bracelets':'necklaces')+' in all, which is <b>Z</b>('+k+', '+k+', …). Each coefficient is checked against the orbits, drawn below it.';
+      const orbs=orbitsInt(n,k,G);const byDeg=Array(n+1).fill(null).map(()=>[]);
+      orbs.forEach(o=>{const c=decode(o[0],n,k);byDeg[countBlack(c)].push(c);});
+      byDeg.forEach((list,d)=>{if(list.length!==Q[d])console.error('Demo 2 mismatch at degree',d,list.length,Q[d]);});
       const host=$('d2bars');host.innerHTML='';const mx=Math.max(...Q);
       for(let d=0;d<=n;d++){const b=document.createElement('div');b.className='bar';
-        const num=document.createElement('div');num.className='num';num.textContent=Q[d];b.appendChild(num);
+        const num=document.createElement('div');num.className='num';num.textContent=Q[d].toLocaleString();b.appendChild(num);
         const col=document.createElement('div');col.className='col';col.style.height=(8+120*Q[d]/mx)+'px';b.appendChild(col);
         const lab=document.createElement('div');lab.className='lab';lab.innerHTML=d+' black';b.appendChild(lab);
         const reps=document.createElement('div');reps.className='reps';
-        byDeg[d].forEach(c=>{const w=n>=7?26:(n>=6?30:36);const sv=el('svg',{viewBox:'0 0 30 30',width:w,height:w});necklace(sv,c,15,15,10,n>=7?3.4:4.2,{ring:'none'});reps.appendChild(sv);});
+        const w=n>=7?26:(n>=6?30:36);
+        byDeg[d].slice(0,MAXREP).forEach(c=>{const sv=el('svg',{viewBox:'0 0 30 30',width:w,height:w});necklace(sv,c,15,15,10,n>=7?3.4:4.2,DEMO_RING);reps.appendChild(sv);});
+        if(byDeg[d].length>MAXREP){const m=document.createElement('div');m.className='more';m.textContent='+'+(byDeg[d].length-MAXREP).toLocaleString();reps.appendChild(m);}
         b.appendChild(reps);host.appendChild(b);}
     }
     $('d2n').addEventListener('change',e=>{n=+e.target.value;render();});
+    $('d2k').addEventListener('change',e=>{k=+e.target.value;render();});
     $('d2C').addEventListener('click',()=>{dih=false;$('d2C').classList.add('on');$('d2D').classList.remove('on');render();});
     $('d2D').addEventListener('click',()=>{dih=true;$('d2D').classList.add('on');$('d2C').classList.remove('on');render();});
     render();
