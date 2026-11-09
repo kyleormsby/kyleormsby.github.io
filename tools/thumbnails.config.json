@@ -198,5 +198,13 @@
       "height": 900
     },
     "scale": 1
+  },
+  "rainbow-meander-tree": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "wait": 2000
   }
 }

@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rainbow Meander Tree</title>
+<link rel="stylesheet" href="/vendor/fonts/fonts.css">
+<style>
+/* Layout: full-bleed pan/zoom canvas; floating panels — legend top-left, zoom rail top-right, inspector bottom-right (bottom sheet on phones). */
+:root{
+  --bg:#eceff2; --ink:#2b313b; --axis:#97a1ad; --edge:#aeb6c1;
+  --new:#d33b27; --sel:#1d64c8; --selsoft:rgba(29,100,200,.12); --mea:#17855a; --measoft:rgba(23,133,90,.14);
+  --panel:rgba(255,255,255,.92); --line:#d3d9e0; --muted:#5d6672;
+  --f-display:"Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12151a; --ink:#d7dce3; --axis:#5c6672; --edge:#3d4550;
+  --new:#ff6a54; --sel:#66a8ff; --selsoft:rgba(102,168,255,.14); --mea:#4fd39a; --measoft:rgba(79,211,154,.15);
+  --panel:rgba(27,31,38,.93); --line:#2f3640; --muted:#99a3b0; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#12151a; --ink:#d7dce3; --axis:#5c6672; --edge:#3d4550;
+  --new:#ff6a54; --sel:#66a8ff; --selsoft:rgba(102,168,255,.14); --mea:#4fd39a; --measoft:rgba(79,211,154,.15);
+  --panel:rgba(27,31,38,.93); --line:#2f3640; --muted:#99a3b0; color-scheme:dark }
+html,body{height:100%}
+body{margin:0; font-size:14px}
+[hidden]{display:none!important}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); overflow:hidden}
+#cv{position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:grab}
+#cv.drag{cursor:grabbing}
+.panel{box-sizing:border-box; position:fixed; background:var(--panel); border:1px solid var(--line); border-radius:10px;
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); box-shadow:0 6px 24px rgba(0,0,0,.08)}
+#legend{top:calc(12px + env(safe-area-inset-top,0px)); left:max(16px, env(safe-area-inset-left,0px));
+  width:min(360px, calc(100vw - 96px)); padding:14px 16px 12px; max-height:calc(100% - 40px); overflow:auto}
+h1{font-family:var(--f-display); font-weight:400; font-size:30px; line-height:1; margin:0 0 8px; letter-spacing:.005em; text-wrap:balance}
+h1 i{color:var(--new)}
+#legend p{margin:0 0 8px; font-size:13px; line-height:1.5}
+#legend .hint{color:var(--muted); font-size:12px}
+.narrow-only{display:none; margin-top:8px!important}
+details{border-top:1px solid var(--line); padding-top:8px; margin-top:4px}
+summary{cursor:pointer; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600}
+table{border-collapse:collapse; width:100%; margin-top:6px; font-family:var(--f-mono); font-size:11.5px; font-variant-numeric:tabular-nums}
+th{font-family:var(--f-body); font-weight:500; text-align:right; color:var(--muted); font-size:11px; padding:2px 6px}
+th:first-child,td:first-child{text-align:left}
+td{text-align:right; padding:1px 6px}
+td.done{color:var(--muted)}
+.bar{height:4px; background:var(--line); border-radius:2px; overflow:hidden; min-width:40px}
+.bar span{display:block; height:100%; background:var(--sel)}
+#rail{top:calc(12px + env(safe-area-inset-top,0px)); right:max(16px, env(safe-area-inset-right,0px));
+  display:flex; flex-direction:column; padding:4px; gap:2px}
+#rail button, #insp button{font:500 13px var(--f-body); color:var(--ink); background:transparent; border:0; border-radius:7px;
+  min-width:36px; height:36px; padding:0 8px; cursor:pointer}
+#rail button:hover, #insp button:hover{background:var(--selsoft)}
+button:focus-visible{outline:2px solid var(--sel); outline-offset:1px}
+#rail .sep{height:1px; background:var(--line); margin:2px 4px}
+#rail button[aria-pressed="true"]{color:var(--new)}
+#fold{font-family:var(--f-display)!important; font-size:17px!important}
+#meo[aria-pressed="true"]{color:var(--mea)}
+.swatch{display:inline-block; width:.9em; height:.9em; border-radius:3px; background:var(--measoft); border:1px solid var(--mea); vertical-align:-.1em}
+#insp{right:max(16px, env(safe-area-inset-right,0px)); bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  width:340px; padding:12px 14px 10px}
+#insp .hd{display:flex; align-items:baseline; justify-content:space-between; gap:8px}
+#insp h2{font-family:var(--f-display); font-weight:400; font-size:24px; margin:0}
+#insp canvas{width:100%; height:190px; display:block; margin:6px 0}
+#insp dl{display:grid; grid-template-columns:auto 1fr; gap:3px 10px; margin:0; font-size:12px}
+#insp dt{color:var(--muted)}
+#insp dd{margin:0; font-family:var(--f-mono); word-break:break-all; min-width:0}
+#insp dd#ifold{font-family:var(--f-body); word-break:normal}
+#insp .acts{display:flex; gap:4px; margin-top:6px; justify-content:flex-end}
+#insp .acts button{height:30px; border:1px solid var(--line)}
+#toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(16px + env(safe-area-inset-bottom,0px));
+  font-size:12px; padding:6px 12px; border-radius:999px; background:var(--panel); border:1px solid var(--line); color:var(--muted)}
+@media (max-width:640px){
+  h1{font-size:25px}
+  #legend p.long{display:none}
+  #legend .narrow-only{display:block}
+  #insp{left:max(16px, env(safe-area-inset-left,0px)); right:max(16px, env(safe-area-inset-right,0px)); width:auto}
+  #insp canvas{height:150px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="cv" aria-label="Zoomable tree of rainbow meanders"></canvas>
+
+<section id="legend" class="panel">
+  <h1>Rainbow <i>meanders</i></h1>
+  <p class="long">Every closed meander whose lower arcs form a rainbow appears here exactly once. To make the children of a meander, cut one of its outermost upper arcs and swing the two loose ends down around the whole picture, where they close up as a new outer rainbow arc. A meander with <em>k</em> outermost upper arcs has <em>k</em> children. The new arc is drawn in red.</p>
+  <p class="long"><b>z²</b> folds every node: the river closes up into a ray from a source (dot) and each node becomes its semi-meander. <b>M</b> picks out the honest meanders <span class="swatch"></span> and dims the rest: no upper arc crosses the centre, so folding gives a closed meander of half the order. Every meander appears exactly once this way, at even orders.</p>
+  <p class="hint">Drag to pan, scroll or pinch to zoom. Pan down and the tree grows under whatever you are looking at. Tap a meander to inspect it.</p>
+  <details id="cnt">
+    <summary>Generated so far</summary>
+    <p class="narrow-only"><b>z²</b> folds each node into its semi-meander; <b>M</b> picks out the genuine meanders, which fold to meanders of half the order.</p>
+    <p class="narrow-only">Each meander's children come from cutting one of its outermost upper arcs and swinging the two ends down around everything, closing up as a new outer rainbow arc (red). Every rainbow meander appears exactly once.</p>
+    <table><thead><tr><th>order</th><th>shown</th><th>all</th><th></th></tr></thead><tbody id="ctab"></tbody></table>
+    <p class="hint" style="margin-top:6px">The totals are the semimeander numbers.</p>
+  </details>
+</section>
+
+<nav id="rail" class="panel" aria-label="View controls">
+  <button id="zin" title="Zoom in" aria-label="Zoom in">+</button>
+  <button id="zout" title="Zoom out" aria-label="Zoom out">−</button>
+  <button id="top" title="Back to the top of the tree" aria-label="Back to top">⌂</button>
+  <div class="sep"></div>
+  <button id="fold" title="Fold the rainbow: z ↦ z²" aria-pressed="false" aria-label="Fold the rainbow">z²</button>
+  <button id="meo" title="Show only meanders" aria-pressed="false" aria-label="Show only meanders">M</button>
+  <button id="red" title="Highlight the newest arc" aria-pressed="true" aria-label="Highlight newest arc">●</button>
+  <button id="reset" title="Prune back to order 5" aria-label="Reset tree">↺</button>
+</nav>
+
+<aside id="insp" class="panel" hidden>
+  <div class="hd"><h2 id="ititle">Order 1</h2><button id="iclose" aria-label="Close inspector">✕</button></div>
+  <canvas id="icv"></canvas>
+  <dl>
+    <dt>upper arcs</dt><dd id="iword"></dd>
+    <dt>address</dt><dd id="iaddr"></dd>
+    <dt>children</dt><dd id="ikids"></dd>
+    <dt>folded</dt><dd id="ifold"></dd>
+  </dl>
+  <div class="acts"><button id="iparent">Parent</button><button id="icenter">Center</button></div>
+</aside>
+<div id="toast" hidden></div>
+
+<script>
+(()=>{
+"use strict";
+const S = 12;                 // world distance between crossings
+const GAP = S*7;              // vertical gap between rows
+const COUNTS = [1,1,2,4,10,24,66,174,504,1406,4210,12198,37378,111278,346846];
+const MAXN = 180000;
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const icv = document.getElementById('icv'), ictx = icv.getContext('2d');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let dpr = 1, Wc = 0, Hc = 0, dirty = true, showNew = true;
+let foldT = 0, foldTarget = 0, meOnly = false;   // fold parameter t in [0,1]
+
+/* ---------- colours from tokens ---------- */
+let col = {};
+function readCols(){
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ['bg','ink','axis','edge','new','sel','selsoft','mea','measoft']) col[k] = cs.getPropertyValue('--'+k).trim();
+  col.dark = cs.colorScheme === 'dark' || cs.getPropertyValue('color-scheme').includes('dark');
+  dirty = true; drawInsp();
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readCols);
+new MutationObserver(readCols).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+
+/* ---------- the tree ---------- */
+// A meander of order n: 2n crossings 0..N-1; m[i] = upper partner of i; lower arcs are the rainbow i <-> N-1-i.
+let nodeCount = 0, root, rows = [];
+function mk(m, parent, ci){
+  const N = m.length; let i = 0, tr = 0, outer = 0;
+  while (i < N){ const j = m[i]; tr = Math.max(tr, (j-i)/2); outer++; i = j+1; }
+  nodeCount++;
+  // straddle = number of upper arcs crossing the centre line; meander <=> none (forces N divisible by 4)
+  let straddle = 0; for (let a = 0; a < N/2; a++) if (m[a] >= N/2) straddle++;
+  return {m, d: parent ? parent.d+1 : 0, parent, ci, kids: null, ri: 0, ka: 0, topR: tr*S, outer, straddle, mea: straddle === 0, sx: 0, drawn: -1, dx: 0, anim: -1};
+}
+function expand(nd){
+  const m = nd.m, N = m.length, kids = [];
+  let i = 0, ci = 0;
+  while (i < N){                       // each outermost upper arc (i, j)
+    const j = m[i], c = new Uint16Array(N+2);
+    for (let k = 0; k < N; k++) c[k+1] = m[k]+1;
+    c[0] = i+1; c[i+1] = 0;            // left end swings out to the new leftmost crossing
+    c[N+1] = j+1; c[j+1] = N+1;        // right end to the new rightmost crossing
+    kids.push(mk(c, nd, ci++));
+    i = j+1;
+  }
+  nd.kids = kids; return kids.length;
+}
+const NW = d => (2*(d+1)+2)*S;          // drawn width of a meander at depth d
+const P  = d => NW(d) + S*2.2;          // row pitch at depth d
+const TOPX = n => (2*n-1)/2*S, BOTX = n => (2*n-1)/2*S;
+const Yc = [0];
+function Y(d){ while (Yc.length <= d){ const k = Yc.length; Yc.push(Yc[k-1] + BOTX(k) + GAP + TOPX(k+1)); } return Yc[d]; }
+// Rows are packed left to right. Row d is tied to row d+1 by the piecewise-linear map that
+// sends each parent's slot onto the block of its children; the camera centres one row and
+// every other row is aligned to it through these maps.
+function rebuild(){
+  rows = []; let cur = [root];
+  while (cur.length){
+    const nx = [];
+    cur.forEach((n, i) => { n.ri = i; n.ka = nx.length; if (n.kids) for (const c of n.kids) nx.push(c); });
+    rows.push(cur); cur = nx;
+  }
+}
+const uOf = n => (n.ri + 0.5)*P(n.d);
+function mapDown(k, u){
+  const row = rows[k], p = P(k), q = P(k+1), L = row.length, L2 = rows[k+1] ? rows[k+1].length : 0;
+  if (u <= 0) return u;
+  if (u >= L*p) return L2*q + (u - L*p);
+  const i = Math.floor(u/p), t = u/p - i, n = row[i], a = n.ka, b = a + (n.kids ? n.kids.length : 0);
+  return (a + t*(b-a))*q;
+}
+function mapUp(k, v){
+  const nr = rows[k+1], p = P(k), q = P(k+1), L = rows[k].length;
+  if (!nr || !nr.length) return v;
+  if (v <= 0) return v;
+  if (v >= nr.length*q) return L*p + (v - nr.length*q);
+  const c = nr[Math.floor(v/q)], par = c.parent, a = par.ka, b = a + par.kids.length;
+  return (par.ri + (v/q - a)/(b - a))*p;
+}
+function convertU(u, from, to){
+  while (from < to){ u = mapDown(from, u); from++; }
+  while (from > to){ u = mapUp(from-1, u); from--; }
+  return u;
+}
+
+/* ---------- camera ---------- */
+// cam.r: reference row, cam.u: coordinate along that row at screen centre, cam.y: world y at centre.
+const cam = {r:0, u:0, y:0, z:1, ax:0};   // ax: screen x where the rows are aligned
+let U = [];
+function computeU(){
+  U = new Array(rows.length);
+  if (!rows.length) return;
+  const r = Math.min(cam.r, rows.length-1);
+  U[r] = r === cam.r ? cam.u : convertU(cam.u, cam.r, r);
+  for (let d = r+1; d < rows.length; d++) U[d] = mapDown(d-1, U[d-1]);
+  for (let d = r-1; d >= 0; d--) U[d] = mapUp(d, U[d+1]);
+}
+function normalize(){
+  if (tween) return;
+  let best = 0, bd = Infinity;
+  for (let d = 0; d < rows.length; d++){ const dd = Math.abs(Y(d) - cam.y); if (dd < bd){ bd = dd; best = d; } }
+  if (best !== cam.r){ cam.u = convertU(cam.u, cam.r, best); cam.r = best; }
+}
+const nodeSX = n => cam.ax + (uOf(n) - U[n.d])*cam.z;
+const dispSX = n => nodeSX(n) + (n.anim === animId ? n.dx*(1 - animE) : 0);
+function fitTop(depth){
+  const D = Math.min(depth, rows.length-1);
+  let w = 0; for (let d = 0; d <= D; d++) w = Math.max(w, rows[d].length*P(d));
+  const yt = Y(0) - TOPX(1) - S*2, yb = Y(D) + BOTX(D+1) + S*2;
+  const lg = document.getElementById('legend').getBoundingClientRect();
+  // the free box beside (wide screens) or below (phones) the legend panel
+  const side = Wc - lg.right > 0.5*Wc;
+  const bx0 = side ? lg.right + 16 : 16, bx1 = Wc - (side ? 70 : 16), by0 = side ? 24 : lg.bottom + 12, by1 = Hc - 24;
+  const z = Math.max(0.03, Math.min((bx1 - bx0)/w, (by1 - by0)/(yb - yt)));
+  return {r: 0, u: uOf(root), ax: (bx0 + bx1)/2, y: (yt + yb)/2 - ((by0 + by1)/2 - Hc/2)/z, z};
+}
+let tween = null;
+function flyTo(t){
+  if (reduce){ Object.assign(cam, t); dirty = true; return; }
+  const u0 = convertU(cam.u, cam.r, t.r);
+  cam.r = t.r; cam.u = u0;
+  if (t.ax === undefined) t.ax = Wc/2;
+  tween = {from:{u:u0, y:cam.y, z:cam.z, ax:cam.ax}, to:t, t0:performance.now(), dur:500};
+}
+
+/* ---------- growth ---------- */
+let toastT = 0, animE = 1, animT0 = 0, animId = 0, frameId = 0;
+function grow(){
+  if (tween) return false;
+  if (nodeCount >= MAXN){ if (!toastT){ toast('Node limit reached. Use ↺ to prune the tree.'); toastT = 1; } return false; }
+  const z = cam.z, yBot = cam.y + (Hc/2 - 0.03*Hc)/z, yTop = cam.y - Hc/z;
+  let budget = 1500, any = false;
+  outer:
+  for (let d = 0; d < rows.length; d++){
+    const n = d+1;
+    if (Y(d+1) - TOPX(n+1) > yBot) break;         // the space for its children is not in view yet
+    if (Y(d) + BOTX(n) < yTop) continue;
+    if (NW(d)*z < 24) continue;                     // only grow under meanders big enough to read
+    const row = rows[d], p = P(d);
+    const lo = Math.max(0, Math.floor((U[d] - cam.ax/z)/p)), hi = Math.min(row.length, Math.ceil((U[d] + (Wc - cam.ax)/z)/p));
+    for (let i = lo; i < hi; i++){
+      const nd = row[i];
+      if (!nd.kids){ budget -= expand(nd); any = true; if (budget <= 0 || nodeCount >= MAXN) break outer; }
+    }
+  }
+  if (any) relayout();
+  return any;
+}
+function relayout(){
+  // keep the node at the centre of the reference row still, and let everything else glide
+  const r = cam.r, row = rows[r], p = P(r);
+  const anc = row[Math.max(0, Math.min(row.length-1, Math.floor(cam.u/p)))], off = cam.u - uOf(anc);
+  const old = new Map();
+  for (const rr of rows) for (const n of rr) if (n.drawn === frameId) old.set(n, n.sx);
+  rebuild();
+  cam.u = uOf(anc) + off; computeU();
+  animId++;
+  for (const [n, sx] of old){ n.dx = sx - nodeSX(n); n.anim = animId; }
+  for (const rr of rows) for (const n of rr)
+    if (n.anim !== animId && n.parent && old.has(n.parent)){ n.dx = old.get(n.parent) - nodeSX(n); n.anim = animId; }
+  if (reduce) animE = 1; else { animE = 0; animT0 = performance.now(); }
+  dirty = true; statsDirty = true;
+}
+
+/* ---------- drawing ---------- */
+// Fold map F_t (math coordinates, y up, origin at the midpoint of the 2n crossings, unit spacing).
+// t = 0: identity.  t = 1: z -> z^2 rescaled, the rainbow (lower half-plane) collapses onto the ray
+// and each rainbow meander becomes its semi-meander.  Upper half-plane: angle th -> (1+t) th;
+// lower half-plane: squeezed into the sector [(1+t)pi, 2pi]; radius r -> R0 (r/R0)^(1+t).
+function foldPt(x, y, t, R0){
+  if (t <= 0) return [x, y];
+  const r = Math.hypot(x, y); if (r === 0) return [0, 0];
+  const th = Math.atan2(y, x);
+  const th2 = th >= 0 ? th*(1+t) : (1+t)*Math.PI + (th + Math.PI)*(1-t);
+  const r2 = R0*Math.pow(r/R0, 1+t);
+  return [r2*Math.cos(th2), r2*Math.sin(th2)];
+}
+// sample an arc of the node in local units: top arc (i,j) or rainbow arc k, as a polyline
+function arcPts(i, j, top, N, t, R0, steps){
+  const xi = i - (N-1)/2, xj = j - (N-1)/2, c = (xi + xj)/2, rho = Math.abs(xj - xi)/2, out = [];
+  for (let s = 0; s <= steps; s++){
+    const ph = Math.PI*s/steps;
+    // from xi to xj: phi runs pi -> 0 when xi < xj
+    const a = xi < xj ? Math.PI - ph : ph;
+    out.push(foldPt(c + rho*Math.cos(a), top ? rho*Math.sin(a) : -rho*Math.sin(a), t, R0));
+  }
+  return out;
+}
+function meanderPaths(nd, sx, sy, sc, ink, red, axis){
+  const m = nd.m, N = m.length, hl = showNew && nd.parent, t = foldT;
+  if (t <= 0){
+    const x = i => sx + (i - (N-1)/2)*sc;
+    axis.moveTo(x(0) - sc*0.9, sy); axis.lineTo(x(N-1) + sc*0.9, sy);
+    for (let i = 0; i < N; i++){
+      const j = m[i]; if (j < i) continue;
+      const c = (x(i)+x(j))/2, r = (j-i)/2*sc, Pth = (hl && (i === 0 || j === N-1)) ? red : ink;
+      Pth.moveTo(c - r, sy); Pth.arc(c, sy, r, Math.PI, 2*Math.PI);
+    }
+    for (let k = 0; k < N/2; k++){
+      const r = (N-1-2*k)/2*sc, Pth = (hl && k === 0) ? red : ink;
+      Pth.moveTo(sx + r, sy); Pth.arc(sx, sy, r, 0, Math.PI);
+    }
+    return;
+  }
+  const R0 = (N-1)/2, ext = R0 + 0.9, Re = R0*Math.pow(ext/R0, 1+t);
+  const put = (P, pts) => { P.moveTo(sx + pts[0][0]*sc, sy - pts[0][1]*sc); for (let q = 1; q < pts.length; q++) P.lineTo(sx + pts[q][0]*sc, sy - pts[q][1]*sc); };
+  // the river: positive ray stays, negative ray swings round to angle (1+t)pi
+  axis.moveTo(sx, sy); axis.lineTo(sx + Re*sc, sy);
+  axis.moveTo(sx, sy); axis.lineTo(sx + Re*Math.cos((1+t)*Math.PI)*sc, sy - Re*Math.sin((1+t)*Math.PI)*sc);
+  const steps = rho => Math.max(6, Math.min(72, Math.ceil(rho*sc*(1+t)*0.9) + 4));
+  for (let i = 0; i < N; i++){
+    const j = m[i]; if (j < i) continue;
+    put((hl && (i === 0 || j === N-1)) ? red : ink, arcPts(i, j, true, N, t, R0, steps((j-i)/2)));
+  }
+  for (let k = 0; k < N/2; k++)
+    put((hl && k === 0) ? red : ink, arcPts(k, N-1-k, false, N, t, R0, steps((N-1-2*k)/2)));
+}
+const topExt = nd => nd.topR + (BOTX(nd.d+1) - nd.topR)*foldT;   // upward extent, grows to the fold disc
+let selected = null, selPath = new Set();
+function visRange(d, margin){
+  const p = P(d), z = cam.z;
+  return [Math.max(0, Math.floor((U[d] - cam.ax/z - margin)/p)), Math.min(rows[d].length, Math.ceil((U[d] + (Wc - cam.ax)/z + margin)/p))];
+}
+function draw(){
+  frameId++;
+  computeU();
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,Wc,Hc);
+  const z = cam.z, sc = S*z, y0 = cam.y - Hc/2/z, y1 = cam.y + Hc/2/z;
+  const SY = y => (y - cam.y)*z + Hc/2;
+  const margin = animE < 1 ? 3*Wc/z : 0;
+  // nodes first (records their screen positions), edges underneath afterwards via destination-over
+  const ink = new Path2D(), red = new Path2D(), axis = new Path2D();
+  const inkD = new Path2D(), redD = new Path2D(), axisD = new Path2D(), src = [];   // dimmed (non-meanders when M is on)
+  const lw = Math.max(0.6, Math.min(3.6, sc*0.26));
+  const visRows = [];
+  for (let d = 0; d < rows.length; d++){
+    const n = d+1, yc = Y(d);
+    if (yc - TOPX(n) - GAP > y1) break;
+    if (yc + BOTX(n) + GAP < y0) continue;
+    visRows.push(d);
+    const [lo, hi] = visRange(d, margin + NW(d)), sy = SY(yc), w = NW(d)*z;
+    for (let i = lo; i < hi; i++){
+      const nd = rows[d][i], sx = dispSX(nd);
+      nd.sx = sx; nd.drawn = frameId;
+      if (sx < -w || sx > Wc + w) continue;
+      const dim = meOnly && !nd.mea;
+      const tint = meOnly && nd.mea;
+      if (tint || nd === selected){
+        const hw = (n+0.9)*sc + 6, ht = topExt(nd)*z + 6, hb = BOTX(n)*z + 6;
+        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(sx-hw, sy-ht, 2*hw, ht+hb, 8) : ctx.rect(sx-hw, sy-ht, 2*hw, ht+hb);
+        if (tint){ ctx.fillStyle = col.measoft; ctx.fill(); }
+        if (nd === selected){ ctx.fillStyle = col.selsoft; ctx.fill(); }
+      }
+      if (sc < 1.2){
+        const hw = Math.max(0.6, n*sc), hb = Math.max(0.6, BOTX(n)*z), ht = topExt(nd)*z;
+        ctx.fillStyle = tint ? col.mea : col.ink; ctx.globalAlpha = dim ? 0.12 : 0.55; ctx.fillRect(sx-hw, sy - ht, 2*hw, ht + hb); ctx.globalAlpha = 1;
+      } else {
+        meanderPaths(nd, sx, sy, sc, dim ? inkD : ink, dim ? redD : red, dim ? axisD : axis);
+        if (foldT > 0 && !dim) src.push(sx, sy);
+      }
+    }
+  }
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (sc >= 1.2){
+    ctx.strokeStyle = col.axis; ctx.lineWidth = Math.max(0.5, lw*0.55); ctx.stroke(axis);
+    ctx.strokeStyle = col.ink; ctx.lineWidth = lw; ctx.stroke(ink);
+    ctx.strokeStyle = col.new; ctx.lineWidth = lw; ctx.stroke(red);
+    if (meOnly){
+      ctx.globalAlpha = 0.16;
+      ctx.strokeStyle = col.axis; ctx.lineWidth = Math.max(0.5, lw*0.55); ctx.stroke(axisD);
+      ctx.strokeStyle = col.ink; ctx.lineWidth = lw; ctx.stroke(inkD); ctx.stroke(redD);
+      ctx.globalAlpha = 1;
+    }
+    if (src.length){                                  // the source of the folded river
+      ctx.fillStyle = col.ink; ctx.globalAlpha = Math.min(1, foldT*2);
+      const rr = Math.max(1.6, lw*1.3);
+      ctx.beginPath(); for (let q = 0; q < src.length; q += 2){ ctx.moveTo(src[q] + rr, src[q+1]); ctx.arc(src[q], src[q+1], rr, 0, 2*Math.PI); } ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+  }
+  // edges: every visible child to its parent
+  const edges = new Path2D(), heads = new Path2D(), sel = new Path2D();
+  const head = sc > 2.5 ? Math.min(7, sc*0.9) : 0, eLW = Math.max(0.5, Math.min(1.6, z*1.3));
+  for (let d = 1; d < rows.length; d++){
+    const n = d+1, ya = Y(d-1) + BOTX(d) + S*0.8, yb = Y(d);
+    if (ya > y1) break;
+    if (yb < y0) continue;
+    const [lo, hi] = visRange(d, margin + NW(d));
+    for (let i = lo; i < hi; i++){
+      const c = rows[d][i], p = c.parent;
+      const x1 = p.drawn === frameId ? p.sx : dispSX(p), x2 = c.drawn === frameId ? c.sx : dispSX(c);
+      if ((x1 < 0 && x2 < 0) || (x1 > Wc && x2 > Wc)) continue;
+      const Y1 = SY(ya), Y2 = SY(yb - topExt(c) - S*0.8), ym = (Y1 + Y2)/2;
+      const on = selPath.has(c), E = on ? sel : edges, H = on ? sel : heads;
+      E.moveTo(x1, Y1); E.bezierCurveTo(x1, ym, x2, ym, x2, Y2);
+      if (head){ H.moveTo(x2 - head*0.45, Y2 - head); H.lineTo(x2, Y2); H.lineTo(x2 + head*0.45, Y2 - head); }
+    }
+  }
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.strokeStyle = col.sel; ctx.lineWidth = eLW*2 + 0.5; ctx.stroke(sel);
+  ctx.strokeStyle = col.edge; ctx.lineWidth = eLW; ctx.stroke(edges); ctx.stroke(heads);
+  ctx.fillStyle = col.bg; ctx.fillRect(0,0,Wc,Hc);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+/* ---------- inspector ---------- */
+const insp = document.getElementById('insp');
+let loop = null, beadT = 0;
+function buildLoop(nd){
+  // walk the single closed curve: upper arc, rainbow arc, upper arc, ...
+  const m = nd.m, N = m.length, segs = []; let p = 0, top = true;
+  for (let s = 0; s < N; s++){
+    const q = top ? m[p] : N-1-p;
+    segs.push({p, q, top}); p = q; top = !top;
+  }
+  return segs;
+}
+function select(nd){
+  selected = nd; selPath = new Set();
+  for (let a = nd; a; a = a.parent) selPath.add(a);
+  dirty = true;
+  if (!nd){ insp.hidden = true; loop = null; return; }
+  insp.hidden = false;
+  const N = nd.m.length, n = N/2;
+  document.getElementById('ititle').textContent = 'Order ' + n;
+  let w = ''; for (let i = 0; i < N; i++) w += nd.m[i] > i ? '(' : ')';
+  document.getElementById('iword').textContent = w;
+  const addr = []; for (let a = nd; a.parent; a = a.parent) addr.push(a.ci+1);
+  document.getElementById('iaddr').textContent = addr.length ? '○ · ' + addr.reverse().join(' · ') : '○ (root)';
+  document.getElementById('ikids').textContent = nd.outer + (nd.outer === 1 ? ' (one outermost upper arc)' : ' (one per outermost upper arc)');
+  document.getElementById('iparent').disabled = !nd.parent;
+  document.getElementById('ifold').textContent = nd.mea
+    ? `a meander of order ${n/2}: no upper arc crosses the centre`
+    : `semi-meander of order ${n}; ${nd.straddle} upper arc${nd.straddle === 1 ? '' : 's'} cross${nd.straddle === 1 ? 'es' : ''} the centre and wrap${nd.straddle === 1 ? 's' : ''} the source`;
+  loop = buildLoop(nd); beadT = 0;
+  sizeInsp(); drawInsp();
+}
+function sizeInsp(){
+  const r = icv.getBoundingClientRect(); if (!r.width) return;
+  icv.width = Math.round(r.width*dpr); icv.height = Math.round(r.height*dpr);
+}
+function drawInsp(){
+  if (!selected || insp.hidden || !icv.width) return;
+  const cw = icv.width/dpr, ch = icv.height/dpr, nd = selected, N = nd.m.length, t = foldT;
+  ictx.setTransform(dpr,0,0,dpr,0,0); ictx.clearRect(0,0,cw,ch);
+  const R0 = (N-1)/2;
+  // sample every segment of the loop in local units, then fit to the canvas
+  const segs = loop.map(sg => arcPts(sg.p, sg.q, sg.top, N, t, R0, Math.max(10, Math.ceil(Math.abs(sg.q - sg.p)*3))));
+  const ext = R0 + 0.8, Re = t > 0 ? R0*Math.pow(ext/R0, 1+t) : ext;
+  const axisPts = t > 0 ? [[Re, 0], [0, 0], [Re*Math.cos((1+t)*Math.PI), Re*Math.sin((1+t)*Math.PI)]] : [[-ext, 0], [ext, 0]];
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const pts of segs.concat([axisPts])) for (const [x, y] of pts){ x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  const sc = Math.min((cw - 16)/(x1 - x0), (ch - 14)/(y1 - y0));
+  const ox = cw/2 - (x0 + x1)/2*sc, oy = ch/2 + (y0 + y1)/2*sc;
+  const P = ([x, y]) => [ox + x*sc, oy - y*sc];
+  ictx.strokeStyle = col.axis; ictx.lineWidth = 1;
+  ictx.beginPath(); axisPts.forEach((q, k) => { const [X, Yy] = P(q); k ? ictx.lineTo(X, Yy) : ictx.moveTo(X, Yy); }); ictx.stroke();
+  const L = col.dark ? 64 : 46, lw = Math.max(1.5, Math.min(4, sc*0.3));
+  ictx.lineWidth = lw; ictx.lineCap = 'round'; ictx.lineJoin = 'round';
+  segs.forEach((pts, k) => {
+    ictx.strokeStyle = `hsl(${8 + 62*k/N} 82% ${L}%)`;
+    ictx.beginPath(); pts.forEach((q, i) => { const [X, Yy] = P(q); i ? ictx.lineTo(X, Yy) : ictx.moveTo(X, Yy); }); ictx.stroke();
+  });
+  if (t > 0){ const [X, Yy] = P([0, 0]); ictx.fillStyle = col.ink; ictx.globalAlpha = Math.min(1, t*2); ictx.beginPath(); ictx.arc(X, Yy, lw*1.3, 0, 2*Math.PI); ictx.fill(); ictx.globalAlpha = 1; }
+  // bead travelling once round the loop shows it is a single curve
+  if (!reduce){
+    const T = beadT % 1, k = Math.floor(T*N), pts = segs[k], f = (T*N - k)*(pts.length - 1), i = Math.min(pts.length - 2, Math.floor(f)), u = f - i;
+    const [X, Yy] = P([pts[i][0] + (pts[i+1][0] - pts[i][0])*u, pts[i][1] + (pts[i+1][1] - pts[i][1])*u]);
+    ictx.fillStyle = col.ink; ictx.beginPath(); ictx.arc(X, Yy, lw*1.4, 0, 2*Math.PI); ictx.fill();
+  }
+}
+function centerOn(nd){
+  const n = nd.d+1, w = NW(nd.d);
+  const z = Math.min(Wc*0.3/w, Hc*0.28/((2*n)*S));
+  flyTo({r: nd.d, u: uOf(nd), y: Y(nd.d) + (BOTX(n) + GAP)*0.5, z});
+}
+document.getElementById('iclose').onclick = () => select(null);
+document.getElementById('icenter').onclick = () => selected && centerOn(selected);
+document.getElementById('iparent').onclick = () => { if (selected && selected.parent){ select(selected.parent); centerOn(selected); } };
+
+/* ---------- stats ---------- */
+let statsDirty = true;
+function stats(){
+  statsDirty = false;
+  const tb = document.getElementById('ctab'); let h = '';
+  for (let d = 0; d < rows.length; d++){
+    const n = d+1, g = rows[d].length, all = COUNTS[d];
+    const pct = all ? Math.min(100, 100*g/all) : 0;
+    h += `<tr><td>${n}</td><td class="${all && g === all ? 'done' : ''}">${g.toLocaleString()}</td><td>${all ? all.toLocaleString() : '…'}</td><td><div class="bar"><span style="width:${pct}%"></span></div></td></tr>`;
+  }
+  tb.innerHTML = h;
+}
+function toast(s){ const t = document.getElementById('toast'); t.textContent = s; t.hidden = false; setTimeout(()=>{ t.hidden = true; }, 3500); }
+
+/* ---------- input ---------- */
+function pan(dx, dy){ cam.u += dx/cam.z; cam.y += dy/cam.z; normalize(); dirty = true; }
+const ptrs = new Map(); let downAt = null, moved = 0, pinch = null;
+function zoomAt(sx, sy, f){
+  const nz = Math.min(60, Math.max(2e-4, cam.z*f)); f = nz/cam.z;
+  cam.u += (sx - cam.ax)/cam.z*(1 - 1/f); cam.y += (sy - Hc/2)/cam.z*(1 - 1/f); cam.z = nz; normalize(); dirty = true;
+}
+cv.addEventListener('wheel', e => { e.preventDefault(); tween = null;
+  const k = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? Hc : 1, dx = e.deltaX*k, dy = e.deltaY*k;
+  if (e.ctrlKey) zoomAt(e.clientX, e.clientY, Math.exp(-dy*0.01));            // trackpad pinch
+  else if (e.shiftKey || Math.abs(dx) > 0 || Math.abs(dy) < 40){ pan(dx, dy); } // trackpad scroll pans
+  else zoomAt(e.clientX, e.clientY, Math.exp(-dy*0.0016));                    // mouse wheel zooms
+}, {passive:false});
+cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY}); tween = null;
+  if (ptrs.size === 1){ downAt = {x:e.clientX, y:e.clientY}; moved = 0; cv.classList.add('drag'); }
+  if (ptrs.size === 2){ const [a,b] = [...ptrs.values()]; pinch = {d: Math.hypot(a.x-b.x, a.y-b.y), mx:(a.x+b.x)/2, my:(a.y+b.y)/2}; moved = 99; }
+});
+cv.addEventListener('pointermove', e => {
+  const p = ptrs.get(e.pointerId); if (!p) return;
+  const dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+  if (ptrs.size === 1){ pan(-dx, -dy); moved += Math.abs(dx)+Math.abs(dy); dirty = true; }
+  else if (ptrs.size === 2 && pinch){
+    const [a,b] = [...ptrs.values()], d = Math.hypot(a.x-b.x, a.y-b.y), mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+    pan(-(mx - pinch.mx), -(my - pinch.my));
+    zoomAt(mx, my, d/pinch.d); pinch = {d, mx, my};
+  }
+});
+function up(e){
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.delete(e.pointerId);
+  if (ptrs.size < 2) pinch = null;
+  if (ptrs.size === 0){ cv.classList.remove('drag'); if (moved < 6 && e.type === 'pointerup') select(hit(e.clientX, e.clientY)); }
+}
+cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+function hit(sx, sy){
+  const wy = cam.y + (sy - Hc/2)/cam.z;
+  for (let d = 0; d < rows.length; d++){
+    const n = d+1;
+    if (wy >= Y(d) - TOPX(n) - S && wy <= Y(d) + BOTX(n) + S){
+      const u = U[d] + (sx - cam.ax)/cam.z, i = Math.floor(u/P(d)), nd = rows[d][i];
+      return nd && Math.abs(uOf(nd) - u) <= NW(d)/2 ? nd : null;
+    }
+  }
+  return null;
+}
+addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('button,summary')) { if (!/^Arrow/.test(e.key)) return; }
+  if (e.key === 'ArrowDown') pan(0, 80); else if (e.key === 'ArrowUp') pan(0, -80);
+  else if (e.key === 'ArrowLeft') pan(-80, 0); else if (e.key === 'ArrowRight') pan(80, 0);
+  else if (e.key === '+' || e.key === '='){ zoomAt(Wc/2, Hc/2, 1.25); }
+  else if (e.key === '-'){ zoomAt(Wc/2, Hc/2, 0.8); }
+  else if (e.key === 'Escape'){ select(null); }
+  else return;
+  e.preventDefault(); dirty = true;
+});
+document.getElementById('zin').onclick = () => zoomAt(Wc/2, Hc/2, 1.4);
+document.getElementById('zout').onclick = () => zoomAt(Wc/2, Hc/2, 1/1.4);
+document.getElementById('top').onclick = () => flyTo(fitTop(4));
+document.getElementById('red').onclick = e => { showNew = !showNew; e.currentTarget.setAttribute('aria-pressed', showNew); dirty = true; };
+document.getElementById('fold').onclick = e => {
+  foldTarget = foldTarget ? 0 : 1; e.currentTarget.setAttribute('aria-pressed', !!foldTarget);
+  if (reduce) foldT = foldTarget; dirty = true; drawInsp();
+};
+document.getElementById('meo').onclick = e => { meOnly = !meOnly; e.currentTarget.setAttribute('aria-pressed', meOnly); dirty = true; };
+document.getElementById('reset').onclick = () => { init(); toastT = 0; };
+document.getElementById('cnt').addEventListener('toggle', () => { statsDirty = true; });
+
+/* ---------- boot ---------- */
+function resize(){
+  dpr = Math.min(2, devicePixelRatio || 1);
+  if (Wc) cam.ax *= innerWidth/Wc;
+  Wc = innerWidth; Hc = innerHeight;
+  cv.width = Math.round(Wc*dpr); cv.height = Math.round(Hc*dpr); sizeInsp(); drawInsp(); dirty = true;
+}
+function init(){
+  nodeCount = 0; root = mk(Uint16Array.from([1,0]), null, 0);
+  let frontier = [root];
+  for (let d = 0; d < 4; d++){ const nx = []; for (const n of frontier){ expand(n); nx.push(...n.kids); } frontier = nx; }
+  rebuild(); animE = 1; tween = null; select(null); Object.assign(cam, fitTop(4)); statsDirty = true; dirty = true;
+}
+let last = performance.now();
+function frame(now){
+  if (tween){
+    const u = Math.min(1, (now - tween.t0)/tween.dur), e = u<.5 ? 2*u*u : 1 - (-2*u+2)**2/2;
+    const lz = Math.log(tween.from.z) + (Math.log(tween.to.z) - Math.log(tween.from.z))*e;
+    cam.z = Math.exp(lz); cam.u = tween.from.u + (tween.to.u - tween.from.u)*e; cam.ax = tween.from.ax + (tween.to.ax - tween.from.ax)*e; cam.y = tween.from.y + (tween.to.y - tween.from.y)*e;
+    dirty = true; if (u >= 1){ tween = null; normalize(); }
+  }
+  if (animE < 1){ const u = Math.min(1, (now - animT0)/420); animE = u >= 1 ? 1 : 1 - (1-u)**3; dirty = true; }
+  if (foldT !== foldTarget){
+    const step = (now - last)/900;
+    foldT = foldTarget > foldT ? Math.min(foldTarget, foldT + step) : Math.max(foldTarget, foldT - step);
+    dirty = true; if (selected && reduce) drawInsp();
+  }
+  if (dirty){ draw(); dirty = false; }
+  grow();
+  if (statsDirty && document.getElementById('cnt').open) stats();
+  if (selected && !reduce){ beadT += (now - last)/1000 / Math.max(3, selected.m.length*0.35); drawInsp(); }
+  last = now;
+  requestAnimationFrame(frame);
+}
+addEventListener('resize', resize);
+if (innerWidth > 640) document.getElementById('cnt').open = true;
+readCols(); resize(); init(); stats();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
