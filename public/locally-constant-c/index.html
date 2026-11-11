@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The many C's of tan x</title>
+<meta name="description" content="Why the +C in ∫sec²x dx = tan x + C is really a locally constant function: drag each branch of tan x up and down independently.">
+<style>
+
+  :root{
+    --paper:#f4efe5; --ink:#17140f; --muted:#6d6457; --panel:rgba(244,239,229,.9); --line:rgba(23,20,15,.15);
+    --accent:#a2462a; --blue:#2f5f9c; --faint:rgba(23,20,15,.07); --gold:#b0841f; --green:#3e7a4a; --violet:#76478f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#14120f; --ink:#ebe4d6; --muted:#9a9184; --panel:rgba(20,18,15,.9); --line:rgba(235,228,214,.17);
+      --accent:#e08a62; --blue:#7fa8de; --faint:rgba(235,228,214,.07); --gold:#e0b858; --green:#86c290; --violet:#c49ad8; }
+  }
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:14px/1.45 ui-serif,Georgia,"Iowan Old Style",serif;overflow:hidden}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #panel{position:fixed;left:14px;top:14px;width:min(360px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:var(--panel);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;box-shadow:0 8px 30px rgba(0,0,0,.12);box-sizing:border-box}
+  #panel h1{font-size:17px;margin:0 0 2px;font-weight:600;letter-spacing:.01em}
+  .sub{color:var(--muted);font-size:12.5px;margin:0 0 8px}
+  .seg{display:flex;margin:6px 0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{flex:1;border:0;border-radius:0;padding:4px 0;font-size:12.5px}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}
+  .row label{width:44px;color:var(--muted);flex:none}
+  .row input[type=range]{flex:1;min-width:80px;accent-color:var(--accent)}
+  .row output{width:40px;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;flex:none}
+  input.txt{flex:1;min-width:0;font:inherit;font-size:13.5px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 7px}
+  input.txt:focus{outline:none;border-color:var(--ink)}
+  input.txt.bad{border-color:var(--accent)}
+  input.short{flex:0 0 74px}
+  button{font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer}
+  button:hover{border-color:var(--ink)}
+  .presets{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0 2px;align-items:center}
+  .presets span{font-size:12.5px;color:var(--muted);margin-right:2px}
+  .presets button{padding:1px 7px;font-size:12.5px}
+  #msg{font-size:12px;color:var(--accent);min-height:1.2em;margin:2px 0}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12.5px;margin:4px 0 2px}
+  th{font-weight:400;color:var(--muted);text-align:right;padding:2px 4px;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  td{text-align:right;padding:2px 4px;cursor:pointer}
+  tr.on td{background:var(--faint);font-weight:600}
+  tr:hover td{background:var(--faint)}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  .formula{font-size:13px;margin:6px 0;line-height:1.55}
+  .m{font-style:italic}
+  .mut{color:var(--muted)}
+  #ev{width:100%;height:150px;display:block;margin:4px 0 0}
+  details{margin-top:8px}
+  details summary{cursor:pointer;color:var(--muted);font-size:12.5px;user-select:none}
+  details p{margin:6px 0;font-size:13px}
+  h2{font-size:13px;font-weight:600;margin:10px 0 0;color:var(--muted);letter-spacing:.02em}
+  #tip{position:fixed;pointer-events:none;display:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12.5px;
+    font-variant-numeric:tabular-nums;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:280px;z-index:5}
+  #panel.min .hideable{display:none}
+  #minbtn{float:right;border:0;padding:0 2px;color:var(--muted);font-size:13px}
+  @media (max-width:760px){ #panel{left:8px;top:8px;width:calc(100vw - 16px);padding:9px 11px 8px;max-height:52vh} }
+
+  .eqbig{font-size:15px;text-align:center;margin:8px 0 6px}
+  .clist{font-variant-numeric:tabular-nums;font-size:12.5px;line-height:1.6;margin:6px 0}
+  .clist .ce{display:inline-block;min-width:104px}
+  .btns{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+  .btns button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .say{font-size:13px;line-height:1.5;margin:6px 0}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="panel">
+  <button id="minbtn" title="collapse panel">–</button>
+  <h1>The many C’s of tan <span class="m">x</span></h1>
+  <div class="sub">a calculus conspiracy, exposed</div>
+  <div class="hideable">
+  <div class="eqbig">∫ sec²<span class="m">x</span> <span class="m">dx</span> = tan <span class="m">x</span> + <span class="m">C</span></div>
+  <p class="say">That <span class="m">C</span> is supposed to be “an arbitrary constant.” But tan <span class="m">x</span> lives on infinitely many separate intervals, and nothing forces them to agree. <b>Drag any branch up or down.</b> Its derivative is still sec²<span class="m">x</span> — check the dots in the bottom graph.</p>
+  <div class="btns">
+    <button id="shuffle">shuffle the C’s</button>
+    <button id="stairs">staircase</button>
+    <button id="disco">disco</button>
+    <button id="boring">boring (all equal)</button>
+  </div>
+  <div class="clist" id="clist"></div>
+  <p class="say" id="verdict"></p>
+  <details><summary>so what is “+ C” really?</summary>
+    <p>An antiderivative of <span class="m">f</span> on a set <span class="m">D</span> is any <span class="m">F</span> with <span class="m">F′</span> = <span class="m">f</span> on <span class="m">D</span>. Two antiderivatives differ by a function whose derivative is 0 on <span class="m">D</span>. On an <i>interval</i>, derivative 0 forces a constant (that is the Mean Value Theorem again). But the domain of tan <span class="m">x</span> is not an interval: it is the union of the intervals (<span class="m">kπ</span> − π/2, <span class="m">kπ</span> + π/2). A function with derivative 0 there only has to be constant <i>on each piece</i>. Such a function is called <b>locally constant</b>, and the honest answer is</p>
+    <p style="text-align:center">∫ sec²<span class="m">x</span> <span class="m">dx</span> = tan <span class="m">x</span> + <span class="m">C</span>(<span class="m">x</span>), &nbsp; <span class="m">C</span>(<span class="m">x</span>) = <span class="m">C<sub>k</sub></span> on (<span class="m">kπ</span> − π/2, <span class="m">kπ</span> + π/2),</p>
+    <p>one free constant per branch: the middle graph. The same thing happens with ∫ 1/<span class="m">x</span> <span class="m">dx</span> = ln|<span class="m">x</span>| + <span class="m">C</span>, which secretly has one constant for <span class="m">x</span> &lt; 0 and another for <span class="m">x</span> &gt; 0.</p>
+    <p>Does it matter? For a definite integral ∫<sub><span class="m">a</span></sub><sup><span class="m">b</span></sup> sec²<span class="m">x</span> <span class="m">dx</span> the FTC needs [<span class="m">a</span>, <span class="m">b</span>] to sit inside one branch, so only one <span class="m">C<sub>k</sub></span> is ever involved and it cancels. Across an asymptote the integral doesn’t exist, and no choice of constants rescues it. So in practice “+ <span class="m">C</span>” is fine, and the fine print is a good party trick.</p>
+    <p>Disco mode varies the constants in time. At every instant, each <span class="m">C<sub>k</sub></span> is a perfectly respectable constant. Keys: s shuffle, t staircase, d disco, b boring.</p>
+  </details>
+  </div>
+</div>
+<script>
+'use strict';
+const K0 = -2, K1 = 2, PI = Math.PI;               // branches k = -2..2
+const C = {}; for (let k = K0; k <= K1; k++) C[k] = 0;
+const $ = (id) => document.getElementById(id);
+const cv = $('c'), ctx = cv.getContext('2d');
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const HUES = ['--blue', '--accent', '--green', '--violet', '--gold'];
+const hue = (k) => css(HUES[(k - K0) % HUES.length]);
+const branchOf = (x) => Math.round(x / PI);           // tan's branch containing x
+const Fx = (x) => Math.tan(x) + C[branchOf(x)];
+const XA = -2.5 * PI, XB = 2.5 * PI, CLAMP = 6;
+let W, H, DPR, L = null, disco = null, drag = null;
+
+function readHash() { const q = new URLSearchParams(location.hash.slice(1)); for (let k = K0; k <= K1; k++) { const v = parseFloat(q.get('c' + k)); if (Number.isFinite(v)) C[k] = Math.max(-CLAMP, Math.min(CLAMP, v)); } }
+function writeHash() { const q = new URLSearchParams(); for (let k = K0; k <= K1; k++) q.set('c' + k, C[k].toFixed(2)); history.replaceState(null, '', '#' + q); }
+function resize() { DPR = devicePixelRatio || 1; W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; draw(); }
+function layout() {
+  const p = $('panel').getBoundingClientRect(), wide = W > 760 && !$('panel').classList.contains('min');
+  const x0 = wide ? p.right + 44 : 40, x1 = W - 24, y0 = wide ? 30 : p.bottom + 24, y1 = H - 28, h = y1 - y0, g = 26;
+  const hTop = (h - 2 * g) * .5, hMid = (h - 2 * g) * .2, hBot = (h - 2 * g) * .3;
+  return { X: (x) => x0 + (x - XA) / (XB - XA) * (x1 - x0), x0, x1,
+    top: { y0, y1: y0 + hTop, ya: -9, yb: 9 },
+    mid: { y0: y0 + hTop + g, y1: y0 + hTop + g + hMid, ya: -7, yb: 7 },
+    bot: { y0: y1 - hBot, y1, ya: 0, yb: 9 } };
+}
+const Yof = (b, y) => b.y1 - (y - b.ya) / (b.yb - b.ya) * (b.y1 - b.y0);
+const piLabel = (k2) => { // k2 = multiple of pi/2
+  if (k2 === 0) return '0'; const s = k2 < 0 ? '−' : '', a = Math.abs(k2);
+  if (a % 2 === 0) return s + (a / 2 === 1 ? '' : a / 2) + 'π'; return s + (a === 1 ? '' : a) + 'π/2'; };
+function frame(b, label, ticks) {
+  const muted = css('--muted'), line = css('--line'), ink = css('--ink'), X = L.X;
+  ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.fillStyle = muted; ctx.font = '11.5px ui-serif, Georgia, serif';
+  for (const t of ticks) { const y = Yof(b, t); ctx.globalAlpha = .6; ctx.beginPath(); ctx.moveTo(L.x0, y); ctx.lineTo(L.x1, y); ctx.stroke(); ctx.globalAlpha = 1; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; if (t) ctx.fillText(String(t).replace('-', '−'), X(0) - 4, y); }
+  // asymptotes
+  ctx.setLineDash([4, 4]); ctx.strokeStyle = muted;
+  for (let j = -5; j <= 5; j += 2) { const x = X(j * PI / 2); ctx.beginPath(); ctx.moveTo(x, b.y0); ctx.lineTo(x, b.y1); ctx.stroke(); }
+  ctx.setLineDash([]); ctx.strokeStyle = ink; ctx.globalAlpha = .7; ctx.lineWidth = 1.2;
+  if (b.ya <= 0 && 0 <= b.yb) { ctx.beginPath(); ctx.moveTo(L.x0, Yof(b, 0)); ctx.lineTo(L.x1, Yof(b, 0)); ctx.stroke(); }
+  ctx.beginPath(); ctx.moveTo(X(0), b.y0); ctx.lineTo(X(0), b.y1); ctx.stroke(); ctx.globalAlpha = 1;
+  ctx.fillStyle = ink; ctx.font = 'italic 15px ui-serif, Georgia, serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(label, L.x0 + 4, b.y0 + 2);
+}
+function draw() {
+  if (!W) return;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
+  L = layout(); if (L.x1 - L.x0 < 150 || L.bot.y1 - L.top.y0 < 220) return;
+  const X = L.X, { top, mid, bot } = L, ink = css('--ink'), muted = css('--muted');
+  // x tick labels under the bottom panel
+  ctx.fillStyle = muted; ctx.font = '11.5px ui-serif, Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let j = -5; j <= 5; j++) ctx.fillText(piLabel(j), X(j * PI / 2), bot.y1 + 4);
+  // ---- top: tan x + C(x)
+  frame(top, 'y = tan x + C(x)', [-8, -4, 4, 8]);
+  ctx.save(); ctx.beginPath(); ctx.rect(L.x0, top.y0, L.x1 - L.x0, top.y1 - top.y0); ctx.clip();
+  for (let k = K0; k <= K1; k++) {
+    const a = k * PI - PI / 2, b = k * PI + PI / 2; ctx.strokeStyle = hue(k); ctx.lineWidth = drag && drag.k === k ? 3.6 : 2.6; ctx.beginPath(); let pen = false;
+    for (let i = 1; i < 300; i++) { const x = a + (b - a) * i / 300, y = Math.tan(x) + C[k]; if (y < top.ya - 3 || y > top.yb + 3) { pen = false; continue; } pen ? ctx.lineTo(X(x), Yof(top, y)) : ctx.moveTo(X(x), Yof(top, y)); pen = true; }
+    ctx.stroke();
+    // a little grab handle at the branch's centre
+    ctx.fillStyle = hue(k); ctx.beginPath(); ctx.arc(X(k * PI), Yof(top, C[k]), 5.5, 0, 2 * PI); ctx.fill();
+    ctx.font = '12.5px ui-serif, Georgia, serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText(`C${sub(k)} = ${fmt(C[k])}`, X(k * PI) + 8, Yof(top, C[k]) - 4);
+  }
+  ctx.restore();
+  // ---- middle: C(x), a locally constant function
+  frame(mid, 'y = C(x)   (C′ = 0 wherever it is defined)', [-5, 5]);
+  for (let k = K0; k <= K1; k++) {
+    const a = X(k * PI - PI / 2), b = X(k * PI + PI / 2), y = Yof(mid, Math.max(mid.ya, Math.min(mid.yb, C[k])));
+    ctx.strokeStyle = hue(k); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(a + 4, y); ctx.lineTo(b - 4, y); ctx.stroke();
+    ctx.lineWidth = 1.5; for (const e of [a + 4, b - 4]) { ctx.fillStyle = css('--paper'); ctx.beginPath(); ctx.arc(e, y, 3.5, 0, 2 * PI); ctx.fill(); ctx.stroke(); }
+  }
+  // ---- bottom: sec^2 x, plus the numerical derivative of the top graph
+  frame(bot, 'y = sec²x   ·  dots: slope of the top graph', [4, 8]);
+  ctx.save(); ctx.beginPath(); ctx.rect(L.x0, bot.y0, L.x1 - L.x0, bot.y1 - bot.y0); ctx.clip();
+  ctx.strokeStyle = ink; ctx.lineWidth = 2.2;
+  for (let k = K0; k <= K1; k++) { const a = k * PI - PI / 2, b = k * PI + PI / 2; ctx.beginPath(); let pen = false; for (let i = 1; i < 300; i++) { const x = a + (b - a) * i / 300, y = 1 / Math.cos(x) ** 2; if (y > bot.yb + 2) { pen = false; continue; } pen ? ctx.lineTo(X(x), Yof(bot, y)) : ctx.moveTo(X(x), Yof(bot, y)); pen = true; } ctx.stroke(); }
+  let worst = 0;
+  for (let k = K0; k <= K1; k++) for (let i = 1; i < 12; i++) {
+    const x = k * PI - PI / 2 + PI * i / 12, h = 1e-5, d = (Fx(x + h) - Fx(x - h)) / (2 * h), s2 = 1 / Math.cos(x) ** 2;
+    worst = Math.max(worst, Math.abs(d - s2) / s2);
+    ctx.fillStyle = hue(k); ctx.beginPath(); ctx.arc(X(x), Yof(bot, d), 3.6, 0, 2 * PI); ctx.fill();
+  }
+  ctx.restore();
+  panel(worst);
+}
+const SUBS = { '-': '₋', 0: '₀', 1: '₁', 2: '₂', 3: '₃' };
+const sub = (k) => String(k).split('').map((c) => SUBS[c]).join('');
+const fmt = (v) => (Math.abs(v) < 0.005 ? 0 : v).toFixed(2).replace('-', '−');
+function panel(worst) {
+  $('clist').innerHTML = [...Array(K1 - K0 + 1).keys()].map((i) => { const k = K0 + i; return `<span class="ce"><span class="sw" style="background:${hue(k)}"></span><span class="m">C</span>${sub(k)} = ${fmt(C[k])}</span>`; }).join('');
+  const vals = Object.values(C), allEq = vals.every((v) => Math.abs(v - vals[0]) < 1e-9);
+  $('verdict').innerHTML = (allEq
+    ? 'All the constants agree, so this is the textbook tan <span class="m">x</span> + <span class="m">C</span>. Boring, but legal.'
+    : `The constants disagree, so <span class="m">C</span>(<span class="m">x</span>) is <b>not</b> a constant function. Yet the derivative is still sec²<span class="m">x</span> everywhere tan is defined`) +
+    (allEq ? '' : ` (largest relative error in the dots: ${worst < 1e-6 ? 'under 10⁻⁶' : worst.toExponential(1)}).`);
+}
+// ---------- interaction ----------
+const setC = (k, v) => { C[k] = Math.max(-CLAMP, Math.min(CLAMP, v)); };
+cv.addEventListener('pointerdown', (e) => {
+  if (!L) return; const { top, mid } = L, y = e.clientY;
+  const inTop = y >= top.y0 && y <= top.y1, inMid = y >= mid.y0 && y <= mid.y1;
+  if (!(inTop || inMid) || e.clientX < L.x0 || e.clientX > L.x1) return;
+  const x = XA + (e.clientX - L.x0) / (L.x1 - L.x0) * (XB - XA), k = Math.max(K0, Math.min(K1, branchOf(x)));
+  stopDisco(); const b = inTop ? top : mid;
+  drag = { k, y0: y, c0: C[k], scale: (b.yb - b.ya) / (b.y1 - b.y0) }; cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; draw();
+});
+cv.addEventListener('pointermove', (e) => {
+  if (drag) { setC(drag.k, drag.c0 - (e.clientY - drag.y0) * drag.scale); draw(); return; }
+  if (!L) return; const y = e.clientY; cv.style.cursor = ((y >= L.top.y0 && y <= L.top.y1) || (y >= L.mid.y0 && y <= L.mid.y1)) && e.clientX >= L.x0 ? 'grab' : '';
+});
+const end = () => { if (drag) { drag = null; cv.style.cursor = ''; writeHash(); draw(); } };
+cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+function shuffle() { stopDisco(); for (let k = K0; k <= K1; k++) setC(k, Math.round((Math.random() * 10 - 5) * 4) / 4); writeHash(); draw(); }
+function stairs() { stopDisco(); for (let k = K0; k <= K1; k++) setC(k, 2.5 * k); writeHash(); draw(); }
+function boring() { stopDisco(); for (let k = K0; k <= K1; k++) setC(k, 0); writeHash(); draw(); }
+function stopDisco() { if (disco) { cancelAnimationFrame(disco); disco = null; $('disco').classList.remove('on'); writeHash(); } }
+function startDisco() {
+  if (disco) return stopDisco(); $('disco').classList.add('on'); const t0 = performance.now(), ph = {}; for (let k = K0; k <= K1; k++) ph[k] = Math.random() * 6;
+  const step = (t) => { const s = (t - t0) / 1000; for (let k = K0; k <= K1; k++) setC(k, 4 * Math.sin(s * (1.3 + 0.37 * (k - K0)) + ph[k])); draw(); disco = requestAnimationFrame(step); };
+  disco = requestAnimationFrame(step);
+}
+$('shuffle').onclick = shuffle; $('stairs').onclick = stairs; $('boring').onclick = boring; $('disco').onclick = startDisco;
+addEventListener('keydown', (e) => { const k = e.key.toLowerCase(); if (k === 's') shuffle(); else if (k === 't') stairs(); else if (k === 'b') boring(); else if (k === 'd') startDisco(); });
+$('minbtn').onclick = () => { const p = $('panel'); p.classList.toggle('min'); $('minbtn').textContent = p.classList.contains('min') ? '+' : '–'; resize(); };
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', draw);
+addEventListener('resize', resize);
+readHash(); if (!location.hash) { C[-2] = -3; C[-1] = 1.5; C[0] = 0; C[1] = -2; C[2] = 3.5; }
+resize();
+</script>
+</body>
+</html>
