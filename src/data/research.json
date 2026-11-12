@@ -619,6 +619,17 @@
       "note": "",
       "items": [
         {
+          "title": "Every fraction, exactly once",
+          "date": "12 November 2026",
+          "venue": "Reed College Mathematics Colloquium",
+          "links": [
+            {
+              "text": "Slides",
+              "url": "/files/reed-every-fraction.html"
+            }
+          ]
+        },
+        {
           "title": "Pontryagin–Thom, $\\pi_0$ of the motivic sphere spectrum, and principal quadratic divisors",
           "date": "7 November 2026",
           "venue": "AMS Fall Western Sectional Meeting, Arizona State University, Special Session on Computational Homotopy Theory",
