@@ -213,5 +213,12 @@
       "height": 900
     },
     "scale": 1
+  },
+  "second-ftc": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1
   }
 }

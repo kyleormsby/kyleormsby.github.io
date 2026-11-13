@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Second FTC</title>
+<meta name="description" content="Accumulation functions and the Second Fundamental Theorem of Calculus: the area added between x and x+h is nearly f(x)·h, so A′(x) = f(x).">
+<style>
+
+  :root{
+    --paper:#f4efe5; --ink:#17140f; --muted:#6d6457; --panel:rgba(244,239,229,.9); --line:rgba(23,20,15,.15);
+    --accent:#a2462a; --blue:#2f5f9c; --faint:rgba(23,20,15,.07); --gold:#b0841f; --green:#3e7a4a; --violet:#76478f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#14120f; --ink:#ebe4d6; --muted:#9a9184; --panel:rgba(20,18,15,.9); --line:rgba(235,228,214,.17);
+      --accent:#e08a62; --blue:#7fa8de; --faint:rgba(235,228,214,.07); --gold:#e0b858; --green:#86c290; --violet:#c49ad8; }
+  }
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:14px/1.45 ui-serif,Georgia,"Iowan Old Style",serif;overflow:hidden}
+  canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  #panel{position:fixed;left:14px;top:14px;width:min(360px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:var(--panel);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;box-shadow:0 8px 30px rgba(0,0,0,.12);box-sizing:border-box}
+  #panel h1{font-size:17px;margin:0 0 2px;font-weight:600;letter-spacing:.01em}
+  .sub{color:var(--muted);font-size:12.5px;margin:0 0 8px}
+  .seg{display:flex;margin:6px 0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{flex:1;border:0;border-radius:0;padding:4px 0;font-size:12.5px}
+  .seg button+button{border-left:1px solid var(--line)}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}
+  .row label{width:44px;color:var(--muted);flex:none}
+  .row input[type=range]{flex:1;min-width:80px;accent-color:var(--accent)}
+  .row output{width:40px;text-align:right;font-variant-numeric:tabular-nums;font-size:13px;flex:none}
+  input.txt{flex:1;min-width:0;font:inherit;font-size:13.5px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 7px}
+  input.txt:focus{outline:none;border-color:var(--ink)}
+  input.txt.bad{border-color:var(--accent)}
+  input.short{flex:0 0 74px}
+  button{font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer}
+  button:hover{border-color:var(--ink)}
+  .presets{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0 2px;align-items:center}
+  .presets span{font-size:12.5px;color:var(--muted);margin-right:2px}
+  .presets button{padding:1px 7px;font-size:12.5px}
+  #msg{font-size:12px;color:var(--accent);min-height:1.2em;margin:2px 0}
+  table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:12.5px;margin:4px 0 2px}
+  th{font-weight:400;color:var(--muted);text-align:right;padding:2px 4px;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  td{text-align:right;padding:2px 4px;cursor:pointer}
+  tr.on td{background:var(--faint);font-weight:600}
+  tr:hover td{background:var(--faint)}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  .formula{font-size:13px;margin:6px 0;line-height:1.55}
+  .m{font-style:italic}
+  .mut{color:var(--muted)}
+  #ev{width:100%;height:150px;display:block;margin:4px 0 0}
+  details{margin-top:8px}
+  details summary{cursor:pointer;color:var(--muted);font-size:12.5px;user-select:none}
+  details p{margin:6px 0;font-size:13px}
+  h2{font-size:13px;font-weight:600;margin:10px 0 0;color:var(--muted);letter-spacing:.02em}
+  #tip{position:fixed;pointer-events:none;display:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 8px;font-size:12.5px;
+    font-variant-numeric:tabular-nums;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:280px;z-index:5}
+  #panel.min .hideable{display:none}
+  #minbtn{float:right;border:0;padding:0 2px;color:var(--muted);font-size:13px}
+  @media (max-width:760px){ #panel{left:8px;top:8px;width:calc(100vw - 16px);padding:9px 11px 8px;max-height:52vh} }
+
+  .read{font-variant-numeric:tabular-nums;font-size:13px;line-height:1.65;margin:6px 0}
+  .read b{font-weight:600}
+  .big{font-size:14px;margin:6px 0 2px}
+  .btns{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+  .btns button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .row label{width:44px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="panel">
+  <button id="minbtn" title="collapse panel">–</button>
+  <h1>The Second FTC</h1>
+  <div class="sub"><span class="m">A</span>(<span class="m">x</span>) = ∫<sub><span class="m">a</span></sub><sup><span class="m">x</span></sup> <span class="m">f</span>(<span class="m">t</span>) <span class="m">dt</span> &nbsp;⇒&nbsp; <span class="m">A′</span>(<span class="m">x</span>) = <span class="m">f</span>(<span class="m">x</span>)</div>
+  <div class="hideable">
+  <div class="row"><label for="fx"><span class="m">f</span>(<span class="m">t</span>) =</label><input id="fx" class="txt" spellcheck="false" autocomplete="off" value="e^(-t^2)"></div>
+  <div class="presets"><span>try</span>
+    <button data-f="e^(-t^2)" data-a="0" data-l="-3" data-r="3">e<sup>−t²</sup></button>
+    <button data-f="t^2-4" data-a="0" data-l="-3.5" data-r="3.5">t²−4</button>
+    <button data-f="sin(t)" data-a="0" data-l="-1" data-r="4pi">sin t</button>
+    <button data-f="1/(1+t^2)" data-a="0" data-l="-6" data-r="6">1/(1+t²)</button>
+    <button data-f="cos(3t)+t/2" data-a="0" data-l="0" data-r="5">wiggly</button>
+    <button data-f="abs(t)-1" data-a="-2" data-l="-2.5" data-r="2.5">|t|−1</button>
+  </div>
+  <div class="row"><label for="ain"><span class="m">a</span> =</label><input id="ain" class="txt short" spellcheck="false" value="0"><span class="mut" style="font-size:12px">lower limit of the integral</span></div>
+  <div class="row"><label for="lin">view</label><input id="lin" class="txt short" spellcheck="false" value="-3"><label for="rin" style="width:auto">to</label><input id="rin" class="txt short" spellcheck="false" value="3"></div>
+  <div id="msg"></div>
+  <div class="row"><label for="xs"><span class="m">x</span> =</label><input id="xs" type="range" min="0" max="1000" step="1" value="700"><output id="xOut"></output></div>
+  <div class="row"><label for="hs"><span class="m">h</span> =</label><input id="hs" type="range" min="0" max="1000" step="1" value="700"><output id="hOut"></output></div>
+  <div class="btns"><button id="play">sweep x ▸</button><button id="shrink">shrink h → 0</button></div>
+  <div class="read" id="read"></div>
+  <details><summary>what is this?</summary>
+    <p>The top graph is <span class="m">f</span>. The shaded region from <span class="m">a</span> to <span class="m">x</span> is the accumulation <span class="m">A</span>(<span class="m">x</span>) = ∫<sub><span class="m">a</span></sub><sup><span class="m">x</span></sup> <span class="m">f</span>(<span class="m">t</span>) <span class="m">dt</span>: area above the axis counts positive (rust), below counts negative (blue). The bottom graph is <span class="m">A</span> itself, traced out as <span class="m">x</span> moves.</p>
+    <p>The highlighted strip from <span class="m">x</span> to <span class="m">x</span> + <span class="m">h</span> is the area <i>added</i> when <span class="m">x</span> steps forward by <span class="m">h</span>, so its area is <span class="m">A</span>(<span class="m">x</span> + <span class="m">h</span>) − <span class="m">A</span>(<span class="m">x</span>): the rise of the secant in the bottom graph. The dashed box over it is a rectangle of height <span class="m">f</span>(<span class="m">x</span>) and width <span class="m">h</span>. For small <span class="m">h</span> the strip is nearly that rectangle, so</p>
+    <p style="text-align:center"><span class="m">A</span>(<span class="m">x</span> + <span class="m">h</span>) − <span class="m">A</span>(<span class="m">x</span>) ≈ <span class="m">f</span>(<span class="m">x</span>) · <span class="m">h</span>, &nbsp; so &nbsp; [<span class="m">A</span>(<span class="m">x</span> + <span class="m">h</span>) − <span class="m">A</span>(<span class="m">x</span>)] / <span class="m">h</span> → <span class="m">f</span>(<span class="m">x</span>).</p>
+    <p>The left side is the slope of the secant on <span class="m">A</span>; its limit is <span class="m">A′</span>(<span class="m">x</span>). Shrink <span class="m">h</span> and watch the secant turn into the tangent line, whose slope is the height of <span class="m">f</span>. A negative <span class="m">h</span> is not offered, but the same picture works from the left.</p>
+    <p>Things to notice: <span class="m">A</span> rises where <span class="m">f</span> &gt; 0 and falls where <span class="m">f</span> &lt; 0; <span class="m">A</span> has a peak or valley where <span class="m">f</span> changes sign; changing <span class="m">a</span> shifts <span class="m">A</span> up or down without changing its shape (another “+ <span class="m">C</span>”). For <span class="m">e</span><sup>−<span class="m">t</span>²</sup> there is no formula for <span class="m">A</span>, but the theorem still says <span class="m">A′</span>(<span class="m">x</span>) = <span class="m">e</span><sup>−<span class="m">x</span>²</sup>.</p>
+    <p>Drag in either graph to move <span class="m">x</span>. Keys: ← → move <span class="m">x</span>, ↑ ↓ change <span class="m">h</span>, space sweeps. Functions use <span class="m">t</span> (or <span class="m">x</span>); the address bar keeps the settings.</p>
+  </details>
+  </div>
+</div>
+<script>
+'use strict';
+// ---------- expression parser (no eval) ----------
+const Expr = (() => {
+  const FN = { sqrt: Math.sqrt, cbrt: Math.cbrt, exp: Math.exp, ln: Math.log, log: Math.log, log10: Math.log10, log2: Math.log2,
+    sin: Math.sin, cos: Math.cos, tan: Math.tan, sec: (t) => 1 / Math.cos(t), csc: (t) => 1 / Math.sin(t), cot: (t) => 1 / Math.tan(t),
+    asin: Math.asin, acos: Math.acos, atan: Math.atan, arcsin: Math.asin, arccos: Math.acos, arctan: Math.atan,
+    sinh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh, abs: Math.abs, floor: Math.floor, ceil: Math.ceil };
+  const CONST = { pi: Math.PI, e: Math.E, tau: 2 * Math.PI };
+  function tokenize(s) {
+    s = s.replace(/π/g, 'pi').replace(/√/g, 'sqrt').replace(/−/g, '-').replace(/[×·]/g, '*').replace(/÷/g, '/').replace(/²/g, '^2').replace(/³/g, '^3');
+    const out = []; let i = 0;
+    while (i < s.length) {
+      const c = s[i];
+      if (/\s/.test(c)) { i++; continue; }
+      const num = /^(\d+\.?\d*|\.\d+)(e[+-]?\d+)?/i.exec(s.slice(i));
+      if (num) { out.push({ t: 'n', v: parseFloat(num[0]) }); i += num[0].length; continue; }
+      const id = /^[a-z][a-z0-9]*/i.exec(s.slice(i));
+      if (id) {
+        let w = id[0].toLowerCase();
+        // split things like "xsin" or "pix" greedily into known names
+        while (w.length) {
+          let k = Object.keys(FN).concat(Object.keys(CONST), ['x']).filter((n) => w.startsWith(n)).sort((p, q) => q.length - p.length)[0];
+          if (!k) throw new Error('unknown name “' + w + '”');
+          out.push({ t: 'id', v: k }); w = w.slice(k.length);
+        }
+        i += id[0].length; continue;
+      }
+      if ('+-*/^(),'.includes(c)) { out.push({ t: c }); i++; continue; }
+      throw new Error('unexpected “' + c + '”');
+    }
+    return out;
+  }
+  function parse(src) {
+    const T = tokenize(src); let p = 0;
+    const peek = () => T[p], next = () => T[p++];
+    const expect = (t) => { if (!T[p] || T[p].t !== t) throw new Error('expected “' + t + '”'); p++; };
+    const startsPrimary = (tk) => tk && (tk.t === 'n' || tk.t === 'id' || tk.t === '(');
+    function expr() { let f = term(); while (peek() && (peek().t === '+' || peek().t === '-')) { const op = next().t, a = f, b = term(); f = op === '+' ? (x) => a(x) + b(x) : (x) => a(x) - b(x); } return f; }
+    function term() {
+      let f = unary();
+      for (;;) {
+        const tk = peek();
+        if (tk && (tk.t === '*' || tk.t === '/')) { next(); const a = f, b = unary(); f = tk.t === '*' ? (x) => a(x) * b(x) : (x) => a(x) / b(x); }
+        else if (startsPrimary(tk)) { const a = f, b = power(); f = (x) => a(x) * b(x); }
+        else return f;
+      }
+    }
+    function unary() { if (peek() && peek().t === '-') { next(); const a = unary(); return (x) => -a(x); } if (peek() && peek().t === '+') { next(); return unary(); } return power(); }
+    function power() { const base = primary(); if (peek() && peek().t === '^') { next(); const ex = unary(); return (x) => pow(base(x), ex(x)); } return base; }
+    function primary() {
+      const tk = next();
+      if (!tk) throw new Error('unexpected end');
+      if (tk.t === 'n') { const v = tk.v; return () => v; }
+      if (tk.t === '(') { const f = expr(); expect(')'); return f; }
+      if (tk.t === 'id') {
+        if (tk.v === 'x') return (x) => x;
+        if (tk.v in CONST) { const v = CONST[tk.v]; return () => v; }
+        const fn = FN[tk.v];
+        if (peek() && peek().t === '(') { next(); const a = expr(); expect(')'); return (x) => fn(a(x)); }
+        if (peek() && peek().t === '^') { // sin^2(x)
+          next(); const ex = unary(); const a = power(); return (x) => pow(fn(a(x)), ex(x)); }
+        const a = power(); return (x) => fn(a(x)); // sin x
+      }
+      throw new Error('unexpected “' + tk.t + '”');
+    }
+    // real odd roots of negatives, e.g. x^(1/3)
+    function pow(b, e) { if (b < 0 && !Number.isInteger(e)) { const r = 1 / e; if (Number.isInteger(r) && Math.abs(r) % 2 === 1) return -Math.pow(-b, e); } return Math.pow(b, e); }
+    const f = expr();
+    if (p < T.length) throw new Error('unexpected “' + (T[p].v ?? T[p].t) + '”');
+    return f;
+  }
+  return { parse };
+})();
+
+
+// ---------- state ----------
+const S = { src: 'e^(-t^2)', asrc: '0', lsrc: '-3', rsrc: '3', a: 0, L: -3, R: 3, xu: 0.7, hu: 0.7, ok: true, f: (t) => Math.exp(-t * t) };
+const $ = (id) => document.getElementById(id);
+const fx = $('fx'), ain = $('ain'), lin = $('lin'), rin = $('rin'), xs = $('xs'), hs = $('hs'), msg = $('msg');
+const cv = $('c'), ctx = cv.getContext('2d');
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const parseF = (src) => { const g = Expr.parse(src.replace(/\bt\b/g, 'x').replace(/(\d)t\b/g, '$1x')); return g; };
+const constVal = (src) => { const v = Expr.parse(src)(NaN); if (!Number.isFinite(v)) throw new Error('must be a number'); return v; };
+const X = () => S.L + (S.R - S.L) * S.xu;                                  // current x
+const Hval = () => (S.R - S.L) * 0.002 * Math.pow(150, S.hu);               // h from 0.2% to 30% of the window
+// cumulative integral on a fine grid (composite Simpson on each cell, exact enough for display)
+let grid = null;
+function buildGrid() {
+  const N = 1600, L = S.L, R = S.R, dx = (R - L) / N, xs = new Float64Array(N + 1), A = new Float64Array(N + 1);
+  for (let i = 0; i <= N; i++) xs[i] = L + i * dx;
+  let acc = 0; A[0] = 0;
+  for (let i = 1; i <= N; i++) { const p = xs[i - 1], q = xs[i]; acc += dx / 6 * (S.f(p) + 4 * S.f((p + q) / 2) + S.f(q)); A[i] = acc; }
+  grid = { xs, A, dx, N };
+}
+function Araw(x) { // integral from L to x, by grid + Simpson on the remainder
+  const { xs, A, dx, N } = grid; let i = Math.floor((x - S.L) / dx); i = Math.max(0, Math.min(N - 1, i));
+  const p = xs[i]; return A[i] + (x - p) / 6 * (S.f(p) + 4 * S.f((p + x) / 2) + S.f(x));
+}
+let Aoff = 0;
+const Afun = (x) => Araw(x) - Aoff;                                         // A(x) = ∫_a^x f
+function readHash() {
+  const q = new URLSearchParams(location.hash.slice(1));
+  if (q.has('f')) S.src = q.get('f'); if (q.has('a')) S.asrc = q.get('a'); if (q.has('l')) S.lsrc = q.get('l'); if (q.has('r')) S.rsrc = q.get('r');
+  if (q.has('x')) S.xu = Math.max(0, Math.min(1, +q.get('x') || 0)); if (q.has('h')) S.hu = Math.max(0, Math.min(1, +q.get('h') || 0));
+  fx.value = S.src; ain.value = S.asrc; lin.value = S.lsrc; rin.value = S.rsrc; xs.value = Math.round(S.xu * 1000); hs.value = Math.round(S.hu * 1000);
+}
+function writeHash() { history.replaceState(null, '', '#' + new URLSearchParams({ f: S.src, a: S.asrc, l: S.lsrc, r: S.rsrc, x: S.xu.toFixed(3), h: S.hu.toFixed(3) })); }
+function update() {
+  let err = '';
+  for (const el of [fx, ain, lin, rin]) el.classList.remove('bad');
+  try { S.f = parseF(fx.value); S.src = fx.value; } catch (e) { fx.classList.add('bad'); err = 'f: ' + e.message; }
+  try { S.L = constVal(lin.value); S.lsrc = lin.value; } catch (e) { lin.classList.add('bad'); err = err || 'view: ' + e.message; }
+  try { S.R = constVal(rin.value); S.rsrc = rin.value; } catch (e) { rin.classList.add('bad'); err = err || 'view: ' + e.message; }
+  try { S.a = constVal(ain.value); S.asrc = ain.value; } catch (e) { ain.classList.add('bad'); err = err || 'a: ' + e.message; }
+  if (!err && !(S.R > S.L)) { err = 'the view needs left < right'; lin.classList.add('bad'); rin.classList.add('bad'); }
+  if (!err && (S.a < S.L || S.a > S.R)) { err = 'put a inside the view'; ain.classList.add('bad'); }
+  S.ok = !err;
+  if (S.ok) {
+    buildGrid(); Aoff = Araw(S.a);
+    let bad = 0; for (let i = 0; i <= 400; i++) if (!Number.isFinite(S.f(S.L + (S.R - S.L) * i / 400))) bad++;
+    if (bad || !Number.isFinite(Aoff)) err = 'f is undefined somewhere in the view; A may be meaningless';
+  }
+  msg.textContent = err; writeHash(); draw();
+}
+
+// ---------- drawing ----------
+let W, H, DPR, G = null;
+function resize() { DPR = devicePixelRatio || 1; W = innerWidth; H = innerHeight; cv.width = W * DPR; cv.height = H * DPR; draw(); }
+function niceStep(span, target) { const raw = span / target, p = 10 ** Math.floor(Math.log10(raw)), m = raw / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; }
+function fmtTick(t, step) { const d = Math.max(0, -Math.floor(Math.log10(step) + 1e-9)); let s = t.toFixed(d); if (/^-?0\.?0*$/.test(s)) s = '0'; return s.replace('-', '−'); }
+function yr(vals) { const v = vals.filter(Number.isFinite); if (!v.length) return [-1, 1]; let lo = Math.min(0, ...v), hi = Math.max(0, ...v); if (hi - lo < 1e-9) { lo -= 1; hi += 1; } const p = (hi - lo) * .1; return [lo - p, hi + p]; }
+function panelBox(b, ya, yb, label) {
+  const muted = css('--muted'), line = css('--line'), ink = css('--ink'), Xp = G.Xp, Y = (y) => b.y1 - (y - ya) / (yb - ya) * (b.y1 - b.y0);
+  ctx.font = '12px ui-serif, Georgia, serif'; ctx.strokeStyle = line; ctx.fillStyle = muted; ctx.lineWidth = 1;
+  const sx = niceStep(S.R - S.L, 8), sy = niceStep(yb - ya, 4);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top'; const y0 = Math.max(b.y0, Math.min(b.y1, Y(0)));
+  for (let t = Math.ceil(S.L / sx) * sx; t <= S.R + 1e-12; t += sx) { const px = Xp(t); ctx.globalAlpha = .5; ctx.beginPath(); ctx.moveTo(px, b.y0); ctx.lineTo(px, b.y1); ctx.stroke(); ctx.globalAlpha = 1; ctx.fillText(fmtTick(t, sx), px, y0 + 3); }
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; const x0 = Math.max(G.x0, Math.min(G.x1, Xp(0)));
+  for (let t = Math.ceil(ya / sy) * sy; t <= yb + 1e-12; t += sy) { const py = Y(t); ctx.globalAlpha = .5; ctx.beginPath(); ctx.moveTo(G.x0, py); ctx.lineTo(G.x1, py); ctx.stroke(); ctx.globalAlpha = 1; if (Math.abs(t) > sy / 1e6) ctx.fillText(fmtTick(t, sy), x0 - 4, py); }
+  ctx.strokeStyle = ink; ctx.globalAlpha = .7; ctx.lineWidth = 1.2;
+  if (ya <= 0 && 0 <= yb) { ctx.beginPath(); ctx.moveTo(G.x0, Y(0)); ctx.lineTo(G.x1, Y(0)); ctx.stroke(); }
+  if (S.L <= 0 && 0 <= S.R) { ctx.beginPath(); ctx.moveTo(Xp(0), b.y0); ctx.lineTo(Xp(0), b.y1); ctx.stroke(); }
+  ctx.globalAlpha = 1; ctx.fillStyle = ink; ctx.font = 'italic 15px ui-serif, Georgia, serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText(label, G.x0 + 6, b.y0 + 3);
+  return Y;
+}
+function path(fn, Xp, Y, b, from, to, n = 600) {
+  ctx.beginPath(); let pen = false; const span = b.y1 - b.y0;
+  for (let i = 0; i <= n; i++) { const x = from + (to - from) * i / n, y = fn(x), py = Y(y); if (!Number.isFinite(py) || py < b.y0 - 4 * span || py > b.y1 + 4 * span) { pen = false; continue; } pen ? ctx.lineTo(Xp(x), py) : ctx.moveTo(Xp(x), py); pen = true; }
+}
+function draw() {
+  if (!W) return;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0); ctx.clearRect(0, 0, W, H);
+  if (!S.ok || !grid) { $('read').innerHTML = ''; return; }
+  { const x = X(), h = Hval(); readout(x, h, S.f(x), Afun(x), Afun(x + h)); }
+  const p = $('panel').getBoundingClientRect(), wide = W > 760 && !$('panel').classList.contains('min');
+  const x0 = wide ? p.right + 44 : 40, x1 = W - 28, ytop = wide ? 30 : p.bottom + 24, ybot = H - 30, gap = 34;
+  if (x1 - x0 < 120 || ybot - ytop < 200) return;
+  const top = { y0: ytop, y1: ytop + (ybot - ytop - gap) / 2 }, bot = { y0: top.y1 + gap, y1: ybot };
+  const Xp = (x) => x0 + (x - S.L) / (S.R - S.L) * (x1 - x0);
+  G = { x0, x1, top, bot, Xp };
+  const x = X(), h = Hval(), xh = x + h, f = S.f, rust = css('--accent'), blue = css('--blue'), ink = css('--ink'), gold = css('--gold'), muted = css('--muted');
+  const fs = [], As = []; for (let i = 0; i <= 400; i++) { const t = S.L + (S.R - S.L) * i / 400; fs.push(f(t)); As.push(Afun(t)); }
+  // ---- top: f with the accumulated area and the new strip
+  const [fa, fb] = yr(fs), Yt = panelBox(top, fa, fb, 'y = f(t)');
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, top.y0, x1 - x0, top.y1 - top.y0); ctx.clip();
+  const shade = (lo, hi, alpha, strip) => { // region between the graph and the axis, coloured by sign
+    if (hi - lo <= 0) return;
+    const n = Math.max(2, Math.ceil(Math.abs(Xp(hi) - Xp(lo)) / 1.5)), y0 = Yt(0);
+    const poly = new Path2D(); poly.moveTo(Xp(lo), y0);
+    for (let i = 0; i <= n; i++) { const t = lo + (hi - lo) * i / n, v = f(t); poly.lineTo(Xp(t), Number.isFinite(v) ? Math.max(top.y0 - 5, Math.min(top.y1 + 5, Yt(v))) : y0); }
+    poly.lineTo(Xp(hi), y0); poly.closePath();
+    ctx.globalAlpha = alpha;
+    for (const [ya, yb, col] of [[top.y0 - 10, y0, strip ? gold : rust], [y0, top.y1 + 10, strip ? gold : blue]]) {
+      ctx.save(); ctx.beginPath(); ctx.rect(x0, ya, x1 - x0, yb - ya); ctx.clip(); ctx.fillStyle = col; ctx.fill(poly); ctx.restore(); }
+    ctx.globalAlpha = 1; };
+  shade(Math.min(S.a, x), Math.max(S.a, x), .2, false);
+  shade(x, xh, .55, true);
+  // rectangle of height f(x), width h
+  ctx.setLineDash([5, 3]); ctx.strokeStyle = ink; ctx.lineWidth = 1.4; const fxv = f(x);
+  ctx.strokeRect(Xp(x), Math.min(Yt(0), Yt(fxv)), Xp(xh) - Xp(x), Math.abs(Yt(fxv) - Yt(0))); ctx.setLineDash([]);
+  ctx.strokeStyle = ink; ctx.lineWidth = 2.2; path(f, Xp, Yt, top, S.L, S.R); ctx.stroke();
+  // markers
+  ctx.strokeStyle = muted; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(Xp(S.a), top.y0); ctx.lineTo(Xp(S.a), bot.y1); ctx.stroke(); ctx.setLineDash([]);
+  ctx.restore();
+  // ---- bottom: A with secant and tangent
+  const [Aa, Ab] = yr(As), Yb = panelBox(bot, Aa, Ab, 'y = A(x) = ∫ₐˣ f(t) dt');
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, bot.y0, x1 - x0, bot.y1 - bot.y0); ctx.clip();
+  ctx.strokeStyle = ink; ctx.lineWidth = 2.2; path(Afun, Xp, Yb, bot, S.L, S.R); ctx.stroke();
+  const Ax = Afun(x), Axh = Afun(xh), span = (S.R - S.L) * .12;
+  // tangent (slope f(x))
+  ctx.strokeStyle = rust; ctx.lineWidth = 1.6; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.moveTo(Xp(x - span), Yb(Ax - fxv * span)); ctx.lineTo(Xp(x + span + h), Yb(Ax + fxv * (span + h))); ctx.stroke(); ctx.setLineDash([]);
+  // secant and its rise
+  ctx.strokeStyle = gold; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(Xp(x), Yb(Ax)); ctx.lineTo(Xp(xh), Yb(Axh)); ctx.stroke();
+  ctx.lineWidth = 5; ctx.globalAlpha = .55; ctx.beginPath(); ctx.moveTo(Xp(xh), Yb(Ax)); ctx.lineTo(Xp(xh), Yb(Axh)); ctx.stroke(); ctx.globalAlpha = 1;
+  ctx.strokeStyle = muted; ctx.lineWidth = 1; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(Xp(x), Yb(Ax)); ctx.lineTo(Xp(xh), Yb(Ax)); ctx.stroke(); ctx.setLineDash([]);
+  for (const [px, py] of [[x, Ax], [xh, Axh]]) { ctx.fillStyle = gold; ctx.beginPath(); ctx.arc(Xp(px), Yb(py), 4, 0, 2 * Math.PI); ctx.fill(); }
+  ctx.restore();
+  // x and x+h labels, and a vertical guide linking the graphs
+  ctx.strokeStyle = gold; ctx.globalAlpha = .6; ctx.setLineDash([2, 4]); ctx.lineWidth = 1;
+  for (const t of [x, xh]) { ctx.beginPath(); ctx.moveTo(Xp(t), top.y0); ctx.lineTo(Xp(t), bot.y1); ctx.stroke(); }
+  ctx.setLineDash([]); ctx.globalAlpha = 1;
+  ctx.fillStyle = muted; ctx.font = 'italic 13px ui-serif, Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillText('a', Xp(S.a), bot.y1 + 4); ctx.fillText('x', Xp(x), bot.y1 + 4); if (Xp(xh) - Xp(x) > 26) ctx.fillText('x+h', Xp(xh), bot.y1 + 4);
+}
+const num = (v, d = 5) => Number.isFinite(v) ? (+v.toPrecision(d)).toString().replace('-', '−') : '—';
+function readout(x, h, fxv, Ax, Axh) {
+  $('xOut').textContent = num(x, 3); $('hOut').textContent = num(h, 2);
+  const q = (Axh - Ax) / h;
+  $('read').innerHTML =
+    `<span class="m">A</span>(<span class="m">x</span>) = ${num(Ax)}<br>` +
+    `strip area <span class="m">A</span>(<span class="m">x</span>+<span class="m">h</span>) − <span class="m">A</span>(<span class="m">x</span>) = <b>${num(Axh - Ax)}</b><br>` +
+    `rectangle <span class="m">f</span>(<span class="m">x</span>) · <span class="m">h</span> = <b>${num(fxv * h)}</b><br>` +
+    `<div class="big">secant slope ${num(q)} &nbsp;vs&nbsp; <span class="m">f</span>(<span class="m">x</span>) = ${num(fxv)}</div>` +
+    `<span class="mut">difference ${num(q - fxv, 2)}</span>`;
+}
+
+// ---------- interaction ----------
+let sweep = null, shrinkAnim = null;
+function setX(u) { S.xu = Math.max(0, Math.min(1, u)); xs.value = Math.round(S.xu * 1000); }
+function setH(u) { S.hu = Math.max(0, Math.min(1, u)); hs.value = Math.round(S.hu * 1000); }
+xs.addEventListener('input', () => { stopAll(); setX(xs.value / 1000); writeHash(); draw(); });
+hs.addEventListener('input', () => { stopAll(); setH(hs.value / 1000); writeHash(); draw(); });
+let dragging = false;
+const toU = (cx) => (cx - G.x0) / (G.x1 - G.x0);
+cv.addEventListener('pointerdown', (e) => { if (!G || e.clientX < G.x0 || e.clientX > G.x1 || e.clientY < G.top.y0 || e.clientY > G.bot.y1) return; stopAll(); dragging = true; cv.setPointerCapture(e.pointerId); setX(toU(e.clientX)); draw(); });
+cv.addEventListener('pointermove', (e) => { if (dragging) { setX(toU(e.clientX)); draw(); } else if (G) cv.style.cursor = e.clientX >= G.x0 && e.clientX <= G.x1 && e.clientY >= G.top.y0 && e.clientY <= G.bot.y1 ? 'ew-resize' : ''; });
+const up = () => { if (dragging) { dragging = false; writeHash(); } };
+cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+function stopAll() { if (sweep) { cancelAnimationFrame(sweep); sweep = null; $('play').classList.remove('on'); $('play').textContent = 'sweep x ▸'; } if (shrinkAnim) { cancelAnimationFrame(shrinkAnim); shrinkAnim = null; $('shrink').classList.remove('on'); } }
+$('play').onclick = () => {
+  if (sweep) return stopAll(); stopAll(); $('play').classList.add('on'); $('play').textContent = 'pause ❚❚';
+  let last = performance.now(); if (S.xu > 0.98) setX(0);
+  const step = (t) => { const dt = (t - last) / 1000; last = t; let u = S.xu + dt / 8; if (u > 1) u = 0; setX(u); draw(); sweep = requestAnimationFrame(step); };
+  sweep = requestAnimationFrame(step);
+};
+$('shrink').onclick = () => {
+  stopAll(); $('shrink').classList.add('on'); const u0 = Math.max(S.hu, 0.75), t0 = performance.now(); setH(u0);
+  const step = (t) => { const s = Math.min(1, (t - t0) / 3500); setH(u0 * (1 - s)); draw(); if (s < 1) shrinkAnim = requestAnimationFrame(step); else { shrinkAnim = null; $('shrink').classList.remove('on'); writeHash(); } };
+  shrinkAnim = requestAnimationFrame(step);
+};
+let deb = 0; const soon = () => { clearTimeout(deb); deb = setTimeout(update, 200); };
+for (const el of [fx, ain, lin, rin]) el.addEventListener('input', soon);
+for (const b of document.querySelectorAll('.presets button')) b.onclick = () => { stopAll(); fx.value = b.dataset.f; ain.value = b.dataset.a; lin.value = b.dataset.l; rin.value = b.dataset.r; update(); };
+addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+  if (e.key === 'ArrowRight') { stopAll(); setX(S.xu + .01); draw(); } else if (e.key === 'ArrowLeft') { stopAll(); setX(S.xu - .01); draw(); }
+  else if (e.key === 'ArrowUp') { stopAll(); setH(S.hu + .03); draw(); } else if (e.key === 'ArrowDown') { stopAll(); setH(S.hu - .03); draw(); }
+  else if (e.key === ' ') { e.preventDefault(); $('play').click(); } else return;
+  writeHash();
+});
+$('minbtn').onclick = () => { const p = $('panel'); p.classList.toggle('min'); $('minbtn').textContent = p.classList.contains('min') ? '+' : '–'; resize(); };
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', draw);
+addEventListener('resize', resize);
+readHash(); resize(); update();
+</script>
+</body>
+</html>
