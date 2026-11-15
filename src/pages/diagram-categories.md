@@ -1,20 +1,20 @@
 ---
 layout: ../layouts/Page.astro
 title: "Combinatorial Structures in Equivariant Homotopy Theory"
-label: "reed college · portland, oregon · july 25–31, 2027"
+label: "reed college · portland, oregon · july 26–30, 2027"
 lede: "A workshop on the combinatorial, categorical, and diagrammatic structures that control equivariant homotopy theory."
-description: "A workshop at Reed College, July 25–31, 2027, part of the PIMS Collaborative Research Group Diagram Categories in Homotopy Theory."
+description: "A workshop at Reed College, July 26–30, 2027, part of the PIMS Collaborative Research Group Diagram Categories in Homotopy Theory."
 hideSiteNav: true
 # Still to fill in. Search this file for "soon" and "to be announced".
-#   - registration form link (register section)
-#   - funding form link (funding section)
-#   - deadlines (register and funding sections)
 #   - Reed child care resources link (practical information section)
+# The registration form (forms.gle/B3dNcUonFfdg72Wp7) also handles funding,
+# contributed talks, and residence-hall lodging; its deadline appears in the
+# register, contributed talks, funding, and practical information sections.
 ---
 
 <dl class="facts">
   <dt class="label">when</dt>
-  <dd>Sunday, July 25 to Saturday, July 31, 2027. Talks run Monday through Friday.</dd>
+  <dd>Monday, July 26 to Friday, July 30, 2027</dd>
   <dt class="label">where</dt>
   <dd><a href="https://www.reed.edu/">Reed College</a>, Portland, Oregon</dd>
   <dt class="label">organizers</dt>
@@ -27,10 +27,9 @@ hideSiteNav: true
 
 Everyone is welcome to apply. The application is largely a formality that helps us plan. We expect 40 to 60 participants, including researchers at all career stages, postdocs, graduate students, and advanced undergraduates.
 
-- **Registration:** the form will open soon. Use it to apply to attend and to tell us if you would like to give a contributed talk.
-- **Funding:** the application will open soon. See [funding](#funding) below.
+**[Register here.](https://forms.gle/B3dNcUonFfdg72Wp7)** The same form is used to request [funding](#funding), to volunteer a [contributed talk](#contributed-talks), and to request a room in Reed's residence halls.
 
-Deadlines to be announced.
+**Deadline:** for full consideration for funding, contributed talks, and residence-hall lodging, submit the form by **March 31, 2027**.
 
 ## about the workshop
 
@@ -71,21 +70,19 @@ This is a workshop rather than a lecture-intensive conference, with substantial 
 
 | day | program |
 |---|---|
-| Sunday, July 25 | arrivals |
 | Monday, July 26 | talks (about 4 hours) |
 | Tuesday, July 27 | talks (about 4 hours) |
 | Wednesday, July 28 | talks (about 2 hours); free afternoon with an optional low-cost excursion |
 | Thursday, July 29 | talks (about 4 hours) |
 | Friday, July 30 | talks (about 3 hours) |
-| Saturday, July 31 | departures |
 
 ## contributed talks
 
-Contributed talks give early career researchers a venue to present their work. To volunteer, indicate your interest on the registration form. The organizers will select talks with an eye toward showcasing the breadth of the field and the work of junior researchers.
+Contributed talks give early career researchers a venue to present their work. To volunteer, indicate your interest on the [registration form](https://forms.gle/B3dNcUonFfdg72Wp7) by March 31, 2027. The organizers will select talks with an eye toward showcasing the breadth of the field and the work of junior researchers.
 
 ## funding
 
-We hope to support travel and lodging for early career participants without other sources of funding. More details and the funding application will be posted soon.
+We hope to support travel and lodging for early career participants without other sources of funding. To apply, request funding on the [registration form](https://forms.gle/B3dNcUonFfdg72Wp7). Applications submitted by March 31, 2027 will receive full consideration.
 
 Applications will be considered in the following order of priority:
 
@@ -96,7 +93,7 @@ Applications will be considered in the following order of priority:
 
 ## practical information
 
-- **Lodging:** affordable rooms will be available in Reed's residence halls. Booking details to be announced.
+- **Lodging:** affordable rooms will be available in Reed's residence halls. Request one on the [registration form](https://forms.gle/B3dNcUonFfdg72Wp7) by March 31, 2027. Rates and further details to be announced.
 - **Meals:** we plan to provide breakfast (bagels, pastries, and fruit) and coffee breaks.
 - **Child care:** a link to Reed's child care resources, including a list of local facilities, will be posted here soon.
 
