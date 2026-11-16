@@ -94,11 +94,25 @@ Applications will be considered in the following order of priority:
 ## practical information
 
 - **Lodging:** affordable rooms will be available in Reed's residence halls. Request one on the [registration form](https://forms.gle/B3dNcUonFfdg72Wp7) by March 31, 2027. Rates and further details to be announced.
-- **Meals:** we plan to provide breakfast (bagels, pastries, and fruit) and coffee breaks.
+- **Meals:** Reed College will provide breakfast (bagels, pastries, and fruit) and coffee breaks.
 - **Child care:** a link to Reed's child care resources, including a list of local facilities, will be posted here soon.
 
 ## contact
 
 Questions are welcome. Please write to Kyle Ormsby (ormsbyk@reed.edu) or Angélica Osorno (aosorno@reed.edu).
 
-Reed College is providing lecture rooms and facilities for the workshop.
+## sponsors
+
+This workshop is supported by the [Pacific Institute for the Mathematical Sciences](https://www.pims.math.ca/) through the Collaborative Research Group *Diagram Categories in Homotopy Theory*. Reed College is providing lecture rooms and facilities, breakfast, and coffee breaks.
+
+<div class="sponsor-logos">
+  <a href="https://www.pims.math.ca/"><img src="/images/sponsors/pims.png" alt="Pacific Institute for the Mathematical Sciences" width="240" height="63"></a>
+  <a href="https://www.reed.edu/"><img src="/images/sponsors/reed.png" alt="Reed College" width="209" height="63"></a>
+</div>
+
+<style>
+  .sponsor-logos { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s5) var(--s7); margin-top: var(--s5); }
+  .sponsor-logos a { display: block; text-decoration: none; border: 0; }
+  .sponsor-logos img { display: block; width: auto; height: 63px; max-width: 100%; }
+  :root[data-theme='dark'] .sponsor-logos a { background: var(--paper-light); padding: var(--s3) var(--s4); border-radius: 6px; }
+</style>
