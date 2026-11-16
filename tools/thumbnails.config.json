@@ -220,5 +220,14 @@
       "height": 900
     },
     "scale": 1
+  },
+  "fixed-angle-locus": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "click": "#dim button[data-dim=\"3d\"]",
+    "wait": 1500
   }
 }

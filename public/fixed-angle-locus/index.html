@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fixed-angle locus</title>
+<style>
+  :root{
+    --paper:#f4efe5; --ink:#17140f; --muted:#6d6457; --panel:rgba(244,239,229,.9); --line:rgba(23,20,15,.15);
+    --accent:#a2462a; --blue:#2f5f9c; --gold:#b0841f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#14120f; --ink:#ebe4d6; --muted:#9a9184; --panel:rgba(20,18,15,.9); --line:rgba(235,228,214,.17);
+      --accent:#e08a62; --blue:#7fa8de; --gold:#e0b858; }
+  }
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font:14px/1.45 ui-serif,Georgia,"Iowan Old Style",serif;overflow:hidden}
+  canvas#c,canvas#gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+  canvas#c{touch-action:none;cursor:default}
+  canvas#gl{display:none}
+  body.d3 canvas#gl{display:block}
+  .row .lab{color:var(--muted);flex:none}
+  .row .seg{flex:1;margin:0}
+  [hidden]{display:none!important}
+  #panel{position:fixed;left:14px;top:14px;width:min(340px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;background:var(--panel);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;box-shadow:0 8px 30px rgba(0,0,0,.12);box-sizing:border-box}
+  #panel h1{font-size:17px;margin:0 0 4px;font-weight:600;letter-spacing:.01em}
+  .stats{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12.5px;margin:0 0 4px}
+  .stats b{color:var(--ink);font-weight:600}
+  #shape{font-size:13px;margin:6px 0 2px}
+  .seg{display:flex;gap:0;margin:8px 0 6px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .seg button{flex:1;border:0;border-radius:0;padding:4px 0;font-size:12.5px}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .row{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px}
+  .row label.k{width:16px;flex:none;font-style:italic;font-size:16px}
+  .row input[type=range]{flex:1;min-width:80px;accent-color:var(--accent)}
+  .row output{width:44px;text-align:right;font-variant-numeric:tabular-nums;flex:none}
+  .checks{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;margin:6px 0 2px;font-size:13px}
+  .checks label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .checks input{accent-color:var(--accent);margin:0}
+  .btns{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+  .btns.presets button{padding:2px 7px;font-size:12.5px;font-variant-numeric:tabular-nums}
+  button{font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 10px;cursor:pointer}
+  button:hover{border-color:var(--ink)}
+  button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  details{margin-top:9px}
+  details summary{cursor:pointer;color:var(--muted);font-size:12.5px;user-select:none}
+  details p{margin:6px 0;font-size:13px}
+  .m{font-style:italic}
+  .acc{color:var(--accent)} .blu{color:var(--blue)} .gld{color:var(--gold)}
+  @media (max-width:700px){
+    #panel{left:0;right:0;top:auto;bottom:0;width:auto;max-height:46vh;border-radius:12px 12px 0 0;border-width:1px 0 0}
+  }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<canvas id="c"></canvas>
+<div id="panel">
+  <h1>Triangles with apex angle <span class="m">α</span></h1>
+  <p class="stats">radius <span class="m">R</span> = <span class="m">c</span> / (2 sin <span class="m">α</span>) = <b id="rr"></b> <span class="m">c</span><br>
+     centres ±(<span class="m">c</span>/2) cot <span class="m">α</span> = <b id="kk"></b> <span class="m">c</span> off <span class="m">AB</span><br>
+     <span class="blu">dashed arcs</span> see <span class="m">AB</span> at π − <span class="m">α</span> = <b id="comp"></b></p>
+  <div class="seg" id="dim">
+    <button data-dim="2d" class="on">2D picture</button>
+    <button data-dim="3d">3D: stack over α</button>
+  </div>
+  <div class="row"><label class="k" for="al">α</label><input type="range" id="al" min="1" max="179" step="0.5"><output id="alo"></output></div>
+  <div class="btns presets" id="presets"></div>
+  <p id="shape"></p>
+  <div class="seg" id="mode">
+    <button data-mode="locus" class="on">C slides on the locus</button>
+    <button data-mode="free">C roams, α follows</button>
+  </div>
+  <div class="row" id="capRow" hidden><span class="lab">above the slice</span>
+    <div class="seg" id="cap"><button data-cap="ghost" class="on">ghost</button><button data-cap="solid">solid</button><button data-cap="hidden">hidden</button></div>
+  </div>
+  <div class="checks">
+    <label><input type="checkbox" id="ckCon" checked> <span>centre &amp; 2<span class="m">α</span></span></label>
+    <label><input type="checkbox" id="ckGhost"> sample triangles</label>
+    <label><input type="checkbox" id="ckFam"> every π/12</label>
+    <label><input type="checkbox" id="ckApo"> Apollonian circles</label>
+  </div>
+  <div class="btns">
+    <button id="bSweep">sweep α</button>
+    <button id="bSlide">slide C</button>
+    <button id="bReset">reset</button>
+  </div>
+  <details>
+    <summary>What's going on</summary>
+    <p>Fix <span class="m">A</span>, <span class="m">B</span> with |<span class="m">AB</span>| = <span class="m">c</span>. The points <span class="m">C</span> with ∠<span class="m">ACB</span> = <span class="m">α</span> form <span class="acc">two circular arcs</span> from <span class="m">A</span> to <span class="m">B</span>, mirror images in the line <span class="m">AB</span>. This is the inscribed angle theorem and its converse: on a circle through <span class="m">A</span> and <span class="m">B</span> with centre <span class="m">O</span>, every point of one arc sees <span class="m">AB</span> at half the <span class="gld">central angle</span> ∠<span class="m">AOB</span> = 2<span class="m">α</span>, and every point of the <span class="blu">other arc</span> sees it at π − <span class="m">α</span>.</p>
+    <p>The radius is the law of sines, <span class="m">c</span> / sin <span class="m">α</span> = 2<span class="m">R</span>. For <span class="m">α</span> &lt; π/2 the arcs are major arcs (outline of a union of two discs); at π/2 they close into Thales' circle; for <span class="m">α</span> &gt; π/2 they are minor arcs bounding a lens. The shaded region is where the angle exceeds <span class="m">α</span>.</p>
+    <p>In complex terms the signed angle at <span class="m">z</span> is arg((<span class="m">z</span> − <span class="m">a</span>)/(<span class="m">z</span> − <span class="m">b</span>)), so each arc is the preimage of a ray from 0 under a Möbius map sending <span class="m">A</span> ↦ 0, <span class="m">B</span> ↦ ∞. The preimages of circles about 0 are the Apollonian circles |<span class="m">z</span> − <span class="m">a</span>| / |<span class="m">z</span> − <span class="m">b</span>| = const; the two orthogonal families are bipolar coordinates.</p>
+    <p><b>3D.</b> Stack the pictures with height = angle: the surface is the graph of <span class="m">P</span> ↦ ∠<span class="m">APB</span> = |arg((<span class="m">z</span> − <span class="m">a</span>)/(<span class="m">z</span> − <span class="m">b</span>))|, and the picture for <span class="m">α</span> is its horizontal slice at height <span class="m">α</span>. With <span class="m">A</span>, <span class="m">B</span> = (∓1, 0) and <span class="m">α</span> in radians it is <span class="m">x</span>² + <span class="m">y</span>² − 2|<span class="m">y</span>| cot <span class="m">α</span> = 1. Every slice passes through <span class="m">A</span> and <span class="m">B</span>, so the surface contains the two vertical poles and winds around each like half a turn of a helicoid; the two sheets meet in a ridge at π over the segment and fall to 0 along the rest of the line. The <span class="blu">blue curve</span> is the slice at π − <span class="m">α</span>: with the <span class="acc">locus</span> it makes the two full circles, each tilted across the two heights. "Every π/12" and "Apollonian circles" draw the bipolar coordinate grid on the surface.</p>
+    <p>Drag <span class="m">A</span>, <span class="m">B</span>, <span class="m">C</span>; drag the background to pan (2D) or orbit (3D), scroll to zoom. In 3D, with "C roams", <span class="m">C</span> moves on the surface.</p>
+  </details>
+</div>
+<script>
+(function(){
+'use strict';
+const cv=document.getElementById('c'), ctx=cv.getContext('2d'), glc=document.getElementById('gl');
+const $=id=>document.getElementById(id);
+const TAU=2*Math.PI, DEG=Math.PI/180;
+const AMIN=0.5*DEG, AMAX=179.5*DEG;
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const mod=(x,m)=>((x%m)+m)%m;
+
+const S={A:{x:-1,y:0},B:{x:1,y:0},alpha:60*DEG,side:1,t:0.33,mode:'locus',
+  view:{cx:0,cy:0,s:100},userView:false,sweep:false,slide:false,sweepPhase:0,
+  dim:'2d',cap:'ghost',cam:{az:-1.08,el:0.46,dist:9.4}};
+let W=0,H=0,DPR=1,col={};
+
+function readColors(){
+  const cs=getComputedStyle(document.documentElement);
+  for(const k of ['paper','ink','muted','accent','blue','gold']) col[k]=cs.getPropertyValue('--'+k).trim();
+}
+function freeRect(){
+  const r=$('panel').getBoundingClientRect();
+  if(r.width>0.6*W) return {x0:0,y0:0,x1:W,y1:Math.max(120,r.top)};
+  return {x0:r.right,y0:0,x1:W,y1:H};
+}
+function fitView(){
+  const r=freeRect(), w=r.x1-r.x0, h=r.y1-r.y0;
+  S.view.cx=(r.x0+r.x1)/2; S.view.cy=(r.y0+r.y1)/2;
+  S.view.s=Math.max(20,Math.min(w,h)/5.4);
+}
+function resize(){
+  DPR=window.devicePixelRatio||1; W=window.innerWidth; H=window.innerHeight;
+  cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR);
+  glc.width=cv.width; glc.height=cv.height;
+  if(!S.userView) fitView();
+  requestDraw();
+}
+
+/* frame adapted to AB: local (x,y) -> M + a(x u + y n); A=(-1,0), B=(1,0) */
+function frame(){
+  const A=S.A,B=S.B, dx=B.x-A.x, dy=B.y-A.y, L=Math.hypot(dx,dy)||1e-9, a=L/2;
+  return {M:{x:(A.x+B.x)/2,y:(A.y+B.y)/2},a,u:{x:dx/L,y:dy/L},n:{x:-dy/L,y:dx/L}};
+}
+function W2L(P,f){const x=P.x-f.M.x,y=P.y-f.M.y;return {x:(x*f.u.x+y*f.u.y)/f.a,y:(x*f.n.x+y*f.n.y)/f.a};}
+function S2W(X,Y){return {x:(X-S.view.cx)/S.view.s,y:-(Y-S.view.cy)/S.view.s};}
+function W2S(P){return {X:S.view.cx+S.view.s*P.x,Y:S.view.cy-S.view.s*P.y};}
+/* apex in local coordinates */
+function apex(side,t,al){
+  const k=1/Math.tan(al),R=1/Math.sin(al),th=al-Math.PI/2+t*(TAU-2*al);
+  return {x:R*Math.cos(th),y:side*(k+R*Math.sin(th))};
+}
+
+let pending=false,lastT=0;
+function requestDraw(){ if(!pending){pending=true;requestAnimationFrame(tick);} }
+function tick(ts){
+  pending=false;
+  const dt=Math.min(0.05,(ts-lastT)/1000||0); lastT=ts;
+  if(S.sweep){ S.sweepPhase+=dt*0.45; S.alpha=(90+84*Math.sin(S.sweepPhase))*DEG; }
+  if(S.slide){
+    let p=S.side>0?S.t:2-S.t; p=mod(p+dt*0.16,2);
+    if(p<1){S.side=1;S.t=p;} else {S.side=-1;S.t=2-p;}
+  }
+  draw();
+  if(S.sweep||S.slide) requestDraw();
+}
+
+function label(txt,x,y,color,font,align){
+  ctx.font=font||'italic 15px ui-serif,Georgia,serif'; ctx.textAlign=align||'center'; ctx.textBaseline='middle';
+  ctx.lineJoin='round'; ctx.lineWidth=4; ctx.strokeStyle=col.paper; ctx.strokeText(txt,x,y);
+  ctx.fillStyle=color; ctx.fillText(txt,x,y);
+}
+/* angle mark at C, handles and names; a, b, c are screen points */
+function marks(a,b,c,al){
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  const a1=Math.atan2(a.Y-c.Y,a.X-c.X), a2=Math.atan2(b.Y-c.Y,b.X-c.X);
+  let d=mod(a2-a1+Math.PI,TAU)-Math.PI; const mid=a1+d/2, ra=26;
+  if(Math.abs(al-Math.PI/2)<0.26*DEG){
+    const q=11, ux=Math.cos(a1),uy=Math.sin(a1),vx=Math.cos(a2),vy=Math.sin(a2);
+    ctx.strokeStyle=col.accent; ctx.lineWidth=1.4; ctx.beginPath();
+    ctx.moveTo(c.X+q*ux,c.Y+q*uy); ctx.lineTo(c.X+q*(ux+vx),c.Y+q*(uy+vy)); ctx.lineTo(c.X+q*vx,c.Y+q*vy); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(c.X,c.Y); ctx.arc(c.X,c.Y,ra,a1,a1+d,d<0); ctx.closePath();
+    ctx.globalAlpha=.25; ctx.fillStyle=col.accent; ctx.fill(); ctx.globalAlpha=1;
+    ctx.strokeStyle=col.accent; ctx.lineWidth=1.4; ctx.beginPath(); ctx.arc(c.X,c.Y,ra,a1,a1+d,d<0); ctx.stroke();
+  }
+  label('α',c.X+(ra+13)*Math.cos(mid),c.Y+(ra+13)*Math.sin(mid),col.accent);
+  for(const q of [a,b]){ ctx.fillStyle=col.ink; ctx.strokeStyle=col.paper; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(q.X,q.Y,5.5,0,TAU); ctx.fill(); ctx.stroke(); }
+  ctx.fillStyle=col.accent; ctx.strokeStyle=col.paper; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(c.X,c.Y,7,0,TAU); ctx.fill(); ctx.stroke();
+  const ab=Math.hypot(b.X-a.X,b.Y-a.Y)||1, ex=(b.X-a.X)/ab, ey=(b.Y-a.Y)/ab;
+  label('A',a.X-17*ex,a.Y-17*ey,col.ink); label('B',b.X+17*ex,b.Y+17*ey,col.ink);
+  label('C',c.X-17*Math.cos(mid),c.Y-17*Math.sin(mid),col.ink);
+}
+function readouts(){
+  const al=S.alpha, deg=al/DEG;
+  $('alo').textContent=al.toFixed(3);
+  if(document.activeElement!==$('al')||S.sweep||S.mode==='free') $('al').value=deg;
+  $('rr').textContent=fmt(1/(2*Math.sin(al)));
+  $('kk').textContent=fmt(Math.abs(0.5/Math.tan(al)));
+  $('comp').textContent=(Math.PI-al).toFixed(3);
+  const sh=Math.abs(deg-90)<0.26?'The two arcs close into one circle with diameter <i>AB</i>: Thales.'
+    :deg<90?'Two <span class="acc">major arcs</span> through <i>A</i> and <i>B</i>, mirror images in <i>AB</i>: the outline of a union of two discs.'
+    :'Two <span class="acc">minor arcs</span> through <i>A</i> and <i>B</i>: a lens, the outline of an intersection of two discs.';
+  if($('shape').dataset.s!==sh){ $('shape').innerHTML=sh; $('shape').dataset.s=sh; }
+}
+function draw(){
+  readouts();
+  if(S.dim==='3d'){ draw3D(); return; }
+  ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H);
+  const f=frame(), al=S.alpha, k=1/Math.tan(al), R=1/Math.sin(al), thB=al-Math.PI/2, span=TAU-2*al;
+  const px=f.a*S.view.s, ox=S.view.cx+S.view.s*f.M.x, oy=S.view.cy-S.view.s*f.M.y;
+  const X=(x,y)=>ox+px*(x*f.u.x+y*f.n.x), Y=(x,y)=>oy-px*(x*f.u.y+y*f.n.y);
+  const P=(x,y)=>({X:X(x,y),Y:Y(x,y)});
+  /* circle centre (x0, sy*y0), radius r, theta th0->th1 (mirrored when sy=-1) */
+  function arc(x0,y0,r,th0,th1,sy,cont){
+    const rp=Math.max(1,r*px), dth=Math.sqrt(0.4/rp);
+    const N=clamp(Math.ceil(Math.abs(th1-th0)/dth),8,3000);
+    for(let i=0;i<=N;i++){
+      const th=th0+(th1-th0)*i/N, x=x0+r*Math.cos(th), y=sy*(y0+r*Math.sin(th));
+      if(i===0&&!cont) ctx.moveTo(X(x,y),Y(x,y)); else ctx.lineTo(X(x,y),Y(x,y));
+    }
+  }
+  ctx.lineCap='round'; ctx.lineJoin='round';
+
+  /* line through A and B */
+  ctx.globalAlpha=.25; ctx.strokeStyle=col.muted; ctx.lineWidth=1;
+  ctx.beginPath(); const far=(W+H)/px+4; ctx.moveTo(X(-far,0),Y(-far,0)); ctx.lineTo(X(far,0),Y(far,0)); ctx.stroke();
+  ctx.globalAlpha=1;
+
+  /* Apollonian circles */
+  if($('ckApo').checked){
+    ctx.globalAlpha=.4; ctx.strokeStyle=col.blue; ctx.lineWidth=1; ctx.beginPath();
+    for(const tau of [0.3,0.55,0.8,1.1,1.45,1.85,2.3,2.9]){
+      const d=1/Math.tanh(tau), r=1/Math.sinh(tau);
+      arc(d,0,r,0,TAU,1); arc(-d,0,r,0,TAU,1);
+    }
+    ctx.moveTo(X(0,-far),Y(0,-far)); ctx.lineTo(X(0,far),Y(0,far));
+    ctx.stroke(); ctx.globalAlpha=1;
+  }
+  /* the pencil of circles through A and B, every 15 degrees */
+  if($('ckFam').checked){
+    ctx.globalAlpha=.45; ctx.strokeStyle=col.muted; ctx.lineWidth=1; ctx.beginPath();
+    for(let b=15;b<180;b+=15){ const kb=1/Math.tan(b*DEG), Rb=1/Math.sin(b*DEG); arc(0,kb,Rb,0,TAU,1); }
+    ctx.stroke(); ctx.globalAlpha=1;
+    for(let b=15;b<180;b+=15){
+      const h=1/Math.tan(b*DEG/2);
+      for(const sy of [1,-1]){ const q=P(0,sy*h); if(q.X>-30&&q.X<W+30&&q.Y>-30&&q.Y<H+30) label(piFrac(b/15),q.X,q.Y,col.muted,'11.5px ui-serif,Georgia,serif'); }
+    }
+  }
+
+  /* region where the angle exceeds alpha */
+  ctx.beginPath(); arc(0,k,R,thB,thB+span,1); arc(0,k,R,thB+span,thB,-1,true); ctx.closePath();
+  ctx.globalAlpha=.09; ctx.fillStyle=col.accent; ctx.fill(); ctx.globalAlpha=1;
+
+  /* complementary arcs: angle 180 - alpha */
+  ctx.strokeStyle=col.blue; ctx.lineWidth=1.3; ctx.setLineDash([5,5]); ctx.globalAlpha=.8;
+  ctx.beginPath(); arc(0,k,R,thB+span,thB+TAU,1); arc(0,k,R,thB+span,thB+TAU,-1); ctx.stroke();
+  ctx.setLineDash([]); ctx.globalAlpha=1;
+
+  /* the locus */
+  ctx.strokeStyle=col.accent; ctx.lineWidth=2.8;
+  ctx.beginPath(); arc(0,k,R,thB,thB+span,1); arc(0,k,R,thB,thB+span,-1); ctx.stroke();
+
+  /* segment AB */
+  const a=P(-1,0), b=P(1,0), cl=apex(S.side,S.t,al), c=P(cl.x,cl.y);
+  ctx.strokeStyle=col.ink; ctx.lineWidth=2.6; ctx.beginPath(); ctx.moveTo(a.X,a.Y); ctx.lineTo(b.X,b.Y); ctx.stroke();
+
+  /* sample triangles */
+  if($('ckGhost').checked){
+    ctx.strokeStyle=col.accent; ctx.lineWidth=1; ctx.globalAlpha=.45; ctx.beginPath();
+    for(let i=1;i<10;i++){ const g=apex(S.side,i/10,al), q=P(g.x,g.y); ctx.moveTo(a.X,a.Y); ctx.lineTo(q.X,q.Y); ctx.lineTo(b.X,b.Y); }
+    ctx.stroke(); ctx.globalAlpha=1;
+  }
+
+  /* centre, radii, central angle 2 alpha */
+  if($('ckCon').checked){
+    const o=P(0,S.side*k), o2=P(0,-S.side*k);
+    ctx.strokeStyle=col.gold; ctx.lineWidth=1.2; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(a.X,a.Y); ctx.lineTo(o.X,o.Y); ctx.lineTo(b.X,b.Y); ctx.moveTo(o.X,o.Y); ctx.lineTo(c.X,c.Y); ctx.stroke();
+    ctx.setLineDash([]);
+    const rs=22/px, thA=thB+span;
+    ctx.beginPath(); ctx.moveTo(o.X,o.Y);
+    for(let i=0;i<=48;i++){ const th=thA+2*al*i/48; ctx.lineTo(X(rs*Math.cos(th),S.side*(k+rs*Math.sin(th))),Y(rs*Math.cos(th),S.side*(k+rs*Math.sin(th)))); }
+    ctx.closePath(); ctx.globalAlpha=.22; ctx.fillStyle=col.gold; ctx.fill(); ctx.globalAlpha=1; ctx.lineWidth=1.2; ctx.stroke();
+    const lp=P(0,S.side*(k-rs-15/px)); label('2α',lp.X,lp.Y,col.gold,'italic 14px ui-serif,Georgia,serif');
+    ctx.fillStyle=col.gold; ctx.beginPath(); ctx.arc(o.X,o.Y,3.4,0,TAU); ctx.fill();
+    ctx.globalAlpha=.5; ctx.beginPath(); ctx.arc(o2.X,o2.Y,2.4,0,TAU); ctx.fill(); ctx.globalAlpha=1;
+  }
+
+  /* the triangle */
+  ctx.beginPath(); ctx.moveTo(a.X,a.Y); ctx.lineTo(c.X,c.Y); ctx.lineTo(b.X,b.Y); ctx.closePath();
+  ctx.globalAlpha=.05; ctx.fillStyle=col.ink; ctx.fill(); ctx.globalAlpha=1;
+  ctx.strokeStyle=col.ink; ctx.lineWidth=1.7; ctx.beginPath(); ctx.moveTo(a.X,a.Y); ctx.lineTo(c.X,c.Y); ctx.lineTo(b.X,b.Y); ctx.stroke();
+
+  marks(a,b,c,al);
+}
+/* k/12 of pi, reduced */
+function piFrac(k){
+  if(k===0) return '0'; let g=12,r=k; while(r){ [g,r]=[r,g%r]; }
+  const n=k/g, d=12/g; return (n===1?'':n)+'π'+(d===1?'':'/'+d);
+}
+function fmt(x){ return x>=100?x.toFixed(0):x>=10?x.toFixed(1):x.toFixed(3); }
+
+
+/* ================= 3D: the graph of P -> angle APB, sliced at height alpha ================= */
+const CZ=2.4/Math.PI, RV=2.8, FOV=32*DEG;
+let gl=null, G=null, glTried=false;
+const VS_SURF=`#version 300 es
+in vec3 a_pos; uniform mat4 u_vp; uniform float u_cz; out vec3 v_pos;
+void main(){ v_pos=vec3(a_pos.xy,u_cz*a_pos.z); gl_Position=u_vp*vec4(v_pos,1.); }`;
+const FS_SURF=`#version 300 es
+precision highp float;
+in vec3 v_pos; out vec4 o;
+uniform float u_alpha,u_cz,u_R,u_pass,u_ga,u_fam,u_apo,u_px,u_lift;
+uniform vec3 u_paper,u_ink,u_muted,u_accent,u_blue,u_eye;
+const float PI=3.14159265358979;
+void main(){
+  vec2 p=v_pos.xy; float r2=dot(p,p); if(r2>u_R*u_R) discard;
+  float t=atan(2.*abs(p.y),r2-1.);
+  bool above=t>u_alpha;
+  if(u_pass<.5){ if(above) discard; } else if(!above) discard;
+  float Q=4.*p.y*p.y+(r2-1.)*(r2-1.);
+  vec2 g=vec2(-4.*p.x*abs(p.y),2.*(p.x*p.x-p.y*p.y-1.)*sign(p.y))/max(Q,1e-12);
+  vec3 n=normalize(vec3(-u_cz*g,1.));
+  float under=step(dot(n,normalize(u_eye-v_pos)),0.);
+  float lam=abs(dot(n,normalize(vec3(-.35,-.55,.76))));
+  vec3 base=mix(u_paper,u_ink,u_lift);
+  base=mix(base,u_accent,.05+.3*t/PI);
+  base=mix(base,u_muted,.3*under);
+  vec3 c=base*(.66+.42*lam); float a=u_pass<.5?1.:u_ga; float lift=min(1.,u_ga+.55);
+  float ft=max(fwidth(t),1e-7);
+  if(u_fam>.5){
+    float s=t*12./PI, fw=max(fwidth(s),1e-7), d=abs(fract(s+.5)-.5)/fw;
+    float m=(1.-smoothstep(.5*u_px,.5*u_px+1.,d))*(1.-smoothstep(.2,.5,fw))*step(.5,s)*step(s,11.5);
+    c=mix(c,u_muted,.7*m); a=mix(a,max(a,lift),m);
+  }
+  if(u_apo>.5){
+    float tau=.5*log(((p.x+1.)*(p.x+1.)+p.y*p.y)/((p.x-1.)*(p.x-1.)+p.y*p.y));
+    float s=tau/.35, fw=max(fwidth(s),1e-7), d=abs(fract(s+.5)-.5)/fw;
+    float m=(1.-smoothstep(.5*u_px,.5*u_px+1.,d))*(1.-smoothstep(.2,.5,fw));
+    c=mix(c,u_blue,.6*m); a=mix(a,max(a,lift),m);
+  }
+  float mb=1.-smoothstep(.8*u_px,.8*u_px+1.,abs(t-(PI-u_alpha))/ft);
+  c=mix(c,u_blue,mb); a=mix(a,max(a,lift),mb);
+  float ma=1.-smoothstep(1.4*u_px,1.4*u_px+1.,abs(t-u_alpha)/ft);
+  c=mix(c,u_accent,ma); a=mix(a,1.,ma);
+  o=vec4(c,a);
+}`;
+const VS_PLANE=`#version 300 es
+in vec2 a_pos; uniform mat4 u_vp; uniform float u_cz,u_alpha,u_R; out vec3 v_pos;
+void main(){ v_pos=vec3(a_pos*u_R,u_cz*u_alpha); gl_Position=u_vp*vec4(v_pos,1.); }`;
+const FS_PLANE=`#version 300 es
+precision highp float;
+in vec3 v_pos; out vec4 o;
+uniform float u_alpha,u_R,u_px; uniform vec3 u_muted,u_accent;
+void main(){
+  vec2 p=v_pos.xy; float r2=dot(p,p); if(r2>u_R*u_R) discard;
+  float t=atan(2.*abs(p.y),r2-1.), ft=max(fwidth(t),1e-7);
+  float ins=smoothstep(-.7,.7,(t-u_alpha)/ft);
+  vec3 c=mix(u_muted,u_accent,ins); float a=mix(.07,.2,ins);
+  float ma=1.-smoothstep(1.4*u_px,1.4*u_px+1.,abs(t-u_alpha)/ft);
+  c=mix(c,u_accent,ma); a=mix(a,1.,ma);
+  float rr=sqrt(r2), fr=max(fwidth(rr),1e-7), mr=1.-smoothstep(1.6*u_px,1.6*u_px+1.,(u_R-rr)/fr);
+  c=mix(c,u_muted,mr); a=mix(a,.55,mr);
+  o=vec4(c,a);
+}`;
+const VS_LINE=`#version 300 es
+in vec3 a_p; in vec3 a_q; in float a_s;
+uniform mat4 u_vp; uniform vec2 u_res; uniform float u_w;
+void main(){
+  vec4 P=u_vp*vec4(a_p,1.), Q=u_vp*vec4(a_q,1.);
+  vec2 d=(Q.xy/Q.w-P.xy/P.w)*u_res; float l=length(d); d=l>1e-6?d/l:vec2(1.,0.);
+  P.xy+=vec2(-d.y,d.x)*a_s*u_w/u_res*P.w; P.z-=.0008*P.w; gl_Position=P;
+}`;
+const FS_LINE=`#version 300 es
+precision highp float; uniform vec4 u_col; out vec4 o; void main(){ o=u_col; }`;
+
+function prog(vs,fs,attrs){
+  const p=gl.createProgram();
+  for(const [type,src] of [[gl.VERTEX_SHADER,vs],[gl.FRAGMENT_SHADER,fs]]){
+    const sh=gl.createShader(type); gl.shaderSource(sh,src); gl.compileShader(sh);
+    if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh));
+    gl.attachShader(p,sh);
+  }
+  attrs.forEach((n,i)=>gl.bindAttribLocation(p,i,n)); gl.linkProgram(p);
+  if(!gl.getProgramParameter(p,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  const u={}, nu=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);
+  for(let i=0;i<nu;i++){ const inf=gl.getActiveUniform(p,i); u[inf.name]=gl.getUniformLocation(p,inf.name); }
+  return {p,u};
+}
+/* mesh in bipolar coordinates (tau, sigma): x = sinh tau / (cosh tau - cos sigma), y = sin sigma / (same), height = sigma */
+function buildSurface(){
+  const NT=241, NS=140, Tm=7, kk=3.2, v=[], idx=[], taus=[], sigs=[];
+  for(let i=0;i<=NT;i++){ const s=-1+2*i/NT; taus.push(Tm*Math.sinh(kk*s)/Math.sinh(kk)); }
+  for(let j=0;j<=NS;j++) sigs.push(Math.PI*Math.pow(j/NS,1.4));
+  const lim=(1.2*RV)*(1.2*RV);
+  for(const side of [1,-1]){
+    const base=v.length/3;
+    for(let j=0;j<=NS;j++) for(let i=0;i<=NT;i++){
+      const den=Math.cosh(taus[i])-Math.cos(sigs[j]);
+      v.push(Math.sinh(taus[i])/den, side*Math.sin(sigs[j])/den, sigs[j]);
+    }
+    const far=k=>v[3*k]*v[3*k]+v[3*k+1]*v[3*k+1]>lim;
+    for(let j=0;j<NS;j++) for(let i=0;i<NT;i++){
+      const a=base+j*(NT+1)+i, b=a+1, c=a+NT+1, d=c+1;
+      if(!(far(a)&&far(b)&&far(c))) idx.push(a,b,c);
+      if(!(far(b)&&far(d)&&far(c))) idx.push(b,d,c);
+    }
+  }
+  return {v:new Float32Array(v),idx:new Uint32Array(idx)};
+}
+function initGL(){
+  if(gl) return true; if(glTried) return false; glTried=true;
+  try{
+    gl=glc.getContext('webgl2',{antialias:true,alpha:false}); if(!gl) return false;
+    G={surf:prog(VS_SURF,FS_SURF,['a_pos']),plane:prog(VS_PLANE,FS_PLANE,['a_pos']),line:prog(VS_LINE,FS_LINE,['a_p','a_q','a_s'])};
+    const m=buildSurface();
+    G.vaoS=gl.createVertexArray(); gl.bindVertexArray(G.vaoS);
+    gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER,m.v,gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,gl.createBuffer()); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,m.idx,gl.STATIC_DRAW);
+    G.nS=m.idx.length;
+    G.vaoP=gl.createVertexArray(); gl.bindVertexArray(G.vaoP);
+    gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+    G.vaoL=gl.createVertexArray(); gl.bindVertexArray(G.vaoL);
+    G.bufL=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,G.bufL);
+    for(const [i,n,off] of [[0,3,0],[1,3,12],[2,1,24]]){ gl.enableVertexAttribArray(i); gl.vertexAttribPointer(i,n,gl.FLOAT,false,28,off); }
+    gl.bindVertexArray(null);
+    return true;
+  }catch(err){ console.error(err); gl=null; return false; }
+}
+const sub3=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]], dot3=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross3=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm3=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/l,a[1]/l,a[2]/l];};
+function mul4(a,b){ const o=new Float32Array(16);
+  for(let c=0;c<4;c++) for(let r=0;r<4;r++){ let x=0; for(let k=0;k<4;k++) x+=a[k*4+r]*b[c*4+k]; o[c*4+r]=x; } return o; }
+function cam(){
+  const r=freeRect(), w=Math.max(60,r.x1-r.x0), h=Math.max(60,r.y1-r.y0), asp=w/h, c=S.cam;
+  const dist=c.dist*Math.max(1,1.25/asp), ce=Math.cos(c.el), tgt=[0,0,CZ*Math.PI*0.4];
+  const eye=[tgt[0]+dist*ce*Math.cos(c.az),tgt[1]+dist*ce*Math.sin(c.az),tgt[2]+dist*Math.sin(c.el)];
+  const f=norm3(sub3(tgt,eye)), rt=norm3(cross3(f,[0,0,1])), up=cross3(rt,f), tf=Math.tan(FOV/2), near=0.2, far=200, fl=1/tf;
+  const V=[rt[0],up[0],-f[0],0, rt[1],up[1],-f[1],0, rt[2],up[2],-f[2],0, -dot3(rt,eye),-dot3(up,eye),dot3(f,eye),1];
+  const Pm=[fl/asp,0,0,0, 0,fl,0,0, 0,0,(far+near)/(near-far),-1, 0,0,2*far*near/(near-far),0];
+  return {r,w,h,asp,eye,f,rt,up,tf,vp:mul4(Pm,V)};
+}
+function proj(p,C){
+  const m=C.vp, x=p[0],y=p[1],z=p[2], w=m[3]*x+m[7]*y+m[11]*z+m[15];
+  return {X:C.r.x0+((m[0]*x+m[4]*y+m[8]*z+m[12])/w*.5+.5)*C.w, Y:C.r.y0+(.5-(m[1]*x+m[5]*y+m[9]*z+m[13])/w*.5)*C.h};
+}
+const theta=(x,y)=>Math.atan2(2*Math.abs(y),x*x+y*y-1);
+/* where the pointer's ray meets the slicing plane (C on the locus) or the surface (C roams) */
+function pick3D(p){
+  const C=cam(), nx=(p.X-C.r.x0)/C.w*2-1, ny=1-(p.Y-C.r.y0)/C.h*2, e=C.eye;
+  const d=[0,1,2].map(i=>C.f[i]+C.rt[i]*nx*C.tf*C.asp+C.up[i]*ny*C.tf);
+  if(S.mode!=='free'){
+    if(Math.abs(d[2])<1e-6) return null; const t=(CZ*S.alpha-e[2])/d[2];
+    return t>0?{x:e[0]+t*d[0],y:e[1]+t*d[1]}:null;
+  }
+  const g=t=>e[2]+t*d[2]-CZ*theta(e[0]+t*d[0],e[1]+t*d[1]);
+  let t0=0,g0=g(0); const N=2400, step=80/N;
+  for(let i=1;i<=N;i++){
+    const t1=i*step, g1=g(t1);
+    if((g0>0)!==(g1>0)){
+      let lo=t0,hi=t1,gl0=g0; for(let k=0;k<40;k++){ const mid=(lo+hi)/2, gm=g(mid); if((gm>0)===(gl0>0)){lo=mid;gl0=gm;} else hi=mid; }
+      const x=e[0]+lo*d[0], y=e[1]+lo*d[1]; if(x*x+y*y<RV*RV) return {x,y};
+    }
+    t0=t1; g0=g1;
+  }
+  return null;
+}
+function rgb(h){ const n=parseInt(h.replace('#',''),16); return [(n>>16&255)/255,(n>>8&255)/255,(n&255)/255]; }
+function draw3D(){
+  if(!gl) return;
+  const C=cam(), al=S.alpha, zp=CZ*al, cl=apex(S.side,S.t,al), k=1/Math.tan(al);
+  const K={}; for(const n in col) K[n]=rgb(col[n]);
+  gl.viewport(Math.round(C.r.x0*DPR),Math.round((H-C.r.y0-C.h)*DPR),Math.round(C.w*DPR),Math.round(C.h*DPR));
+  gl.clearColor(K.paper[0],K.paper[1],K.paper[2],1); gl.depthMask(true); gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.CULL_FACE);
+  gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+
+  /* surface */
+  let P=G.surf; gl.useProgram(P.p); gl.bindVertexArray(G.vaoS);
+  gl.uniformMatrix4fv(P.u.u_vp,false,C.vp); gl.uniform1f(P.u.u_cz,CZ); gl.uniform1f(P.u.u_alpha,al); gl.uniform1f(P.u.u_R,RV);
+  gl.uniform1f(P.u.u_px,DPR); gl.uniform1f(P.u.u_fam,$('ckFam').checked?1:0); gl.uniform1f(P.u.u_apo,$('ckApo').checked?1:0);
+  gl.uniform3fv(P.u.u_eye,C.eye);
+  gl.uniform1f(P.u.u_lift,(K.paper[0]+K.paper[1]+K.paper[2])/3<.5?.17:.06);
+  for(const n of ['paper','ink','muted','accent','blue']) gl.uniform3fv(P.u['u_'+n],K[n]);
+  gl.disable(gl.BLEND); gl.uniform1f(P.u.u_pass,0); gl.uniform1f(P.u.u_ga,1);
+  gl.drawElements(gl.TRIANGLES,G.nS,gl.UNSIGNED_INT,0);
+  if(S.cap==='solid'){ gl.uniform1f(P.u.u_pass,1); gl.drawElements(gl.TRIANGLES,G.nS,gl.UNSIGNED_INT,0); }
+
+  /* slicing plane */
+  gl.enable(gl.BLEND); gl.depthMask(false);
+  P=G.plane; gl.useProgram(P.p); gl.bindVertexArray(G.vaoP);
+  gl.uniformMatrix4fv(P.u.u_vp,false,C.vp); gl.uniform1f(P.u.u_cz,CZ); gl.uniform1f(P.u.u_alpha,al); gl.uniform1f(P.u.u_R,RV); gl.uniform1f(P.u.u_px,DPR);
+  gl.uniform3fv(P.u.u_muted,K.muted); gl.uniform3fv(P.u.u_accent,K.accent);
+  gl.drawArrays(gl.TRIANGLES,0,6);
+
+  /* lines: poles, the triangle in the slice, optional extras */
+  const A3=[-1,0,zp], B3=[1,0,zp], C3=[cl.x,cl.y,zp], top=CZ*Math.PI;
+  const rl=Math.hypot(C.rt[0],C.rt[1])||1, rx=RV*C.rt[0]/rl, ry=RV*C.rt[1]/rl;   /* ruler: rim point on the camera's right */
+  const batches=[{c:[...K.ink,.85],w:1.4,s:[[[-1,0,0],[-1,0,top]],[[1,0,0],[1,0,top]]]},{c:[...K.muted,.9],w:1.2,s:[[[rx,ry,0],[rx,ry,top]]]}];
+  if($('ckGhost').checked){ const s=[]; for(let i=1;i<10;i++){ const g=apex(S.side,i/10,al), q=[g.x,g.y,zp]; s.push([A3,q],[q,B3]); } batches.push({c:[...K.accent,.5],w:1,s}); }
+  if($('ckCon').checked){ const O=[0,S.side*k,zp]; batches.push({c:[...K.gold,.9],w:1.2,s:[[A3,O],[O,B3],[O,C3]]}); }
+  batches.push({c:[...K.ink,1],w:2.4,s:[[A3,B3]]},{c:[...K.ink,1],w:1.8,s:[[A3,C3],[C3,B3]]});
+  P=G.line; gl.useProgram(P.p); gl.bindVertexArray(G.vaoL); gl.bindBuffer(gl.ARRAY_BUFFER,G.bufL);
+  gl.uniformMatrix4fv(P.u.u_vp,false,C.vp); gl.uniform2f(P.u.u_res,C.w*DPR,C.h*DPR);
+  for(const b of batches){
+    const d=[]; for(const [p,q] of b.s) d.push(...p,...q,1, ...p,...q,-1, ...q,...p,-1, ...p,...q,-1, ...q,...p,1, ...q,...p,-1);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(d),gl.DYNAMIC_DRAW);
+    gl.uniform4fv(P.u.u_col,b.c); gl.uniform1f(P.u.u_w,b.w*DPR); gl.drawArrays(gl.TRIANGLES,0,b.s.length*6);
+  }
+
+  /* the part of the surface above the slice, as a ghost */
+  if(S.cap==='ghost'){
+    P=G.surf; gl.useProgram(P.p); gl.bindVertexArray(G.vaoS);
+    gl.uniform1f(P.u.u_pass,1); gl.uniform1f(P.u.u_ga,.2); gl.drawElements(gl.TRIANGLES,G.nS,gl.UNSIGNED_INT,0);
+  }
+  gl.depthMask(true); gl.bindVertexArray(null);
+
+  /* labels */
+  ctx.setTransform(DPR,0,0,DPR,0,0); ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle=col.muted; ctx.lineWidth=1;
+  for(let d=0;d<=180;d+=30){
+    const q=proj([rx,ry,CZ*d*DEG],C);
+    ctx.beginPath(); ctx.moveTo(q.X,q.Y); ctx.lineTo(q.X+6,q.Y); ctx.stroke();
+    if(Math.abs(d-al/DEG)>9) label(piFrac(d/15),q.X+10,q.Y,col.muted,'11.5px ui-serif,Georgia,serif','left');
+  }
+  const qa=proj([rx,ry,zp],C);
+  ctx.strokeStyle=col.accent; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(qa.X-5,qa.Y); ctx.lineTo(qa.X+7,qa.Y); ctx.stroke();
+  label('α = '+al.toFixed(3),qa.X+11,qa.Y,col.accent,'italic 13px ui-serif,Georgia,serif','left');
+  marks(proj(A3,C),proj(B3,C),proj(C3,C),al);
+}
+
+/* ---------- interaction ---------- */
+function setC(Pw){ setCLocal(W2L(Pw,frame())); }
+function setCLocal(q){
+  if(S.mode==='free'){
+    const ax=-1-q.x, ay=-q.y, bx=1-q.x, by=-q.y;
+    S.alpha=clamp(Math.atan2(Math.abs(ax*by-ay*bx),ax*bx+ay*by),AMIN,AMAX);
+  }
+  if(Math.abs(q.y)>1e-9) S.side=q.y>0?1:-1;
+  const al=S.alpha, k=1/Math.tan(al), span=TAU-2*al;
+  const dd=mod(Math.atan2(S.side*q.y-k,q.x)-(al-Math.PI/2),TAU);
+  let t = dd<=span ? dd/span : (dd-span<(TAU-span)/2 ? 1 : 0);
+  S.t=clamp(t,0.004,0.996);
+}
+let drag=null;
+function pos(e){ const r=cv.getBoundingClientRect(); return {X:e.clientX-r.left,Y:e.clientY-r.top}; }
+function hit(p,touch){
+  if(S.dim==='3d'){
+    const C=cam(), cl=apex(S.side,S.t,S.alpha), s=proj([cl.x,cl.y,CZ*S.alpha],C);
+    return Math.hypot(s.X-p.X,s.Y-p.Y)<(touch?28:15)?'C':null;
+  }
+  const f=frame(), cl=apex(S.side,S.t,S.alpha);
+  const cw={x:f.M.x+f.a*(cl.x*f.u.x+cl.y*f.n.x),y:f.M.y+f.a*(cl.x*f.u.y+cl.y*f.n.y)};
+  const R=touch?28:15; let best=null,bd=R;
+  for(const [name,Pw] of [['C',cw],['A',S.A],['B',S.B]]){
+    const s=W2S(Pw), dist=Math.hypot(s.X-p.X,s.Y-p.Y); if(dist<bd){bd=dist;best=name;}
+  }
+  return best;
+}
+cv.addEventListener('pointerdown',e=>{
+  const p=pos(e), h=hit(p,e.pointerType==='touch');
+  drag={what:h||'pan',last:p}; cv.setPointerCapture(e.pointerId);
+  if(h==='C'){ stopSlide(); if(S.mode==='free') stopSweep(); }
+  cv.style.cursor='grabbing'; e.preventDefault();
+});
+cv.addEventListener('pointermove',e=>{
+  const p=pos(e);
+  if(!drag){ cv.style.cursor=hit(p,false)?'grab':'default'; return; }
+  if(S.dim==='3d'){
+    if(drag.what==='C'){ const q=pick3D(p); if(q) setCLocal(q); }
+    else { S.cam.az-=(p.X-drag.last.X)*0.008; S.cam.el=clamp(S.cam.el+(p.Y-drag.last.Y)*0.008,-0.3,1.56); }
+    drag.last=p; requestDraw(); return;
+  }
+  if(drag.what==='pan'){ S.view.cx+=p.X-drag.last.X; S.view.cy+=p.Y-drag.last.Y; S.userView=true; }
+  else if(drag.what==='C') setC(S2W(p.X,p.Y));
+  else {
+    const w=S2W(p.X,p.Y), other=drag.what==='A'?S.B:S.A;
+    if(Math.hypot(w.x-other.x,w.y-other.y)>0.08){ S[drag.what]=w; }
+  }
+  drag.last=p; requestDraw();
+});
+function endDrag(){ drag=null; cv.style.cursor='default'; }
+cv.addEventListener('pointerup',endDrag); cv.addEventListener('pointercancel',endDrag);
+cv.addEventListener('wheel',e=>{
+  e.preventDefault(); const p=pos(e), z=Math.exp(-e.deltaY*0.0015), v=S.view;
+  if(S.dim==='3d'){ S.cam.dist=clamp(S.cam.dist/z,3.5,40); requestDraw(); return; }
+  const s2=clamp(v.s*z,8,4000), r=s2/v.s;
+  v.cx=p.X+(v.cx-p.X)*r; v.cy=p.Y+(v.cy-p.Y)*r; v.s=s2; S.userView=true; requestDraw();
+},{passive:false});
+
+function stopSweep(){ S.sweep=false; $('bSweep').classList.remove('on'); $('bSweep').textContent='sweep α'; }
+function stopSlide(){ S.slide=false; $('bSlide').classList.remove('on'); $('bSlide').textContent='slide C'; }
+$('al').addEventListener('input',e=>{ stopSweep(); S.alpha=clamp(+e.target.value,1,179)*DEG; requestDraw(); });
+for(const d of [30,45,60,90,120,150]){
+  const bt=document.createElement('button'); bt.textContent=piFrac(d/15);
+  bt.addEventListener('click',()=>{ stopSweep(); S.alpha=d*DEG; requestDraw(); });
+  $('presets').appendChild(bt);
+}
+$('mode').addEventListener('click',e=>{
+  const bt=e.target.closest('button'); if(!bt) return;
+  S.mode=bt.dataset.mode; for(const x of $('mode').children) x.classList.toggle('on',x===bt);
+});
+for(const id of ['ckCon','ckGhost','ckFam','ckApo']) $(id).addEventListener('change',requestDraw);
+let famAuto=false;
+$('dim').addEventListener('click',e=>{
+  const bt=e.target.closest('button'); if(!bt) return;
+  if(bt.dataset.dim==='3d'&&!initGL()){ bt.textContent='3D needs WebGL2'; bt.disabled=true; return; }
+  S.dim=bt.dataset.dim; for(const x of $('dim').children) x.classList.toggle('on',x===bt);
+  document.body.classList.toggle('d3',S.dim==='3d'); $('capRow').hidden=S.dim!=='3d';
+  if(S.dim==='3d'&&!famAuto){ famAuto=true; $('ckFam').checked=true; }
+  if(!S.userView) fitView(); requestDraw();
+});
+$('cap').addEventListener('click',e=>{
+  const bt=e.target.closest('button'); if(!bt) return;
+  S.cap=bt.dataset.cap; for(const x of $('cap').children) x.classList.toggle('on',x===bt); requestDraw();
+});
+$('bSweep').addEventListener('click',()=>{
+  if(S.sweep){ stopSweep(); return; }
+  S.sweep=true; S.sweepPhase=Math.asin(clamp((S.alpha/DEG-90)/84,-1,1));
+  $('bSweep').classList.add('on'); $('bSweep').textContent='pause α'; requestDraw();
+});
+$('bSlide').addEventListener('click',()=>{
+  if(S.slide){ stopSlide(); return; }
+  S.slide=true; $('bSlide').classList.add('on'); $('bSlide').textContent='pause C'; requestDraw();
+});
+$('bReset').addEventListener('click',()=>{
+  stopSweep(); stopSlide(); S.A={x:-1,y:0}; S.B={x:1,y:0}; S.alpha=60*DEG; S.side=1; S.t=0.33; S.userView=false; S.cam={az:-1.08,el:0.46,dist:9.4}; fitView(); requestDraw();
+});
+document.querySelector('details').addEventListener('toggle',()=>{ if(!S.userView) fitView(); requestDraw(); });
+window.addEventListener('resize',resize);
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ readColors(); requestDraw(); });
+
+readColors(); resize();
+})();
+</script>
+</body>
+</html>
