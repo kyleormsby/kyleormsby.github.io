@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rational tangle dance</title>
+<style>
+  :root{
+    --paper:#f4efe5; --ink:#17140f; --muted:#6d6457; --panel:rgba(244,239,229,.88); --line:rgba(23,20,15,.15);
+    --accent:#a2462a; --blue:#2f5f9c; --faint:rgba(23,20,15,.07); --gold:#b0841f; --green:#4c7a4a; --plum:#7a4c7e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#14120f; --ink:#ebe4d6; --muted:#9a9184; --panel:rgba(20,18,15,.88); --line:rgba(235,228,214,.17);
+      --accent:#e08a62; --blue:#7fa8de; --faint:rgba(235,228,214,.07); --gold:#e0b858; --green:#8fc08a; --plum:#c79acb; }
+  }
+  html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font:14px/1.45 ui-serif,Georgia,"Iowan Old Style",serif}
+  #wrap{display:grid;grid-template-columns:330px minmax(0,1fr) minmax(0,1fr);gap:14px;padding:14px;box-sizing:border-box;min-height:100vh;align-items:start}
+  #panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;box-shadow:0 8px 30px rgba(0,0,0,.12);box-sizing:border-box}
+  #panel h1{font-size:17px;margin:0 0 2px;font-weight:600;letter-spacing:.01em}
+  .stats{color:var(--muted);font-size:12.5px;margin:0 0 6px}
+  .fig{border:1px solid var(--line);border-radius:10px;padding:8px 8px 4px;box-sizing:border-box}
+  .fig h2{font-size:12.5px;font-weight:400;color:var(--muted);margin:0 0 2px 4px;letter-spacing:.02em}
+  .fig svg,.fig canvas{display:block;width:100%;height:auto;max-height:calc(100vh - 80px);margin:0 auto}
+  .fig canvas#tangle{aspect-ratio:560/500;width:auto;max-width:100%}
+  #fwrap{position:relative;aspect-ratio:1;width:min(100%,calc(100vh - 110px));margin:0 auto}
+  #fwrap canvas,#fwrap svg{position:absolute;inset:0;width:100%;height:100%;max-height:none}
+  #fwrap svg{touch-action:none;cursor:grab}
+  .zb{float:right}.zb button{font-size:11.5px;padding:1px 7px;margin-left:4px}
+  .hintline{font-size:11.5px;color:var(--muted);text-align:center;margin:2px 0}
+  #cur{font-size:34px;margin:6px 0 6px;display:flex;align-items:center;gap:12px;min-height:74px}
+  #cur .lab{font-size:14px;color:var(--muted)}
+  #status{font-size:13px;min-height:20px}
+  #status b{color:var(--accent)}
+  .kv{font-size:13px;margin:3px 0;font-variant-numeric:tabular-nums}
+  .kv span.k{color:var(--muted)}
+  #log{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;letter-spacing:.06em;word-break:break-all;line-height:1.5;max-height:66px;overflow:auto}
+  #log .t{color:var(--blue)} #log .r{color:var(--accent)}
+  .btns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  button{font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 11px;cursor:pointer}
+  button:hover{border-color:var(--ink)}
+  button.primary{background:var(--ink);color:var(--paper);border-color:var(--ink);font-size:15px;padding:6px 14px}
+  button kbd{font:inherit;font-size:11px;opacity:.6;margin-left:5px}
+  details{margin-top:9px}
+  details summary{cursor:pointer;color:var(--muted);font-size:12.5px;user-select:none}
+  details p{margin:6px 0;font-size:13px}
+  .m{font-style:italic}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;font-variant-numeric:tabular-nums;margin:0 .1em}
+  .frac>span:first-child{border-bottom:2px solid currentColor;padding:0 .15em}
+  svg text{font-family:ui-serif,Georgia,serif;fill:var(--ink)}
+  @media (max-width:980px){ #wrap{grid-template-columns:1fr} .fig svg{max-height:70vh} }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="panel">
+    <h1>Rational tangle dance</h1>
+    <div class="stats">Four dancers, two ropes, two moves (after John Conway)</div>
+    <div id="cur"><span class="lab">tangle number</span><span id="xv"></span></div>
+    <div id="status"></div>
+    <div class="btns">
+      <button id="twist" class="primary">Twist<kbd>T</kbd></button>
+      <button id="rotate" class="primary">Rotate<kbd>R</kbd></button>
+    </div>
+    <div class="btns">
+      <button id="hint">untangle one step<kbd>U</kbd></button>
+      <button id="auto">untangle all</button>
+      <button id="scramble">scramble<kbd>S</kbd></button>
+      <button id="reset">reset</button>
+    </div>
+    <div class="kv" style="margin-top:10px"><span class="k">continued fraction</span> <span id="cf"></span></div>
+    <div class="kv"><span class="k">Farey edges from ∞</span> <b id="hops"></b></div>
+    <div class="kv" id="chain" style="color:var(--accent)"></div>
+    <div class="kv"><span class="k">crossings</span> <b id="ncross"></b></div>
+    <div class="kv"><span class="k">moves so far</span></div>
+    <div id="log"></div>
+    <details open><summary>what is this?</summary>
+      <p>Two ropes are held at their ends by four dancers. <b>Twist</b>: the two dancers on the right swap places, the one walking down passing in front. <b>Rotate</b>: everyone moves a quarter turn clockwise.</p>
+      <p>Conway’s theorem: the tangle is determined by a single number in ℚ ∪ {∞}. The ropes start parallel at 0, twist sends <span class="m">x</span> to <span class="m">x</span> + 1, and rotate sends <span class="m">x</span> to −1/<span class="m">x</span>. The ropes are drawn as a reduced diagram in a square box, in the style of David Austin’s AMS Feature Column “Untangling Your Square Dance”: tight braids of twists, all turning the same way, with as many crossings as the terms of the continued fraction add up to. Nothing is ever redrawn: a twist adds or undoes a crossing on the right, and a rotation turns the whole box.</p>
+      <p>On the right is the Farey tessellation of the hyperbolic disk. Twist is the symmetry that slides everything around ∞; rotate is the half turn about the center. The heavy path runs along Farey edges from ∞ through the convergents of the continued fraction to the current tangle. Twisting never changes its length; untangling means shortening it to nothing.</p>
+      <p>To untangle: if the number is positive, rotate; if it is negative, twist. That is Euclid’s algorithm.</p>
+    </details>
+  </div>
+  <div class="fig"><h2>the ropes</h2><canvas id="tangle" width="560" height="500"></canvas></div>
+  <div class="fig"><h2>the Farey tessellation <span class="zb"><button id="zin" title="zoom in">+</button><button id="zout" title="zoom out">−</button><button id="zfind" title="zoom to the current tangle">find x</button><button id="zreset" title="whole disk">reset</button></span></h2>
+    <div id="fwrap"><canvas id="fareyc"></canvas><svg id="farey" viewBox="0 0 500 500"></svg></div>
+    <div class="hintline">scroll or pinch to zoom, drag to pan, double-click to reset</div></div>
+</div>
+<script>
+(function(){
+'use strict';
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+function el(n,a,txt){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;return e;}
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a;};
+const fracHTML=(p,q)=>q===0?'∞':(q===1?String(p).replace('-','−'):'<span class="frac"><span>'+String(p).replace('-','−')+'</span><span>'+q+'</span></span>');
+const fracTxt=(p,q)=>q===0?'∞':(q===1?String(p):p+'/'+q).replace('-','−');
+
+// ---------- state ----------
+let p=0,q=1;                       // tangle number p/q, q >= 0, ∞ = 1/0
+let dancers={NW:'A',NE:'B',SE:'C',SW:'D'};   // A,B hold rope 1; C,D hold rope 2
+let log=[];
+const ROPE={A:1,B:1,C:2,D:2};
+const DCOL={A:'var(--accent)',B:'var(--gold)',C:'var(--blue)',D:'var(--green)'};
+const RCOL={1:'var(--accent)',2:'var(--blue)'};
+const BIG=1e13;
+
+function norm(){if(q<0){p=-p;q=-q;}if(q===0)p=1;const g=gcd(p,q)||1;p/=g;q/=g;}
+function doTwist(){p+=q;norm();[dancers.NE,dancers.SE]=[dancers.SE,dancers.NE];log.push('T');}
+function doRotate(){[p,q]=[-q,p];norm();dancers={NE:dancers.NW,SE:dancers.NE,SW:dancers.SE,NW:dancers.SW};log.push('R');}
+const nextMove=()=>q===0?'R':(p===0?null:(p>0?'R':'T'));
+
+// continued fraction with a0 = floor, later terms positive; ∞ -> []
+function cfOf(P,Q){const a=[];if(Q===0)return a;let x=P,y=Q;while(y){const f=Math.floor(x/y);a.push(f);[x,y]=[y,x-f*y];}return a;}
+function convergents(a){const out=[];let h0=1,k0=0,h1=0,k1=1;/* h_{-1}/k_{-1} = 1/0 */
+  let hm=0,km=1,h=1,k=0;a.forEach(t=>{[hm,km,h,k]=[h,k,t*h+hm,t*k+km];out.push([h,k]);});return out;}
+
+// ---------- the diagram ----------
+// Drawn the way David Austin draws them (AMS Feature Column, Aug 2017): a square tangle box with the four ends at its corners;
+// each run of twists is a tight braid, pinched at both ends; the picture built so far sits inside the next braids.
+// A diagram is {base, s, lv}: base 0 (two horizontal strands) or 1 (two vertical strands, the tangle ∞); lv lists the levels from
+// the inside out, alternately horizontal (h: a crossings on the west, b on the east) and vertical (a on the north, b on the south);
+// every crossing has the same sign s, so the diagram is reduced. Rotating the box permutes the sides; nothing is ever redrawn.
+function dgNorm(D){let lv=D.lv.map(L=>({h:L.h,a:L.a,b:L.b})),base=D.base,ch=true;
+  while(ch){ch=false;lv=lv.filter(L=>L.a+L.b>0);
+    for(let i=0;i+1<lv.length;i++)if(lv[i].h===lv[i+1].h){lv[i+1]={h:lv[i].h,a:lv[i].a+lv[i+1].a,b:lv[i].b+lv[i+1].b};lv.splice(i,1);ch=true;break;}
+    if(ch)continue;
+    if(lv.length&&lv[0].h!==(base===0)){lv.shift();ch=true;continue;}             // twists that are only kinks
+    if(lv.length>=2&&lv[0].a+lv[0].b===1){lv.shift();base=1-base;lv[0].b++;ch=true;}  // a lone crossing belongs to the next braid
+  }
+  return {base,s:lv.length?D.s:1,lv};}
+function dgOf(P,Q){const a=cfOf(Math.abs(P),Q),n=a.length,lv=[];for(let i=n-1;i>=0;i--)lv.push({h:i%2===0,a:0,b:a[i]});
+  return dgNorm({base:n?(n-1)%2:1,s:P<0?-1:1,lv});}
+const dgRot=D=>({base:1-D.base,s:-D.s,lv:D.lv.map(L=>L.h?{h:false,a:L.a,b:L.b}:{h:true,a:L.b,b:L.a})});      // clockwise
+const dgRotBack=D=>({base:1-D.base,s:-D.s,lv:D.lv.map(L=>L.h?{h:false,a:L.b,b:L.a}:{h:true,a:L.a,b:L.b})});  // anticlockwise
+function dgTwist(D){   // one more crossing on the east side; returns [new diagram, what happened]
+  const lv=D.lv.map(L=>({h:L.h,a:L.a,b:L.b})),n=lv.length,top=lv[n-1];let s=D.s,kind;
+  if(!n){if(D.base===0){lv.push({h:true,a:0,b:1});s=1;kind='new';}else kind='none';}
+  else if(top.h){
+    if(s>0){top.b++;kind='extend';}
+    else if(n===1||top.b>0){if(top.b>0)top.b--;else top.a--;kind='cancel';}
+    else{top.a--;for(let i=0;i<n-1;i++)if(!lv[i].h)[lv[i].a,lv[i].b]=[lv[i].b,lv[i].a];kind='flip';}   // a flype: what is inside turns over
+  }else if(s>0){lv.push({h:true,a:0,b:1});kind='new';}
+  else{   // the new crossing and one crossing of the vertical braid trade for a quarter turn of everything inside
+    const south=n===1||top.b>0;if(top.b>0)top.b--;else top.a--;
+    const B={base:D.base,s,lv},Rt=south?dgRot(B):dgRotBack(B);Rt.lv.push({h:false,a:south?1:0,b:south?0:1});
+    return [dgNorm(Rt),south?'turnCW':'turnCCW'];}
+  return [dgNorm({base:D.base,s,lv}),kind];}
+function dgValue(D){let n=D.base?1:0,d=D.base?0:1;D.lv.forEach(L=>{const k=D.s*(L.a+L.b);if(L.h)n+=k*d;else d+=k*n;});
+  if(d<0){n=-n;d=-d;}if(d===0)n=1;return [n,d];}
+
+// opt.ghost = {lvl, arm:'a'|'b', pos:'start'|'end', w, tau}: one crossing of that braid is being made or undone: it has width w
+// (0..1) and is twisted by the fraction tau of a half turn; everything beyond it is turned about the braid's axis to match.
+// opt.rho: the picture inside the top level is turned over by this angle (a flype in progress).
+function buildTangle(D,opt){
+  opt=opt||{};const gh=opt.ghost?Object.assign({},opt.ghost,{w:Math.max(opt.ghost.w,2e-3)}):null,rho=opt.rho||0,planIn=opt.plan||null,plan=[],sp=opt.special||null;
+  const S=400,H2=S/2,paths=[],DM=46,nl=D.lv.length,tail={};let minD=DM,ncross=0,blendArc=1;
+  const key=e=>e[0]+','+e[1];
+  const tip=e=>{const pa=paths[e[0]];return e[1]?pa[pa.length-1]:pa[0];};
+  const prev=e=>{const pa=paths[e[0]];return e[1]?pa[pa.length-2]:pa[1];};
+  const ext=(e,pt)=>{const pa=paths[e[0]];if(e[1])pa.push(pt);else pa.unshift(pt);return pt;};
+  const unit=(x,y)=>{const l=Math.hypot(x,y)||1;return [x/l,y/l];};
+  const orient=(a,b,c)=>(b.x-a.x)*(c.y-a.y)-(b.y-a.y)*(c.x-a.x);
+  const hit=(a,b,c,e)=>orient(a,b,c)*orient(a,b,e)<0&&orient(c,e,a)*orient(c,e,b)<0;
+  const sd=(p,a,b)=>{const vx=b.x-a.x,vy=b.y-a.y,l=vx*vx+vy*vy,t=l?Math.max(0,Math.min(1,((p.x-a.x)*vx+(p.y-a.y)*vy)/l)):0;return Math.hypot(p.x-a.x-t*vx,p.y-a.y-t*vy);};
+  const cubic=(C,P1,P2,B,M)=>{const o=[];for(let m=1;m<=M;m++){const t=m/M,r=1-t;o.push({x:r*r*r*C.x+3*r*r*t*P1.x+3*r*t*t*P2.x+t*t*t*B.x,y:r*r*r*C.y+3*r*r*t*P1.y+3*r*t*t*P2.y+t*t*t*B.y});}return o;};
+  const zline=(z0,pts,z1)=>{let L=0,q=pts[0];const c=pts.map((p,i)=>{if(i)L+=Math.hypot(p.x-q.x,p.y-q.y);q=p;return L;});pts.forEach((p,i)=>{p.z=lerp(z0,z1,L?c[i]/L:1);});return pts;};
+  const resampleK=(pts,K)=>{const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y));
+    const L=cum[cum.length-1],o=[];let j=0;
+    for(let i=0;i<=K;i++){const t=L*i/K;while(j<pts.length-2&&cum[j+1]<t)j++;const f=cum[j+1]>cum[j]?clamp((t-cum[j])/(cum[j+1]-cum[j])):0,a=pts[j],b=pts[j+1];
+      o.push({x:lerp(a.x,b.x,f),y:lerp(a.y,b.y,f),z:lerp(a.z||0,b.z||0,f)});}
+    return o;};
+  // is the curve pts, leaving the loose end e, clear of everything drawn so far?
+  const clear=(pts,e,cl)=>{const A0=tip(e),B0=prev(e),all=[A0].concat(pts),n=all.length;
+    for(const pa of paths)for(let i=0;i+1<pa.length;i++){const A=pa[i],B=pa[i+1];if((A===A0&&B===B0)||(A===B0&&B===A0))continue;
+      for(let j=0;j+1<n;j++)if(hit(all[j],all[j+1],A,B))return false;
+      if(cl>0)for(let j=Math.round(0.3*n);j<0.7*n;j++)if(sd(all[j],A,B)<cl)return false;}
+    return true;};
+  // a straight strand from a loose end to Cn, with a small rounded turn where it leaves the braid
+  const fanPts=(e,Cn)=>{const B=tip(e),Q=prev(e),[ux,uy]=unit(B.x-Q.x,B.y-Q.y),len=Math.hypot(Cn.x-B.x,Cn.y-B.y);if(len<1e-6)return [{x:Cn.x,y:Cn.y}];
+    const [dx,dy]=unit(Cn.x-B.x,Cn.y-B.y),r=Math.min(0.4*len,26),E={x:B.x+dx*r,y:B.y+dy*r};
+    return cubic(B,{x:B.x+ux*0.45*r,y:B.y+uy*0.45*r},{x:E.x-dx*0.45*r,y:E.y-dy*0.45*r},E,8).concat([{x:Cn.x,y:Cn.y}]);};
+  // join a loose end to the start B of a braid (arriving along (dx,dy)) as directly as possible; W is the way round if the direct way is blocked
+  const connect=(e,B,dx,dy,W,cl,pres)=>{const C=tip(e),Q=prev(e),[ux,uy]=unit(C.x-Q.x,C.y-Q.y),h=0.4*Math.hypot(B.x-C.x,B.y-C.y);
+    const mk=l=>cubic(C,{x:lerp(C.x+ux*h,W.x,l),y:lerp(C.y+uy*h,W.y,l)},{x:lerp(B.x-dx*h,W.x,l),y:lerp(B.y-dy*h,W.y,l)},B,22);
+    let pts=null,lam=1;
+    if(planIn){lam=planIn[plan.length];if(lam==null)lam=1;pts=mk(lam);}
+    else{for(const c of [cl,0]){for(const l of [0,0.25,0.5,0.75,1]){const t=mk(l);if(clear(t,e,c)){pts=t;lam=l;break;}}if(pts)break;}if(!pts)pts=mk(1);}
+    plan.push(lam);
+    if(pres<1){const a=resampleK([C].concat(fanPts(e,B)),22).slice(1),b=resampleK([C].concat(pts),22).slice(1);pts=a.map((q,i)=>({x:lerp(q.x,b[i].x,pres),y:lerp(q.y,b[i].y,pres)}));}
+    zline(C.z||0,pts,B.z||0).forEach(pt=>ext(e,pt));};
+  const flare=d=>d<0.4999?(Math.PI/2)*(1-2*d)/Math.cos(Math.PI*d):1;
+  function lay(i,map,Wp,Hp){
+    const L=D.lv[i],Hb=L.h,sg=L.sg||D.s,zs=Hb?sg:-sg,inner=i>0,G=gh&&gh.lvl===i?gh:null;
+    // (s,t): s runs along the braids (eastwards for a horizontal level, southwards for a vertical one), t across them
+    const P=Hb?(s,t)=>map(s,t):(s,t)=>map(t,1-s);
+    const cs=Hb?{a1:'NW',a0:'SW',b1:'NE',b0:'SE'}:{a1:'NE',a0:'NW',b1:'SE',b0:'SW'};
+    const ga=G&&inner&&G.arm==='a'?G:null,gb=G&&inner&&G.arm==='b'?G:null;
+    const ra=L.a-(ga?1:0),rb=L.b-(gb?1:0),pa=ga&&!ra?ga.w:1,pb=gb&&!rb?gb.w:1,ea=ra+(ga?ga.w:0),eb=rb+(gb?gb.w:0);
+    const k0=L.a+L.b-(G&&!inner?1:0),ke=inner?ea+eb:k0+(G?G.w:0);
+    const La=Hb?Wp:Hp,Lc=Hb?Hp:Wp,both=inner?Math.min(L.a?pa:0,L.b?pb:0):0,dp=Math.min(DM,0.15*La,(inner?lerp(0.36,0.3,both):0.62)*La/Math.max(ke,0.2)),ds=dp/La,g=Math.min(0.14,0.33*dp/Lc);
+    minD=Math.min(minD,dp);
+    // a braid of cnt crossings from s0 (plus the crossing in the making, if any); returns the angle the strands have turned through
+    const braid=(Pf,s0,cnt,Gh,pres,U,Lo,create,armName)=>{const w=Gh?Gh.w:0,Ls=cnt+w,sig=[];
+      const st=Gh&&Gh.pos==='start';
+      if(st){for(let j=0;j<=10;j++)if(w>0||j===0)sig.push(w*j/10);for(let m=1;m<=10*cnt;m++)sig.push(w+m/10);}
+      else{for(let m=0;m<=10*cnt;m++)sig.push(m/10);if(w>0)for(let j=1;j<=10;j++)sig.push(cnt+w*j/10);}
+      const Aof=x=>!Gh?Math.PI*x:st?(x<w?Math.PI*(1-Gh.tau)+Math.PI*Gh.tau*x/(w||1):Math.PI+Math.PI*(x-w)):(x<=cnt?Math.PI*x:Math.PI*cnt+Math.PI*Gh.tau*(x-cnt)/(w||1));
+      const gj=Gh&&Gh.tau>0.5?Math.round(10/(2*Gh.tau)):-1;
+      sig.forEach((x,idx)=>{const A=Aof(x),env=lerp(0.5,g*flare(Math.min(x,Ls-x)),pres),c=env*Math.cos(A),bz=Math.max(-1,Math.min(1,2.4*Math.sin(A)))*zs;
+        const pu=Pf(s0+x*ds,0.5+c),pl=Pf(s0+x*ds,0.5-c);pu.z=bz;pl.z=-bz;
+        const xr=st?x-w:x,jr=Math.round(xr-0.5);
+        if(xr>0&&xr<cnt&&Math.abs(xr-0.5-jr)<1e-6){const spc=sp&&sp.lvl===i&&(inner?sp.arm===armName&&jr===cnt-1:(sp.arm==='a'?jr===0:jr===cnt-1));pu.c=pl.c=spc?2:1;}
+        if(Gh&&w>0&&gj>=0&&(st?idx===gj:idx===10*cnt+gj))pu.c=pl.c=2;
+        if(idx===0&&!create)return;
+        if(idx===0){paths.push([pu],[pl]);}else{ext(U,pu);ext(Lo,pl);}});
+      ncross+=cnt+(Gh&&Gh.tau>0.5&&w>0?1:0);
+      return Aof(Ls);};
+    let E={};
+    if(!inner){const Gi=G?{pos:'end',w:G.w,tau:G.tau}:null,w=Gi?Gi.w:0,s0=0.5-(k0+w)*ds/2,n=paths.length;
+      const Ae=braid(P,s0,k0,Gi,1,[n,1],[n+1,1],true,'');
+      E[cs.a1]=[n,0];E[cs.a0]=[n+1,0];const odd=(k0+(Gi?1:0))%2===1;E[cs.b1]=odd?[n+1,1]:[n,1];E[cs.b0]=odd?[n,1]:[n+1,1];
+      if(Gi){tail[key([n,1])]={yf:Math.cos(Ae),zf:Math.sin(Ae)*zs};tail[key([n+1,1])]={yf:-Math.cos(Ae),zf:-Math.sin(Ae)*zs};if(!k0)blendArc=w;}
+      return E;}
+    const f=lerp(0.13,0.08,both),bm=lerp(0.16,0.11,both),dl=0.08,sa=L.a?pa*(f+bm)+ea*ds:0,se=1-(L.b?pb*(f+bm)+eb*ds:0),da=L.a?pa*dl:0,db=L.b?pb*dl:0,c={};
+    c[cs.a1]=P(sa,1-da);c[cs.a0]=P(sa,da);c[cs.b1]=P(se,1-db);c[cs.b0]=P(se,db);
+    const im=(u,v)=>({x:c.NW.x*(1-u)*v+c.NE.x*u*v+c.SW.x*(1-u)*(1-v)+c.SE.x*u*(1-v),y:c.NW.y*(1-u)*v+c.NE.y*u*v+c.SW.y*(1-u)*(1-v)+c.SE.y*u*(1-v)});
+    const sh=1-Math.max(da,db);
+    E=lay(i-1,im,Hb?Wp*(se-sa):Wp*sh,Hb?Hp*sh:Hp*(se-sa));
+    if(i===nl-1&&rho){const cr=Math.cos(rho),sr=Math.sin(rho);   // what is inside turns over about the horizontal axis
+      for(const pth of paths)for(const q of pth){const y=q.y,z=q.z||0;q.y=y*cr-24*z*sr;q.z=z*cr+y/24*sr;}
+      if(!L.b){tail[key(E[cs.b1])]={yf:cr,zf:sr};tail[key(E[cs.b0])]={yf:-cr,zf:-sr};}}
+    const arm=(Pf,cnt,Gh,pres,ku,kl,name)=>{const w=Gh?Gh.w:0,Ls=cnt+w,s1=1-(pres*(f+bm)+Ls*ds),s0=s1+pres*bm;
+      const A0=Gh&&Gh.pos==='start'?Math.PI*(1-Gh.tau):0,env=lerp(0.5,g*flare(0),pres),c0=env*Math.cos(A0),bz=Math.max(-1,Math.min(1,2.4*Math.sin(A0)))*zs;
+      const U=E[ku],Lo=E[kl],x1=Math.min(0.05,Ls)||0.05,c1=lerp(0.5,g*flare(Math.min(x1,Math.max(Ls-x1,0))),pres)*Math.cos(Ls?A0+(Gh&&Gh.pos==='start'?Math.PI*Gh.tau*x1/(w||1):Math.PI*x1):A0);
+      [[U,1],[Lo,-1]].forEach(([e,sgn])=>{const B=Pf(s0,0.5+sgn*c0),X=Pf(s0+x1*ds,0.5+sgn*c1),[dx,dy]=unit(X.x-B.x,X.y-B.y);B.z=sgn*bz;
+        connect(e,B,dx,dy,Pf(s1,sgn*c0>=0?1-dl*pres:dl*pres),0.3*dp,pres);});
+      const Ae=braid(Pf,s0,cnt,Gh,pres,U,Lo,false,name);
+      if((cnt+(Gh?1:0))%2===1){E[ku]=Lo;E[kl]=U;}
+      if(Gh&&Gh.pos==='end'&&i===nl-1){tail[key(U)]={yf:Math.cos(Ae),zf:Math.sin(Ae)*zs};tail[key(Lo)]={yf:-Math.cos(Ae),zf:-Math.sin(Ae)*zs};}};
+    if(L.b)arm(P,rb,gb,pb,cs.b1,cs.b0,'b');
+    if(L.a)arm((s,t)=>P(1-s,1-t),ra,ga,pa,cs.a0,cs.a1,'a');
+    return E;
+  }
+  const top=(u,v)=>({x:(u-0.5)*S,y:(v-0.5)*S});let ends;
+  if(!nl){const P=D.base?(s,t)=>top(t,1-s):top,cs=D.base?{a1:'NE',a0:'NW',b1:'SE',b0:'SW'}:{a1:'NW',a0:'SW',b1:'NE',b0:'SE'};
+    paths.push([],[]);for(let m=0;m<=24;m++){const t=m/24,d=0.27*Math.sin(Math.PI*t);paths[0].push(P(t,1-d));paths[1].push(P(t,d));}
+    ends={};ends[cs.a1]=[0,0];ends[cs.b1]=[0,1];ends[cs.a0]=[1,0];ends[cs.b0]=[1,1];}
+  else{ends=lay(nl-1,top,S,S);
+    const cn={NW:top(0,1),NE:top(1,1),SW:top(0,0),SE:top(1,0)};
+    for(const nm of ['NW','NE','SW','SE']){const e=ends[nm],t=tail[key(e)],C=t?{x:H2,y:H2*t.yf}:cn[nm];
+      zline(tip(e).z||0,fanPts(e,C),t?H2/24*t.zf:0).forEach(pt=>ext(e,pt));}
+    if(blendArc<1)for(let r=0;r<2;r++){   // the very first crossing grows out of the two arcs of the tangle 0
+      const arc=[];for(let m=0;m<=48;m++){const t=m/48,d=0.27*Math.sin(Math.PI*t);arc.push(top(t,r?d:1-d));}
+      const a=resampleK(arc,60),b=resampleK(paths[r],60);paths[r].length=0;
+      a.forEach((q,j)=>paths[r].push({x:lerp(q.x,b[j].x,blendArc),y:lerp(q.y,b[j].y,blendArc),z:b[j].z*blendArc}));}
+  }
+  return {paths,ends,box:[-S/2,-S/2,S/2,S/2],ncross,minD,plan};
+}
+
+// ---------- ropes: N points each, in view coordinates (x right, y up, z toward the viewer) ----------
+const clamp=v=>Math.max(0,Math.min(1,v)),ease=u=>u*u*(3-2*u),lerp=(a,b,t)=>a+(b-a)*t;
+const TW=560,TH=500,CX=280,CY=250,TM=52,N=400;
+const ENDS=[['A','B'],['D','C']];
+let R=[new Float64Array(3*N),new Float64Array(3*N)],dpos={},ropeW=8,dg={base:0,s:1,lv:[]};
+function stdConfig(D,dn,opt){
+  opt=opt||{};
+  const T=buildTangle(D,opt),[x0,y0,x1,y1]=T.box,s=Math.min((TW-2*TM)/(x1-x0),(TH-2*TM)/(y1-y0),3.2),mx=(x0+x1)/2,my=(y0+y1)/2,h=24/s;
+  const out=[],anch=[];
+  ENDS.forEach(([da,db],r)=>{
+    const ka=Object.keys(dn).find(k=>dn[k]===da),kb=Object.keys(dn).find(k=>dn[k]===db),pi=T.ends[ka][0];
+    if(T.ends[kb][0]!==pi)console.error('rope mismatch',JSON.stringify(D),da,db);
+    const pts=T.paths[pi].map(P=>[(P.x-mx)*s,(P.y-my)*s,(P.z||0)*h*s,P.c||0]);
+    if(T.ends[ka][1])pts.reverse();
+    const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));
+    const L=cum[cum.length-1],o=new Float64Array(3*N),marks=[];pts.forEach((q,i)=>{if(q[3])marks.push({l:cum[i],tag:q[3]});});
+    // by default the N points are evenly spaced along the rope; with opt.anchors the ordinary crossings land on prescribed indices
+    let bi=[0,N-1],bl=[0,L];const want=opt.anchors&&opt.anchors[r],plain=marks.filter(m=>m.tag===1);
+    if(want&&want.length===plain.length&&plain.length){bi=[0].concat(want,[N-1]);bl=[0].concat(plain.map(m=>m.l),[L]);}
+    let j=0,sgm=0;
+    for(let i=0;i<N;i++){while(sgm<bi.length-2&&i>bi[sgm+1])sgm++;
+      const t=lerp(bl[sgm],bl[sgm+1],bi[sgm+1]>bi[sgm]?(i-bi[sgm])/(bi[sgm+1]-bi[sgm]):0);
+      while(j<pts.length-2&&cum[j+1]<t)j++;const f=cum[j+1]>cum[j]?(t-cum[j])/(cum[j+1]-cum[j]):0;
+      for(let k=0;k<3;k++)o[3*i+k]=lerp(pts[j][k],pts[j+1][k],clamp(f));}
+    const idxOf=l=>{let g=0;while(g<bl.length-2&&l>bl[g+1])g++;return lerp(bi[g],bi[g+1],bl[g+1]>bl[g]?(l-bl[g])/(bl[g+1]-bl[g]):0);};
+    anch.push(marks.map(m=>({i:idxOf(m.l),tag:m.tag})));
+    out.push(o);});
+  boxHalf=(x1-x0)/2*s;
+  return {R:out,w:Math.max(2.6,Math.min(5.5,T.minD*s*0.115)),ncross:T.ncross,plan:T.plan,anch};
+}
+function endsToDancers(){ENDS.forEach(([a,b],r)=>{dpos[a]=[R[r][0],R[r][1],R[r][2]];dpos[b]=[R[r][3*N-3],R[r][3*N-2],R[r][3*N-1]];});}
+function setConfig(C){R[0].set(C.R[0]);R[1].set(C.R[1]);ropeW=C.w;endsToDancers();}
+
+// ---------- moves ----------
+let cur=null,queue=[],onMoveDone=null,frameK=1,frameRot=0,boxHalf=200;
+const copyR=()=>[R[0].slice(),R[1].slice()];
+function morph(C0,C1,shape){   // ropes C0 -> ropes C1, as a function of progress e
+  const w0=ropeW;
+  return e=>{for(let r=0;r<2;r++)for(let i=0;i<3*N;i++)R[r][i]=lerp(C0[r][i],C1.R[r][i],e);
+    if(shape)shape(e);ropeW=lerp(w0,C1.w,e);endsToDancers();};
+}
+function startMove(m){
+  const P0=p,Q0=q,C0=copyR(),dn0=Object.assign({},dancers);let D0=dg,D1,kind='';
+  if(m==='T'){
+    if(D0.lv.length===1&&!D0.lv[0].h&&D0.lv[0].a+D0.lv[0].b===1)D0={base:0,s:D0.s,lv:[{h:true,a:0,b:1}]};   // a lone crossing is across as much as down
+    [D1,kind]=dgTwist(D0);doTwist();}
+  else{D1=dgRot(D0);doRotate();}
+  drawPanel();
+  const C1=stdConfig(D1,dancers),show=C=>{R[0].set(C.R[0]);R[1].set(C.R[1]);ropeW=C.w;endsToDancers();};
+  if(m==='T'){
+    const n=D0.lv.length,copyD=D=>({base:D.base,s:D.s,lv:D.lv.map(L=>Object.assign({},L))});
+    // The right-hand dancers swap, whoever walks down passing in front. The ropes are redrawn at every instant from a diagram in
+    // which one crossing is partly made (or partly undone), so the strands turn about each other and never pass through.
+    const ghostAnim=(Ds,dn,g,fw,fl)=>{const cfg=(w,tau,rho,plan)=>stdConfig(Ds,dn,{ghost:Object.assign({w,tau},g),rho,plan});
+      const a=fw?0:1,b=fw?1:0,pa=cfg(a,a,fl?(fw?Math.PI:0):0).plan,pb=cfg(b,b,fl?(fw?0:Math.PI):0).plan;
+      return e=>{const v=lerp(a,b,e);show(cfg(v,v,fl?Math.PI*(1-v):0,pa.map((x,i)=>lerp(x,pb[i],e))));};};
+    if(kind==='none'){   // the tangle ∞: the right-hand rope just turns over
+      const r=ENDS.findIndex(E=>E.includes(dn0.NE));
+      cur={dur:850,apply:u=>{const a=Math.PI*ease(u),c=Math.cos(a),sn=Math.sin(a);R[0].set(C0[0]);R[1].set(C0[1]);
+        for(let i=0;i<N;i++){const y=C0[r][3*i+1];R[r][3*i+1]=y*c;R[r][3*i+2]=y*sn;}endsToDancers();}};
+    }else if(kind==='cancel'||kind==='flip'){
+      const g=kind==='flip'?{lvl:n-1,arm:'a',pos:'start'}:{lvl:n-1,arm:'b',pos:'end'},an=ghostAnim(copyD(D0),dn0,g,false,kind==='flip');
+      cur={dur:kind==='flip'?1300:850,apply:u=>an(ease(u))};
+    }else{
+      const Ds=copyD(D0);let turn=kind==='turnCW'||kind==='turnCCW';
+      if(n&&Ds.lv[n-1].h)Ds.lv[n-1].b++;else Ds.lv.push({h:true,a:0,b:1,sg:1});
+      const g={lvl:Ds.lv.length-1,arm:'b',pos:'end'},an=ghostAnim(Ds,dancers,g,true,false);
+      if(!turn)cur={dur:850,apply:u=>an(ease(u))};
+      else{
+        // ...then everything inside makes a quarter turn while one strand slides right across behind (or in front of) it,
+        // which trades the new crossing and one crossing of the vertical braid for a single crossing on the other side
+        const south=kind==='turnCW',CM=stdConfig(Ds,dancers,{ghost:Object.assign({w:1,tau:1},g),special:{lvl:n-1,arm:south?'b':'a'}});
+        const want=CM.anch.map(a=>a.filter(x=>x.tag===1).map(x=>x.i));
+        const CE=stdConfig(D1,dancers,{special:{lvl:D1.lv.length-1,arm:south?'a':'b'},anchors:want});
+        const Th=south?-Math.PI/2:Math.PI/2,Rc=boxHalf*Math.SQRT2,ct=Math.cos(Th),st=Math.sin(Th);
+        const who=south?dancers.NE:dancers.SE,pr=ENDS.findIndex(E=>E.includes(who)),atEnd=ENDS[pr][1]===who;
+        // weights: 1 on the part of each rope that lies inside (between its first and last ordinary crossing), falling to 0 at the dancers
+        const W=[0,1].map(r=>{const pl=CM.anch[r].filter(x=>x.tag===1).map(x=>x.i),w=new Float64Array(N);
+          for(let i=0;i<N;i++){if(!pl.length)w[i]=ease(clamp((0.9-Math.hypot(CM.R[r][3*i],CM.R[r][3*i+1])/Rc)/0.3));
+            else{const a=pl[0],b=pl[pl.length-1];w[i]=i<a?ease(clamp(i/a)):i>b?ease(clamp((N-1-i)/(N-1-b))):1;}}
+          return w;});
+        let c0=[0,0],c1=[0,0],cw=0;
+        for(let r=0;r<2;r++)for(let i=0;i<N;i++){const w=W[r][i];if(w<1)continue;cw++;c0[0]+=CM.R[r][3*i];c0[1]+=CM.R[r][3*i+1];c1[0]+=CE.R[r][3*i];c1[1]+=CE.R[r][3*i+1];}
+        if(cw){c0=c0.map(v=>v/cw);c1=c1.map(v=>v/cw);}
+        const plS=CM.anch[pr].filter(x=>x.tag===1).map(x=>x.i),lim=plS.length?(atEnd?N-1-plS[plS.length-1]:plS[0]):0.85*N,dep=(south?-1:1)*90;
+        const beat2=e=>{const ca=Math.cos(Th*e),sa=Math.sin(Th*e),cx=lerp(c0[0],c1[0],e),cy=lerp(c0[1],c1[1],e);
+          for(let r=0;r<2;r++)for(let i=0;i<N;i++){const o=3*i,x0=CM.R[r][o],y0=CM.R[r][o+1],x1=CE.R[r][o],y1=CE.R[r][o+1],w=W[r][i];
+            const ux=x1-c1[0],uy=y1-c1[1],qx=lerp(x0-c0[0],ux*ct+uy*st,e),qy=lerp(y0-c0[1],-ux*st+uy*ct,e);
+            R[r][o]=lerp(lerp(x0,x1,e),cx+qx*ca-qy*sa,w);R[r][o+1]=lerp(lerp(y0,y1,e),cy+qx*sa+qy*ca,w);R[r][o+2]=lerp(CM.R[r][o+2],CE.R[r][o+2],e);
+            if(r===pr){const d=atEnd?N-1-i:i;if(d<lim)R[r][o+2]+=dep*(0.5+1.3*d/lim)*Math.sin(Math.PI*e)*ease(clamp(d/(0.12*lim)))*ease(clamp((lim-d)/(0.12*lim)));}}
+          // the sliding strand is behind everything, so only its two ends matter: pull the slack out of it as it goes
+          {const n=Math.max(4,Math.floor(lim)),P=R[pr],ix=d=>3*(atEnd?N-1-d:d),k=ease(clamp(3*Math.sin(Math.PI*e))),X=new Float64Array(n+1),Y=new Float64Array(n+1);
+            for(let d=0;d<=n;d++){X[d]=P[ix(d)];Y[d]=P[ix(d)+1];}
+            for(let it=0;it<500;it++)for(let d=1;d<n;d++){X[d]=(X[d-1]+X[d+1])/2;Y[d]=(Y[d-1]+Y[d+1])/2;}
+            for(let d=1;d<n;d++){const w=k*ease(clamp((n-d)/(0.45*n)));P[ix(d)]=lerp(P[ix(d)],X[d],w);P[ix(d)+1]=lerp(P[ix(d)+1],Y[d],w);}}
+          ropeW=lerp(CM.w,CE.w,e);endsToDancers();};
+        cur={dur:2100,apply:u=>{if(u<0.4)an(ease(u/0.4));else beat2(ease((u-0.4)/0.6));}};
+      }
+    }
+  }else{
+    let rm=1;for(const P of C0)for(let i=0;i<N;i++)rm=Math.max(rm,Math.hypot(P[3*i],P[3*i+1]));
+    const kf=Math.min(1,(TH/2-26)/rm);   // shrink so the turning tangle stays in the frame
+    const Cr=[C0[0].slice(),C0[1].slice()];for(const P of Cr)for(let i=0;i<N;i++){const x=P[3*i],y=P[3*i+1];P[3*i]=y*kf;P[3*i+1]=-x*kf;P[3*i+2]*=kf;}
+    const tidy=morph(Cr,C1);
+    cur={dur:1250,apply:u=>{
+      if(u<0.5){const ph=(Math.PI/2)*ease(u/0.5),k=lerp(1,kf,ease(Math.min(1,u/0.2))),c=Math.cos(ph)*k,s=Math.sin(ph)*k;
+        for(let r=0;r<2;r++)for(let i=0;i<N;i++){const x=C0[r][3*i],y=C0[r][3*i+1];R[r][3*i]=x*c+y*s;R[r][3*i+1]=-x*s+y*c;R[r][3*i+2]=C0[r][3*i+2]*k;}
+        frameK=k;frameRot=ph;endsToDancers();}
+      else{const e=ease((u-0.5)/0.5);frameRot=0;frameK=lerp(kf,1,e);tidy(e);}}};
+  }
+  cur.u=0;cur.kind=m==='T'?kind:'rot';cur.farey=fareyScene(m,P0,Q0);dg=D1;cur.end=C1;
+}
+function frame(dt){
+  if(!cur&&queue.length)startMove(queue.shift());
+  if(!cur)return;
+  cur.u=Math.min(1,cur.u+dt/cur.dur);cur.apply(cur.u);cur.farey(cur.u);
+  if(cur.u>=1){frameK=1;frameRot=0;setConfig(cur.end);cur=null;drawFarey();if(onMoveDone)onMoveDone();}
+}
+
+// ---------- drawing the ropes ----------
+const cv=$('tangle'),ctx=cv.getContext('2d');let dpr=1,COL={};
+function readColors(){const cs=getComputedStyle(document.documentElement),g=n=>cs.getPropertyValue(n).trim();
+  COL={ink:g('--ink'),frame:g('--muted'),paper:g('--paper'),1:g('--accent'),2:g('--blue'),A:g('--accent'),B:g('--gold'),C:g('--blue'),D:g('--green')};}
+function sizeCanvas(){dpr=Math.min(3,window.devicePixelRatio||1);cv.width=TW*dpr;cv.height=TH*dpr;}
+const NS2=2*(N-1);
+function countCross(){let n=0;
+  for(let s=0;s<NS2;s++){const r1=s<N-1?0:1,i1=s-r1*(N-1),P=R[r1],o=3*i1,ax=P[o],ay=P[o+1],bx=P[o+3],by=P[o+4];
+    for(let t=s+1;t<NS2;t++){const r2=t<N-1?0:1,i2=t-r2*(N-1);if(r1===r2&&i2-i1<2)continue;
+      const Q=R[r2],o2=3*i2,cx=Q[o2],cy=Q[o2+1],dx=Q[o2+3],dy=Q[o2+4];
+      const d1=(bx-ax)*(cy-ay)-(by-ay)*(cx-ax),d2=(bx-ax)*(dy-ay)-(by-ay)*(dx-ax),d3=(dx-cx)*(ay-cy)-(dy-cy)*(ax-cx),d4=(dx-cx)*(by-cy)-(dy-cy)*(bx-cx);
+      if(d1*d2<-1e-9&&d3*d4<-1e-9)n++;}}
+  return n;}
+function drawRopes(){
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,TW,TH);
+  // the tangle box
+  ctx.save();ctx.translate(CX,CY);ctx.rotate(frameRot);const bh=boxHalf*frameK;ctx.globalAlpha=0.45;ctx.lineWidth=1.5;ctx.strokeStyle=COL.frame;ctx.strokeRect(-bh,-bh,2*bh,2*bh);ctx.restore();
+  const pieces=[],M=3;
+  R.forEach((P,r)=>{const g=(i,k)=>P[3*Math.max(0,Math.min(N-1,i))+k];
+    for(let i=0;i<N-1;i++){let px,py,pz;
+      for(let m=0;m<=M;m++){const t=m/M,t2=t*t,t3=t2*t,v=[0,0,0];
+        for(let k=0;k<3;k++){const p0=g(i-1,k),p1=g(i,k),p2=g(i+1,k),p3=g(i+2,k);
+          v[k]=0.5*((2*p1)+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t2+(-p0+3*p1-3*p2+p3)*t3);}
+        if(m)pieces.push([px,py,v[0],v[1],(pz+v[2])/2,r+1]);px=v[0];py=v[1];pz=v[2];}}});
+  pieces.sort((a,b)=>a[4]-b[4]);
+  const w=ropeW,line=(q,width,style,cap)=>{ctx.lineWidth=width;ctx.strokeStyle=style;ctx.lineCap=cap;ctx.beginPath();ctx.moveTo(CX+q[0],CY-q[1]);ctx.lineTo(CX+q[2],CY-q[3]);ctx.stroke();};
+  for(const q of pieces){line(q,w+Math.max(5,w*0.6),COL.paper,'butt');line(q,w,COL[q[5]],'round');}
+  ctx.globalAlpha=0.28;for(const q of pieces)line(q,w*0.3,COL.paper,'round');ctx.globalAlpha=1;
+  const ds=Object.keys(dpos).sort((a,b)=>dpos[a][2]-dpos[b][2]);
+  for(const d of ds){const [x0,y0,z]=dpos[d],k=1+z/700,rr=Math.hypot(x0,y0)||1,x=x0+13*x0/rr,y=y0+13*y0/rr,X=CX+x,Y=CY-y;
+    ctx.beginPath();ctx.arc(X,Y,17*k,0,2*Math.PI);ctx.fillStyle=COL[d];ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=COL.paper;ctx.stroke();
+    ctx.fillStyle=COL.paper;ctx.font='700 '+Math.round(17*k)+'px ui-serif, Georgia, serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(d,X,Y+1);}
+  $('ncross').textContent=countCross();
+}
+
+// ---------- the Farey tessellation in the Poincaré disk ----------
+// The tessellation itself is drawn on a canvas, as deep as the current zoom can resolve; the path, marker and labels sit in an SVG on top.
+const FC=250,FR=196;
+const ang=(P,Q)=>2*Math.atan2(P,Q),pt=(t,r)=>[FC+(r||FR)*Math.cos(t),FC-(r||FR)*Math.sin(t)];
+function geodD(f,g2){
+  let a=ang(f[0],f[1]),b=ang(g2[0],g2[1]);if(b<a)[a,b]=[b,a];if(b-a>Math.PI)[a,b]=[b,a+2*Math.PI];
+  const dl=(b-a)/2,A=pt(a),B=pt(b),r=FR*Math.tan(dl);
+  if(dl<1e-9)return '';
+  if(Math.abs(dl-Math.PI/2)<1e-6||r>1e6)return `M${A[0].toFixed(4)} ${A[1].toFixed(4)}L${B[0].toFixed(4)} ${B[1].toFixed(4)}`;
+  return `M${A[0].toFixed(4)} ${A[1].toFixed(4)}A${r.toFixed(4)} ${r.toFixed(4)} 0 0 1 ${B[0].toFixed(4)} ${B[1].toFixed(4)}`;
+}
+const fcv=$('fareyc'),fctx=fcv.getContext('2d'),fsvg=$('farey');
+let overlay=null,marker=null,baseT=0,spinA=0;const fview={x:FC,y:FC,k:1};
+const sh=(f,t)=>[f[0]+t*f[1],f[1]];   // the tessellation pushed along the twist x -> x + t
+function sizeFarey(){const w=Math.max(200,Math.round((fcv.clientWidth||500)*Math.min(3,window.devicePixelRatio||1)));if(fcv.width!==w){fcv.width=w;fcv.height=w;}}
+function drawBase(){
+  const W=fcv.width,sc=W/500*fview.k,c=fctx,spin=spinA*Math.PI/180;
+  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,W,W);
+  c.setTransform(sc,0,0,sc,W/2-fview.x*sc,W/2-fview.y*sc);
+  // the window in disk coordinates (turned back, and enlarged, while the picture is spinning)
+  let hx=250/fview.k,cx=fview.x,cy=fview.y;
+  if(spin){c.translate(FC,FC);c.rotate(spin);c.translate(-FC,-FC);const dx=cx-FC,dy=cy-FC,cs=Math.cos(-spin),sn=Math.sin(-spin);cx=FC+dx*cs-dy*sn;cy=FC+dx*sn+dy*cs;hx*=1.42;}
+  const x0=cx-hx,x1=cx+hx,y0=cy-hx,y1=cy+hx,px=1/sc,dp=W/Math.max(1,fcv.clientWidth||W);
+  const bk=[[],[],[],[]];let count=0;
+  const span=(l,r)=>{let a=ang(l[0],l[1]),b=ang(r[0],r[1]);if(b<a)[a,b]=[b,a];if(b-a>Math.PI)[a,b]=[b,a+2*Math.PI];return [a,b];};
+  const seen=(a,b)=>{let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;for(let i=0;i<=4;i++){const q=pt(a+(b-a)*i/4);u0=Math.min(u0,q[0]);u1=Math.max(u1,q[0]);v0=Math.min(v0,q[1]);v1=Math.max(v1,q[1]);}
+    if(b-a>1.5)return true;return u1>=x0&&u0<=x1&&v1>=y0&&v0<=y1;};
+  const arc=(l,r)=>{const [a,b]=span(l,r),dl=(b-a)/2;if(dl<1e-10)return;const size=2*FR*Math.sin(dl)*sc/dp,k=size>260?0:size>70?1:size>18?2:3;bk[k].push(a,b);count++;};
+  const rec=(l0,r0)=>{const st=[[l0,r0]];while(st.length&&count<60000){const [l,r]=st.pop(),[a,b]=span(l,r),size=2*FR*Math.sin((b-a)/2)*sc/dp;if(size<3.2||!seen(a,b))continue;
+    const m=[l[0]+r[0],l[1]+r[1]];arc(l,m);arc(m,r);st.push([l,m],[m,r]);}};
+  const A=sh([0,1],baseT),Bz=[1,0],Cn=[-1,0];arc(A,Bz);rec(A,Bz);rec(Cn,A);
+  const lw=[2,1.35,0.9,0.6],al=[0.8,0.62,0.46,0.32];
+  c.strokeStyle=COL.ink;c.lineCap='round';
+  bk.forEach((list,k)=>{c.beginPath();
+    for(let i=0;i<list.length;i+=2){const a=list[i],b=list[i+1],dl=(b-a)/2,P=pt(a),Q=pt(b);
+      if(Math.abs(dl-Math.PI/2)<1e-6){c.moveTo(P[0],P[1]);c.lineTo(Q[0],Q[1]);continue;}
+      const mid=(a+b)/2,d=FR/Math.cos(dl),r=FR*Math.tan(dl),ox=FC+d*Math.cos(mid),oy=FC-d*Math.sin(mid);
+      if(r>3e5){c.moveTo(P[0],P[1]);c.lineTo(Q[0],Q[1]);continue;}
+      const a1=Math.atan2(P[1]-oy,P[0]-ox),a2=Math.atan2(Q[1]-oy,Q[0]-ox);let de=a2-a1;while(de>Math.PI)de-=2*Math.PI;while(de<-Math.PI)de+=2*Math.PI;
+      c.moveTo(P[0],P[1]);c.arc(ox,oy,r,a1,a1+de,de<0);}
+    c.globalAlpha=al[k];c.lineWidth=lw[k]*dp*px;c.stroke();});
+  c.globalAlpha=1;c.lineWidth=2.5*dp*px;c.beginPath();c.arc(FC,FC,FR,0,2*Math.PI);c.stroke();
+  c.fillStyle=COL.frame;c.beginPath();c.arc(FC,FC,3.5*px*dp,0,2*Math.PI);c.fill();
+}
+function initFarey(){fsvg.innerHTML='';overlay=el('g',{});fsvg.appendChild(overlay);marker=el('g',{});fsvg.appendChild(marker);}
+function label(par,P,Q,opts){opts=opts||{};const K=fview.k,t=ang(P,Q),c=pt(t,FR+(opts.r||20)/K);
+  par.appendChild(el('text',{x:c[0],y:c[1]+5/K,'text-anchor':'middle','font-size':(opts.size||13)/K,'font-weight':opts.bold?700:400,style:'fill:'+(opts.fill||'var(--muted)')},fracTxt(P,Q)));}
+function drawMarkerAt(t){marker.innerHTML='';const c=pt(t),K=fview.k;
+  marker.appendChild(el('circle',{cx:c[0],cy:c[1],r:9/K,style:'fill:var(--accent);stroke:var(--paper)','stroke-width':2.5/K}));}
+const chainOf=(P,Q)=>[[1,0]].concat(convergents(cfOf(P,Q)));
+function drawChain(chain,t){overlay.innerHTML='';const K=fview.k;
+  for(let i=0;i+1<chain.length;i++)overlay.appendChild(el('path',{d:geodD(sh(chain[i],t),sh(chain[i+1],t)),fill:'none',style:'stroke:var(--accent)','stroke-width':4/K,'stroke-linecap':'round'}));
+  chain.slice(0,-1).forEach(f=>{const c=pt(ang(f[0]+t*f[1],f[1]));overlay.appendChild(el('circle',{cx:c[0],cy:c[1],r:4.5/K,style:'fill:var(--accent)'}));});
+  const last=chain[chain.length-1];drawMarkerAt(ang(last[0]+t*last[1],last[1]));}
+function drawFarey(){
+  const chain=chainOf(p,q),K=fview.k,hx=250/K+30/K;drawChain(chain,0);
+  const placed=[],inView=c=>Math.abs(c[0]-fview.x)<hx&&Math.abs(c[1]-fview.y)<hx;
+  const put=(f,o)=>{const c=pt(ang(f[0],f[1]));if(!inView(c)||placed.length>90||!placed.every(u=>Math.hypot(u[0]-c[0],u[1]-c[1])>30/K))return;placed.push(c);label(overlay,f[0],f[1],o);};
+  put(chain[chain.length-1],{bold:true,size:17,fill:'var(--accent)',r:24});
+  chain.slice(0,-1).forEach(f=>put(f,{fill:'var(--ink)'}));
+  [[0,1],[1,0],[1,1],[-1,1]].forEach(f=>put(f));
+  // and, zoomed in, the vertices of the triangles big enough to read
+  const todo=[[[0,1],[1,0]],[[-1,0],[0,1]]];let guard=0;
+  while(todo.length&&guard++<4000){const [l,r]=todo.shift(),A=pt(ang(l[0],l[1])),B=pt(ang(r[0],r[1]));
+    if(Math.hypot(A[0]-B[0],A[1]-B[1])*K<64)continue;
+    let a=ang(l[0],l[1]),b=ang(r[0],r[1]);if(b<a)[a,b]=[b,a];if(b-a>Math.PI+1e-9)[a,b]=[b,a+2*Math.PI];
+    if(b-a<3){let u0=1e9,u1=-1e9,v0=1e9,v1=-1e9;for(let i=0;i<=6;i++){const c=pt(a+(b-a)*i/6);u0=Math.min(u0,c[0]);u1=Math.max(u1,c[0]);v0=Math.min(v0,c[1]);v1=Math.max(v1,c[1]);}
+      if(u1<fview.x-hx||u0>fview.x+hx||v1<fview.y-hx||v0>fview.y+hx)continue;}
+    const m=[l[0]+r[0],l[1]+r[1]];if(K>1.2)put(m);todo.push([l,m],[m,r]);}
+  $('chain').innerHTML=chain.map(f=>fracTxt(f[0],f[1])).join(' → ');
+  $('hops').textContent=chain.length-1;
+}
+function fareyScene(m,P0,Q0){
+  const chain=chainOf(P0,Q0);drawChain(chain,0);
+  const spin=a=>{spinA=a;const v=a?`rotate(${a} ${FC} ${FC})`:'';overlay.setAttribute('transform',v);marker.setAttribute('transform',v);};
+  return u=>{const e=ease(u);
+    if(m==='R'){spin(180*e);overlay.style.opacity=1-clamp((u-0.7)/0.3);}
+    else{baseT=e;drawChain(chain,e);}
+    if(u>=1){spin(0);baseT=0;overlay.style.opacity=1;}
+    drawBase();};
+}
+// zooming and panning the disk
+function setView(x,y,k){k=Math.max(1,Math.min(20000,k));const h=250/k;fview.k=k;fview.x=Math.max(h,Math.min(500-h,x));fview.y=Math.max(h,Math.min(500-h,y));
+  fsvg.setAttribute('viewBox',`${fview.x-h} ${fview.y-h} ${2*h} ${2*h}`);drawBase();
+  if(cur)return;drawFarey();}
+function zoomAt(cxp,cyp,f){const r=fsvg.getBoundingClientRect(),u=(cxp-r.left)/r.width-0.5,v=(cyp-r.top)/r.height-0.5,mx=fview.x+u*500/fview.k,my=fview.y+v*500/fview.k,k=Math.max(1,Math.min(20000,fview.k*f));
+  setView(mx-u*500/k,my-v*500/k,k);}
+fsvg.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.clientX,e.clientY,Math.exp(-e.deltaY*(e.deltaMode?0.05:0.0016)));},{passive:false});
+{const ptrs=new Map();let pd=0;
+  fsvg.addEventListener('pointerdown',e=>{fsvg.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,[e.clientX,e.clientY]);pd=0;});
+  fsvg.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;const o=ptrs.get(e.pointerId),r=fsvg.getBoundingClientRect();
+    if(ptrs.size===1){setView(fview.x-(e.clientX-o[0])/r.width*500/fview.k,fview.y-(e.clientY-o[1])/r.height*500/fview.k,fview.k);}
+    ptrs.set(e.pointerId,[e.clientX,e.clientY]);
+    if(ptrs.size===2){const [a,b]=[...ptrs.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pd)zoomAt((a[0]+b[0])/2,(a[1]+b[1])/2,d/pd);pd=d;}});
+  const up=e=>{ptrs.delete(e.pointerId);pd=0;};fsvg.addEventListener('pointerup',up);fsvg.addEventListener('pointercancel',up);
+  fsvg.addEventListener('dblclick',()=>setView(FC,FC,1));}
+const zc=()=>{const r=fsvg.getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2];};
+$('zin').onclick=()=>zoomAt(...zc(),1.6);$('zout').onclick=()=>zoomAt(...zc(),1/1.6);$('zreset').onclick=()=>setView(FC,FC,1);
+$('zfind').onclick=()=>{const c=pt(ang(p,q)),k=Math.max(fview.k,6);setView(c[0],c[1],k);};
+
+// ---------- everything else ----------
+function drawPanel(){
+  $('xv').innerHTML=fracHTML(p,q);
+  const a=cfOf(p,q);
+  $('cf').textContent=q===0?'∞':('['+String(a[0]).replace('-','−')+(a.length>1?'; '+a.slice(1).join(', '):'')+']');
+  const nm=nextMove();
+  $('status').innerHTML=(nm===null?(log.length?'<b>Untangled.</b> The ropes hang parallel again.':'The ropes start parallel: this is the tangle 0.')
+    :'to untangle: '+(nm==='R'?(q===0?'rotate (∞ becomes 0)':'positive, so <b>rotate</b>'):'negative, so <b>twist</b>'));
+  const tail=log.slice(-160);
+  $('log').innerHTML=(log.length>160?'… ':'')+tail.map(m=>'<span class="'+(m==='T'?'t':'r')+'">'+m+'</span>').join('')||'<span style="color:var(--muted)">none yet</span>';
+  $('log').scrollTop=1e6;
+}
+let raf=null,lastT=0;
+function loop(now){
+  const dt=Math.min(34,lastT?now-lastT:16.7);lastT=now;
+  frame(dt);drawRopes();
+  if(cur||queue.length)raf=requestAnimationFrame(loop);else{raf=null;lastT=0;}
+}
+const wake=()=>{if(!raf)raf=requestAnimationFrame(loop);};
+function runSync(){let guard=0;while((cur||queue.length)&&guard++<100000)frame(40);drawRopes();}
+const busy=()=>!!(cur||queue.length);
+const enqueue=m=>{if(Math.abs(p)>BIG||q>BIG)return;queue.push(m);wake();};
+let autoOn=false;
+const stopAuto=()=>{autoOn=false;onMoveDone=null;$('auto').textContent='untangle all';};
+$('twist').onclick=()=>{stopAuto();enqueue('T');};
+$('rotate').onclick=()=>{stopAuto();enqueue('R');};
+$('hint').onclick=()=>{stopAuto();if(busy())return;const m=nextMove();if(m)enqueue(m);};
+$('auto').onclick=()=>{if(autoOn){stopAuto();return;}if(busy()||!nextMove())return;autoOn=true;$('auto').textContent='pause';
+  onMoveDone=()=>{const m=nextMove();if(m&&autoOn)queue.push(m);else stopAuto();};enqueue(nextMove());};
+function hardSet(){   // jump straight to the standard picture of the current tangle
+  queue=[];cur=null;
+  spinA=0;baseT=0;overlay.removeAttribute('transform');marker.removeAttribute('transform');overlay.style.opacity=1;drawBase();
+  dg=dgOf(p,q);frameK=1;frameRot=0;setConfig(stdConfig(dg,dancers));drawFarey();drawPanel();drawRopes();
+}
+$('reset').onclick=()=>{stopAuto();p=0;q=1;dancers={NW:'A',NE:'B',SE:'C',SW:'D'};log=[];hardSet();};
+$('scramble').onclick=()=>{stopAuto();
+  let last=log[log.length-1];const n=7+Math.floor(Math.random()*5);
+  for(let i=0;i<n;i++){if(last==='R'||Math.random()<0.6){doTwist();last='T';}else{doRotate();last='R';}}
+  if(p===0||q===0){doTwist();doTwist();doRotate();doTwist();}
+  hardSet();};
+addEventListener('keydown',e=>{if(e.metaKey||e.ctrlKey||e.altKey)return;const k=e.key.toLowerCase();
+  if(k==='t')$('twist').click();else if(k==='r')$('rotate').click();else if(k==='u')$('hint').click();else if(k==='s')$('scramble').click();});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{readColors();drawRopes();drawBase();});
+addEventListener('resize',()=>{sizeCanvas();drawRopes();sizeFarey();drawBase();});
+function minDist(){let best=1e9;const NN=2*N;
+  for(let a=0;a<NN;a++){const r1=a<N?0:1,i1=a-r1*N,P=R[r1],x=P[3*i1],y=P[3*i1+1],z=P[3*i1+2];
+    for(let b=a+1;b<NN;b++){const r2=b<N?0:1,i2=b-r2*N;if(r1===r2&&i2-i1<30)continue;const Q=R[r2],d=Math.hypot(Q[3*i2]-x,Q[3*i2+1]-y,Q[3*i2+2]-z);if(d<best)best=d;}}
+  return best;}
+window.__tangle={pair(){let best=1e9,bp=null;const NN=2*N;for(let a=0;a<NN;a++){const r1=a<N?0:1,i1=a-r1*N,P=R[r1];for(let b=a+1;b<NN;b++){const r2=b<N?0:1,i2=b-r2*N;if(r1===r2&&i2-i1<30)continue;const Q=R[r2],d=Math.hypot(Q[3*i2]-P[3*i1],Q[3*i2+1]-P[3*i1+1],Q[3*i2+2]-P[3*i1+2]);if(d<best){best=d;bp=[r1,i1,r2,i2,P[3*i1].toFixed(0),P[3*i1+1].toFixed(0),P[3*i1+2].toFixed(0),Q[3*i2+2].toFixed(0)];}}}return [best,bp,cur?cur.u:-1];},draw(){drawRopes();},begin(m){queue.push(m);frame(0);},tick(dt){const pv=copyR();frame(dt);let j=0;for(let r=0;r<2;r++)for(let i=0;i<3*N;i+=3)j=Math.max(j,Math.hypot(R[r][i]-pv[r][i],R[r][i+1]-pv[r][i+1]));return {busy:!!(cur||queue.length),d:minDist(),x:countCross(),jump:j,kind:cur?cur.kind:''};},minDist,get state(){return {p,q,dancers,log:log.join(''),cross:countCross(),std:buildTangle(dg).ncross,min:cfOf(Math.abs(p),q).reduce((a,b)=>a+b,0),val:dgValue(dg),dg:JSON.stringify(dg)};},
+  play:w=>{queue.push(...w);runSync();},next:()=>nextMove()};
+initFarey();readColors();sizeCanvas();sizeFarey();hardSet();
+})();
+</script>
+</body>
+</html>
