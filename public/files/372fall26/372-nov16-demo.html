@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MATH 372 · Nov 16 · When is the dominant pole alone?</title>
+<style>
+  :root { --ink:#1d1d1f; --mute:#6b6b70; --line:#d9d9de; --bg:#fbfaf7; --card:#fff;
+          --red:#b3261e; --blue:#2b5fa8; --green:#2f7d4f; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:17px/1.45 Georgia, "Times New Roman", serif; color:var(--ink); background:var(--bg); }
+  header { padding:14px 22px 0; }
+  h1 { font-size:22px; margin:0 0 8px; font-weight:600; }
+  .tabs { display:flex; gap:6px; border-bottom:1px solid var(--line); padding:0 22px; }
+  .tabs button { font:inherit; padding:8px 16px; border:1px solid var(--line); border-bottom:none;
+     background:#efede8; border-radius:8px 8px 0 0; cursor:pointer; }
+  .tabs button.on { background:var(--card); font-weight:600; position:relative; top:1px; }
+  main { padding:16px 22px 30px; }
+  .grid { display:grid; grid-template-columns: 330px 1fr 1fr; gap:16px; align-items:start; }
+  @media (max-width:1050px){ .grid { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .card h2 { font-size:15px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); margin:0 0 8px; font-weight:600; }
+  .presets { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .presets button { font:inherit; font-size:15px; padding:5px 11px; border:1px solid var(--line); background:#f4f2ee; border-radius:6px; cursor:pointer; }
+  .presets button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+  svg { width:100%; height:auto; display:block; }
+  table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; font-size:15px; }
+  th, td { text-align:right; padding:2px 8px; }
+  th { color:var(--mute); font-weight:600; border-bottom:1px solid var(--line); }
+  .big { font-size:19px; margin:6px 0; }
+  .tag { display:inline-block; padding:2px 10px; border-radius:20px; color:#fff; font-size:15px; }
+  .mat { border-collapse:separate; border-spacing:3px; width:auto; margin:6px 0; }
+  .mat td { width:30px; height:30px; text-align:center; border:1px solid var(--line); border-radius:5px; cursor:pointer; padding:0; user-select:none; }
+  .mat td.one { background:var(--ink); color:#fff; }
+  .mat th { border:none; color:var(--mute); text-align:center; font-weight:400; }
+  .note { color:var(--mute); font-size:14.5px; margin:6px 0 0; }
+  .parts label { margin-right:10px; white-space:nowrap; }
+  .hide { display:none; }
+  code { font-family: ui-monospace, Menlo, monospace; font-size:14.5px; }
+</style>
+</head>
+<body>
+<header><h1>When is the dominant pole alone?</h1></header>
+<div class="tabs">
+  <button id="tabW" class="on">1 · Walks in a graph</button>
+  <button id="tabS">2 · Sequences: F = 1/(1 − G)</button>
+</div>
+<main>
+<!-- ================= TAB 1 ================= -->
+<section id="secW">
+  <div class="grid">
+    <div class="card">
+      <h2>The graph</h2>
+      <div class="presets" id="gPresets"></div>
+      <svg id="graph" viewBox="0 0 300 270"></svg>
+      <table class="mat" id="mat"></table>
+      <p class="note">Click an entry of A (row → column), or a preset.</p>
+      <div class="big" id="gInfo"></div>
+    </div>
+    <div class="card">
+      <h2>Eigenvalues of A in the complex plane</h2>
+      <svg id="eig" viewBox="0 0 400 400"></svg>
+      <p class="note">Dashed circle: radius ρ. Red: eigenvalues on the circle. Blue: strictly inside.</p>
+    </div>
+    <div class="card">
+      <h2>Walks from vertex 1</h2>
+      <svg id="ratio" viewBox="0 0 400 170"></svg>
+      <p class="note">Ratio w<sub>n+1</sub>/w<sub>n</sub>; dashed line at ρ.</p>
+      <table id="wTable"></table>
+    </div>
+  </div>
+</section>
+<!-- ================= TAB 2 ================= -->
+<section id="secS" class="hide">
+  <div class="grid">
+    <div class="card">
+      <h2>Allowed part sizes</h2>
+      <div class="presets" id="sPresets"></div>
+      <div class="parts hide" id="custom"></div>
+      <div class="big" id="sG"></div>
+      <div class="big" id="sInfo"></div>
+      <svg id="curve" viewBox="0 0 300 230"></svg>
+      <p class="note">G on the positive real axis. It reaches 1 at τ.</p>
+    </div>
+    <div class="card">
+      <h2>Poles of F = 1/(1 − G)</h2>
+      <svg id="poles" viewBox="0 0 400 400"></svg>
+      <p class="note">Dashed circle: radius τ. Red: poles on the circle. Blue: farther out.</p>
+    </div>
+    <div class="card">
+      <h2>Counts against the prediction</h2>
+      <div class="big" id="sPred"></div>
+      <table id="sTable"></table>
+    </div>
+  </div>
+</section>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, text){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(text!==undefined) e.textContent=text; return e; }
+function fmt(x,d=3){ return (Math.abs(x)<5e-10?0:x).toFixed(d); }
+
+/* ---------- polynomials (arrays, index = degree) and complex roots ---------- */
+function trim(p){ p=p.slice(); while(p.length>1 && Math.abs(p[p.length-1])<1e-12) p.pop(); return p; }
+function padd(a,b){ const n=Math.max(a.length,b.length), r=[]; for(let i=0;i<n;i++) r.push((a[i]||0)+(b[i]||0)); return trim(r); }
+function pscale(a,c){ return a.map(x=>x*c); }
+function pmul(a,b){ const r=new Array(a.length+b.length-1).fill(0); a.forEach((x,i)=>b.forEach((y,j)=>r[i+j]+=x*y)); return trim(r); }
+function pder(a){ return a.length<2?[0]:a.slice(1).map((x,i)=>x*(i+1)); }
+function peval(a,x){ let s=0; for(let i=a.length-1;i>=0;i--) s=s*x+a[i]; return s; }
+function roots(p){ // Durand-Kerner; p[deg] != 0
+  p=trim(p); const n=p.length-1; if(n<1) return [];
+  const lead=p[n], c=p.map(x=>x/lead);
+  let z=[]; for(let k=0;k<n;k++){ const a=0.4+2*Math.PI*k/n; z.push([0.9*Math.cos(a)*1.3, 0.9*Math.sin(a)*1.3]); }
+  const ev=w=>{ let re=0,im=0; for(let i=n;i>=0;i--){ const t=re*w[0]-im*w[1]+c[i]; im=re*w[1]+im*w[0]; re=t; } return [re,im]; };
+  for(let it=0;it<800;it++){
+    let move=0;
+    for(let i=0;i<n;i++){
+      let num=ev(z[i]), dr=1, di=0;
+      for(let j=0;j<n;j++) if(j!==i){ const a=z[i][0]-z[j][0], b=z[i][1]-z[j][1]; const t=dr*a-di*b; di=dr*b+di*a; dr=t; }
+      const m=dr*dr+di*di || 1e-300;
+      const qr=(num[0]*dr+num[1]*di)/m, qi=(num[1]*dr-num[0]*di)/m;
+      z[i]=[z[i][0]-qr, z[i][1]-qi]; move+=Math.abs(qr)+Math.abs(qi);
+    }
+    if(move<1e-14) break;
+  }
+  return z.map(w=>[Math.abs(w[0])<1e-9?0:w[0], Math.abs(w[1])<1e-9?0:w[1]]);
+}
+const mod = w => Math.hypot(w[0],w[1]);
+const gcd = (a,b)=> b?gcd(b,a%b):a;
+
+/* ---------- complex-plane plot ---------- */
+function planePlot(svg, pts, R, labelR){
+  svg.innerHTML=""; const W=400, c=W/2;
+  const maxm=Math.max(R, ...pts.map(mod), 0.5), s=(c-34)/(maxm*1.12);
+  svg.append(el("line",{x1:8,y1:c,x2:W-8,y2:c,stroke:"#c9c9cf"}), el("line",{x1:c,y1:8,x2:c,y2:W-8,stroke:"#c9c9cf"}));
+  svg.append(el("circle",{cx:c,cy:c,r:R*s,fill:"none",stroke:"#555","stroke-dasharray":"6 5","stroke-width":1.4}));
+  svg.append(el("circle",{cx:c,cy:c,r:1*s,fill:"none",stroke:"#e3e3e8","stroke-width":1}));
+  svg.append(el("text",{x:c+R*s*0.71+6,y:c-R*s*0.71-6,"font-size":15,fill:"#555"},labelR));
+  let on=0;
+  pts.forEach(w=>{
+    const isOn=Math.abs(mod(w)-R)<1e-6*Math.max(1,R); if(isOn) on++;
+    svg.append(el("circle",{cx:c+w[0]*s,cy:c-w[1]*s,r:isOn?8:6,fill:isOn?"#b3261e":"#2b5fa8",stroke:"#fff","stroke-width":1.5}));
+  });
+  svg.append(el("text",{x:W-12,y:c-6,"font-size":13,fill:"#888","text-anchor":"end"},"Re"), el("text",{x:c+6,y:18,"font-size":13,fill:"#888"},"Im"));
+  return on;
+}
+
+/* ================= TAB 1: graphs ================= */
+const N=4;
+const G2=[[0,1,0,0],[1,0,1,0],[0,0,0,1],[1,0,0,0]];
+const GP={ "G₂ (1⇄2, 2→3→4→1)":G2,
+           "G₃ (add 3→1)":[[0,1,0,0],[1,0,1,0],[1,0,0,1],[1,0,0,0]],
+           "4-cycle":[[0,1,0,0],[0,0,1,0],[0,0,0,1],[1,0,0,0]],
+           "4-cycle + loop at 1":[[1,1,0,0],[0,0,1,0],[0,0,0,1],[1,0,0,0]] };
+let A=G2.map(r=>r.slice()), gName=Object.keys(GP)[0];
+const mmul=(X,Y)=>X.map((r,i)=>Y[0].map((_,j)=>r.reduce((s,x,k)=>s+x*Y[k][j],0)));
+function charpoly(M){ // Faddeev-LeVerrier, returns coefficients index=degree
+  const n=M.length, I=M.map((r,i)=>r.map((_,j)=>i===j?1:0)); let c=[1], Mk=I.map(r=>r.slice());
+  for(let k=1;k<=n;k++){ const AM=mmul(M,Mk); const ck=-AM.reduce((s,r,i)=>s+r[i],0)/k; c.push(ck); Mk=AM.map((r,i)=>r.map((x,j)=>x+(i===j?ck:0))); }
+  return c.reverse();
+}
+function drawGraph(){
+  const svg=$("graph"); svg.innerHTML="";
+  const defs=el("defs",{}); const mk=el("marker",{id:"ah",viewBox:"0 0 10 10",refX:9,refY:5,markerWidth:7,markerHeight:7,orient:"auto-start-reverse"});
+  mk.append(el("path",{d:"M0,0 L10,5 L0,10 z",fill:"#1d1d1f"})); defs.append(mk); svg.append(defs);
+  const P=[[70,60],[230,60],[230,210],[70,210]], r=19;
+  for(let u=0;u<N;u++) for(let v=0;v<N;v++) if(A[u][v]){
+    if(u===v){ const [x,y]=P[u], sx=x<150?-1:1, sy=y<135?-1:1;
+      svg.append(el("path",{d:`M${x+sx*8},${y+sy*17} C${x+sx*48},${y+sy*52} ${x+sx*52},${y-sy*6} ${x+sx*19},${y+sy*2}`,fill:"none",stroke:"#1d1d1f","stroke-width":2,"marker-end":"url(#ah)"})); continue; }
+    const [x1,y1]=P[u],[x2,y2]=P[v], dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), nx=-dy/L, ny=dx/L;
+    const b=A[v][u]?16:0; // bend when both directions present
+    const mx=(x1+x2)/2+nx*b*1.6, my=(y1+y2)/2+ny*b*1.6;
+    const a1=Math.atan2(my-y1,mx-x1), a2=Math.atan2(my-y2,mx-x2);
+    svg.append(el("path",{d:`M${x1+r*Math.cos(a1)},${y1+r*Math.sin(a1)} Q${mx},${my} ${x2+(r+2)*Math.cos(a2)},${y2+(r+2)*Math.sin(a2)}`,fill:"none",stroke:"#1d1d1f","stroke-width":2,"marker-end":"url(#ah)"}));
+  }
+  P.forEach(([x,y],i)=>{ svg.append(el("circle",{cx:x,cy:y,r:r,fill:"#fff",stroke:"#1d1d1f","stroke-width":2}), el("text",{x:x,y:y+6,"text-anchor":"middle","font-size":18},i+1)); });
+}
+function analyseGraph(){
+  // strong connectivity
+  let Rch=A.map((r,i)=>r.map((x,j)=>x||i===j?1:0)); for(let k=0;k<N;k++) Rch=mmul(Rch,Rch).map(r=>r.map(x=>x?1:0));
+  const strong=Rch.every(r=>r.every(x=>x));
+  let d=0, P=A.map(r=>r.slice());
+  for(let n=1;n<=40;n++){ if(P.some((r,i)=>r[i]>0)) d=gcd(d,n); P=mmul(P,A).map(r=>r.map(x=>x?1:0)); }
+  const cp=charpoly(A), ev=roots(cp), rho=Math.max(...ev.map(mod),0);
+  const on=planePlot($("eig"), ev, rho, "ρ = "+fmt(rho));
+  // walks from vertex 1
+  let v=[1,0,0,0], w=[]; for(let n=0;n<=16;n++){ w.push(v.reduce((s,x)=>s+x,0)); v=v.map((_,j)=>v.reduce((s,x,k)=>s+x*A[k][j],0)); }
+  let t="<tr><th>n</th>"+w.slice(0,13).map((_,n)=>`<td>${n}</td>`).join("")+"</tr><tr><th>w<sub>n</sub></th>"+w.slice(0,13).map(x=>`<td>${x}</td>`).join("")+"</tr>";
+  $("wTable").innerHTML=t;
+  const rs=$("ratio"); rs.innerHTML=""; const ratios=[]; for(let n=0;n<16;n++) ratios.push(w[n]?w[n+1]/w[n]:NaN);
+  const top=Math.max(2.2, rho*1.3, ...ratios.filter(isFinite)), X=n=>30+n*23, Y=y=>150-y/top*135;
+  rs.append(el("line",{x1:30,y1:150,x2:390,y2:150,stroke:"#c9c9cf"}), el("line",{x1:30,y1:Y(rho),x2:390,y2:Y(rho),stroke:"#555","stroke-dasharray":"6 5"}));
+  rs.append(el("text",{x:392,y:Y(rho)-5,"font-size":13,fill:"#555","text-anchor":"end"},"ρ"));
+  let dpath=""; ratios.forEach((y,n)=>{ if(isFinite(y)) dpath+=(dpath?"L":"M")+X(n)+","+Y(y); });
+  rs.append(el("path",{d:dpath,fill:"none",stroke:"#b3261e","stroke-width":2}));
+  ratios.forEach((y,n)=>{ if(isFinite(y)) rs.append(el("circle",{cx:X(n),cy:Y(y),r:3.5,fill:"#b3261e"})); });
+  const tag = !strong ? `<span class="tag" style="background:#6b6b70">not strongly connected</span>`
+            : d===1 ? `<span class="tag" style="background:var(--green)">aperiodic</span>`
+                    : `<span class="tag" style="background:var(--red)">period ${d}</span>`;
+  $("gInfo").innerHTML = tag+`&nbsp; ρ = ${fmt(rho)}<br>${on} eigenvalue${on===1?"":"s"} on the outer circle`;
+}
+function renderGraph(){
+  const m=$("mat"); let h="<tr><th></th>"+[1,2,3,4].map(j=>`<th>${j}</th>`).join("")+"</tr>";
+  for(let i=0;i<N;i++){ h+=`<tr><th>${i+1}</th>`; for(let j=0;j<N;j++) h+=`<td data-i="${i}" data-j="${j}" class="${A[i][j]?"one":""}">${A[i][j]}</td>`; h+="</tr>"; }
+  m.innerHTML=h;
+  [...$("gPresets").children].forEach(b=>b.classList.toggle("on", b.textContent===gName));
+  drawGraph(); analyseGraph();
+}
+Object.keys(GP).forEach(k=>{ const b=document.createElement("button"); b.textContent=k; b.onclick=()=>{ A=GP[k].map(r=>r.slice()); gName=k; renderGraph(); }; $("gPresets").append(b); });
+$("mat").onclick=e=>{ const td=e.target.closest("td"); if(!td) return; A[+td.dataset.i][+td.dataset.j]^=1; gName=""; renderGraph(); };
+
+/* ================= TAB 2: sequences ================= */
+// G = Nn/Dn as polynomials
+const SP={ "1s and 2s":{N:[0,1,1],D:[1],tex:"G = z + z²",supp:[1,2]},
+           "all parts":{N:[0,1],D:[1,-1],tex:"G = z/(1 − z)",supp:[1,2,3]},
+           "odd parts":{N:[0,1],D:[1,0,-1],tex:"G = z/(1 − z²)",supp:[1,3,5]},
+           "even parts":{N:[0,0,1],D:[1,0,-1],tex:"G = z²/(1 − z²)",supp:[2,4,6]},
+           "parts ≥ 2":{N:[0,0,1],D:[1,-1],tex:"G = z²/(1 − z)",supp:[2,3,4]},
+           "choose…":null };
+let sName="1s and 2s", parts=new Set([1,3]);
+function currentG(){
+  if(SP[sName]) return SP[sName];
+  const Np=new Array(9).fill(0); parts.forEach(k=>Np[k]=1);
+  const s=[...parts].sort((a,b)=>a-b);
+  return {N:trim(Np),D:[1],tex:"G = "+(s.length?s.map(k=>k===1?"z":"z"+"²³⁴⁵⁶⁷⁸"[k-2]).join(" + "):"0"),supp:s};
+}
+function renderSeq(){
+  [...$("sPresets").children].forEach(b=>b.classList.toggle("on", b.textContent===sName));
+  $("custom").classList.toggle("hide", !!SP[sName]);
+  const g=currentG(); $("sG").textContent=g.tex;
+  const d=g.supp.reduce(gcd,0);
+  if(!g.supp.length){ $("sInfo").textContent="Pick at least one part size."; $("curve").innerHTML=$("poles").innerHTML=$("sTable").innerHTML=$("sPred").innerHTML=""; return; }
+  const Q=padd(g.D, pscale(g.N,-1));               // F = D/(D-N)
+  const pl=roots(Q); const tau=Math.min(...pl.filter(w=>Math.abs(w[1])<1e-7&&w[0]>0).map(w=>w[0]));
+  const Gf=x=>peval(g.N,x)/peval(g.D,x);
+  const Gp=(peval(pder(g.N),tau)*peval(g.D,tau)-peval(g.N,tau)*peval(pder(g.D),tau))/peval(g.D,tau)**2;
+  const C=1/(tau*Gp);
+  const on=planePlot($("poles"), pl, tau, "τ = "+fmt(tau));
+  // curve
+  const cv=$("curve"); cv.innerHTML=""; const xmax=Math.min(1,tau*1.45), X=x=>34+x/xmax*250, Y=y=>200-y/1.6*180;
+  cv.append(el("line",{x1:34,y1:200,x2:290,y2:200,stroke:"#999"}), el("line",{x1:34,y1:200,x2:34,y2:14,stroke:"#999"}));
+  cv.append(el("line",{x1:34,y1:Y(1),x2:290,y2:Y(1),stroke:"#555","stroke-dasharray":"6 5"}), el("text",{x:22,y:Y(1)+5,"font-size":14,fill:"#555","text-anchor":"middle"},"1"));
+  let dp=""; for(let i=0;i<=200;i++){ const x=xmax*i/200, y=Gf(x); if(!(y>=0)||y>1.6) break; dp+=(dp?"L":"M")+X(x)+","+Y(y); }
+  cv.append(el("path",{d:dp,fill:"none",stroke:"#2b5fa8","stroke-width":2.5}));
+  cv.append(el("line",{x1:X(tau),y1:Y(1),x2:X(tau),y2:200,stroke:"#b3261e","stroke-dasharray":"3 4"}), el("circle",{cx:X(tau),cy:Y(1),r:5.5,fill:"#b3261e"}));
+  cv.append(el("text",{x:X(tau),y:218,"font-size":15,fill:"#b3261e","text-anchor":"middle"},"τ = "+fmt(tau)));
+  const tag = d===1 ? `<span class="tag" style="background:var(--green)">gcd of part sizes = 1</span>` : `<span class="tag" style="background:var(--red)">gcd of part sizes = ${d}</span>`;
+  $("sInfo").innerHTML = tag+`<br>${on} pole${on===1?"":"s"} on the circle |z| = τ`;
+  // coefficients of D/(D-N)
+  const M=22, a=[]; for(let n=0;n<=M;n++){ let s=g.D[n]||0; for(let k=1;k<=n&&k<Q.length;k++) s-=Q[k]*a[n-k]; a.push(s/Q[0]); }
+  $("sPred").innerHTML = `prediction: &nbsp;<b>${fmt(C,4)} · ${fmt(1/tau,4)}<sup>n</sup></b>` + (d===1?"":` &nbsp;<span style="color:var(--red)">(not valid: ${d} tied poles)</span>`);
+  let h="<tr><th>n</th><th>count</th><th>prediction</th><th>count / prediction</th></tr>";
+  for(let n=0;n<=M;n++){ const p=C*Math.pow(tau,-n); h+=`<tr><td>${n}</td><td>${Math.round(a[n])}</td><td>${p<1000?p.toFixed(3):p.toFixed(1)}</td><td>${(a[n]/p).toFixed(4)}</td></tr>`; }
+  $("sTable").innerHTML=h;
+}
+Object.keys(SP).forEach(k=>{ const b=document.createElement("button"); b.textContent=k; b.onclick=()=>{ sName=k; renderSeq(); }; $("sPresets").append(b); });
+for(let k=1;k<=8;k++){ const l=document.createElement("label"); l.innerHTML=`<input type="checkbox" value="${k}" ${parts.has(k)?"checked":""}> ${k}`; $("custom").append(l); }
+$("custom").onchange=e=>{ const k=+e.target.value; e.target.checked?parts.add(k):parts.delete(k); renderSeq(); };
+
+/* ---------- tabs ---------- */
+function tab(w){ $("secW").classList.toggle("hide",!w); $("secS").classList.toggle("hide",w); $("tabW").classList.toggle("on",w); $("tabS").classList.toggle("on",!w); }
+$("tabW").onclick=()=>tab(true); $("tabS").onclick=()=>tab(false);
+renderGraph(); renderSeq();
+</script>
+</body>
+</html>

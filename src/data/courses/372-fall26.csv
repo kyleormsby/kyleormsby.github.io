@@ -30,9 +30,9 @@ fall break,,October 17-25,break,Fall break 🍂,,,,,,,,,,,
 10,2026-11-09,,class,"Pólya theory, take two: Burnside's lemma, the cycle index, and Pólya's theorem",Stanley §7 ❦ FS I.6,[slides](/files/372fall26/372-nov09-polya.html),,,,,,,,,
 10,2026-11-11,,class,"Words, automata, and transfer matrices: Act I and Act II are the same theorem",FS I.4 ❦ FS V.5–V.6,,,,,,,,,,board presentation
 10,2026-11-13,,class,Partial fractions and exact asymptotics: poles are reciprocal eigenvalues,FS IV.5,,,,,,,,,,
-11,2026-11-16,,class,"Perron–Frobenius, growth constants, and supercritical sequences",FS V.2,,,,372hw05,10pm,,,,,individual project meetings this week
-11,2026-11-18,,class,Complex differentiability; generating functions as analytic objects,FS IV.1–IV.2,,,,,,,,,,
-11,2026-11-20,,class,Contour integration and Cauchy's integral formula,FS IV.2,,,,,,,,,,
+11,2026-11-16,,class,"Perron–Frobenius, growth constants, and supercritical sequences",FS V.2,[demo](/files/372fall26/372-nov16-demo.html),,,372hw05,10pm,,,,,individual project meetings this week
+11,2026-11-18,,class,Complex differentiability; generating functions as analytic objects,FS IV.1–IV.2,[demo](/files/372fall26/372-nov18-demo.html),,,,,,,,,
+11,2026-11-20,,class,Contour integration and Cauchy's integral formula,FS IV.2,[demo](/files/372fall26/372-nov20-demo.html),,,,,,,,,
 12,2026-11-23,,class,Residues and the exponential growth formula,FS IV.3,,,,,,,,,,
 12,2026-11-25,,class,The standard scale $(1-z)^{-\alpha}$: singularity analysis and transfer,FS VI.1–VI.4,,,,,,,,372lab02.ipynb,10pm,
 12,2026-11-27,,break,Thanksgiving — no class,,,,,,,,,,,

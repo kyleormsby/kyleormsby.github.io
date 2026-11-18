@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MATH 372 · Nov 18 · Where does a power series stop?</title>
+<style>
+  :root { --ink:#1d1d1f; --mute:#6b6b70; --line:#d9d9de; --bg:#fbfaf7; --card:#fff;
+          --red:#b3261e; --blue:#2b5fa8; --green:#2f7d4f; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:17px/1.45 Georgia, "Times New Roman", serif; color:var(--ink); background:var(--bg); }
+  header { padding:14px 22px 0; }
+  h1 { font-size:22px; margin:0 0 4px; font-weight:600; }
+  main { padding:12px 22px 30px; }
+  .grid { display:grid; grid-template-columns: 1fr 1.15fr 1fr; gap:16px; align-items:start; }
+  @media (max-width:1050px){ .grid { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .card h2 { font-size:15px; text-transform:uppercase; letter-spacing:.06em; color:var(--mute); margin:0 0 8px; font-weight:600; }
+  .presets { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .presets button, .zoom button { font:inherit; font-size:15px; padding:5px 11px; border:1px solid var(--line); background:#f4f2ee; border-radius:6px; cursor:pointer; }
+  .presets button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+  svg { width:100%; height:auto; display:block; }
+  .plane { position:relative; width:100%; aspect-ratio:1; }
+  .plane canvas, .plane svg { position:absolute; inset:0; width:100%; height:100%; border-radius:6px; }
+  #cv3 { cursor:grab; touch-action:none; }
+  .off { display:none; }
+  .big { font-size:18px; margin:6px 0; }
+  .note { color:var(--mute); font-size:14.5px; margin:6px 0 0; }
+  .row { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:6px 0; }
+  .row label { white-space:nowrap; }
+  input[type=range] { flex:1; min-width:140px; }
+  .zoom { display:flex; gap:6px; align-items:center; }
+  .coefs { font-variant-numeric:tabular-nums; font-size:15.5px; word-spacing:2px; }
+  .tag { display:inline-block; padding:2px 10px; border-radius:8px; color:#fff; font-size:15px; background:var(--red); }
+</style>
+</head>
+<body>
+<header><h1>Where does a power series stop?</h1></header>
+<main>
+  <div class="grid">
+    <div class="card">
+      <h2>The function</h2>
+      <div class="presets" id="presets"></div>
+      <div class="big" id="info"></div>
+      <div class="row">
+        <label><input type="radio" name="mode" value="f" checked> F itself</label>
+        <label><input type="radio" name="mode" value="s"> its series, cut off after z<sup>N</sup></label>
+      </div>
+      <div class="row"><label for="N">N = <b id="Nval">8</b></label><input type="range" id="N" min="0" max="60" value="8"></div>
+      <h2 style="margin-top:14px">On the real axis</h2>
+      <svg id="real" viewBox="0 0 400 250"></svg>
+      <p class="note"><span style="color:var(--blue)">Blue</span>: F(x). <span style="color:var(--red)">Red</span>: the series cut off after x<sup>N</sup>. Dashed: x = ±R.</p>
+    </div>
+    <div class="card">
+      <h2>In the complex plane</h2>
+      <div class="plane"><canvas id="cv" width="340" height="340"></canvas><svg id="ov" viewBox="0 0 400 400"></svg><canvas id="cv3" width="720" height="720"></canvas></div>
+      <div class="row" style="justify-content:space-between">
+        <span class="zoom presets" style="margin:0"><button id="v3" class="on">3D</button><button id="v2">flat</button></span>
+        <span class="zoom"><span class="note" style="margin:0">zoom</span><button id="zout">−</button><button id="zin">+</button></span>
+      </div>
+      <p class="note" id="planeNote"></p>
+    </div>
+    <div class="card">
+      <h2>The coefficients</h2>
+      <div class="big" id="rate"></div>
+      <svg id="growth" viewBox="0 0 400 240"></svg>
+      <p class="note" id="growthNote"></p>
+      <div class="coefs" id="coefs"></div>
+    </div>
+  </div>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, text){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(text!==undefined) e.textContent=text; return e; }
+const M=60, fact=[1]; for(let n=1;n<=M;n++) fact.push(fact[n-1]*n);
+
+/* ---------- coefficient sequences ---------- */
+const cGeo = Array.from({length:M+1},()=>1);
+const cAlt = Array.from({length:M+1},(_,n)=>n%2?0:(n%4?-1:1));
+const cCat = (()=>{ const c=[1]; for(let n=0;n<M;n++) c.push(c[n]*2*(2*n+1)/(n+2)); return c; })();
+const cSur = (()=>{ const f=[1]; for(let n=1;n<=M;n++){ let s=0; for(let k=1;k<=n;k++) s+=f[n-k]/fact[k]; f.push(s);} return f; })();
+const cHex = (()=>{ const f=[1,1]; for(let n=2;n<=M;n++) f.push(f[n-1]-f[n-2]); return f; })();
+const cPar = (()=>{ const p=new Array(M+1).fill(0); p[0]=1; for(let k=1;k<=M;k++) for(let n=k;n<=M;n++) p[n]+=p[n-k]; return p; })();
+const cBel = (()=>{ const f=[1]; for(let n=1;n<=M;n++){ let s=0; for(let k=0;k<n;k++) s+=f[k]/fact[n-1-k]; f.push(s/n);} return f; })();
+
+/* ---------- the functions: (x,y) -> [re,im] or null ---------- */
+function inv(a,b){ const m=a*a+b*b; return [a/m,-b/m]; }
+function csqrt(a,b){ const r=Math.hypot(a,b); const re=Math.sqrt(Math.max(0,(r+a)/2)); let im=Math.sqrt(Math.max(0,(r-a)/2)); if(b<0) im=-im; return [re,im]; }
+const L2=Math.log(2), S3=Math.sqrt(3)/2;
+const FN = {
+  geo:{ label:"1/(1 − z)", cap:6, L:2.2, R:1, sing:[[1,0]], c:cGeo, yr:[-4,6],
+        f:(x,y)=>inv(1-x,-y), what:"pole at z = 1" },
+  alt:{ label:"1/(1 + z²)", cap:5, L:2.2, R:1, sing:[[0,1],[0,-1]], c:cAlt, yr:[-0.6,2],
+        f:(x,y)=>inv(1+x*x-y*y,2*x*y), what:"poles at z = ±i, off the real line" },
+  cat:{ label:"Catalan", cap:3, L:0.62, R:0.25, sing:[[0.25,0]], c:cCat, yr:[0,3],
+        f:(x,y)=>{ if(Math.hypot(x,y)<1e-9) return [1,0]; const s=csqrt(1-4*x,-4*y); const d=inv(2*x,2*y); const a=1-s[0], b=-s[1]; return [a*d[0]-b*d[1], a*d[1]+b*d[0]]; },
+        what:"branch point at z = 1/4 (the colour jump is the cut)", formula:"C(z) = (1 − √(1 − 4z)) / 2z" },
+  sur:{ label:"surjections", cap:6, L:2.2, R:L2, sing:[[L2,0],[L2,2*Math.PI],[L2,-2*Math.PI]], c:cSur, egf:true, yr:[-4,6],
+        f:(x,y)=>{ const e=Math.exp(x); return inv(2-e*Math.cos(y), -e*Math.sin(y)); },
+        what:"poles at log 2 + 2πik; the nearest is log 2 ≈ 0.693", formula:"1 / (2 − eᶻ)" },
+  hex:{ label:"1/(1 − z + z²)", cap:6, L:2.2, R:1, sing:[[0.5,S3],[0.5,-S3]], c:cHex, yr:[-1,3],
+        f:(x,y)=>inv(1-x+x*x-y*y, -y+2*x*y), what:"poles at e^(±iπ/3), both on the unit circle" },
+  par:{ label:"partitions", cap:12, L:1.5, R:1, sing:[], ring:true, c:cPar, yr:[0,14],
+        f:(x,y)=>{ const r=Math.hypot(x,y); if(r>=0.995) return null; let pr=1, pi=0, zr=1, zi=0;
+              for(let k=1;k<=400;k++){ const t=zr*x-zi*y; zi=zr*y+zi*x; zr=t; if(Math.abs(zr)+Math.abs(zi)<1e-17) break; const a=1-zr, b=-zi; const u=pr*a-pi*b; pi=pr*b+pi*a; pr=u; }
+              return inv(pr,pi); },
+        what:"every point of the unit circle is singular: the function stops there", formula:"P(z) = ∏ 1/(1 − zᵏ)" },
+  bel:{ label:"Bell", cap:10, L:3.2, R:Infinity, sing:[], c:cBel, egf:true, yr:[0,8],
+        f:(x,y)=>{ const e=Math.exp(x), u=e*Math.cos(y)-1, v=e*Math.sin(y), m=Math.exp(u); return [m*Math.cos(v), m*Math.sin(v)]; },
+        what:"no singularities anywhere: R = ∞", formula:"exp(eᶻ − 1)" }
+};
+let key="alt", mode="f", N=8, L=FN[key].L;
+
+function partial(c,N,x,y){ let re=0, im=0; for(let n=N;n>=0;n--){ const t=re*x-im*y+c[n]; im=re*y+im*x; re=t; } return [re,im]; }
+
+/* ---------- domain colouring ---------- */
+function hsl(h,s,l){ const a=s*Math.min(l,1-l), f=n=>{ const k=(n+h*12)%12; return l-a*Math.max(-1,Math.min(k-3,9-k,1)); }; return [f(0)*255,f(8)*255,f(4)*255]; }
+function colour(w){
+  if(!w) return [205,205,208];
+  const m=Math.hypot(w[0],w[1]); if(!isFinite(m)) return [255,255,255];
+  if(m===0) return [0,0,0];
+  const h=(Math.atan2(w[1],w[0])/(2*Math.PI)+1)%1, lg=Math.log2(m), fr=lg-Math.floor(lg);
+  let l=0.10+0.78*(2/Math.PI)*Math.atan(Math.pow(m,0.55)); l*=0.84+0.16*fr;
+  return hsl(h,0.85,l);
+}
+function drawFlat(){
+  const F=FN[key], cv=$("cv"), W=cv.width, ctx=cv.getContext("2d"), img=ctx.createImageData(W,W), d=img.data;
+  for(let j=0;j<W;j++){ const y=L-2*L*(j+0.5)/W;
+    for(let i=0;i<W;i++){ const x=-L+2*L*(i+0.5)/W;
+      const w = mode==="f" ? F.f(x,y) : partial(F.c,N,x,y); const c=colour(w), o=4*(j*W+i);
+      d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; d[o+3]=255; } }
+  ctx.putImageData(img,0,0);
+  const ov=$("ov"); ov.innerHTML=""; const X=x=>200+x/L*200, Y=y=>200-y/L*200;
+  ov.append(el("line",{x1:0,y1:200,x2:400,y2:200,stroke:"#fff","stroke-opacity":.55}), el("line",{x1:200,y1:0,x2:200,y2:400,stroke:"#fff","stroke-opacity":.55}));
+  if(isFinite(F.R)){
+    ov.append(el("circle",{cx:200,cy:200,r:F.R/L*200,fill:"none",stroke:"#000","stroke-width":3.2,"stroke-opacity":.55}));
+    ov.append(el("circle",{cx:200,cy:200,r:F.R/L*200,fill:"none",stroke:"#fff","stroke-width":1.8,"stroke-dasharray":"7 6"}));
+  }
+  F.sing.forEach(([x,y])=>{ if(Math.abs(x)>L||Math.abs(y)>L) return; const cx=X(x), cy=Y(y), s=7;
+    for(const [col,wd] of [["#000",5],["#fff",2.2]]) ov.append(el("path",{d:`M${cx-s},${cy-s}L${cx+s},${cy+s}M${cx-s},${cy+s}L${cx+s},${cy-s}`,stroke:col,"stroke-width":wd,"stroke-linecap":"round"})); });
+  const lab=(x,y,t,anchor)=>ov.append(el("text",{x:x,y:y,"font-size":14,fill:"#fff",stroke:"#000","stroke-width":3,"paint-order":"stroke","stroke-linejoin":"round","text-anchor":anchor||"start"},t));
+  lab(394,194,"Re","end"); lab(206,16,"Im");
+  const tick = L>4?2:(L>1.2?1:(L>0.5?0.25:0.1));
+  for(let t=tick;t<L;t+=tick){ ov.append(el("line",{x1:X(t),y1:196,x2:X(t),y2:204,stroke:"#fff"}), el("line",{x1:X(-t),y1:196,x2:X(-t),y2:204,stroke:"#fff"})); }
+  lab(X(tick),220,String(tick),"middle");
+}
+
+/* ---------- 3D: height = |F|, colour = arg ---------- */
+let view="3d", az=-0.62, elv=0.66, grid=null, raf=0;
+const G=104;
+function val(x,y){ const F=FN[key]; return mode==="f" ? F.f(x,y) : partial(F.c,N,x,y); }
+function hOf(w,cap){ let m=Math.hypot(w[0],w[1]); if(!(m<1e300)) m=1e300; return Math.min(m,cap)/cap; }
+function computeGrid(){
+  const F=FN[key], n=G+1, H=new Float32Array(n*n), ok=new Uint8Array(n*n), col=new Array(G*G), HS=0.85, d=2/G;
+  for(let j=0;j<n;j++){ const y=-L+2*L*j/G; for(let i=0;i<n;i++){ const x=-L+2*L*i/G, w=val(x,y), o=j*n+i; if(!w) continue; ok[o]=1; H[o]=hOf(w,F.cap); } }
+  const lx=-0.42, ly=-0.52, lz=0.74;
+  for(let j=0;j<G;j++) for(let i=0;i<G;i++){
+    const a=j*n+i, b=a+1, c=a+n, e=c+1, q=j*G+i;
+    if(!(ok[a]&&ok[b]&&ok[c]&&ok[e])){ col[q]=null; continue; }
+    const x0=-L+2*L*i/G, y0=-L+2*L*j/G, x1=x0+2*L/G, y1=y0+2*L/G;
+    const rs=[Math.hypot(x0,y0),Math.hypot(x1,y0),Math.hypot(x0,y1),Math.hypot(x1,y1)];
+    const hmin=Math.min(H[a],H[b],H[c],H[e]), hmax=Math.max(H[a],H[b],H[c],H[e]);
+    if(mode==="s" && hmin<=0.999 && (hmax>0.999 || hmax-hmin>0.22)){ col[q]=null; continue; }
+    if(mode==="f" && isFinite(F.R) && Math.min(...rs)<F.R && Math.max(...rs)>=F.R){ col[q]="#16161a"; continue; }
+    const w=val((x0+x1)/2,(y0+y1)/2); if(!w){ col[q]=null; continue; }
+    let h=(Math.atan2(w[1],w[0])/(2*Math.PI)+1)%1; if(!(h>=0)) h=0;
+    const clipped = H[a]>0.999&&H[b]>0.999&&H[c]>0.999&&H[e]>0.999;
+    const gx=((H[b]+H[e])-(H[a]+H[c]))/2*HS/d, gy=((H[c]+H[e])-(H[a]+H[b]))/2*HS/d, nn=Math.hypot(gx,gy,1);
+    const lam=Math.max(0,(-gx*lx-gy*ly+lz)/nn);
+    const rgb = clipped ? hsl(h,0.6,0.87) : hsl(h,0.85,0.31+0.31*lam);
+    col[q] = clipped && mode==="s" ? `rgba(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0},0.22)` : `rgb(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0})`;
+  }
+  grid={H,ok,col,n,order:Array.from({length:G*G},(_,q)=>q),depth:new Float32Array(G*G)};
+}
+function draw3D(){
+  const cv=$("cv3"), ctx=cv.getContext("2d"), W=cv.width, F=FN[key], {H,col,n,order,depth}=grid;
+  const ca=Math.cos(az), sa=Math.sin(az), se=Math.sin(elv), ce=Math.cos(elv), S=W*0.31, cx=W/2, cy=W*0.57, HS=0.85;
+  const P=(x,y,z)=>{ const yr=x*sa+y*ca; return [cx+S*(x*ca-y*sa), cy-S*(yr*se+z*HS*ce), yr]; };
+  ctx.clearRect(0,0,W,W); ctx.lineJoin="round";
+  // floor and axes
+  ctx.beginPath(); [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([x,y],i)=>{ const p=P(x,y,0); i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); }); ctx.closePath();
+  ctx.fillStyle="#eceae4"; ctx.fill(); ctx.strokeStyle="#b9b7b0"; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.strokeStyle="#8a8a90"; ctx.lineWidth=1.5;
+  for(const [a,b] of [[[-1.18,0],[1.18,0]],[[0,-1.18],[0,1.18]]]){ const p=P(a[0],a[1],0), q=P(b[0],b[1],0); ctx.beginPath(); ctx.moveTo(p[0],p[1]); ctx.lineTo(q[0],q[1]); ctx.stroke(); }
+  if(isFinite(F.R) && F.R<L*1.3){ ctx.strokeStyle="#16161a"; ctx.lineWidth=2.5; ctx.setLineDash([9,7]); ctx.beginPath();
+    for(let k=0;k<=120;k++){ const t=2*Math.PI*k/120, x=F.R/L*Math.cos(t), y=F.R/L*Math.sin(t); if(Math.abs(x)>1||Math.abs(y)>1){ continue; } const p=P(x,y,0); k&&Math.abs(F.R/L*Math.cos(t-2*Math.PI/120))<=1&&Math.abs(F.R/L*Math.sin(t-2*Math.PI/120))<=1?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); }
+    ctx.stroke(); ctx.setLineDash([]); }
+  // project nodes
+  const px=new Float32Array(n*n), py=new Float32Array(n*n), pd=new Float32Array(n*n);
+  for(let j=0;j<n;j++) for(let i=0;i<n;i++){ const o=j*n+i, p=P(-1+2*i/G,-1+2*j/G,H[o]); px[o]=p[0]; py[o]=p[1]; pd[o]=p[2]; }
+  for(let j=0;j<G;j++) for(let i=0;i<G;i++){ const a=j*n+i; depth[j*G+i]=pd[a]+pd[a+1]+pd[a+n]+pd[a+n+1]; }
+  order.sort((u,v)=>depth[v]-depth[u]);
+  ctx.lineWidth=0.8;
+  for(const q of order){ const c=col[q]; if(!c) continue; const j=(q/G)|0, i=q-j*G, a=j*n+i, b=a+1, e=a+n+1, d=a+n;
+    ctx.beginPath(); ctx.moveTo(px[a],py[a]); ctx.lineTo(px[b],py[b]); ctx.lineTo(px[e],py[e]); ctx.lineTo(px[d],py[d]); ctx.closePath();
+    ctx.fillStyle=c; ctx.fill(); if(c.charCodeAt(3)!==97){ ctx.strokeStyle=c; ctx.stroke(); } }
+  // singularity markers and labels
+  ctx.font="600 24px Georgia, serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  const text=(t,p,fill)=>{ ctx.lineWidth=5; ctx.strokeStyle="#fff"; ctx.strokeText(t,p[0],p[1]); ctx.fillStyle=fill; ctx.fillText(t,p[0],p[1]); };
+  F.sing.forEach(([x,y])=>{ if(Math.abs(x)>L||Math.abs(y)>L) return; const w=F.f(x,y), h0=w?hOf(w,F.cap):1, p0=P(x/L,y/L,h0), p1=P(x/L,y/L,h0+0.13);
+    ctx.strokeStyle="#16161a"; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(p0[0],p0[1]); ctx.lineTo(p1[0],p1[1]); ctx.stroke(); text("✕",P(x/L,y/L,h0+0.19),"#16161a"); });
+  ctx.font="20px Georgia, serif"; text("Re",P(1.3,0,0),"#555"); text("Im",P(0,1.3,0),"#555");
+  if(1/L<1.0){ ctx.font="17px Georgia, serif"; const t=L>4?2:(L>1.2?1:(L>0.5?0.25:0.1)); text(String(t),P(t/L,-1.09,0),"#555"); const a=P(t/L,-1,0), b=P(t/L,-1.04,0); ctx.strokeStyle="#555"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke(); }
+}
+function drawPlane(){
+  const three = view==="3d";
+  $("cv3").classList.toggle("off",!three); $("cv").classList.toggle("off",three); $("ov").classList.toggle("off",three);
+  $("v3").classList.toggle("on",three); $("v2").classList.toggle("on",!three);
+  $("planeNote").innerHTML = three
+    ? "Height: the size |F(z)| of the value, cut off at a ceiling (pale). Colour: the direction of the value. Dark ring: |z| = R. ✕: singularities. Drag to turn."
+        + (mode==="s" ? " For the cut-off series, only the part below the ceiling is drawn." : "")
+    : "Colour: direction of the value. Brightness: size (white = huge, black = 0). Dashed circle: |z| = R. ✕: singularities.";
+  if(three){ computeGrid(); draw3D(); } else drawFlat();
+}
+(function(){ const cv=$("cv3"); let drag=null;
+  cv.addEventListener("pointerdown",e=>{ drag=[e.clientX,e.clientY]; cv.setPointerCapture(e.pointerId); cv.style.cursor="grabbing"; });
+  cv.addEventListener("pointermove",e=>{ if(!drag) return; az+=(e.clientX-drag[0])*0.01; elv=Math.max(0.12,Math.min(1.5,elv+(e.clientY-drag[1])*0.01)); drag=[e.clientX,e.clientY];
+    cancelAnimationFrame(raf); raf=requestAnimationFrame(draw3D); });
+  const up=()=>{ drag=null; cv.style.cursor="grab"; }; cv.addEventListener("pointerup",up); cv.addEventListener("pointercancel",up);
+})();
+
+/* ---------- real axis ---------- */
+function drawReal(){
+  const F=FN[key], svg=$("real"); svg.innerHTML=""; const [y0,y1]=F.yr, X=x=>20+(x+L)/(2*L)*360, Y=y=>235-(y-y0)/(y1-y0)*225;
+  svg.append(el("line",{x1:20,y1:Y(0),x2:380,y2:Y(0),stroke:"#999"}), el("line",{x1:X(0),y1:10,x2:X(0),y2:235,stroke:"#ccc"}));
+  if(isFinite(F.R)) for(const s of [-1,1]) if(F.R<L){ svg.append(el("line",{x1:X(s*F.R),y1:10,x2:X(s*F.R),y2:235,stroke:"#555","stroke-dasharray":"5 5"}));
+      svg.append(el("text",{x:X(s*F.R),y:249,"font-size":13,fill:"#555","text-anchor":"middle"},(s<0?"−":"")+"R")); }
+  const path=(g,col,wd)=>{ let d="", pen=false; for(let i=0;i<=720;i++){ const x=-L+2*L*i/720, y=g(x);
+      if(y===null||!isFinite(y)||y<y0-0.5*(y1-y0)||y>y1+0.5*(y1-y0)){ pen=false; continue; }
+      const yy=Math.max(y0,Math.min(y1,y)); if(yy!==y){ if(pen) d+="L"+X(x).toFixed(1)+","+Y(yy).toFixed(1); pen=false; continue; }
+      d+=(pen?"L":"M")+X(x).toFixed(1)+","+Y(y).toFixed(1); pen=true; }
+    svg.append(el("path",{d:d,fill:"none",stroke:col,"stroke-width":wd,"stroke-linejoin":"round"})); };
+  path(x=>{ const w=F.f(x,0); return (!w||Math.abs(w[1])>1e-9)?null:w[0]; },"#2b5fa8",3);
+  path(x=>partial(F.c,N,x,0)[0],"#b3261e",2);
+}
+
+/* ---------- coefficients ---------- */
+function fmtInt(x){ const r=Math.round(x); return Math.abs(r)<1e15 ? r.toLocaleString("en-US") : x.toExponential(3); }
+function drawCoefs(){
+  const F=FN[key], svg=$("growth"); svg.innerHTML=""; const inv=isFinite(F.R)?1/F.R:0;
+  const data=[]; for(let n=1;n<=M;n++) data.push(Math.pow(Math.abs(F.c[n]),1/n));
+  const top=Math.max(inv*1.25, Math.max(...data)*1.08, 0.5), X=n=>34+(n/M)*350, Y=y=>215-y/top*200;
+  svg.append(el("line",{x1:34,y1:215,x2:390,y2:215,stroke:"#999"}), el("line",{x1:34,y1:215,x2:34,y2:10,stroke:"#999"}));
+  svg.append(el("line",{x1:34,y1:Y(inv),x2:390,y2:Y(inv),stroke:"#555","stroke-dasharray":"6 5"}));
+  svg.append(el("text",{x:388,y:Y(inv)-6,"font-size":14,fill:"#555","text-anchor":"end"},"1/R = "+(inv?inv.toFixed(4).replace(/0+$/,"").replace(/\.$/,""):"0")));
+  for(const n of [10,20,30,40,50,60]) svg.append(el("text",{x:X(n),y:232,"font-size":12,fill:"#888","text-anchor":"middle"},n));
+  svg.append(el("text",{x:28,y:Y(top*0.98)+10,"font-size":12,fill:"#888","text-anchor":"end"},top.toFixed(1)));
+  data.forEach((y,i)=>svg.append(el("circle",{cx:X(i+1),cy:Y(y),r:3,fill:"#b3261e"})));
+  const an = F.egf ? "aₙ/n!" : "aₙ";
+  $("growthNote").innerHTML = `Dots: |${an}|<sup>1/n</sup> for n = 1…60. Dashed: 1/R.`;
+  const t4=x=>x.toFixed(4).replace(/0+$/,"").replace(/\.$/,"");
+  $("rate").innerHTML = !isFinite(F.R) ? `R = ∞ &nbsp;⟹&nbsp; ${an} is eventually smaller than cⁿ for every c > 0`
+      : Math.abs(F.R-1)<1e-12 ? `R = 1 &nbsp;⟹&nbsp; growth rate 1: <b>no exponential growth</b>`
+      : `R = ${t4(F.R)} &nbsp;⟹&nbsp; ${an} grows like <b>${t4(1/F.R)}<sup>n</sup></b>, up to slower factors`;
+  const k=F.egf?11:14, list=[]; for(let n=0;n<k;n++) list.push(fmtInt(F.egf?F.c[n]*fact[n]:F.c[n]));
+  $("coefs").innerHTML = `<span style="color:var(--mute)">a₀, a₁, … =</span> ${list.join(", ")}, …`;
+}
+
+function render(){
+  const F=FN[key];
+  [...$("presets").children].forEach(b=>b.classList.toggle("on", b.dataset.k===key));
+  $("info").innerHTML = (F.formula?`${F.formula}<br>`:"") + `<span class="tag">${F.what}</span>`;
+  $("Nval").textContent=N;
+  drawPlane(); drawReal(); drawCoefs();
+}
+Object.keys(FN).forEach(k=>{ const b=document.createElement("button"); b.textContent=FN[k].label; b.dataset.k=k; b.onclick=()=>{ key=k; L=FN[k].L; render(); }; $("presets").append(b); });
+document.querySelectorAll("input[name=mode]").forEach(r=>r.onchange=()=>{ mode=r.value; drawPlane(); });
+$("N").oninput=e=>{ N=+e.target.value; $("Nval").textContent=N; if(mode==="s") drawPlane(); drawReal(); };
+$("v3").onclick=()=>{ view="3d"; drawPlane(); };
+$("v2").onclick=()=>{ view="flat"; drawPlane(); };
+$("zin").onclick=()=>{ L/=1.5; drawPlane(); drawReal(); };
+$("zout").onclick=()=>{ L*=1.5; drawPlane(); drawReal(); };
+render();
+</script>
+</body>
+</html>
