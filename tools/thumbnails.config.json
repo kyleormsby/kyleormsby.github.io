@@ -238,5 +238,13 @@
     "scale": 1,
     "click": "#scramble",
     "wait": 2500
+  },
+  "bouba-kiki-plane": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "wait": 1000
   }
 }
