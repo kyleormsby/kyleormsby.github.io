@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Domino tilings of a checkerboard</title>
+<style>
+  :root{
+    --paper:#f4efe5; --ink:#17140f; --muted:#6d6457; --panel:rgba(244,239,229,.88); --line:rgba(23,20,15,.15);
+    --accent:#a2462a; --blue:#2f5f9c; --faint:rgba(23,20,15,.07); --gold:#b0841f; --green:#4c7a4a; --plum:#7a4c7e;
+    --sql:#ece4d2; --sqd:#d3c7ae; --dom:#c9b994; --shade:rgba(0,0,0,.17); --domline:rgba(23,20,15,.45);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#14120f; --ink:#ebe4d6; --muted:#9a9184; --panel:rgba(20,18,15,.88); --line:rgba(235,228,214,.17);
+      --accent:#d07a52; --blue:#6f98d0; --faint:rgba(235,228,214,.07); --gold:#d0a848; --green:#7fb07a; --plum:#c79acb;
+      --sql:#2a251e; --sqd:#1d1914; --dom:#6b604c; --shade:rgba(0,0,0,.26); --domline:rgba(0,0,0,.55); }
+  }
+  html,body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);font:14px/1.45 ui-serif,Georgia,"Iowan Old Style",serif}
+  #wrap{display:grid;grid-template-columns:318px minmax(0,1.2fr) minmax(0,1fr);gap:14px;padding:14px;box-sizing:border-box;min-height:100vh;align-items:start}
+  #panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px;box-shadow:0 8px 30px rgba(0,0,0,.12);box-sizing:border-box}
+  #panel h1{font-size:17px;margin:0 0 2px;font-weight:600;letter-spacing:.01em}
+  .stats{color:var(--muted);font-size:12.5px;margin:0 0 8px}
+  .col{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .fig{border:1px solid var(--line);border-radius:10px;padding:8px 10px 8px;box-sizing:border-box;min-width:0}
+  .fig h2{font-size:12.5px;font-weight:400;color:var(--muted);margin:0 0 6px 2px;letter-spacing:.02em}
+  .fig h2 b{color:var(--ink);font-weight:600}
+  #boardwrap{display:flex;justify-content:center}
+  #board{display:block;touch-action:manipulation;cursor:pointer}
+  #boardnote{font-size:12.5px;color:var(--muted);text-align:center;margin:4px 0 0;min-height:18px}
+  .sl{display:grid;grid-template-columns:92px 1fr;align-items:center;gap:8px;font-size:13px;margin:3px 0;font-variant-numeric:tabular-nums}
+  .sl input{width:100%;accent-color:var(--accent);margin:0}
+  #count{font-size:30px;line-height:1.12;margin:10px 0 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  #count.long{font-size:19px} #count.vlong{font-size:15px}
+  #countlab{color:var(--muted);font-size:12.5px;margin:0 0 2px}
+  #fib{font-size:14px;min-height:21px;color:var(--accent);margin:2px 0 6px}
+  .kv{font-size:13px;margin:3px 0;font-variant-numeric:tabular-nums}
+  .kv span.k{color:var(--muted)}
+  .btns{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+  button,select{font:inherit;font-size:13px;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer}
+  button:hover{border-color:var(--ink)}
+  button.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  button.on{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+  button kbd{font:inherit;font-size:11px;opacity:.6;margin-left:5px}
+  label.ck{font-size:13px;display:inline-flex;gap:5px;align-items:center;margin-right:10px;cursor:pointer}
+  label.ck input{accent-color:var(--accent);margin:0}
+  details{margin-top:10px}
+  details summary{cursor:pointer;color:var(--muted);font-size:12.5px;user-select:none}
+  details p{margin:6px 0;font-size:13px}
+  .m{font-style:italic}
+  .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;font-size:.86em;margin:0 .12em}
+  .frac>span:first-child{border-bottom:1px solid currentColor;padding:0 .2em}
+  .frac>span:last-child{padding:0 .2em}
+  .prod{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 .12em}
+  .prod .big{font-size:1.9em;line-height:.95}
+  .prod .lim{font-size:.72em;white-space:nowrap}
+  .formula{font-size:14.5px;line-height:2.5;text-align:center;margin:0;overflow-x:auto;white-space:nowrap}
+  .formula.inst{font-size:13.5px;color:var(--muted)}
+  .formula.inst b{color:var(--ink);font-weight:600}
+  .formula.wrap{white-space:normal;overflow-wrap:anywhere;line-height:1.5;margin:6px 0 2px}
+  .formula.wrap .prod,.formula.wrap .frac{margin-top:.5em;margin-bottom:.5em}
+  .nw{white-space:nowrap;display:inline-block}
+  #spec{display:block;width:100%;height:auto;max-height:62vh;margin:0 auto}
+  #spec text{font-family:ui-serif,Georgia,serif;fill:var(--muted);font-size:17px}
+  #spec .sq{fill:none;stroke:var(--line);stroke-width:1.2}
+  #spec .quad{fill:var(--accent);opacity:.09}
+  #spec .ax{stroke:var(--line);stroke-width:1}
+  #spec .unit{fill:none;stroke:var(--muted);stroke-width:1;stroke-dasharray:4 5;opacity:.7}
+  #spec .arc{fill:none;stroke:var(--muted);stroke-width:1.2}
+  #spec .spoke{stroke:var(--ink);stroke-width:.6;opacity:.22}
+  #spec .drop{stroke:var(--ink);stroke-width:.6;opacity:.13}
+  #spec .pp{fill:var(--ink)}
+  #spec .pt{fill:var(--paper);stroke:var(--muted);stroke-width:1.1;cursor:crosshair}
+  #spec .pt.q{fill:var(--accent);stroke:var(--accent)}
+  #spec .pt.z{fill:var(--ink);stroke:var(--ink)}
+  #spec .hl{stroke:var(--ink);stroke-width:1.6}
+  #spec .ring{fill:none;stroke:var(--ink);stroke-width:1.6}
+  #readout{font-size:13px;text-align:center;min-height:44px;margin:2px 0 0;font-variant-numeric:tabular-nums}
+  #readout .k{color:var(--muted)}
+  #seq{display:flex;flex-wrap:wrap;gap:4px 5px;font-size:12.5px;font-variant-numeric:tabular-nums}
+  #seq span{border:1px solid var(--line);border-radius:5px;padding:1px 6px;cursor:pointer;white-space:nowrap}
+  #seq span:hover{border-color:var(--ink)}
+  #seq span.cur{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  #seq span.zero{color:var(--muted)}
+  #seq span i{font-style:normal;color:var(--muted);font-size:10px;margin-right:4px}
+  #seq span.cur i{color:var(--paper);opacity:.7}
+  #growth{font-size:13px;margin:8px 0 0}
+  #gal{max-height:46vh;overflow:auto;padding:5px;-webkit-overflow-scrolling:touch}
+  .gl{font-size:12.5px;color:var(--accent);margin:6px 2px 4px}
+  .gc{position:relative}
+  .gc canvas{display:block;cursor:pointer}
+  #fibfig{border:1.5px solid var(--accent);background:color-mix(in srgb,var(--accent) 7%,transparent);padding:10px 14px 10px}
+  #fibfig h2{color:var(--accent);font-weight:600;font-size:13.5px;margin-left:0}
+  #fibfig .formula.big{font-size:19px;line-height:2.6;margin:2px 0 4px}
+  #fibfig .formula.big .prod .big{line-height:1.12}
+  .fcs{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px 5px;font-size:13.5px;font-variant-numeric:tabular-nums}
+  .fcs .lhs,.fcs .rhs{font-size:19px;white-space:nowrap;margin:0 4px}
+  .fcs .rhs b{color:var(--accent)}
+  .fc{display:inline-flex;flex-direction:column;align-items:center;border:1px solid var(--line);border-radius:8px;padding:1px 7px 3px;cursor:crosshair;white-space:nowrap;line-height:2.1;background:var(--paper)}
+  .fc .v{line-height:1.2;color:var(--muted);font-size:12px}
+  .fc.on{border-color:var(--ink)} .fc.on .v{color:var(--ink)}
+  #fibfig .note{font-size:12.5px;color:var(--muted);margin:9px 0 0;text-align:center}
+  .mark{position:absolute;border:2px solid var(--ink);border-radius:4px;pointer-events:none;box-sizing:border-box;display:none}
+  @media (max-width:1100px){ #wrap{grid-template-columns:300px minmax(0,1fr)} #right{grid-column:1 / -1} #spec{max-height:none;max-width:560px} }
+  @media (max-width:720px){ #wrap{grid-template-columns:1fr} #right{grid-column:auto} }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="panel">
+    <h1>Domino tilings of a checkerboard</h1>
+    <div class="stats">2 × <span class="m">n</span> gives Fibonacci; bigger boards give trigonometry &nbsp;·&nbsp; for Fibonacci Day, 11/23</div>
+    <div class="sl"><span>rows <span class="m">m</span> = <b id="mv"></b></span><input id="ms" type="range" min="1" max="12" step="1"></div>
+    <div class="sl"><span>columns <span class="m">n</span> = <b id="nv"></b></span><input id="ns" type="range" min="1" max="24" step="1"></div>
+    <div class="btns" style="margin-top:4px">
+      <button data-p="2,8">2 × 8</button><button data-p="3,8">3 × 8</button><button data-p="4,7">4 × 7</button><button data-p="8,8">8 × 8</button><button data-p="12,24">12 × 24</button>
+    </div>
+    <div id="count"></div>
+    <div id="countlab"></div>
+    <div id="fib"></div>
+    <div class="btns">
+      <button id="random" class="primary">random tiling<kbd>R</kbd></button>
+      <button id="shuffle">shuffle<kbd>S</kbd></button>
+      <button id="brick">comb</button>
+    </div>
+    <div class="sl" style="margin-top:8px"><span>shuffle speed</span><input id="speed" type="range" min="1" max="10" step="0.1" value="3.6"></div>
+    <div class="btns">
+      <span style="font-size:13px;color:var(--muted)">colour by</span>
+      <select id="cmode"><option value="orient">orientation</option><option value="four">orientation + parity</option><option value="plain">nothing</option></select>
+    </div>
+    <div class="btns">
+      <label class="ck"><input type="checkbox" id="showf" checked>flippable blocks</label>
+      <label class="ck"><input type="checkbox" id="showh">height function</label>
+    </div>
+    <div class="kv" style="margin-top:8px"><span class="k">flips available</span> <b id="nflip"></b></div>
+    <details open><summary>what is this?</summary>
+      <p>A <b>domino tiling</b> covers the <span class="m">m</span> × <span class="m">n</span> board with 1 × 2 tiles, each lying on one dark and one light square. The big number counts them all.</p>
+      <p><b>Fibonacci.</b> A tiling of the 2 × <span class="m">n</span> strip begins with one upright domino or with two flat ones, so the count for <span class="m">n</span> is the sum of the counts for <span class="m">n</span> − 1 and <span class="m">n</span> − 2.</p>
+      <p><b>Trigonometry.</b> Kasteleyn and Temperley–Fisher (1961) showed that the count squared is |det <span class="m">K</span>| for <span class="m">K</span> = <span class="m">A<sub>n</sub></span> ⊗ 1 + <span class="m">i</span> · 1 ⊗ <span class="m">A<sub>m</sub></span>, where <span class="m">A<sub>n</sub></span> is the adjacency matrix of a path. Its eigenvalues are 2 cos(<span class="m">k</span>π/(<span class="m">n</span>+1)): shadows of evenly spaced points on a circle of radius 2. So the eigenvalues of <span class="m">K</span> form the grid in the right-hand picture, and the count is the product of the squared distances from the origin to the grid points in the shaded quadrant.</p>
+      <p><b>Flips.</b> Click a 2 × 2 block made of two parallel dominoes to rotate it. Any two tilings of a rectangle are joined by flips (Thurston); a flip changes the height function at one vertex by 4. <i>Random tiling</i> draws an exactly uniform sample with the transfer matrix; <i>shuffle</i> runs the flip random walk.</p>
+    </details>
+  </div>
+
+  <div class="col" id="mid">
+    <div class="fig">
+      <h2 id="boardh"></h2>
+      <div id="boardwrap"><canvas id="board"></canvas></div>
+      <div id="boardnote"></div>
+    </div>
+    <div class="fig" id="fibfig" hidden></div>
+    <div class="fig" id="galfig">
+      <h2 id="galh"></h2>
+      <div id="gal"></div>
+    </div>
+  </div>
+
+  <div class="col" id="right">
+    <div class="fig">
+      <h2>Where the cosines come from: the grid of points (2 cos <span class="m">k</span>π/(<span class="m">n</span>+1), 2 cos <span class="m">j</span>π/(<span class="m">m</span>+1))</h2>
+      <svg id="spec" viewBox="-222 -470 696 696" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="readout"></div>
+    </div>
+    <div class="fig">
+      <h2>The formula</h2>
+      <p class="formula">#(<span class="m">m</span> × <span class="m">n</span>) =
+        <span class="prod"><span class="lim">⌈<span class="m">m</span>/2⌉</span><span class="big">∏</span><span class="lim"><span class="m">j</span> = 1</span></span>
+        <span class="prod"><span class="lim">⌈<span class="m">n</span>/2⌉</span><span class="big">∏</span><span class="lim"><span class="m">k</span> = 1</span></span>
+        ( 4 cos<sup>2</sup> <span class="frac"><span><span class="m">j</span>π</span><span><span class="m">m</span> + 1</span></span> + 4 cos<sup>2</sup> <span class="frac"><span><span class="m">k</span>π</span><span><span class="m">n</span> + 1</span></span> )</p>
+      <p class="formula inst" id="inst"></p>
+      <p class="formula inst wrap" id="inst2"></p>
+    </div>
+    <div class="fig">
+      <h2 id="seqh"></h2>
+      <div id="seq"></div>
+      <div id="growth"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+'use strict';
+const MMAX=12, NMAX=24, GALMAX=1200, PAD=14;
+const $=id=>document.getElementById(id);
+const board=$('board'), ctx=board.getContext('2d');
+let m=2, n=8, t=null, total=0n;
+let colorMode='orient', showH=false, showF=true;
+let shuffling=false, acc=0, lastT=0, cell=40, dpr=1;
+let anims=[], hover=null, gal=null, sel={j:1,k:1};
+let rafOn=false;
+
+/* ---------- seeded PRNG so the page boots the same way every time ---------- */
+let seed=1123581321>>>0;
+function rnd(){ seed=(seed+0x6D2B79F5)>>>0; let x=seed; x=Math.imul(x^(x>>>15),x|1); x^=x+Math.imul(x^(x>>>7),x|61); return ((x^(x>>>14))>>>0)/4294967296; }
+function randBig(N){ const bits=N.toString(2).length+64; let x=0n; for(let i=0;i<bits;i+=32) x=(x<<32n)|BigInt(Math.floor(rnd()*4294967296)); return x%N; }
+
+/* ---------- transfer matrix: profiles are subsets of a column ---------- */
+const TR={}, GT={};
+function trans(m){
+  if(TR[m]) return TR[m];
+  const full=1<<m, out=new Array(full);
+  for(let a=0;a<full;a++){
+    const lst=[];
+    (function rec(i,o){
+      if(i>=m){ lst.push(o); return; }
+      if(a>>i&1){ rec(i+1,o); return; }
+      rec(i+1,o|(1<<i));                       // horizontal domino poking into the next column
+      if(i+1<m && !(a>>(i+1)&1)) rec(i+2,o);   // vertical domino
+    })(0,0);
+    out[a]=Int32Array.from(lst);
+  }
+  return TR[m]=out;
+}
+// G[k][a] = number of ways to finish k columns when the first has the cells of a already covered
+function table(m){
+  if(GT[m]) return GT[m];
+  const T=trans(m), full=1<<m, G=[];
+  const g0=new Array(full).fill(0n); g0[0]=1n; G.push(g0);
+  for(let k=1;k<=NMAX;k++){
+    const prev=G[k-1], cur=new Array(full);
+    for(let a=0;a<full;a++){ let s=0n; const tr=T[a]; for(let i=0;i<tr.length;i++) s+=prev[tr[i]]; cur[a]=s; }
+    G.push(cur);
+  }
+  return GT[m]=G;
+}
+const count=(m,n)=>table(m)[n][0];
+
+// codes: 0 partner to the right, 1 to the left, 2 below, 3 above
+function sample(){
+  const G=table(m), T=trans(m), d=new Int8Array(m*n); let a=0;
+  for(let c=0;c<n;c++){
+    const k=n-c, lst=T[a]; let r=randBig(G[k][a]), o=lst[lst.length-1];
+    for(let i=0;i<lst.length;i++){ const w=G[k-1][lst[i]]; if(r<w){ o=lst[i]; break; } r-=w; }
+    for(let i=0;i<m;i++){
+      if(a>>i&1) continue;
+      if(o>>i&1){ d[i*n+c]=0; d[i*n+c+1]=1; }
+      else { d[i*n+c]=2; d[(i+1)*n+c]=3; i++; }
+    }
+    a=o;
+  }
+  return d;
+}
+// the "comb": upright dominoes where possible, otherwise flat ones
+function comb(){
+  const d=new Int8Array(m*n);
+  if(m%2===0){ for(let r=0;r<m;r+=2) for(let c=0;c<n;c++){ d[r*n+c]=2; d[(r+1)*n+c]=3; } }
+  else { for(let r=0;r<m;r++) for(let c=0;c<n;c+=2){ d[r*n+c]=0; d[r*n+c+1]=1; } }
+  return d;
+}
+// all tilings, scanning column by column, upright before flat
+function enumerate(){
+  const res=[], d=new Int8Array(m*n).fill(-1), N=m*n;
+  (function rec(pos){
+    while(pos<N && d[(pos%m)*n+((pos/m)|0)]>=0) pos++;
+    if(pos>=N){ res.push(d.slice()); return; }
+    const r=pos%m, c=(pos/m)|0, id=r*n+c;
+    if(r+1<m && d[id+n]<0){ d[id]=2; d[id+n]=3; rec(pos+1); d[id]=-1; d[id+n]=-1; }
+    if(c+1<n){ d[id]=0; d[id+1]=1; rec(pos+1); d[id]=-1; d[id+1]=-1; }
+  })(0);
+  return res;
+}
+const key=d=>Array.prototype.join.call(d,'');
+
+/* ---------- flips ---------- */
+function flipType(r,c){            // 1: two flat dominoes, 2: two upright, 0: not flippable
+  if(!t||r<0||c<0||r>=m-1||c>=n-1) return 0;
+  const a=r*n+c;
+  if(t[a]===0 && t[a+n]===0) return 1;
+  if(t[a]===2 && t[a+1]===2) return 2;
+  return 0;
+}
+function animating(r,c){ for(const a of anims) if(Math.abs(a.r-r)<2 && Math.abs(a.c-c)<2) return true; return false; }
+function doFlip(r,c,dur){
+  const ty=flipType(r,c); if(!ty) return false;
+  anims=anims.filter(a=>!(Math.abs(a.r-r)<2 && Math.abs(a.c-c)<2));
+  const a=r*n+c;
+  if(ty===1){ t[a]=2; t[a+1]=2; t[a+n]=3; t[a+n+1]=3; }
+  else { t[a]=0; t[a+1]=1; t[a+n]=0; t[a+n+1]=1; }
+  if(dur>0) anims.push({r,c,t0:performance.now(),dur,wasH:ty===1,dir:((r+c)&1)?1:-1});
+  changed(); return true;
+}
+function nFlips(){ let k=0; for(let r=0;r<m-1;r++) for(let c=0;c<n-1;c++) if(flipType(r,c)) k++; return k; }
+
+/* ---------- Thurston height function on the vertices ---------- */
+function heights(){
+  const W=n+1, h=new Int16Array((m+1)*W).fill(-999), q=[0]; h[0]=0;
+  while(q.length){
+    const v=q.pop(), i=(v/W)|0, j=v%W, hv=h[v];
+    const tryE=(i2,j2,dh)=>{ const u=i2*W+j2; if(h[u]===-999){ h[u]=hv+dh; q.push(u); } };
+    // east / west along the edge between rows i-1 and i
+    if(j<n && !(i>=1&&i<=m-1&&t[(i-1)*n+j]===2)) tryE(i,j+1, ((i-1+j)&1)===0?1:-1);
+    if(j>0 && !(i>=1&&i<=m-1&&t[(i-1)*n+j-1]===2)) tryE(i,j-1, ((i-1+j-1)&1)===0?-1:1);
+    // south / north along the edge between columns j-1 and j
+    if(i<m && !(j>=1&&j<=n-1&&t[i*n+j-1]===0)) tryE(i+1,j, ((i+j)&1)===0?1:-1);
+    if(i>0 && !(j>=1&&j<=n-1&&t[(i-1)*n+j-1]===0)) tryE(i-1,j, ((i-1+j)&1)===0?-1:1);
+  }
+  return h;
+}
+
+/* ---------- colours ---------- */
+let C={};
+function readColors(){
+  const cs=getComputedStyle(document.documentElement), g=k=>cs.getPropertyValue(k).trim();
+  C={paper:g('--paper'),ink:g('--ink'),muted:g('--muted'),accent:g('--accent'),blue:g('--blue'),gold:g('--gold'),green:g('--green'),
+     sql:g('--sql'),sqd:g('--sqd'),dom:g('--dom'),shade:g('--shade'),domline:g('--domline')};
+}
+function domColor(horiz,blackFirst){
+  if(colorMode==='orient') return horiz?C.blue:C.accent;
+  if(colorMode==='four') return horiz?(blackFirst?C.blue:C.green):(blackFirst?C.accent:C.gold);
+  return C.dom;
+}
+function rr(g,x,y,w,h,r){
+  g.beginPath();
+  if(g.roundRect) g.roundRect(x,y,w,h,r);
+  else { g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+}
+function drawDom(g,x,y,s,horiz,blackFirst,full,noShade){
+  const w=horiz?2*s:s, h=horiz?s:2*s;
+  if(!full){ g.fillStyle=domColor(horiz,blackFirst); g.fillRect(x+.5,y+.5,w-1,h-1); return; }
+  const ins=Math.max(.75,s*.05), rad=s*.17;
+  rr(g,x+ins,y+ins,w-2*ins,h-2*ins,rad);
+  g.fillStyle=domColor(horiz,blackFirst); g.fill();
+  if(!noShade){
+    g.save(); g.clip(); g.fillStyle=C.shade;
+    g.fillRect(blackFirst?x:(horiz?x+s:x), blackFirst?y:(horiz?y:y+s), s, s);
+    g.restore();
+    rr(g,x+ins,y+ins,w-2*ins,h-2*ins,rad);
+  }
+  g.strokeStyle=C.domline; g.lineWidth=Math.max(.6,s*.022); g.stroke();
+}
+function drawTiling(g,d,ox,oy,s,full){
+  for(let r=0;r<m;r++) for(let c=0;c<n;c++){
+    const v=d[r*n+c]; if(v!==0&&v!==2) continue;
+    drawDom(g,ox+c*s,oy+r*s,s,v===0,((r+c)&1)===0,full,true);
+  }
+}
+
+/* ---------- main board ---------- */
+function sizeBoard(){
+  const W=$('boardwrap').clientWidth, Hmax=Math.max(180,Math.min(window.innerHeight*0.56,540));
+  cell=Math.max(6,Math.min(Math.floor((W-2*PAD)/n),Math.floor((Hmax-2*PAD)/m),76));
+  const cw=n*cell+2*PAD, ch=m*cell+2*PAD; dpr=window.devicePixelRatio||1;
+  if(board.width!==Math.round(cw*dpr)||board.height!==Math.round(ch*dpr)){
+    board.width=Math.round(cw*dpr); board.height=Math.round(ch*dpr);
+    board.style.width=cw+'px'; board.style.height=ch+'px';
+  }
+}
+const ease=x=>x<.5?2*x*x:1-2*(1-x)*(1-x);
+function drawBoard(now){
+  const s=cell, X=c=>PAD+c*s, Y=r=>PAD+r*s;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,board.width,board.height);
+  for(let r=0;r<m;r++) for(let c=0;c<n;c++){ ctx.fillStyle=((r+c)&1)===0?C.sqd:C.sql; ctx.fillRect(X(c),Y(r),s,s); }
+  ctx.strokeStyle=C.domline; ctx.lineWidth=1; ctx.strokeRect(X(0)-.5,Y(0)-.5,n*s+1,m*s+1);
+  if(!t) return;
+  const busy=new Uint8Array(m*n);
+  for(const a of anims){ const i=a.r*n+a.c; busy[i]=busy[i+1]=busy[i+n]=busy[i+n+1]=1; }
+  for(let r=0;r<m;r++) for(let c=0;c<n;c++){
+    const v=t[r*n+c]; if((v!==0&&v!==2)||busy[r*n+c]) continue;
+    drawDom(ctx,X(c),Y(r),s,v===0,((r+c)&1)===0,true);
+  }
+  for(const a of anims){
+    const e=ease(Math.min(1,(now-a.t0)/a.dur)), cx=X(a.c+1), cy=Y(a.r+1), b=((a.r+a.c)&1)===0, sc=1-.29*Math.sin(Math.PI*e);
+    const pair=(horiz,ang,alpha)=>{
+      ctx.save(); ctx.globalAlpha=alpha; ctx.translate(cx,cy); ctx.rotate(ang); ctx.scale(sc,sc); ctx.translate(-cx,-cy);
+      if(horiz){ drawDom(ctx,X(a.c),Y(a.r),s,true,b,true); drawDom(ctx,X(a.c),Y(a.r+1),s,true,!b,true); }
+      else { drawDom(ctx,X(a.c),Y(a.r),s,false,b,true); drawDom(ctx,X(a.c+1),Y(a.r),s,false,!b,true); }
+      ctx.restore();
+    };
+    pair(a.wasH, a.dir*e*Math.PI/2, 1-e*e);
+    pair(!a.wasH, a.dir*(e-1)*Math.PI/2, e);
+  }
+  if(showF && s>=12){
+    for(let r=0;r<m-1;r++) for(let c=0;c<n-1;c++){
+      if(!flipType(r,c)||busy[r*n+c]) continue;
+      ctx.beginPath(); ctx.arc(X(c+1),Y(r+1),Math.max(2,s*.085),0,2*Math.PI);
+      ctx.fillStyle=C.paper; ctx.globalAlpha=.85; ctx.fill(); ctx.globalAlpha=1;
+      ctx.strokeStyle=C.ink; ctx.lineWidth=1; ctx.stroke();
+    }
+  }
+  if(hover && flipType(hover.r,hover.c)){
+    rr(ctx,X(hover.c)+1,Y(hover.r)+1,2*s-2,2*s-2,s*.17);
+    ctx.strokeStyle=C.ink; ctx.lineWidth=2.2; ctx.stroke();
+  }
+  if(showH && s>=20){
+    const h=heights(), fs=Math.max(8.5,Math.min(12,s*.24));
+    ctx.font=`500 ${fs}px ui-monospace,Menlo,monospace`; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.lineJoin='round';
+    for(let i=0;i<=m;i++) for(let j=0;j<=n;j++){
+      const v=h[i*(n+1)+j], str=(v<0?'−':'')+Math.abs(v);
+      ctx.strokeStyle=C.paper; ctx.lineWidth=3; ctx.strokeText(str,X(j),Y(i));
+      ctx.fillStyle=C.ink; ctx.fillText(str,X(j),Y(i));
+    }
+  }
+}
+function frame(now){
+  rafOn=false;
+  if(shuffling && t){
+    const dt=Math.min(.1,(now-lastT)/1000); lastT=now;
+    const rate=shuffleRate(); acc+=dt*rate;
+    const dur=Math.max(70,Math.min(300,2600/rate)), P=(m-1)*(n-1);
+    let tries=Math.min(400,Math.floor(acc)); acc-=Math.floor(acc);
+    while(P>0 && tries-->0){
+      const r=Math.floor(rnd()*(m-1)), c=Math.floor(rnd()*(n-1));
+      if(flipType(r,c) && !animating(r,c)) doFlip(r,c,dur);
+    }
+  }
+  anims=anims.filter(a=>now-a.t0<a.dur);
+  drawBoard(now);
+  if(shuffling||anims.length) kick();
+}
+function kick(){ if(!rafOn){ rafOn=true; requestAnimationFrame(frame); } }
+const shuffleRate=()=>Math.pow(2,+$('speed').value);
+
+function candidate(ev){
+  if(!t) return null;
+  const b=board.getBoundingClientRect(), fx=(ev.clientX-b.left-PAD)/cell, fy=(ev.clientY-b.top-PAD)/cell;
+  if(fx<0||fy<0||fx>=n||fy>=m) return null;
+  const r=Math.floor(fy), c=Math.floor(fx), cands=[];
+  for(const i of [r,r+1]) for(const j of [c,c+1]) if(i>=1&&i<=m-1&&j>=1&&j<=n-1) cands.push({r:i-1,c:j-1,d:(i-fy)**2+(j-fx)**2});
+  cands.sort((a,b)=>a.d-b.d);
+  for(const k of cands) if(flipType(k.r,k.c)) return k;
+  return null;
+}
+board.addEventListener('pointermove',e=>{ const k=e.pointerType==='touch'?null:candidate(e); if((k&&hover&&k.r===hover.r&&k.c===hover.c)||(!k&&!hover)) return; hover=k; kick(); });
+board.addEventListener('pointerleave',()=>{ hover=null; kick(); });
+board.addEventListener('click',e=>{ const k=candidate(e); if(k){ doFlip(k.r,k.c,260); kick(); } });
+
+/* ---------- gallery of all tilings ---------- */
+const sub=k=>`<sub>${k}</sub>`;
+function buildGallery(){
+  const box=$('gal'); box.innerHTML=''; gal=null;
+  if(total===0n){ $('galh').innerHTML='No tilings to list'; return; }
+  if(total>BigInt(GALMAX)){ $('galh').innerHTML=`All tilings are listed when there are at most ${GALMAX}; this board has far too many`; return; }
+  const list=enumerate(), idx=new Map(list.map((d,i)=>[key(d),i]));
+  let groups=[{label:'',from:0,to:list.length}];
+  if(m===2 && n>=2){
+    const k=list.findIndex(d=>d[0]!==2);
+    groups=[{label:`begin with one upright domino, then tile 2 × ${n-1}: &nbsp;<span class="m">F</span>${sub(n)} = ${k}`,from:0,to:k},
+            {label:`begin with two flat dominoes, then tile 2 × ${n-2}: &nbsp;<span class="m">F</span>${sub(n-1)} = ${list.length-k}`,from:k,to:list.length}];
+  }
+  $('galh').innerHTML=`All <b>${list.length}</b> tiling${list.length>1?'s':''} of the ${m} × ${n} board — click one to load it`;
+  for(const g of groups){
+    const w=document.createElement('div');
+    if(g.label){ const l=document.createElement('div'); l.className='gl'; l.innerHTML=g.label; w.appendChild(l); }
+    const gc=document.createElement('div'); gc.className='gc';
+    g.cv=document.createElement('canvas'); g.mark=document.createElement('div'); g.mark.className='mark';
+    gc.appendChild(g.cv); gc.appendChild(g.mark); w.appendChild(gc); box.appendChild(w);
+    g.cv.addEventListener('click',e=>{
+      const b=g.cv.getBoundingClientRect(), x=e.clientX-b.left, y=e.clientY-b.top, L=gal.L;
+      const col=Math.floor(x/(L.tw+L.gap)), row=Math.floor(y/(L.th+L.gap));
+      if(col>=L.per || x-col*(L.tw+L.gap)>L.tw || y-row*(L.th+L.gap)>L.th) return;
+      const i=g.from+row*L.per+col; if(i>=g.to) return;
+      stopShuffle(); anims=[]; t=gal.list[i].slice(); changed(); kick();
+    });
+  }
+  gal={list,idx,groups}; drawGallery();
+}
+function drawGallery(){
+  if(!gal) return;
+  const W=Math.max(120,$('gal').clientWidth-26), N=gal.list.length;
+  let s=Math.max(3,Math.min(14,Math.floor(100/n),Math.floor(72/m))), L;
+  for(;;){
+    const gap=Math.max(5,Math.round(s*.7)), tw=n*s, th=m*s, per=Math.max(1,Math.floor((W+gap)/(tw+gap)));
+    L={s,gap,tw,th,per};
+    if(s<=3 || Math.ceil(N/per)*(th+gap)<=4200) break;
+    s--;
+  }
+  gal.L=L; const q=window.devicePixelRatio||1;
+  for(const g of gal.groups){
+    const cnt=g.to-g.from, rows=Math.ceil(cnt/L.per), cw=Math.min(cnt,L.per)*(L.tw+L.gap), ch=rows*(L.th+L.gap);
+    g.cv.width=Math.round(cw*q); g.cv.height=Math.round(ch*q); g.cv.style.width=cw+'px'; g.cv.style.height=ch+'px';
+    const x=g.cv.getContext('2d'); x.setTransform(q,0,0,q,0,0);
+    for(let i=0;i<cnt;i++) drawTiling(x,gal.list[g.from+i],(i%L.per)*(L.tw+L.gap),Math.floor(i/L.per)*(L.th+L.gap),L.s,L.s>=8);
+  }
+  markGallery();
+}
+function markGallery(){
+  if(!gal) return;
+  const i=t?gal.idx.get(key(t)):undefined, L=gal.L;
+  for(const g of gal.groups){
+    if(i===undefined||i<g.from||i>=g.to){ g.mark.style.display='none'; continue; }
+    const k=i-g.from, x=(k%L.per)*(L.tw+L.gap), y=Math.floor(k/L.per)*(L.th+L.gap);
+    Object.assign(g.mark.style,{display:'block',left:(x-4)+'px',top:(y-4)+'px',width:(L.tw+8)+'px',height:(L.th+8)+'px'});
+    const box=$('gal');
+    if(box.scrollHeight>box.clientHeight+2){
+      const bb=box.getBoundingClientRect(), mb=g.mark.getBoundingClientRect();
+      if(mb.top<bb.top+2) box.scrollTop+=mb.top-bb.top-30;
+      else if(mb.bottom>bb.bottom-2) box.scrollTop+=mb.bottom-bb.bottom+30;
+    }
+  }
+}
+
+/* ---------- the spectral picture ---------- */
+const quadJ=()=>Math.ceil(m/2), quadK=()=>Math.ceil(n/2);
+const cs=(j,m)=>2*j===m+1?0:Math.cos(j*Math.PI/(m+1));   // exact zero in the middle
+const factor=(j,k)=>4*cs(j,m)**2+4*cs(k,n)**2;
+function drawSpec(){
+  const g=35, R=200, f=x=>x.toFixed(2); let s='';
+  s+=`<rect x="0" y="-200" width="200" height="200" class="quad"/><rect x="-200" y="-200" width="400" height="400" class="sq"/>`;
+  s+=`<line x1="-200" y1="0" x2="200" y2="0" class="ax"/><line x1="0" y1="-200" x2="0" y2="200" class="ax"/><circle r="100" class="unit"/>`;
+  s+=`<path d="M200 ${-R-g} A200 200 0 0 0 -200 ${-R-g} Z" class="arc"/><path d="M${R+g} -200 A200 200 0 0 1 ${R+g} 200 Z" class="arc"/>`;
+  for(let k=1;k<=n;k++){ const th=k*Math.PI/(n+1), px=R*Math.cos(th), py=-R-g-R*Math.sin(th);
+    s+=`<line x1="0" y1="${-R-g}" x2="${f(px)}" y2="${f(py)}" class="spoke"/><line x1="${f(px)}" y1="${f(py)}" x2="${f(px)}" y2="200" class="drop"/><circle cx="${f(px)}" cy="${f(py)}" r="2.6" class="pp"/>`; }
+  for(let j=1;j<=m;j++){ const th=j*Math.PI/(m+1), px=R+g+R*Math.sin(th), py=-R*Math.cos(th);
+    s+=`<line x1="${R+g}" y1="0" x2="${f(px)}" y2="${f(py)}" class="spoke"/><line x1="${f(px)}" y1="${f(py)}" x2="-200" y2="${f(py)}" class="drop"/><circle cx="${f(px)}" cy="${f(py)}" r="2.6" class="pp"/>`; }
+  const pr=Math.max(3.2,Math.min(9,120/Math.max(m,n)));
+  for(let j=1;j<=m;j++) for(let k=1;k<=n;k++){
+    const x=R*Math.cos(k*Math.PI/(n+1)), y=-R*Math.cos(j*Math.PI/(m+1));
+    const q=j<=quadJ()&&k<=quadK(), z=q&&2*j===m+1&&2*k===n+1;
+    s+=`<circle cx="${f(x)}" cy="${f(y)}" r="${z?pr*1.35:pr}" class="pt${q?' q':''}${z?' z':''}" data-j="${j}" data-k="${k}"/>`;
+  }
+  s+=`<g id="ov" pointer-events="none"></g>`;
+  s+=`<text x="0" y="${-R-g-R-12}" text-anchor="middle">${n} point${n>1?'s':''} at angles kπ/${n+1} — one per column</text>`;
+  s+=`<text x="${R+g+R+22}" y="0" text-anchor="middle" transform="rotate(90 ${R+g+R+22} 0)">${m} point${m>1?'s':''} at angles jπ/${m+1} — one per row</text>`;
+  s+=`<text x="-200" y="219" text-anchor="middle">−2</text><text x="200" y="219" text-anchor="middle">2</text><text x="0" y="219" text-anchor="middle">0</text>`;
+  s+=`<text x="${R+g+10}" y="${-R-g-10}" style="font-size:15px">dashed: distance 1</text>`;
+  $('spec').innerHTML=s; drawSel();
+}
+function drawSel(){
+  const R=200, pr=Math.max(3.2,Math.min(9,120/Math.max(m,n)));
+  const j=Math.min(sel.j,quadJ()), k=Math.min(sel.k,quadK());
+  const x=R*Math.cos(k*Math.PI/(n+1)), y=-R*Math.cos(j*Math.PI/(m+1));
+  let s=`<line x1="0" y1="0" x2="${x.toFixed(2)}" y2="${y.toFixed(2)}" class="hl"/>`;
+  const seen=new Set();
+  for(const sx of [1,-1]) for(const sy of [1,-1]){ const id=(sx*x).toFixed(1)+','+(sy*y).toFixed(1); if(seen.has(id)) continue; seen.add(id);
+    s+=`<circle cx="${(sx*x).toFixed(2)}" cy="${(sy*y).toFixed(2)}" r="${pr+4}" class="ring"/>`; }
+  $('ov').innerHTML=s;
+  document.querySelectorAll('#fibfig .fc').forEach(el=>el.classList.toggle('on',+el.dataset.k===(m===2?k:j)));
+  const a=4*cs(j,m)**2, b=4*cs(k,n)**2, z=x=>x;
+  $('readout').innerHTML=`<span class="k">point (<span class="m">j</span>, <span class="m">k</span>) = (${j}, ${k}), squared distance from the origin:</span><br>`+
+    `4 cos<sup>2</sup> ${frac((j>1?j:'')+'π',m+1)} + 4 cos<sup>2</sup> ${frac((k>1?k:'')+'π',n+1)} = ${z(a).toFixed(4)} + ${z(b).toFixed(4)} = <b>${z(a+b).toFixed(4)}</b>`;
+}
+const frac=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+$('spec').addEventListener('pointermove',e=>{
+  const d=e.target.dataset; if(!d||!d.j) return;
+  const j=Math.min(+d.j,m+1-d.j), k=Math.min(+d.k,n+1-d.k);
+  if(j!==sel.j||k!==sel.k){ sel={j,k}; drawSel(); }
+});
+$('fibfig').addEventListener('pointerover',e=>{
+  const el=e.target.closest('.fc'); if(!el) return;
+  const q=+el.dataset.k, ns=m===2?{j:1,k:q}:{j:q,k:1};
+  if(ns.j!==sel.j||ns.k!==sel.k){ sel=ns; drawSel(); }
+});
+$('spec').addEventListener('click',e=>{ const d=e.target.dataset; if(d&&d.j){ sel={j:Math.min(+d.j,m+1-d.j),k:Math.min(+d.k,n+1-d.k)}; drawSel(); } });
+
+/* ---------- numbers ---------- */
+const group=s=>s.replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const sup=k=>`<sup>${k}</sup>`;
+function short(b){ const s=b.toString(); return s.length<=10?group(s):`${s[0]}.${s.slice(1,3)}×10${sup(s.length-1)}`; }
+function fmtFloat(x){
+  if(x===0) return '0';
+  if(x<1e12){ const [i,f]=x.toFixed(6).split('.'); return group(i)+'.'+f; }
+  const [a,e]=x.toExponential(12).split('e'); return `${a} × 10${sup(+e)}`;
+}
+function fibIndex(){ if(m===2) return n+1; if(n===2) return m+1; return 0; }
+function updateNumbers(){
+  $('mv').textContent=m; $('nv').textContent=n; $('ms').value=m; $('ns').value=n;
+  const s=total.toString(), el=$('count');
+  el.textContent=group(s); el.className=s.length>26?'vlong':s.length>13?'long':'';
+  $('countlab').textContent=`domino tiling${total===1n?'':'s'} of the ${m} × ${n} board`;
+  const fi=fibIndex();
+  if(fi){ const F=[0n,1n]; for(let i=2;i<=fi;i++) F.push(F[i-1]+F[i-2]);
+    $('fib').innerHTML=`= <span class="m">F</span>${sub(fi)}, a Fibonacci number`+(fi>=3?` &nbsp;(${group(total.toString())} = ${group(F[fi-1].toString())} + ${group(F[fi-2].toString())})`:''); }
+  else if(total===0n) $('fib').innerHTML=`${Math.ceil(m*n/2)} dark squares, ${Math.floor(m*n/2)} light: no tiling`;
+  else $('fib').innerHTML='';
+  const ff=$('fibfig'); ff.hidden=!fi;
+  if(fi){
+    const strip=m===2, L=strip?n:m, N=L+1, K=Math.ceil(L/2);
+    const P=(v,top)=>`<span class="prod"><span class="lim">${top}</span><span class="big">∏</span><span class="lim"><span class="m">${v}</span> = 1</span></span>`;
+    let chips='';
+    for(let k=1;k<=K;k++) chips+=`<span class="fc" data-k="${k}"><span>( 1 + 4 cos<sup>2</sup> ${frac((k>1?k:'')+'π',N)} )</span><span class="v">${(1+4*cs(k,L)**2).toFixed(4)}</span></span>`;
+    ff.innerHTML=`<h2>A trigonometric product for the Fibonacci numbers</h2>`+
+      `<p class="formula big"><span class="m">F<sub>N</sub></span> = ${P('k','⌊<span class="m">N</span>/2⌋')} ( 1 + 4 cos<sup>2</sup> ${frac('<span class="m">k</span>π','<span class="m">N</span>')} )</p>`+
+      `<div class="fcs"><span class="lhs"><span class="m">F</span>${sub(N)} =</span>${chips}<span class="rhs">= <b>${group(total.toString())}</b></span></div>`+
+      `<p class="note">The ${strip?`2 × ${n}`:`${m} × 2`} strip has <span class="m">F</span>${sub(N)} tilings, so <span class="m">N</span> = ${N}. Each factor is the squared distance from the origin to a filled point in the picture; `+
+      `they all sit at ${strip?'height':'horizontal position'} 2 cos ${frac('π',3)} = 1. Hover a factor to find its point.</p>`;
+  }
+  $('boardh').innerHTML=`<b>${m} × ${n}</b> board`+(total>1n?' — click between two parallel dominoes to flip them':'');
+  $('boardnote').innerHTML=total===0n?`An odd × odd board has one more dark square than light ones, so it cannot be tiled. In the picture on the right, the middle grid point sits exactly at the origin.`:'';
+  // formula instance
+  const J=quadJ(), K=quadK(); let p=1;
+  for(let j=1;j<=J;j++) for(let k=1;k<=K;k++) p*=factor(j,k);
+  const prod=(v,top)=>`<span class="prod"><span class="lim">${top}</span><span class="big">∏</span><span class="lim"><span class="m">${v}</span> = 1</span></span>`;
+  $('inst').innerHTML=`${prod('j',J)} ${prod('k',K)} ( 4 cos<sup>2</sup> ${frac('<span class="m">j</span>π',m+1)} + 4 cos<sup>2</sup> ${frac('<span class="m">k</span>π',n+1)} ) = <b>${fmtFloat(p)}</b> &nbsp;in floating point`;
+  $('inst2').innerHTML=`${J*K} factor${J*K>1?'s':''}; exact count <b>${group(s)}</b>`;
+  // sequence in n
+  $('seqh').innerHTML=`Fix <span class="m">m</span> = ${m} and let <span class="m">n</span> = 1, 2, 3, …`+(m===2?' — the Fibonacci numbers':'');
+  let h=''; for(let k=1;k<=NMAX;k++){ const v=count(m,k); h+=`<span data-n="${k}" class="${k===n?'cur':''}${v===0n?' zero':''}" title="${m} × ${k}: ${group(v.toString())}"><i>${k}</i>${short(v)}</span>`; }
+  $('seq').innerHTML=h;
+  let rho=1; for(let j=1;j<=J;j++){ const c=Math.cos(j*Math.PI/(m+1)); rho*=c+Math.sqrt(1+c*c); }
+  const odd=m%2===1, prev=odd?(n>2?count(m,n-2):0n):(n>1?count(m,n-1):0n);
+  let cur='';
+  if(total>0n && prev>0n){ const ratio=Number(total*1000000n/prev)/1e6; cur=odd?` Here ${m} × ${n} over ${m} × ${n-2} is ${ratio.toFixed(4)}.`:` Here ${m} × ${n} over ${m} × ${n-1} is ${ratio.toFixed(4)}.`; }
+  $('growth').innerHTML=m===1?`A 1 × <span class="m">n</span> strip has exactly one tiling when <span class="m">n</span> is even.`:
+    (odd?`Two more columns multiply the count by about <b>${(rho*rho).toFixed(4)}</b>`:`One more column multiplies the count by about <b>${rho.toFixed(4)}</b>`)+
+    (m===2?' = φ, the golden ratio':` = <span class="nw">${prod('j',J)} ( cos θ<sub><span class="m">j</span></sub> + √<span style="border-top:1px solid currentColor">1 + cos<sup>2</sup> θ<sub><span class="m">j</span></sub></span> )${odd?'<sup>2</sup>':''},</span> <span class="nw">θ<sub><span class="m">j</span></sub> = ${frac('<span class="m">j</span>π',m+1)}</span>`)+'.'+cur;
+}
+$('seq').addEventListener('click',e=>{ const el=e.target.closest('span[data-n]'); if(el) setDims(m,+el.dataset.n); });
+
+/* ---------- state changes ---------- */
+function changed(){ $('nflip').textContent=t?nFlips():'—'; markGallery(); }
+function stopShuffle(){ shuffling=false; $('shuffle').classList.remove('on'); }
+function setDims(mm,nn){
+  m=Math.max(1,Math.min(MMAX,mm)); n=Math.max(1,Math.min(NMAX,nn));
+  total=count(m,n); anims=[]; hover=null; sel=(m*n)%2?{j:(m+1)/2,k:(n+1)/2}:{j:1,k:1};
+  t=total>0n?sample():null; if(!t) stopShuffle();
+  updateNumbers(); sizeBoard(); buildGallery(); drawSpec(); changed(); kick();
+}
+$('ms').addEventListener('input',e=>setDims(+e.target.value,n));
+$('ns').addEventListener('input',e=>setDims(m,+e.target.value));
+document.querySelectorAll('button[data-p]').forEach(b=>b.addEventListener('click',()=>{ const [a,c]=b.dataset.p.split(',').map(Number); setDims(a,c); }));
+$('random').addEventListener('click',()=>{ if(total>0n){ anims=[]; t=sample(); changed(); kick(); } });
+$('brick').addEventListener('click',()=>{ if(total>0n){ stopShuffle(); anims=[]; t=comb(); changed(); kick(); } });
+$('shuffle').addEventListener('click',()=>{ if(!t) return; shuffling=!shuffling; $('shuffle').classList.toggle('on',shuffling); lastT=performance.now(); acc=0; kick(); });
+$('cmode').addEventListener('change',e=>{ colorMode=e.target.value; drawGallery(); kick(); });
+$('showf').addEventListener('change',e=>{ showF=e.target.checked; kick(); });
+$('showh').addEventListener('change',e=>{ showH=e.target.checked; kick(); });
+window.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey||/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+  const k=e.key.toLowerCase();
+  if(k==='r') $('random').click(); else if(k==='s') $('shuffle').click();
+  else if(k==='arrowright') setDims(m,n+1); else if(k==='arrowleft') setDims(m,n-1);
+  else if(k==='arrowdown') setDims(m+1,n); else if(k==='arrowup') setDims(m-1,n);
+  else return;
+  e.preventDefault();
+});
+let rz=0;
+window.addEventListener('resize',()=>{ clearTimeout(rz); rz=setTimeout(()=>{ sizeBoard(); drawGallery(); kick(); },60); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ readColors(); drawGallery(); kick(); });
+
+readColors(); setDims(2,8);
+window.__domino={count,factor:(mm,nn,j,k)=>4*cs(j,mm)**2+4*cs(k,nn)**2,get t(){return t;},setDims,sample,enumerate,heights,doFlip,flipType};
+})();
+</script>
+</body>
+</html>

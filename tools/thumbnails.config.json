@@ -246,5 +246,13 @@
     },
     "scale": 1,
     "wait": 1000
+  },
+  "domino-tilings": {
+    "viewport": {
+      "width": 1200,
+      "height": 900
+    },
+    "scale": 1,
+    "wait": 800
   }
 }
