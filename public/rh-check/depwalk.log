@@ -1,0 +1,23 @@
+root: riemannHypothesis
+constants in dependency closure: 1478219
+names not found in environment: 0
+axioms in closure: #[propext, Quot.sound, Classical.choice]
+anyGeometry: 1 #[GlobalTheory.Mem.Top.Bl.anyGeometry]
+geoCl: 1 #[GlobalTheory.Mem.Top.Bl.geoCl]
+GeoCl: 3 #[GlobalTheory.Mem.Top.Bl.GeoCl, GlobalTheory.Mem.Top.Bl.GeoCl.step, GlobalTheory.Mem.Top.Bl.GeoCl.base]
+geoDegenerate: 7 #[Formalism.L2.Geo.geoDegenerate, Formalism.L2.Geo.geoDegenerate._proof_6, Formalism.L2.Geo.geoDegenerate._proof_5, Formalism.L2.Geo.geoDegenerate._proof_4, Formalism.L2.Geo.geoDegenerate._proof_3, Formalism.L2.Geo.geoDegenerate._proof_2]
+algDegenerate: 5 #[Formalism.L2.Geo.algDegenerate, Formalism.L2.Geo.algDegenerate._proof_4, Formalism.L2.Geo.algDegenerate._proof_3, Formalism.L2.Geo.algDegenerate._proof_2, Formalism.L2.Geo.algDegenerate._proof_1]
+padDegenerate: 2 #[Formalism.L2.Geo.padDegenerate, Formalism.L2.Geo.padDegenerate._proof_1]
+mdlJunk: 5 #[Formalism.L2.Geo.mdlJunk, Formalism.L2.Geo.mdlJunk._proof_4, Formalism.L2.Geo.mdlJunk._proof_3, Formalism.L2.Geo.mdlJunk._proof_2, Formalism.L2.Geo.mdlJunk._proof_1]
+divXFl: 6 #[Formalism.L2.Geo.divXFl, Formalism.L2.Geo.divXFl._proof_5, Formalism.L2.Geo.divXFl._proof_4, Formalism.L2.Geo.divXFl._proof_3, Formalism.L2.Geo.divXFl._proof_2, Formalism.L2.Geo.divXFl._proof_1]
+divEx_prov: 2 #[GlobalTheory.Mem.Top.DivRec.divEx_prov, GlobalTheory.Mem.Top.DivRec.divEx_prov.match_1_1]
+divEx_of_ox: 1 #[GlobalTheory.Mem.Top.DivRec.divEx_of_ox]
+hExpl6: 2 #[Formalism.BasicNotions.DV.hExpl6, Formalism.BasicNotions.DV.hExpl6.eq_1]
+rhOfAll: 1 #[rhOfAll]
+allChi: 1 #[allChi]
+everyCharacter: 1 #[UpperTheory.FinalTheorems.everyCharacter]
+plugAll: 0 #[]
+rh_of_every: 1 #[Formalism.VW.rh_of_every]
+geoOf_surf: 0 #[]
+degree_value_of_determinant: 0 #[]
+formsTieX: 0 #[]

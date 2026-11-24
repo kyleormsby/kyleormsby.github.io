@@ -1,0 +1,1 @@
+nanoda_bin (Lean v4.36.0) on solution.ndjson, 64 threads, 2026-11-22: exit=0, real 54m5.943s, user 810m30.897s

@@ -1,0 +1,28 @@
+
+== Packages pinned by the project
+  'Cli'                  git        6130a47896ce  'https://github.com/leanprover/lean4-cli'
+  'LeanSearchClient'     git        5f4d51b81cbd  'https://github.com/leanprover-community/LeanSearchClient'
+  'Qq'                   git        92c15be17b7c  'https://github.com/leanprover-community/quote4'
+  'aesop'                git        3448c0bcc5ce  'https://github.com/leanprover-community/aesop'
+  'batteries'            git        4488d40d070b  'https://github.com/leanprover-community/batteries'
+  'importGraph'          git        16f02aa76428  'https://github.com/leanprover-community/import-graph'
+  'mathlib'              git        0df444a360ea  'https://github.com/leanprover-community/mathlib4'
+  'plausible'            git        b7eb3304aeae  'https://github.com/leanprover-community/plausible'
+  'proofwidgets'         git        4be2e3d5087e  'https://github.com/leanprover-community/ProofWidgets4'
+
+== Fetching upstream Mathlib history into /home/exouser/rh/mathlib-ref (no checkout)
+
+== Is 0df444a360eaa60ab8c11dca51a86af692955474 part of upstream Mathlib?
+not on master, but contained in upstream refs:
+  v4.33.1
+
+== Other packages versus Mathlib's own manifest at that commit
+  same     'Cli'
+  same     'LeanSearchClient'
+  same     'Qq'
+  same     'aesop'
+  same     'batteries'
+  same     'importGraph'
+  same     'plausible'
+  same     'proofwidgets'
+RESULT: dependencies are exactly upstream Mathlib's.

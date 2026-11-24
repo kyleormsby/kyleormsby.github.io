@@ -1,0 +1,14 @@
+con-leche: stats: phases: parse 72.2s (index 4.7s), check 491.4s
+con-leche: stats: check pool: 491.279s wall, 64 workers, 1468418 records, busy 31371.587s (99.7%); tail 0.814s after the last start, 64 busy then, 3.651s worker-time in it (7.0%)
+con-leche: stats: slowest checks: 87.608s theorem GlobalTheory.HeightCounting.SideCopy.LamCopy.lam_copy (#829554); 77.551s theorem PI.PC.loop_run._proof_1_1 (#571290); 65.365s theorem GlobalTheory.HeightCounting.SideCopy.sigSpan_copy (#829660); 49.053s theorem Formalism.IrreducibleCountingLemmas.GaloisIrreducibility.PrimeCountingLemmas.factorial_ladder_one_forty_one._proof_1_1 (#226690); 38.132s theorem GlobalTheory.PrimeRecip.table_ok._proof_1_1 (#570391)
+con-leche: stats: peak RSS 45.59 GiB
+con-leche: stats: phases: parse 569.5s (index 1.6s), check 2.3s
+con-leche: stats: check pool: 2.381s wall, 64 workers, 51692 records, busy 145.399s (95.3%); tail 0.112s after the last start, 64 busy then, 0.929s worker-time in it (12.8%)
+con-leche: stats: slowest checks: 0.254s theorem Lean.Grind.Ring.OfSemiring.mul_helper (#22850); 0.170s theorem _private.Mathlib.Analysis.Complex.Trigonometric.0.Complex.sin_bound._proof_1_4 (#25775); 0.144s theorem _private.Init.GrindInstances.Ring.Fin.0.Lean.Grind.Fin.neg_mul._proof_1_5 (#17208); 0.140s theorem _private.Mathlib.Analysis.Complex.Trigonometric.0.Real.sin_pos_of_pos_of_le_one._proof_1_3 (#25772); 0.140s theorem _private.Init.Data.List.Sort.Basic.0.List.MergeSort.Internal.splitInTwo._proof_2 (#39077)
+con-leche: stats: peak RSS 45.59 GiB
+con-leche: accepted 51692 declarations, 5 axioms justified by the solution /home/exouser/rh/solution.ndjson (1468418 declarations accepted) (--verified)
+con-leche: theorem riemannHypothesis justified by the solution
+con-leche: theorem riemannZeta_eq_zero_re justified by the solution
+con-leche: theorem LFunction_ne_zero_of_half_lt_re justified by the solution
+con-leche: theorem LFunction_eq_zero_re justified by the solution
+con-leche: theorem LFunction_eq_zero_re_of_isPrimitive justified by the solution

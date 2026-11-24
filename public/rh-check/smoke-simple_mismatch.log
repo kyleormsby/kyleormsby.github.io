@@ -1,0 +1,12 @@
+info: comparatortest: no previous manifest, creating one from scratch
+info: toolchain not updated; no toolchain information found
+Building Challenge
+⚠ [2/3] Built Challenge (368ms)
+warning: Challenge.lean:1:8: declaration uses `sorry`
+Build completed successfully (3 jobs).
+Exporting #[comm, propext, Quot.sound, Classical.choice, Nat.add, Nat.sub, Nat.mul, Nat.pow, Nat.gcd, Nat.div, Nat.mod, Nat.beq, Nat.ble, Nat.land, Nat.lor, Nat.xor, Nat.shiftLeft, Nat.shiftRight, String.ofList, Char.ofNat, List, eagerReduce] from Challenge
+Building Solution
+✔ [2/3] Built Solution (311ms)
+Build completed successfully (3 jobs).
+Exporting #[comm, propext, Quot.sound, Classical.choice, Nat.add, Nat.sub, Nat.mul, Nat.pow, Nat.gcd, Nat.div, Nat.mod, Nat.beq, Nat.ble, Nat.land, Nat.lor, Nat.xor, Nat.shiftLeft, Nat.shiftRight, String.ofList, Char.ofNat, List, eagerReduce] from Solution
+uncaught exception: Challenge and solution constant kind don't match: 'comm'

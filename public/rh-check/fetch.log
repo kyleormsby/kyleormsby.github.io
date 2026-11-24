@@ -1,0 +1,136 @@
+
+== Downloading 14 parts from https://alpo.ge
+
+== Part sizes and SHA-256
+18000000	lean.tar.gz.part01
+18000000	lean.tar.gz.part02
+18000000	lean.tar.gz.part03
+18000000	lean.tar.gz.part04
+18000000	lean.tar.gz.part05
+18000000	lean.tar.gz.part06
+18000000	lean.tar.gz.part07
+18000000	lean.tar.gz.part08
+18000000	lean.tar.gz.part09
+18000000	lean.tar.gz.part10
+18000000	lean.tar.gz.part11
+18000000	lean.tar.gz.part12
+18000000	lean.tar.gz.part13
+5275554	lean.tar.gz.part14
+86974b1c242ca7b6748f3299df4fc64ee0f6e06c776ac964fb64888101a3de77  lean.tar.gz.part01
+1c2a2477354a9dfa97ff1ce54861e96ed885bd456fffbaaabc2028314a229c42  lean.tar.gz.part02
+1465a23b1b579a881e24e5ffaf7c4c3727af28ea24741f1ec80e1d67947530a3  lean.tar.gz.part03
+3929e327eecb4e2c5c7cae30e104e6a4a52fa6b82d28325bcda8e9da1c86893b  lean.tar.gz.part04
+f25d7e80f7c4ad6d674aa18b323ca760f848857c8755501c149317c38a66c75d  lean.tar.gz.part05
+a8c651a68327811b37dce3cca8eda5e0b2102fa227c0d395cbb7553e4dd69939  lean.tar.gz.part06
+65c7e502a9b236a0f68d9e0aa6e089d4c09b9fc7a0960a149384063ccbe5e869  lean.tar.gz.part07
+71b027ad6e4179c3a50ce72921e3fec0a2dd751ec7472ac2c644ad145a50ec7e  lean.tar.gz.part08
+47718977ebaa8613f1647e93134479780db9320c5fa911463fd312a6257b796f  lean.tar.gz.part09
+1d85ece78e0779cec26b0cce29c6462d9f90180e56d78120b152df101715240b  lean.tar.gz.part10
+cf83a159d1a9540012229c376562587dd966da10cd657cbcef53acfd03232448  lean.tar.gz.part11
+1aa5415bd2db83b2689afeeb946419303b3c4f599ae790ad74d38465f768b502  lean.tar.gz.part12
+2de4edbce8ebdbfd0b94bc89bab518c7294209f408ec5b14a7be9e4832d9da81  lean.tar.gz.part13
+53f8ea43a9b5dcab97b84a52f3ac2848711c844a5420a4c56418093bacb3c6f6  lean.tar.gz.part14
+
+== Joining parts in order
+239275554 bytes  /home/exouser/rh/lean.tar.gz
+9631b4f020199e580ba86178cb56c6e9b09f690c2369a80dc4334aa93f49c7fc  /home/exouser/rh/lean.tar.gz
+
+== Testing gzip integrity
+gzip OK
+
+== Listing archive
+175190 entries, listed in /home/exouser/rh/contents.txt
+by extension:
+ 175187 .lean
+      1 .toml
+      1 .json
+      1 (none)
+
+== Extracting to /home/exouser/rh/src
+
+== Lake project root: /home/exouser/rh/src/lean
+all lakefiles outside .lake:
+/home/exouser/rh/src/lean/lakefile.toml
+
+lean-toolchain: leanprover/lean4:v4.33.1
+dependencies pinned in lake-manifest.json:
+  "url": "https://github.com/leanprover-community/mathlib4",
+  "rev": "0df444a360eaa60ab8c11dca51a86af692955474",
+  "name": "mathlib",
+  "url": "https://github.com/leanprover-community/plausible",
+  "rev": "b7eb3304aeae834b12dda98993a37f6a41f6f0bb",
+  "name": "plausible",
+  "url": "https://github.com/leanprover-community/LeanSearchClient",
+  "rev": "5f4d51b81cbd3f6b32b156bfad9056621a040404",
+  "name": "LeanSearchClient",
+  "url": "https://github.com/leanprover-community/import-graph",
+  "rev": "16f02aa7642864af59f1ff0e384a015994db9118",
+  "name": "importGraph",
+  "url": "https://github.com/leanprover-community/ProofWidgets4",
+  "rev": "4be2e3d5087eeb272cf5a8853b8f9dd025ef5957",
+  "name": "proofwidgets",
+  "url": "https://github.com/leanprover-community/aesop",
+  "rev": "3448c0bcc5ce01b2d1546e483ec3620e32df3d0e",
+  "name": "aesop",
+  "url": "https://github.com/leanprover-community/quote4",
+  "rev": "92c15be17b7caf78c2ad767ec40f89052d908d81",
+  "name": "Qq",
+  "url": "https://github.com/leanprover-community/batteries",
+  "rev": "4488d40d070b9700d4d5a6aa342f0d40c31b2a2d",
+  "name": "batteries",
+  "url": "https://github.com/leanprover/lean4-cli",
+  "rev": "6130a47896ce867c6a4a55373441e59e565bad0f",
+  "name": "Cli",
+  "name": "tree",
+
+project Lean sources: 175187 files, 17374215 lines
+
+== Static scan of project sources (hits are things to read, not verdicts)
+sorry / admit                                        0
+axiom declarations                                   0
+native_decide / ofReduceBool                         0
+unsafe / implemented_by / extern / opaque            0
+kernel or checking options turned off                0
+raw environment edits (addDecl etc.)                 7
+      src/Formalism/HermitianCurvature/HermitianCurvatureProofs/CutCptCopy.lean:78:      addDecl (.defnDecl { d with name := n', type := subst tainted d.type, value := subst tainted d.value })
+      src/Formalism/HermitianCurvature/HermitianCurvatureProofs/CutCptCopy.lean:82:      addDecl (.thmDecl { t with name := n', type := subst tainted t.type, value := subst tainted t.value })
+      src/BuildAid/D1.lean:4:run_cmd Lean.modifyEnv fun env => Lean.LibrarySuggestions.nameDenyListExt.addEntry env "CompanionTheory"
+      src/BuildAid/D3.lean:4:run_cmd Lean.modifyEnv fun env => Lean.LibrarySuggestions.nameDenyListExt.addEntry env "GlobalTheory"
+      src/BuildAid/D4.lean:4:run_cmd Lean.modifyEnv fun env => Lean.LibrarySuggestions.nameDenyListExt.addEntry env "PositivityTheory"
+      src/BuildAid/D2.lean:4:run_cmd Lean.modifyEnv fun env => Lean.LibrarySuggestions.nameDenyListExt.addEntry env "CrystallineSemistableComparison"
+      src/BuildAid/D5.lean:4:run_cmd Lean.modifyEnv fun env => Lean.LibrarySuggestions.nameDenyListExt.addEntry env "UpperTheory"
+code run at build time (#eval, run_cmd...)           5
+      src/BuildAid/D1.lean:4:run_cmd Lean.modifyEnv fun env => Lean.LibrarySuggestions.nameDenyListExt.addEntry env "CompanionTheory"
+      src/BuildAid/D3.lean:4:run_cmd Lean.modifyEnv fun env => Lean.LibrarySuggestions.nameDenyListExt.addEntry env "GlobalTheory"
+      src/BuildAid/D4.lean:4:run_cmd Lean.modifyEnv fun env => Lean.LibrarySuggestions.nameDenyListExt.addEntry env "PositivityTheory"
+      src/BuildAid/D2.lean:4:run_cmd Lean.modifyEnv fun env => Lean.LibrarySuggestions.nameDenyListExt.addEntry env "CrystallineSemistableComparison"
+      src/BuildAid/D5.lean:4:run_cmd Lean.modifyEnv fun env => Lean.LibrarySuggestions.nameDenyListExt.addEntry env "UpperTheory"
+theorems stating RiemannHypothesis                   13
+      src/Formalism/GammaFactorNonvanishing/CritLine.lean:29:theorem Formalism.VW.rh_of_every (h : UpperTheory.EveryCharacter) : RiemannHypothesis :=
+      src/Formalism/GammaFactorNonvanishing/RhOfRight.lean:5:theorem Formalism.VW.rh_of_right (hz : ∀ s : ℂ, 1 / 2 < s.re → s ≠ 1 → riemannZeta s ≠ 0) : RiemannHypothesis := by
+      src/Formalism/SizeWindowBrackets/ChainSlopeWindows/PChain.lean:81:theorem chain_weighted_mean_to_unit_weight : ChainGivesRiemannHypothesis := by
+      src/Formalism/SizeWindowBrackets/ChainSlopeWindows/PChain.lean:147:theorem chain_eventually : ChainEventualGivesRiemannHypothesis := by
+      src/Formalism/SizeWindowBrackets/ChainSlopeWindows/LipschitzWeightAndMinimum.lean:615:theorem proposition_joint : RiemannHypothesisOfBalanceAndGrowthData := by
+      src/Formalism/SizeWindowBrackets/ChainSlopeWindows/LipschitzWeightAndMinimum.lean:663:theorem proposition_final : GrowthBoundGivesRiemannHypothesis :=
+      src/Formalism/SizeWindowBrackets/ChainSlopeWindows/LipschitzWeightAndMinimum.lean:983:theorem proposition_final_minimum : RiemannHypothesisOfReducedGrowthData := by
+      src/Formalism/SizeWindowBrackets/ChainSlopeWindows/RiemannHypothesisOfPowerBound.lean:13:theorem riemann_hypothesis_of_power_bound : PowerBoundGivesRiemannHypothesis := by
+mentions of RiemannHypothesis                        876
+      src/Formalism/ZetaNonvanishing/RiemannZetaOneNeZeroOfRealMemIoo.lean:9:lemma riemannZetaOne_eq_mul_of_ne_one {s : ℂ} (hs : s ≠ 1) : riemannZeta₁ s = (s - 1) * riemannZeta s := by
+      src/Formalism/ZetaNonvanishing/RiemannZetaOneNeZeroOfRealMemIoo.lean:11:  rw [riemannZeta_eq_inv_sub_mul hs]
+      src/Formalism/ZetaNonvanishing/RiemannZetaOneNeZeroOfRealMemIoo.lean:14:lemma riemannZetaOne_ne_zero_of_one_le_re {s : ℂ} (hs : 1 ≤ s.re) : riemannZeta₁ s ≠ 0 := by
+      src/Formalism/ZetaNonvanishing/RiemannZetaOneNeZeroOfRealMemIoo.lean:17:  · rw [riemannZetaOne_eq_mul_of_ne_one h1]
+      src/Formalism/ZetaNonvanishing/RiemannZetaOneNeZeroOfRealMemIoo.lean:18:    exact mul_ne_zero (sub_ne_zero.mpr h1) (riemannZeta_ne_zero_of_one_le_re hs)
+      src/Formalism/ZetaNonvanishing/RiemannZetaOneNeZeroOfRealMemIoo.lean:26:lemma riemannZetaOne_ne_zero_of_real_mem_Ioo (h8 : ZetaRealNonvanish) {σ : ℝ} (h0 : 0 < σ) (h1 : σ < 1) :
+      src/Formalism/ZetaNonvanishing/RiemannZetaOneNeZeroOfRealMemIoo.lean:27:    riemannZeta₁ σ ≠ 0 := by
+      src/Formalism/ZetaNonvanishing/RiemannZetaOneNeZeroOfRealMemIoo.lean:28:  rw [riemannZetaOne_eq_mul_of_ne_one (ofReal_ne_one_of_lt h1)]
+local (re)definitions with Riemann in name           77
+      src/Formalism/ZetaNonvanishing/RiemannZetaOneNeZeroOfRealMemIoo.lean:61:def EOC (s : ℂ) : ℂ := riemannZeta₁ s * ∏ j, DirichletCharacter.LFunction (χ j) s
+      src/Formalism/ZetaNonvanishing/ZetaLandau.lean:20:def nZ (s : ℂ) : ℂ := -(deriv riemannZeta₁ s / riemannZeta₁ s) + linZ s
+      src/Formalism/ZetaNonvanishing/ZetaLandau.lean:22:def AZ (s : ℂ) : ℂ := -deriv riemannZeta₁ s + linZ s * riemannZeta₁ s
+      src/Formalism/ZetaNonvanishing/ZetaLandau.lean:29:def PhiZ (ε C θ : ℝ) (s : ℂ) : ℂ := ε * dslope AZ 1 s / (s * riemannZeta₁ s) + C / (s - θ)
+      src/Formalism/ZetaRealNonvanish.lean:63:def ZetaRealNonvanish : Prop := ∀ σ : ℝ, 0 < σ → σ < 1 → riemannZeta σ ≠ 0
+      src/Formalism/ZetaRealNonvanish.lean:74:def RHofHalfPlane : Prop := (∀ s : ℂ, 1 / 2 < s.re → riemannZeta s ≠ 0) → RiemannHypothesis
+      src/Formalism/LocalToGlobal/GlobalTheory/GL3/CubicFields/EisensteinSeries/DslopePhiCDifferentiableAt.lean:12:def PhiC (y : ℝ) (s : ℂ) : ℂ := gC y s * riemannZeta₁ (2 * s - 1) / 2
+      src/Formalism/StatementU.lean:42:def RiemannSumApprox : Prop :=
+
+Read /home/exouser/rh/src/lean/lakefile.* before building: it is a program and runs on 'lake build'.
